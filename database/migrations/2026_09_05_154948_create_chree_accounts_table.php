@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->string('display_name')->nullable(); // 表示名
             $table->timestamp('suspended_at')->nullable(); // 停止日時
             $table->timestamp('deleted_at')->nullable(); // 削除日時
+
             $table->timestamps(); // 作成日時/更新日時
         });
     }
