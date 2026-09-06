@@ -32,6 +32,9 @@ class ChreeAccountModel extends Model {
         "display_name",
     ];
 
+    // PHPではただの文字列だけどDBでは日付なのでDBに入れる時のメモ的なやつ
+    // DB から取得: "2026-09-06 10:41:34"（文字列） → Carbon オブジェクト   ← これが本命
+    // DB へ保存:   Carbon オブジェクト → DB 用の文字列                    ← こっちもやる
     #[\Override]
     protected $casts = [
         'email_verified_at' => 'datetime',
@@ -39,6 +42,7 @@ class ChreeAccountModel extends Model {
         'deleted_at' => 'datetime',
     ];
     
+    // なんとなくかいとく、いらんけどこれあったほうがおちつくやろ知らんけど
     public function __construct(array $attributes = []) {
         parent::__construct($attributes);
     }
