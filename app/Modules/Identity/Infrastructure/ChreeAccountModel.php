@@ -30,6 +30,7 @@ class ChreeAccountModel extends Model {
         "email",
         "email_verified_at",
         "display_name",
+        'origin',
     ];
 
     // PHPではただの文字列だけどDBでは日付なのでDBに入れる時のメモ的なやつ
