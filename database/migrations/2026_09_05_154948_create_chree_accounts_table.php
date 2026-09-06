@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 // php artisan make:migration create_chree_accounts_table でつくったやつー
 // php artisan migrate でマイグレーションできる（こいつはたぶんテーブルつくるんやと思う）
 
+// chree_accounts テーブルを作成する (ChreeIDアカウントのテーブル)
 return new class extends Migration {
     /**
      * Run the migrations.
