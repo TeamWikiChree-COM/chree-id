@@ -11,10 +11,11 @@ return new class extends Migration {
      */
     public function up(): void {
         Schema::create('chree_account_aliases', function (Blueprint $table) {
-            $table->ulid('legacy_id')->primary(); // 統合前のID
+            $table->ulid('legacy_id')->primary(); // 統合前のID (主キー)
             $table->ulid('current_id'); // 統合後のID
             $table->timestamp('merged_at'); // 統合日時
 
+            // current_idはchree_accountsテーブルのidを参照するように
             $table->foreign('current_id')->references('id')->on('chree_accounts');
         });
     }
