@@ -18,12 +18,12 @@ class CredentialServiceProvider extends ServiceProvider {
     public function register(): void {
         $this->app->bind(CredentialRepository::class, EloquentCredentialRepository::class);
 
-        $this->app->singleton(CredentialRegistry::class, function ($app) {
+        $this->app->singleton(CredentialRegistry::class, function (): CredentialRegistry {
             $registry = new CredentialRegistry();
 
             // 認証方式の一覧 (増やすときはここに1行)
-            $registry->register($app->make(PasswordVerifier::class));
-            $registry->register($app->make(MagicLinkVerifier::class));
+            $registry->register($this->app->make(PasswordVerifier::class));
+            $registry->register($this->app->make(MagicLinkVerifier::class));
 
             return $registry;
         });

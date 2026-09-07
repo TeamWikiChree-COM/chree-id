@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Identity\Domain;
 
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 
 /**
  * ChreeID アカウント。
@@ -11,26 +11,26 @@ use Illuminate\Support\Carbon;
 readonly class ChreeAccount {
     public string $id;
     public ?string $email;
-    public ?Carbon $emailVerifiedAt;
+    public ?CarbonInterface $emailVerifiedAt;
     public ?string $displayName;
     public AccountOrigin $origin;
-    public ?Carbon $suspendedAt;
+    public ?CarbonInterface $suspendedAt;
 
     /**
      * @param string $id アカウントID (ULID)
      * @param string|null $email 連絡先
-     * @param Carbon|null $emailVerifiedAt メール検証済み日時
+     * @param CarbonInterface|null $emailVerifiedAt メール検証済み日時
      * @param string|null $displayName 表示名
      * @param AccountOrigin $origin 発行経路
-     * @param Carbon|null $suspendedAt 停止日時
+     * @param CarbonInterface|null $suspendedAt 停止日時
      */
     public function __construct(
         string $id,
         ?string $email,
-        ?Carbon $emailVerifiedAt,
+        ?CarbonInterface $emailVerifiedAt,
         ?string $displayName,
         AccountOrigin $origin,
-        ?Carbon $suspendedAt,
+        ?CarbonInterface $suspendedAt,
     ) {
         $this->id = $id;
         $this->email = $email;
