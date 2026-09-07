@@ -18,6 +18,16 @@ class PasswordVerifier extends AbstractVerifier {
         return $this->verifyPassword($accountId, $input['password'] ?? null);
     }
 
+    /**
+     * パスワードを直接検証する。
+     * 
+     * ログインは verify() を通るが、
+     * 再認証（メール変更前の確認、パスワードリセット時の確認など）はここを直接呼ぶ場合もあると想定する。
+     * 
+     * @param string $accountId アカウントID
+     * @param ?string $password パスワード
+     * @return VerificationResult
+     */
     public function verifyPassword(string $accountId, ?string $password): VerificationResult {
         if (!is_string($password) || $password === '') return $this->failure();
 
