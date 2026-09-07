@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\CredentialServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\CredentialServiceProvider::class,
+    AppServiceProvider::class,
+    CredentialServiceProvider::class,
 ];
