@@ -1,0 +1,99 @@
+name: デプロイ
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_commit:
+        description: '差分の基準コミット（例: HEAD~3, コミットSHA, タグ名。空欄なら前回デプロイ時からの差分）'
+        type: string
+        default: ''
+        required: false
+      dry_run:
+        description: 'ドライラン（実際の転送は行わず対象ファイルを確認）'
+        type: boolean
+        default: false
+      full:
+        description: '全件アップロード（前回の差分ではなく全追跡ファイルを転送）'
+        type: boolean
+        default: false
+      delete:
+        description: 'Gitから削除されたファイルをサーバ側からも削除'
+        type: boolean
+        default: false
+
+  # push時に自動デプロイしたい場合は以下のコメントアウトを解除してください
+  # push:
+  #   branches: [ main ]
+
+jobs:
+  deploy:
+    name: サーバデプロイ
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 差分計算・コミット履歴確認のため全履歴を取得
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install paramiko
+
+      - name: Restore deploy state
+        uses: actions/cache/restore@v4
+        with:
+          path: .deploy-state
+          key: deploy-state-${{ github.sha }}
+          restore-keys: |
+            deploy-state-
+
+      - name: Set base commit if specified
+        if: inputs.base_commit != ''
+        run: |
+          echo "基準コミットを手動設定します: ${{ inputs.base_commit }}"
+          python tools/deploy.py --set-state "${{ inputs.base_commit }}"
+
+      - name: Setup deploy environment config
+        env:
+          FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_DIR: ${{ secrets.FTP_DIR }}
+        run: |
+          cat << EOF > tools/.deploy-env
+          FTP_PROTOCOL=$FTP_PROTOCOL
+          FTP_HOST=$FTP_HOST
+          FTP_PORT=$FTP_PORT
+          FTP_USER=$FTP_USER
+          FTP_PASS=$FTP_PASS
+          FTP_DIR=$FTP_DIR
+          EOF
+
+      - name: Run deploy script
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ inputs.full }}" = "true" ]; then
+            ARGS="$ARGS --full"
+          fi
+          if [ "${{ inputs.delete }}" = "true" ]; then
+            ARGS="$ARGS --delete"
+          fi
+          python tools/deploy.py $ARGS
+
+      - name: Save deploy state
+        if: success() && inputs.dry_run != true
+        uses: actions/cache/save@v4
+        with:
+          path: .deploy-state
+          key: deploy-state-${{ github.sha }}
