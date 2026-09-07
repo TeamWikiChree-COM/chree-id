@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # ドットから始まる隠しファイル（.env など）へのアクセスを遮断
+    RewriteRule ^\.(.*)$ - [F,L]
+
+    # すでに public/ を指定しているアクセスはそのまま通す
+    RewriteRule ^public/ - [L]
+
+    # それ以外のアクセスはすべて public/ 配下に内部リライト
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
