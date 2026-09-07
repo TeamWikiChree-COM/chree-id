@@ -5,6 +5,7 @@ use App\Modules\Credential\Domain\CredentialRegistry;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Infrastructure\EloquentCredentialRepository;
 use App\Modules\Credential\Infrastructure\Verifiers\MagicLinkVerifier;
+use App\Modules\Credential\Infrastructure\Verifiers\PasskeyVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\PasswordVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\RecoveryCodeVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\TotpVerifier;
@@ -28,6 +29,7 @@ class CredentialServiceProvider extends ServiceProvider {
             $registry->register($this->app->make(MagicLinkVerifier::class));
             $registry->register($this->app->make(TotpVerifier::class));
             $registry->register($this->app->make(RecoveryCodeVerifier::class));
+            $registry->register($this->app->make(PasskeyVerifier::class));
 
             return $registry;
         });

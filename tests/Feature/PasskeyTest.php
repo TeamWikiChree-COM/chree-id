@@ -1,0 +1,100 @@
+<?php
+namespace Tests\Feature;
+
+use App\Modules\Credential\Application\StartPasskeyLogin;
+use App\Modules\Credential\Application\StartPasskeyRegistration;
+use App\Modules\Credential\Domain\CredentialRegistry;
+use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Domain\VerifiedFactors;
+use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
+use App\Modules\Credential\Infrastructure\Verifiers\PasskeyVerifier;
+use App\Modules\Identity\Domain\AccountOrigin;
+use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\ChreeAccountRepository;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+/**
+ * パスキー。実際の署名検証はブラウザと認証器が要るのでここでは扱えない。
+ * チャレンジの組み立てと、不正な入力を弾くことを確認する。
+ */
+class PasskeyTest extends TestCase {
+    use RefreshDatabase;
+
+    /**
+     * @return ChreeAccount
+     */
+    private function makeAccount(): ChreeAccount {
+        return app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    }
+
+    public function test_buildsRegistrationChallenge(): void {
+        $account = $this->makeAccount();
+
+        $options = app(StartPasskeyRegistration::class)->execute($account);
+
+        $this->assertSame(32, strlen($options->challenge));
+        $this->assertSame($account->id, $options->user->id);
+        $this->assertSame(app(PasskeyContext::class)->rpId(), $options->rp->id);
+    }
+
+    /**
+     * どのアカウントかは端末に選ばせる。メールを先に聞かずに済み、存在も漏れない
+     */
+    public function test_loginChallengeDoesNotNameCredentials(): void {
+        $options = app(StartPasskeyLogin::class)->execute();
+
+        $this->assertSame(32, strlen($options->challenge));
+        $this->assertSame([], $options->allowCredentials);
+        $this->assertSame(app(PasskeyContext::class)->rpId(), $options->rpId);
+    }
+
+    /**
+     * チャレンジは毎回変える。使い回すとリプレイを許す
+     */
+    public function test_challengeIsFreshEachTime(): void {
+        $start = app(StartPasskeyLogin::class);
+
+        $this->assertNotSame($start->execute()->challenge, $start->execute()->challenge);
+    }
+
+    public function test_rpIdComesFromIssuer(): void {
+        $this->assertSame('chreeid.test', app(PasskeyContext::class)->rpId());
+    }
+
+    public function test_isRegisteredInRegistry(): void {
+        $verifier = app(CredentialRegistry::class)->get(CredentialType::PASSKEY);
+
+        $this->assertInstanceOf(PasskeyVerifier::class, $verifier);
+    }
+
+    /**
+     * 端末の所持と生体認証で既に多要素なので、単独で認証を完了してよい
+     */
+    public function test_isSufficientAlone(): void {
+        $verifier = app(CredentialRegistry::class)->get(CredentialType::PASSKEY);
+
+        $this->assertNotNull($verifier);
+        $this->assertTrue($verifier->isSufficient());
+    }
+
+    public function test_rejectsMalformedCredential(): void {
+        $account = $this->makeAccount();
+        $options = app(StartPasskeyLogin::class)->execute();
+
+        $result = app(PasskeyVerifier::class)->verify($account->id, [
+            'credential' => 'not-json',
+            'options' => $options,
+        ]);
+
+        $this->assertFalse($result->isSuccess());
+    }
+
+    public function test_rejectsMissingOptions(): void {
+        $account = $this->makeAccount();
+
+        $result = app(PasskeyVerifier::class)->verify($account->id, ['credential' => '{}']);
+
+        $this->assertFalse($result->isSuccess());
+    }
+}
