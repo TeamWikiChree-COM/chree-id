@@ -7,8 +7,8 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  larastan:
-    name: 静的解析 (Larastan)
+  test:
+    name: Test & QA
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,6 +20,7 @@ jobs:
           php-version: '8.5'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
           coverage: none
+          tools: none
 
       - name: Get composer cache directory
         id: composer-cache
@@ -33,43 +34,15 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
-
-      - name: Run Larastan
-        run: ./vendor/bin/phpstan analyse --error-format=github
-
-  phpunit:
-    name: テスト (PHPUnit)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
-          coverage: none
-
-      - name: Get composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Prepare environment
         run: |
           cp .env.example .env
           php artisan key:generate
+
+      - name: Run Larastan (Static Analysis)
+        run: ./vendor/bin/phpstan analyse --error-format=github
 
       - name: Run Tests (Unit & Feature)
         run: php artisan test
