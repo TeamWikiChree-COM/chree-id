@@ -2,6 +2,7 @@
 namespace App\Providers;
 
 use App\Modules\Credential\Domain\CredentialRegistry;
+use App\Modules\Credential\Infrastructure\Verifiers\MagicLinkVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\PasswordVerifier;
 use Illuminate\Support\ServiceProvider;
 
@@ -10,12 +11,15 @@ use Illuminate\Support\ServiceProvider;
  */
 class CredentialServiceProvider extends ServiceProvider {
     /**
-     * Register services.
+     * 認証タイプの登録
      */
     public function register(): void {
         $this->app->singleton(CredentialRegistry::class, function ($app) {
             $registry = new CredentialRegistry();
+
+            // 認証方式の一覧 (増やすときはここに1行)
             $registry->register($app->make(PasswordVerifier::class));
+            $registry->register($app->make(MagicLinkVerifier::class));
 
             return $registry;
         });
