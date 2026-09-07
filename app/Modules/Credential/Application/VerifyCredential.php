@@ -27,7 +27,7 @@ class VerifyCredential {
         if ($verifier === null) return VerificationResult::failure($type);
 
         $result = $verifier->verify($accountId, $input);
-        if (!$result->succeeded) return $result;
+        if (!$result->isSuccess()) return $result;
 
         $factors->add(new VerifiedFactor($type, $verifier->isSufficient()));
 

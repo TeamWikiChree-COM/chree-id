@@ -32,7 +32,11 @@ class CredentialRegistry {
         return $this->verifiers[$type->value] ?? null;
     }
 
-    /** @return array<string, CredentialVerifier> */
+    /**
+     * 登録されている認証方式をすべて取得する
+     * 
+     * @return array<string, CredentialVerifier> 登録されている認証方式の検証ロジッククラスをキーで引ける配列
+     */
     public function all(): array {
         return $this->verifiers;
     }
