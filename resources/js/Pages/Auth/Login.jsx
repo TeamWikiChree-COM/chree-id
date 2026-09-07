@@ -26,14 +26,12 @@ export default function Login() {
 
             <Container maxWidth="xs" sx={{ py: 8 }}>
                 <Stack spacing={3}>
-                    <Box>
+                    <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center">
+                        <Box component="img" src="/icon.png" alt="ChreeID" sx={{ width: 32, height: 32 }} />
                         <Typography variant="h6" component="h1">
                             ChreeID にログイン
                         </Typography>
-                        {/* <Typography variant="body2" color="text.secondary">
-                            Chree 関連サービスの共通アカウント
-                        </Typography> */}
-                    </Box>
+                    </Stack>
 
                     <Paper sx={{ p: 3, border: '1px solid', borderColor: 'divider' }}>
                         <Box component="form" onSubmit={submit} noValidate>

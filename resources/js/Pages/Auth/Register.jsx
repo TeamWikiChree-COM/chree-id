@@ -27,14 +27,12 @@ export default function Register() {
 
             <Container maxWidth="xs" sx={{ py: 8 }}>
                 <Stack spacing={3}>
-                    <Box>
+                    <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center">
+                        <Box component="img" src="/icon.png" alt="ChreeID" sx={{ width: 32, height: 32 }} />
                         <Typography variant="h6" component="h1">
                             ChreeID を作成
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Chree 関連サービスで使える共通アカウント
-                        </Typography>
-                    </Box>
+                    </Stack>
 
                     <Paper sx={{ p: 3, border: '1px solid', borderColor: 'divider' }}>
                         <Box component="form" onSubmit={submit} noValidate>
