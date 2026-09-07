@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Credential\Infrastructure\Verifiers;
 
-use App\Modules\Credential\Domain\AbstractVerifier;
+use App\Modules\Credential\Domain\Verifier\AbstractVerifier;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerificationResult;
 use Illuminate\Support\Facades\DB;

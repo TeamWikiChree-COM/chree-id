@@ -1,5 +1,8 @@
 <?php
-namespace App\Modules\Credential\Domain;
+namespace App\Modules\Credential\Domain\Verifier;
+
+use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Domain\VerificationResult;
 
 // 認証方式ごとの検証ロジック
 interface CredentialVerifier {
