@@ -30,7 +30,7 @@ export default function Register() {
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5 }}>
                         <Box component="img" src="/icon.png" alt="ChreeID" sx={{ width: 32, height: 32 }} />
                         <Typography variant="h6" component="h1">
-                            ChreeID を作成
+                            ChreeID を新規作成
                         </Typography>
                     </Box>
 
