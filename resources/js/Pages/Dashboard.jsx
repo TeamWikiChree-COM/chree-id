@@ -77,11 +77,14 @@ export default function Dashboard({ account, credentials }) {
                         </Paper>
                     </Box>
 
-                    <Box>
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="outlined" color="inherit" onClick={() => router.get('/security')}>
+                            ログイン方法を管理
+                        </Button>
                         <Button color="inherit" onClick={() => router.post('/logout')}>
                             ログアウト
                         </Button>
-                    </Box>
+                    </Stack>
                 </Stack>
             </Container>
         </>

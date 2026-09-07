@@ -1,6 +1,8 @@
 <?php
 
 use App\Modules\Credential\Http\LoginController;
+use App\Modules\Credential\Http\PasskeyController;
+use App\Modules\Credential\Http\SecurityController;
 use App\Modules\Federation\Http\FederationController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\RegisterController;
@@ -20,6 +22,15 @@ Route::post('/logout', [LoginController::class, 'destroy']);
 
 Route::get('/register', [RegisterController::class, 'show']);
 Route::post('/register', [RegisterController::class, 'store']);
+
+// 認証方法の管理
+Route::get('/security', [SecurityController::class, 'show']);
+Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);
+Route::post('/security/totp/confirm', [SecurityController::class, 'confirmTotp']);
+Route::post('/security/recovery-codes', [SecurityController::class, 'generateRecoveryCodes']);
+Route::post('/security/credentials/remove', [SecurityController::class, 'removeCredential']);
+Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
+Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
 
 // 外部 IdP へのログイン (ChreeID が RP 側)
 Route::get('/federation/{provider}/redirect', [FederationController::class, 'redirect']);

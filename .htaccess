@@ -4,6 +4,10 @@
     # ドットから始まる隠しファイル（.env など）へのアクセスを遮断
     RewriteRule ^\.(.*)$ - [F,L]
 
+    # Apache内部リダイレクト無限ループ防止 (500エラー防止)
+    RewriteCond %{ENV:REDIRECT_STATUS} 200
+    RewriteRule ^ - [L]
+
     # すでに public/ を指定しているアクセスはそのまま通す
     RewriteRule ^public/ - [L]
 

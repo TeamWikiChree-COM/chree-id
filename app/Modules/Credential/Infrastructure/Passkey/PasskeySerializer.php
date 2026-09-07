@@ -6,6 +6,8 @@ use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
 use Webauthn\Denormalizer\WebauthnSerializerFactory;
 use Webauthn\PublicKeyCredential;
+use Webauthn\PublicKeyCredentialCreationOptions;
+use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialSource;
 
 /**
@@ -26,6 +28,17 @@ class PasskeySerializer {
         $credential = $this->serializer()->deserialize($json, PublicKeyCredential::class, 'json');
 
         return $credential;
+    }
+
+    /**
+     * ブラウザへ渡すチャレンジ。challenge や user.id は生のバイナリなので、
+     * そのまま json_encode すると壊れる。ライブラリ側の変換を通す。
+     *
+     * @param PublicKeyCredentialCreationOptions|PublicKeyCredentialRequestOptions $options
+     * @return string
+     */
+    public function encodeOptions(PublicKeyCredentialCreationOptions|PublicKeyCredentialRequestOptions $options): string {
+        return $this->serializer()->serialize($options, 'json');
     }
 
     /**

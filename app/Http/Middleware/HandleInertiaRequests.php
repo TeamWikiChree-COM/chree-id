@@ -37,7 +37,11 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+
+            // 復旧コードの平文は発行直後の1回しか出せないので、フラッシュで渡す
+            'flash' => [
+                'recoveryCodes' => $request->session()->get('recoveryCodes'),
+            ],
         ];
     }
 }
