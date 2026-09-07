@@ -2,6 +2,7 @@
 .DS_Store
 .env
 prod.env
+_diag.php
 .env.backup
 .env.production
 .env.local
