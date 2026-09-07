@@ -1,4 +1,4 @@
-name: Tests
+name: テスト
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   larastan:
-    name: Larastan (PHPStan)
+    name: 静的解析 (Larastan)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,7 +17,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
           coverage: none
 
@@ -39,7 +39,7 @@ jobs:
         run: ./vendor/bin/phpstan analyse --error-format=github
 
   phpunit:
-    name: Tests (PHPUnit)
+    name: テスト (PHPUnit)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -48,7 +48,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, sqlite3
           coverage: none
 
