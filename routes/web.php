@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Credential\Http\LoginController;
+use App\Modules\Federation\Http\FederationController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -19,6 +20,10 @@ Route::post('/logout', [LoginController::class, 'destroy']);
 
 Route::get('/register', [RegisterController::class, 'show']);
 Route::post('/register', [RegisterController::class, 'store']);
+
+// 外部 IdP へのログイン (ChreeID が RP 側)
+Route::get('/federation/{provider}/redirect', [FederationController::class, 'redirect']);
+Route::get('/federation/{provider}/callback', [FederationController::class, 'callback']);
 
 // OIDC。ディスカバリのパスは仕様で決まっているので変えないこと
 Route::get('/.well-known/openid-configuration', DiscoveryController::class);

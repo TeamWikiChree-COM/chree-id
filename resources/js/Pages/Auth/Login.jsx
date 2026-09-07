@@ -3,6 +3,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -60,6 +61,12 @@ export default function Login() {
 
                                 <Button type="submit" variant="contained" disabled={processing}>
                                     ログイン
+                                </Button>
+
+                                <Divider>または</Divider>
+
+                                <Button component="a" href="/federation/google/redirect" variant="outlined" color="inherit">
+                                    Google で続行
                                 </Button>
                             </Stack>
                         </Box>
