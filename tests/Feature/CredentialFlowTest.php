@@ -28,7 +28,7 @@ class CredentialFlowTest extends TestCase {
         return app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'test@example.com', 'テスト');
     }
 
-    public function test_パスワードを設定すると認証できる(): void {
+    public function test_verifiesWithConfiguredPassword(): void {
         $account = $this->makeAccount();
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -39,7 +39,7 @@ class CredentialFlowTest extends TestCase {
         $this->assertTrue(app(CompleteAuthentication::class)->execute($account->id, $factors));
     }
 
-    public function test_誤ったパスワードでは認証できない(): void {
+    public function test_rejectsWrongPassword(): void {
         $account = $this->makeAccount();
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -50,14 +50,14 @@ class CredentialFlowTest extends TestCase {
         $this->assertFalse(app(CompleteAuthentication::class)->execute($account->id, $factors));
     }
 
-    public function test_短すぎるパスワードは弾かれる(): void {
+    public function test_rejectsTooShortPassword(): void {
         $account = $this->makeAccount();
 
         $this->expectException(InvalidArgumentException::class);
         app(SetPassword::class)->execute($account->id, 'short');
     }
 
-    public function test_マジックリンクは一度しか使えない(): void {
+    public function test_magicLinkTokenIsSingleUse(): void {
         $account = $this->makeAccount();
         app(EnableMagicLink::class)->execute($account->id);
         $token = app(IssueMagicLink::class)->execute($account->id);
@@ -69,14 +69,14 @@ class CredentialFlowTest extends TestCase {
         $this->assertFalse($second->isSuccess());
     }
 
-    public function test_有効化していないアカウントはトークンを発行できない(): void {
+    public function test_cannotIssueTokenWhenMagicLinkDisabled(): void {
         $account = $this->makeAccount();
 
         $this->expectException(RuntimeException::class);
         app(IssueMagicLink::class)->execute($account->id);
     }
 
-    public function test_最後の認証手段は削除できない(): void {
+    public function test_cannotRemoveLastCredential(): void {
         $account = $this->makeAccount();
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -84,7 +84,7 @@ class CredentialFlowTest extends TestCase {
         app(RemoveCredential::class)->execute($account->id, CredentialType::PASSWORD);
     }
 
-    public function test_他に手段があれば削除できる(): void {
+    public function test_removesCredentialWhenAnotherRemains(): void {
         $account = $this->makeAccount();
         app(SetPassword::class)->execute($account->id, 'correct-horse');
         app(EnableMagicLink::class)->execute($account->id);

@@ -19,7 +19,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 2FA を有効にしていなければパスワード1つで通る
      */
-    public function test_2FAなしはパスワード単体で成立する(): void {
+    public function test_singleFactorSatisfiesWhenSecondFactorNotRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
 
@@ -29,7 +29,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 2FA が有効なら1要素では足りない
      */
-    public function test_2FAありはパスワード単体では成立しない(): void {
+    public function test_singleFactorFailsWhenSecondFactorRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
 
@@ -39,7 +39,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * パスワード + TOTP で2要素を満たす
      */
-    public function test_2FAありでも2要素揃えば成立する(): void {
+    public function test_twoFactorsSatisfyWhenSecondFactorRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
         $factors->add(new VerifiedFactor(CredentialType::TOTP, false));
@@ -50,7 +50,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * パスキーはそれ自体が多要素なので、2FA が有効でも単体で通る
      */
-    public function test_パスキーは2FAありでも単体で成立する(): void {
+    public function test_sufficientFactorSatisfiesAlone(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSKEY, true));
 
@@ -60,7 +60,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 同じ方式を2回通しても2要素にはならない
      */
-    public function test_同じ方式の重複は1要素として数える(): void {
+    public function test_duplicatedTypeCountsAsOneFactor(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
@@ -72,7 +72,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 何も検証できていなければ成立しない
      */
-    public function test_要素が0件なら成立しない(): void {
+    public function test_noFactorsFails(): void {
         $factors = new VerifiedFactors();
 
         $this->assertFalse($this->policy->isSatisfied(false, $factors));
