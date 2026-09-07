@@ -3,9 +3,10 @@
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Home', ['issuer' => config('chreeid.issuer')]);
 });
 
 // OIDC。ディスカバリのパスは仕様で決まっているので変えないこと
