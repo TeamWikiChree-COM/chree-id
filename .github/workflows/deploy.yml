@@ -36,6 +36,8 @@ jobs:
   deploy:
     name: Deploy (${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # ビルド成果物をリポジトリへ push するために必要
     environment: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
     env:
       DEPLOY_ENV: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
@@ -156,6 +158,16 @@ jobs:
       - name: Build frontend assets (Vite)
         if: steps.frontend.outputs.changed == 'true'
         run: npm run build
+
+      - name: Commit built assets
+        if: steps.frontend.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f public/build/
+          # 差分があるときだけコミット。[skip ci] でこの push による再トリガーを防止
+          git diff --staged --quiet || git commit -m "chore: build frontend assets [skip ci]"
+          git push
 
       - name: Run deploy script
         run: |
