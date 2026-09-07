@@ -2,6 +2,8 @@
 namespace App\Providers;
 
 use App\Modules\Credential\Domain\CredentialRegistry;
+use App\Modules\Credential\Domain\CredentialRepository;
+use App\Modules\Credential\Infrastructure\EloquentCredentialRepository;
 use App\Modules\Credential\Infrastructure\Verifiers\MagicLinkVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\PasswordVerifier;
 use Illuminate\Support\ServiceProvider;
@@ -14,6 +16,8 @@ class CredentialServiceProvider extends ServiceProvider {
      * 認証タイプの登録
      */
     public function register(): void {
+        $this->app->bind(CredentialRepository::class, EloquentCredentialRepository::class);
+
         $this->app->singleton(CredentialRegistry::class, function ($app) {
             $registry = new CredentialRegistry();
 

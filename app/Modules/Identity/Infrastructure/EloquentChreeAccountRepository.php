@@ -53,10 +53,10 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
         return new ChreeAccount(
             $model->id,
             $model->email,
-            $model->email_verified_at?->toDateTimeImmutable(),
+            $model->email_verified_at,
             $model->display_name,
             $model->origin,
-            $model->suspended_at?->toDateTimeImmutable(),
+            $model->suspended_at,
         );
     }
 }

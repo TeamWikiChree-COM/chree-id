@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Identity\Domain;
 
-use DateTimeImmutable;
+use Illuminate\Support\Carbon;
 
 /**
  * ChreeID アカウント。
@@ -11,26 +11,26 @@ use DateTimeImmutable;
 readonly class ChreeAccount {
     public string $id;
     public ?string $email;
-    public ?DateTimeImmutable $emailVerifiedAt;
+    public ?Carbon $emailVerifiedAt;
     public ?string $displayName;
     public AccountOrigin $origin;
-    public ?DateTimeImmutable $suspendedAt;
+    public ?Carbon $suspendedAt;
 
     /**
      * @param string $id アカウントID (ULID)
      * @param string|null $email 連絡先
-     * @param DateTimeImmutable|null $emailVerifiedAt メール検証済み日時
+     * @param Carbon|null $emailVerifiedAt メール検証済み日時
      * @param string|null $displayName 表示名
      * @param AccountOrigin $origin 発行経路
-     * @param DateTimeImmutable|null $suspendedAt 停止日時
+     * @param Carbon|null $suspendedAt 停止日時
      */
     public function __construct(
         string $id,
         ?string $email,
-        ?DateTimeImmutable $emailVerifiedAt,
+        ?Carbon $emailVerifiedAt,
         ?string $displayName,
         AccountOrigin $origin,
-        ?DateTimeImmutable $suspendedAt,
+        ?Carbon $suspendedAt,
     ) {
         $this->id = $id;
         $this->email = $email;
