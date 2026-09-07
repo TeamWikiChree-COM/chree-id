@@ -18,7 +18,7 @@ class PasswordVerifier extends AbstractVerifier {
         return $this->verifyPassword($accountId, $input['password'] ?? null);
     }
 
-    public function verifyPassword(string $accountId, string $password): VerificationResult {
+    public function verifyPassword(string $accountId, ?string $password): VerificationResult {
         if (!is_string($password) || $password === '') return $this->failure();
 
         $row = DB::table('credentials')
