@@ -3,6 +3,9 @@
 .env
 prod.env
 _diag.php
+_unzip.php
+vendor.zip
+vendor-manifest.txt
 .env.backup
 .env.production
 .env.local
