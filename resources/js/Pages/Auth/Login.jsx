@@ -30,9 +30,9 @@ export default function Login() {
                         <Typography variant="h6" component="h1">
                             ChreeID にログイン
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        {/* <Typography variant="body2" color="text.secondary">
                             Chree 関連サービスの共通アカウント
-                        </Typography>
+                        </Typography> */}
                     </Box>
 
                     <Paper sx={{ p: 3, border: '1px solid', borderColor: 'divider' }}>
