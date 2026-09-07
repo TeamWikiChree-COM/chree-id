@@ -8,29 +8,30 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-export default function Login() {
+export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
+        display_name: '',
         password: '',
     });
 
     const submit = (event) => {
         event.preventDefault();
-        post('/login');
+        post('/register');
     };
 
     return (
         <>
-            <Head title="ログイン" />
+            <Head title="アカウント登録" />
 
             <Container maxWidth="xs" sx={{ py: 8 }}>
                 <Stack spacing={3}>
                     <Box>
                         <Typography variant="h6" component="h1">
-                            ChreeID にログイン
+                            ChreeID を作成
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Chree 関連サービスの共通アカウント
+                            Chree 関連サービスで使える共通アカウント
                         </Typography>
                     </Box>
 
@@ -50,23 +51,34 @@ export default function Login() {
                                 />
 
                                 <TextField
+                                    label="表示名"
+                                    value={data.display_name}
+                                    onChange={(e) => setData('display_name', e.target.value)}
+                                    error={Boolean(errors.display_name)}
+                                    helperText={errors.display_name}
+                                    required
+                                />
+
+                                <TextField
                                     label="パスワード"
                                     type="password"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    autoComplete="current-password"
+                                    error={Boolean(errors.password)}
+                                    helperText={errors.password ?? '8文字以上'}
+                                    autoComplete="new-password"
                                     required
                                 />
 
                                 <Button type="submit" variant="contained" disabled={processing}>
-                                    ログイン
+                                    作成する
                                 </Button>
                             </Stack>
                         </Box>
                     </Paper>
 
                     <Typography variant="body2">
-                        <Link href="/register">アカウントを作成する</Link>
+                        <Link href="/login">アカウントをお持ちの方はこちら</Link>
                     </Typography>
                 </Stack>
             </Container>
