@@ -1,0 +1,28 @@
+# deploy.py がサーバへ送らないパス。1 行 1 パターン、# 以降はコメント。
+#   末尾が / … そのディレクトリ以下すべて
+#   それ以外 … パス完全一致 または glob
+
+# デプロイツール自身 (認証情報を含む)
+tools/
+
+# サーバ側が正。上書きするとログ・キャッシュ・アップロード物が壊れる。
+storage/
+
+# サーバ固有 / ローカル専用
+.user.ini
+.env.example
+.vscode/
+.idea/
+.github/
+.editorconfig
+.gitattributes
+.gitignore
+.deploy-ignore
+phpstan.neon
+phpunit.xml
+tests/
+
+# 開発用ドキュメント
+README.md
+CLAUDE.md
+AGENTS.md
