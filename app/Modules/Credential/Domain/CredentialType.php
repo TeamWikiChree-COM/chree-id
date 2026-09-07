@@ -11,4 +11,5 @@ enum CredentialType: string {
     case TOTP = 'totp'; // 2段階認証 (TOTP)
     case PASSKEY = 'passkey'; // パスキー認証
     case OAUTH = 'oauth'; // OAuth認証
+    case RECOVERY_CODE = 'recovery_code'; // TOTPの端末を失くしたときの復旧用
 }

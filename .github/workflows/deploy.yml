@@ -43,11 +43,15 @@ jobs:
         with:
           fetch-depth: 0 # 差分計算・コミット履歴確認のため全履歴を取得
 
-      # Ubuntuランナー内蔵のPython3を使用（セットアップ時間を約5秒削減）
-      # FTPSはPython標準のftplibで動くためpipインストール不要（約15秒削減）
-      - name: Install SFTP dependency (only if sftp)
-        if: secrets.FTP_PROTOCOL == 'sftp'
-        run: pip install --no-cache-dir paramiko
+      # Ubuntuランナー内蔵のPython3を使用（セットアップ時間を削減）
+      # FTPSはPython標準のftplibで動くためインストール不要。SFTP時のみインストール
+      - name: Install SFTP dependency (if sftp)
+        env:
+          FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+        run: |
+          if [ "$FTP_PROTOCOL" = "sftp" ]; then
+            pip install --no-cache-dir paramiko
+          fi
 
       - name: Restore deploy state
         uses: actions/cache/restore@v4
