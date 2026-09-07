@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Infrastructure;
 
+use App\Modules\Identity\Domain\AccountOrigin;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,6 +42,7 @@ class ChreeAccountModel extends Model {
         'email_verified_at' => 'datetime',
         'suspended_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'origin' => AccountOrigin::class,
     ];
     
     // なんとなくかいとく、いらんけどこれあったほうがおちつくやろ知らんけど
