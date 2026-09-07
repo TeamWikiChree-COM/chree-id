@@ -17,12 +17,4 @@ interface CredentialVerifier {
 
     // 単独認証のみとするか (追加認証はいらないとするか、例: passkeyならtrue, passwordならfalse)
     public function isSufficient(): bool;
-
-    protected function success(): VerificationResult {
-        return VerificationResult::success($this->type());
-    }
-
-    protected function failure(): VerificationResult {
-        return VerificationResult::failure($this->type());
-    }
 }
