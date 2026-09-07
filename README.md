@@ -132,3 +132,60 @@ app/Modules/
 | `could not find driver`（PDO） | `php.ini` の `pdo_pgsql` が無効、または **php-cgi プロセスが古い設定のまま常駐している**。`fcgid.conf` は `FcgidMaxRequestsPerProcess 0` なのでプロセスが再生成されない。`php-cgi.exe` を停止するか Apache を再起動する |
 | CLI では動くのにブラウザで動かない | 上と同じ。CLI と FastCGI で別プロセスなので、`php.ini` の変更はブラウザ側に即時反映されない |
 | `php -v` が 8.5 でない | PATH の既定は XAMPP 側（8.4.12）。フルパスで 8.5 を指定する |
+
+---
+
+## デプロイ
+
+`.github/workflows/deploy.yml` から `tools/deploy.py` が動く。
+**git 追跡ファイルしか転送しない**ので、`.gitignore` に入れたものはサーバーに届かない。
+
+### 届かないもの（毎回ここで詰まる）
+
+| | 対処 |
+| --- | --- |
+| `.env` | **手動で置く。** 中身はローカルと別にすること |
+| `vendor/` | サーバー側で `composer install --no-dev` |
+| `public/build/` | **コミットする。** `.gitignore` から外してある |
+
+`public/build` をコミットするのは、この転送方式と噛み合わせるため。
+ビルドしたら `npm run build` の結果ごとコミットする。
+
+### 本番の .env で必ず変えるもの
+
+```ini
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=              # 本番用に生成する
+CHREEID_ISSUER=https://（本番のURL）
+CHREEID_SIGNING_KEY=  # 本番用に別途生成する
+```
+
+**署名鍵はローカルと別のものにする。** 同じ鍵だと、ローカルで発行した ID Token が本番でも通る。
+
+### パーミッション
+
+`storage/` と `bootstrap/cache/` が書き込み可能であること。
+
+### 公開ディレクトリについて
+
+DocumentRoot を `public/` にできないサーバーのため、プロジェクト直下に `index.php` と
+`.htaccess` を置いて `public/index.php` へ渡している。
+
+この構成では **`vendor/` や `storage/` が Web から見えてしまう**ので、
+`.htaccess` で明示的に塞いでいる。DocumentRoot を `public/` に向けられるなら、
+そちらのほうが安全。
+
+### 起動しないときの読み方
+
+`Target class [view] does not exist` は**本当の原因ではない**ことが多い。
+起動に失敗した例外を表示しようとして、まだ `view` が使えず二次的に落ちている。
+
+```text
+1. .env はあるか（APP_KEY が空だとここで落ちる）
+2. storage/ と bootstrap/cache/ は書き込めるか
+3. vendor/ は入っているか
+4. storage/logs/laravel.log に本当の例外が出ていないか
+```
+
+一時的に `APP_DEBUG=true` にすると元の例外が見える。**確認したら必ず false に戻す。**

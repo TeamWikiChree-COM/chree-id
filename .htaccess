@@ -1,33 +1,23 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ========================================
-    # セキュリティ: 機密ファイル・ディレクトリへのアクセス遮断
-    # ========================================
+    # ドットから始まる隠しファイル（.env など）へのアクセスを遮断
     RewriteRule ^\.(.*)$ - [F,L]
-    RewriteRule ^app/ - [F,L]
-    RewriteRule ^bootstrap/ - [F,L]
-    RewriteRule ^config/ - [F,L]
-    RewriteRule ^database/ - [F,L]
-    RewriteRule ^resources/ - [F,L]
-    RewriteRule ^routes/ - [F,L]
-    RewriteRule ^storage/ - [F,L]
-    RewriteRule ^vendor/ - [F,L]
-    RewriteRule ^tests/ - [F,L]
 
-    # ========================================
-    # 静的ファイル配信
-    # ========================================
-    # ルート直下に実ファイルが存在する場合はそのまま配信
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^ - [L]
+    # DocumentRoot が public/ ではなくプロジェクト直下なので、
+    # 本来公開しないディレクトリが素通しになる。ここで塞ぐ
+    RewriteRule ^(vendor|storage|bootstrap|config|database|app|routes|tests|resources|node_modules)/ - [F,L]
 
-    # public/ 内に実ファイルが存在する場合はそれを配信
-    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
-    RewriteRule ^(.*)$ public/$1 [L]
+    # 設定・依存関係の定義ファイル
+    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|phpstan\.neon|vite\.config\.js|artisan)$ - [F,L]
 
-    # ========================================
-    # すべてのリクエストを Laravel フロントコントローラへ (DokuFarm方式)
-    # ========================================
-    RewriteRule ^ public/index.php [L,QSA]
+    # 実ファイルやディレクトリが存在する場合はそのまま配信
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
 </IfModule>
+
+# mod_rewrite が無い環境でも最低限は塞ぐ
+<FilesMatch "^\.env|^composer\.(json|lock)$|^package(-lock)?\.json$">
+    Require all denied
+</FilesMatch>

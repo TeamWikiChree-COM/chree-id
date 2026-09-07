@@ -28,15 +28,17 @@ on:
         type: boolean
         default: false
 
-  # push時に自動デプロイ（mainブランチへのpush時はprod、またはtestなど）
+  # push時の自動デプロイ（mainはprod、devはtestへ自動振り分け）
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   deploy:
-    name: Deploy (${{ inputs.environment || 'prod' }})
+    name: Deploy (${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }})
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'prod' }}
+    environment: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
+    env:
+      DEPLOY_ENV: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -57,9 +59,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .deploy-state
-          key: deploy-state-${{ inputs.environment || 'prod' }}-${{ github.sha }}
+          key: deploy-state-${{ env.DEPLOY_ENV }}-${{ github.sha }}
           restore-keys: |
-            deploy-state-${{ inputs.environment || 'prod' }}-
+            deploy-state-${{ env.DEPLOY_ENV }}-
 
       - name: Set base commit if specified
         if: inputs.base_commit != ''
@@ -69,7 +71,7 @@ jobs:
 
       - name: Setup deploy environment config
         env:
-          TARGET_ENV: ${{ inputs.environment || 'prod' }}
+          TARGET_ENV: ${{ env.DEPLOY_ENV }}
           # 共通または Environment Secrets
           FTP_PROTOCOL: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -136,4 +138,4 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: .deploy-state
-          key: deploy-state-${{ inputs.environment || 'prod' }}-${{ github.sha }}
+          key: deploy-state-${{ env.DEPLOY_ENV }}-${{ github.sha }}
