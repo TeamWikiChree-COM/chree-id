@@ -149,7 +149,26 @@ app/Modules/
 | `public/build/` | **コミットする。** `.gitignore` から外してある |
 
 `public/build` をコミットするのは、この転送方式と噛み合わせるため。
-ビルドしたら `npm run build` の結果ごとコミットする。
+ただし **CI が自分で `npm run build` して `public/build` をコミット・push する**ので、
+手でやる必要はない（やっても構わないが、CI 側のコミットと衝突しやすい）。
+
+### `[skip ci]` を push の最後に置かない
+
+CI がアセットをコミットするときのメッセージは
+`chore: build frontend assets [skip ci]` で、`[skip ci]` は
+**CI が自分の push で自分を再起動しないための札**。人が真似するものではない。
+
+GitHub Actions は **push の HEAD コミットのメッセージ**だけを見て判定するので、
+手でビルド成果物をコミットして最後に置くと、その push のデプロイが丸ごと飛ぶ。
+しかも成功も失敗も出ないので気付けない。実際にこれで2回、
+「push したのにデプロイされない」状態になった。
+
+デプロイされていないか確かめるには、未ログインで保護ページを叩く。
+ルートがあれば `/login` へ 302、無ければ 404 になる。
+
+```
+curl -s -o /dev/null https://id.wikichree.com/admin -w '%{http_code}'
+```
 
 ### 本番の .env で必ず変えるもの
 
