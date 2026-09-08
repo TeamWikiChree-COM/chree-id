@@ -36,8 +36,8 @@ Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
 Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
 
 // 外部 IdP へのログイン (ChreeID が RP 側)
-Route::get('/federation/{provider}/redirect', [FederationController::class, 'redirect']);
-Route::get('/federation/{provider}/callback', [FederationController::class, 'callback']);
+Route::get('/auth/{provider}/redirect', [FederationController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [FederationController::class, 'callback']);
 
 // OIDC。ディスカバリのパスは仕様で決まっているので変えないこと
 Route::get('/.well-known/openid-configuration', DiscoveryController::class);

@@ -83,7 +83,7 @@ export default function Register() {
 
                                 <Divider>または</Divider>
 
-                                <Button component="a" href="/federation/google/redirect" variant="outlined" color="inherit">
+                                <Button component="a" href="/auth/google/redirect" variant="outlined" color="inherit">
                                     Google で続行
                                 </Button>
                             </Stack>

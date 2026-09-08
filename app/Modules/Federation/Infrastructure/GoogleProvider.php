@@ -146,6 +146,6 @@ class GoogleProvider implements FederationProvider {
     private function redirectUri(): string {
         $issuer = config('chreeid.issuer');
 
-        return (is_string($issuer) ? rtrim($issuer, '/') : '') . '/federation/google/callback';
+        return (is_string($issuer) ? rtrim($issuer, '/') : '') . '/auth/google/callback';
     }
 }
