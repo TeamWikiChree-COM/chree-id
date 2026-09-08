@@ -1,15 +1,7 @@
 *.log
 .DS_Store
-.env
-.env.bak
-prod.env
 _diag.php
-_unzip.php
-vendor.zip
-vendor-manifest.txt
-.env.backup
-.env.production
-.env.local
+.env.*
 *.env
 !.env.example
 .phpactor.json
