@@ -4,7 +4,6 @@ namespace App\Modules\Registry\Http;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Infrastructure\ChreeAccountModel;
 use App\Modules\Registry\Domain\AdminAccess;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,25 +24,25 @@ class AdminAccountController {
         $models = ChreeAccountModel::query()
             ->whereNull('deleted_at')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->all();
 
-        $credentialsByAccount = $this->loadCredentials($models->pluck('id')->all());
+        $types = $this->credentialTypes(array_values(array_map(
+            fn (ChreeAccountModel $m): string => $m->id,
+            $models,
+        )));
 
-        $accounts = $models->map(fn (ChreeAccountModel $m): array => [
+        $accounts = array_values(array_map(fn (ChreeAccountModel $m): array => [
             'id' => $m->id,
             'email' => $m->email,
             'displayName' => $m->display_name,
-            'origin' => $m->origin?->value ?? 'user',
+            'origin' => $m->origin->value,
             'isEmailVerified' => $m->email_verified_at !== null,
             'isSuspended' => $m->suspended_at !== null,
-            'isAdmin' => $this->checkIsAdmin($m),
+            'isAdmin' => $this->isAdmin($m),
             'createdAt' => $m->created_at?->format('Y/m/d H:i') ?? '',
-            'credentialTypes' => $credentialsByAccount->get($m->id, collect())
-                ->pluck('type.value')
-                ->unique()
-                ->values()
-                ->all(),
-        ])->all();
+            'credentialTypes' => $types[$m->id] ?? [],
+        ], $models));
 
         return Inertia::render('Admin/Accounts/Index', [
             'accounts' => $accounts,
@@ -51,28 +50,31 @@ class AdminAccountController {
     }
 
     /**
-     * @param list<string> $accountIds
-     * @return Collection<string, Collection<int, CredentialModel>>
+     * アカウントごとの認証手段の種類。
+     *
+     * @param list<string> $accountIds 対象のアカウントID
+     * @return array<string, list<string>> アカウントID => 種類の値
      */
-    private function loadCredentials(array $accountIds): Collection {
-        if ($accountIds === []) return collect();
+    private function credentialTypes(array $accountIds): array {
+        if ($accountIds === []) return [];
 
-        return CredentialModel::query()
-            ->whereIn('chree_account_id', $accountIds)
-            ->get()
-            ->groupBy('chree_account_id');
+        $types = [];
+
+        foreach (CredentialModel::query()->whereIn('chree_account_id', $accountIds)->get() as $credential) {
+            $types[$credential->chree_account_id][$credential->type->value] = true;
+        }
+
+        return array_map(fn (array $set): array => array_keys($set), $types);
     }
 
     /**
-     * @param ChreeAccountModel $account
+     * @param ChreeAccountModel $account 判定するアカウント
      * @return bool
      */
-    private function checkIsAdmin(ChreeAccountModel $account): bool {
+    private function isAdmin(ChreeAccountModel $account): bool {
+        // 未検証のアドレスで名乗れると、管理者のアドレスを先に登録するだけで管理者に見えてしまう
         if ($account->email === null || $account->email_verified_at === null) return false;
 
-        $emails = config('chreeid.admin_emails', []);
-        $normalized = mb_strtolower(trim($account->email));
-
-        return in_array($normalized, array_map('mb_strtolower', $emails), true);
+        return $this->adminAccess->allowsEmail($account->email);
     }
 }

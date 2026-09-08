@@ -60,23 +60,19 @@ class AdminAccountTest extends TestCase {
         $accounts = app(ChreeAccountRepository::class);
         $accounts->create(AccountOrigin::SERVICE, 'service@example.com', 'Bot');
 
-        $response = $this->get('/admin/accounts')
+        // 新しい順に並ぶので、あとから作った service 側が先頭に来る
+        $this->get('/admin/accounts')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Accounts/Index')
                 ->has('accounts', 2)
+                ->where('accounts.0.email', 'service@example.com')
+                ->where('accounts.0.displayName', 'Bot')
+                ->where('accounts.0.origin', 'service')
+                ->where('accounts.0.isAdmin', false)
+                ->where('accounts.1.email', self::ADMIN_EMAIL)
+                ->where('accounts.1.origin', 'user')
+                ->where('accounts.1.isAdmin', true)
             );
-
-        $returned = collect($response->original->getData()['page']['props']['accounts']);
-
-        $admin = $returned->firstWhere('email', self::ADMIN_EMAIL);
-        $this->assertNotNull($admin);
-        $this->assertTrue($admin['isAdmin']);
-        $this->assertEquals('user', $admin['origin']);
-
-        $bot = $returned->firstWhere('email', 'service@example.com');
-        $this->assertNotNull($bot);
-        $this->assertEquals('Bot', $bot['displayName']);
-        $this->assertEquals('service', $bot['origin']);
     }
 }

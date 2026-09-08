@@ -22,7 +22,19 @@ class AdminAccess {
         // 未検証のアドレスで名乗れると、管理者のアドレスを先に登録するだけで入れてしまう
         if (!$account->isEmailVerified() || $account->email === null) return false;
 
-        return in_array($this->normalize($account->email), $this->admins(), true);
+        return $this->allowsEmail($account->email);
+    }
+
+    /**
+     * 管理者として登録されているアドレスか。
+     *
+     * 到達性や停止状態は見ない。呼び出し側でそこまで確かめること。
+     *
+     * @param string $email メールアドレス
+     * @return bool
+     */
+    public function allowsEmail(string $email): bool {
+        return in_array($this->normalize($email), $this->admins(), true);
     }
 
     /**
