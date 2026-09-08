@@ -14,6 +14,7 @@ use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
+use App\Modules\Registry\Http\AdminAccountController;
 use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Registry\Http\AdminController;
 use App\Modules\Provider\Http\DiscoveryController;
@@ -88,6 +89,8 @@ Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callba
 // 管理画面。権限が無ければ 404 (そこに何かある事実も伏せる)
 Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void {
     Route::get('/', AdminController::class);
+
+    Route::get('/accounts', [AdminAccountController::class, 'index']);
 
     Route::get('/clients', [AdminClientController::class, 'index']);
     Route::get('/clients/create', [AdminClientController::class, 'create']);

@@ -31,6 +31,12 @@ export default function AdminIndex({ stats }: AdminIndexProps) {
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     <NavRow
+                        icon="users"
+                        title="アカウント"
+                        description="登録済みアカウントの一覧・状態の確認"
+                        href="/admin/accounts"
+                    />
+                    <NavRow
                         icon="plug"
                         title="接続サービス"
                         description="ChreeID でログインできるサービスの登録・編集"
