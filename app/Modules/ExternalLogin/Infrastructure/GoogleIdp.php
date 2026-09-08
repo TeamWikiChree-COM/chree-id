@@ -1,8 +1,8 @@
 <?php
-namespace App\Modules\Federation\Infrastructure;
+namespace App\Modules\ExternalLogin\Infrastructure;
 
-use App\Modules\Federation\Domain\FederatedIdentity;
-use App\Modules\Federation\Domain\FederationProvider;
+use App\Modules\ExternalLogin\Domain\ExternalIdentity;
+use App\Modules\ExternalLogin\Domain\ExternalIdp;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -11,7 +11,7 @@ use RuntimeException;
  *
  * Google は OIDC プロバイダなので、id_token を読めばユーザー情報が取れる。
  */
-class GoogleProvider implements FederationProvider {
+class GoogleIdp implements ExternalIdp {
     private const AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
     private const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
@@ -45,10 +45,10 @@ class GoogleProvider implements FederationProvider {
     /**
      * @param string $code Google が返した認可コード
      * @param string $nonce 発行時の nonce
-     * @return FederatedIdentity
+     * @return ExternalIdentity
      * @throws RuntimeException 交換や検証に失敗した場合
      */
-    public function exchange(string $code, string $nonce): FederatedIdentity {
+    public function exchange(string $code, string $nonce): ExternalIdentity {
         // SSL 検証は切らない。切ると中間者攻撃を許す経路が残る
         $response = Http::asForm()->post(self::TOKEN_URL, [
             'client_id' => $this->clientId(),
@@ -77,10 +77,10 @@ class GoogleProvider implements FederationProvider {
      *
      * @param string $idToken
      * @param string $nonce 発行時の nonce
-     * @return FederatedIdentity
+     * @return ExternalIdentity
      * @throws RuntimeException 検証に失敗した場合
      */
-    private function readIdToken(string $idToken, string $nonce): FederatedIdentity {
+    private function readIdToken(string $idToken, string $nonce): ExternalIdentity {
         $parts = explode('.', $idToken);
         if (count($parts) !== 3) throw new RuntimeException('id_token の形式が不正です');
 
@@ -98,7 +98,7 @@ class GoogleProvider implements FederationProvider {
         $email = $claims['email'] ?? null;
         $name = $claims['name'] ?? null;
 
-        return new FederatedIdentity(
+        return new ExternalIdentity(
             $this->name(),
             $subject,
             is_string($email) ? $email : null,

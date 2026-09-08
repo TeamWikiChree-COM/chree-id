@@ -3,7 +3,7 @@
 use App\Modules\Credential\Http\LoginController;
 use App\Modules\Credential\Http\PasskeyController;
 use App\Modules\Credential\Http\SecurityController;
-use App\Modules\Federation\Http\FederationController;
+use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -36,8 +36,8 @@ Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
 Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
 
 // 外部 IdP へのログイン (ChreeID が RP 側)
-Route::get('/auth/{provider}/redirect', [FederationController::class, 'redirect']);
-Route::get('/auth/{provider}/callback', [FederationController::class, 'callback']);
+Route::get('/auth/{provider}/redirect', [ExternalLoginController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callback']);
 
 // OIDC。ディスカバリのパスは仕様で決まっているので変えないこと
 Route::get('/.well-known/openid-configuration', DiscoveryController::class);

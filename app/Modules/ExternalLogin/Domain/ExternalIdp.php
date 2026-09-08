@@ -1,12 +1,12 @@
 <?php
-namespace App\Modules\Federation\Domain;
+namespace App\Modules\ExternalLogin\Domain;
 
 /**
  * 外部 IdP ひとつ分の契約。
  *
- * ChreeID が RP として「行く側」。サービスが「来る側」の Provider モジュールとは別物。
+ * ChreeID が RP として外部へ「行く側」。RP が「来る側」の Provider モジュールとは向きが逆。
  */
-interface FederationProvider {
+interface ExternalIdp {
     /**
      * @return string 識別子。credentials.identifier の接頭辞になる
      */
@@ -24,7 +24,7 @@ interface FederationProvider {
      *
      * @param string $code IdP が返した認可コード
      * @param string $nonce 発行時の nonce
-     * @return FederatedIdentity
+     * @return ExternalIdentity
      */
-    public function exchange(string $code, string $nonce): FederatedIdentity;
+    public function exchange(string $code, string $nonce): ExternalIdentity;
 }

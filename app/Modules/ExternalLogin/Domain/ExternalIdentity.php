@@ -1,10 +1,10 @@
 <?php
-namespace App\Modules\Federation\Domain;
+namespace App\Modules\ExternalLogin\Domain;
 
 /**
  * 外部 IdP が「この人は誰か」と主張してきた内容
  */
-readonly class FederatedIdentity {
+readonly class ExternalIdentity {
     public string $provider;
     public string $subject;
     public ?string $email;
