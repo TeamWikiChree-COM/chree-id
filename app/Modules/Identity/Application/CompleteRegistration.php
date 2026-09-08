@@ -41,10 +41,11 @@ class CompleteRegistration {
     /**
      * @param string $token メールに載せた平文トークン
      * @param string $password 平文パスワード
+     * @param string|null $displayName 表示名。未入力なら null
      * @return ChreeAccount
      * @throws RegistrationTokenException|\Throwable トークンが無効・期限切れ、または先にアドレスが使われた場合
      */
-    public function execute(string $token, string $password): ChreeAccount {
+    public function execute(string $token, string $password, ?string $displayName = null): ChreeAccount {
         $pending = $this->find($token);
 
         if ($pending === null) throw RegistrationTokenException::notFound();
@@ -58,7 +59,7 @@ class CompleteRegistration {
 
         $hash = $this->setPassword->hash($password);
 
-        return DB::transaction(fn (): ChreeAccount => $this->create($pending, $hash));
+        return DB::transaction(fn (): ChreeAccount => $this->create($pending, $hash, $displayName));
     }
 
     /**
@@ -78,11 +79,11 @@ class CompleteRegistration {
     /**
      * @param PendingRegistrationModel $pending 検証済みの申し込み
      * @param string $passwordHash SetPassword::hash() が返したハッシュ
+     * @param string|null $displayName 表示名
      * @return ChreeAccount
      */
-    private function create(PendingRegistrationModel $pending, string $passwordHash): ChreeAccount {
-        // 表示名は登録時に受け取らない。あとから /profile で設定する
-        $account = $this->accounts->create(AccountOrigin::USER, $pending->email, null);
+    private function create(PendingRegistrationModel $pending, string $passwordHash, ?string $displayName): ChreeAccount {
+        $account = $this->accounts->create(AccountOrigin::USER, $pending->email, $displayName);
 
         $this->setPassword->executeHashed($account->id, $passwordHash);
         $this->accounts->markEmailVerified($account->id);

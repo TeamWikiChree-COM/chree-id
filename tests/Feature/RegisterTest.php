@@ -53,10 +53,15 @@ class RegisterTest extends TestCase {
      *
      * @param string $token 平文トークン
      * @param string $password 決めるパスワード
+     * @param string|null $displayName 表示名 (任意)
      * @return TestResponse<\Illuminate\Http\Response>
      */
-    private function completeWith(string $token, string $password = 'correct-horse'): TestResponse {
-        return $this->post('/register/complete', ['token' => $token, 'password' => $password]);
+    private function completeWith(string $token, string $password = 'correct-horse', ?string $displayName = null): TestResponse {
+        return $this->post('/register/complete', array_filter([
+            'token' => $token,
+            'password' => $password,
+            'display_name' => $displayName,
+        ], fn (?string $value): bool => $value !== null));
     }
 
     public function test_showsRegisterPage(): void {
@@ -109,9 +114,25 @@ class RegisterTest extends TestCase {
         $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertSame(AccountOrigin::USER, $account->origin);
-        // 表示名は登録では受け取らない。/profile であとから設定する
+        // 表示名は任意なので、入れなければ未設定のまま
         $this->assertNull($account->displayName);
         $this->assertSame($account->id, session('chreeid.account_id'));
+    }
+
+    public function test_acceptsOptionalDisplayName(): void {
+        $token = $this->requestRegistration();
+
+        $this->completeWith($token, 'correct-horse', 'あたらしい人')->assertRedirect('/');
+
+        $this->assertSame('あたらしい人', app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->displayName);
+    }
+
+    public function test_treatsBlankDisplayNameAsUnset(): void {
+        $token = $this->requestRegistration();
+
+        $this->completeWith($token, 'correct-horse', '   ');
+
+        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->displayName);
     }
 
     public function test_chosenPasswordWorksForLogin(): void {

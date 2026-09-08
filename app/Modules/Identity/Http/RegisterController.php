@@ -99,12 +99,16 @@ class RegisterController {
         $request->validate([
             'token' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8'],
+            'display_name' => ['nullable', 'string', 'max:100'],
         ]);
+
+        $displayName = $request->string('display_name')->trim()->toString();
 
         try {
             $account = $this->completeRegistration->execute(
                 $request->string('token')->toString(),
                 $request->string('password')->toString(),
+                $displayName === '' ? null : $displayName,
             );
         } catch (RegistrationTokenException $e) {
             return Inertia::render('Auth/RegisterFailed', [

@@ -17,6 +17,7 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
     const { data, setData, post, processing, errors } = useForm({
         token,
         password: '',
+        display_name: '',
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -25,7 +26,7 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
     };
 
     return (
-        <AuthLayout title="パスワードを決める">
+        <AuthLayout title="アカウントの作成">
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
                     {errors.token && <Alert severity="error">{errors.token}</Alert>}
@@ -46,13 +47,18 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
                         required
                     />
 
+                    <TextField
+                        label="表示名"
+                        value={data.display_name}
+                        onChange={(e) => setData('display_name', e.target.value)}
+                        error={Boolean(errors.display_name)}
+                        helperText={errors.display_name ?? '任意。あとから変更できます'}
+                        autoComplete="nickname"
+                    />
+
                     <Button type="submit" variant="contained" disabled={processing}>
                         アカウントを作成する
                     </Button>
-
-                    <Typography variant="body2" color="text.secondary">
-                        表示名はあとから設定できます。
-                    </Typography>
                 </Stack>
             </Box>
         </AuthLayout>
