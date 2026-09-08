@@ -331,6 +331,17 @@ def load_includes() -> tuple[str, ...]:
     return tuple(patterns)
 
 
+def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
+    """パスが .deploy-include のいずれかに含まれるか。"""
+    for pattern in patterns:
+        if pattern.endswith("/"):
+            if path.startswith(pattern):
+                return True
+        elif path == pattern:
+            return True
+    return False
+
+
 def collect_forced(includes: tuple[str, ...]) -> list[str]:
     """.deploy-include に挙げたパスを、実在するファイルへ展開する。"""
     found: set[str] = set()
@@ -448,6 +459,10 @@ def main() -> int:
     known = {path for _, path in upload}
     upload = sorted(upload + [("FORCED", p) for p in forced if p not in known])
 
+    # 追跡を外した直後は「削除された」ように見えるが、送り続ける対象なので消さない。
+    # ここを塞がないと --delete 付きの回に本番のアセットが消える
+    delete = [p for p in delete if not matches_any(p, includes)]
+
     if includes and not forced:
         print("警告: .deploy-include に挙げたパスに送るファイルがありません。"
               "ビルドを実行し忘れていないか確認してください。\n")
@@ -472,9 +487,13 @@ def main() -> int:
     uploaded = 0
     deleted = 0
     try:
-        for _, path in upload:
-            # 作業ツリーではなく HEAD の内容を送る (改行コードを持ち込まないため)
-            data = git_blob("HEAD", path)
+        for status, path in upload:
+            if status == "FORCED":
+                # .deploy-include の分は追跡外で HEAD に無い。ディスクから読む
+                data = (REPO_ROOT / path).read_bytes()
+            else:
+                # 作業ツリーではなく HEAD の内容を送る (改行コードを持ち込まないため)
+                data = git_blob("HEAD", path)
             remote = f"{remote_root}/{path}"
             transport.ensure_dir(posixpath.dirname(remote))
             transport.upload(data, remote)
