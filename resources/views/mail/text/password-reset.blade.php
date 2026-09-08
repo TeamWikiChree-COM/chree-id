@@ -9,5 +9,5 @@ ChreeID のパスワード再設定のご依頼を受け付けました。
 心当たりがない場合は、このメールを無視してください。
 パスワードは変更されていません。
 
----
-ChreeID by WikiChree.COM
+--
+ChreeID by Team WikiChree.COM

@@ -9,5 +9,5 @@
 心当たりがない場合は、このメールを無視してください。
 アカウントの情報は変更されていません。
 
----
-ChreeID by WikiChree.COM
+--
+ChreeID by Team WikiChree.COM

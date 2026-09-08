@@ -38,7 +38,7 @@ export default function Register() {
                     )}
 
                     <Typography variant="body2" color="text.secondary">
-                        確認メールを送ります。パスワードはリンクを開いたあとに決めます。
+                        アカウント作成の確認メールを送信します。
                     </Typography>
 
                     <TextField

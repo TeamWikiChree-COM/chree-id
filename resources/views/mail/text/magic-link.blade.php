@@ -9,5 +9,5 @@ ChreeID へのログインリンクをお届けします。
 
 心当たりがない場合は、このメールを無視してください。
 
----
-ChreeID by WikiChree.COM
+--
+ChreeID by Team WikiChree.COM
