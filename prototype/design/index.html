@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChreeID デザイン案</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+    .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .pick { background: #fff; border: 1px solid var(--color-border); border-radius: 0.5rem; padding: 1.25rem; text-decoration: none; color: inherit; display: block; }
+    .pick:hover { border-color: var(--color-primary); }
+    .pick h3 { margin: 0 0 0.25rem; font-size: 1.0625rem; color: var(--color-primary); }
+    .pick .sub { font-size: 0.8125rem; color: var(--color-text-muted); margin-bottom: 0.75rem; }
+    .pick p { margin: 0; font-size: 0.875rem; color: var(--color-text-light); }
+    dl { font-size: 0.875rem; }
+    dt { font-weight: 700; margin-top: 0.75rem; }
+    dd { margin: 0.25rem 0 0; color: var(--color-text-light); }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="container container-mid">
+
+<h1 class="page-title">ChreeID デザイン案</h1>
+<p class="page-lead">
+    色とレイアウトの寸法は DokuFarm、装飾とボタンの質感は ModParks、トグルは WikiChree の switch を土台にしています。
+    3案とも同じ <code>style.css</code> を共有し、違いは <code>a.css</code> / <code>b.css</code> / <code>c.css</code> だけです。
+</p>
+
+<div class="picks">
+    <a class="pick" href="A.html">
+        <h3>A案</h3>
+        <div class="sub">DokuFarm 準拠 ／ 枠で囲う</div>
+        <p>DokuFarm にほぼ揃える。3サービスを行き来したとき一番違和感がない。設定は上部タブ。</p>
+    </a>
+    <a class="pick" href="B.html">
+        <h3>B案</h3>
+        <div class="sub">ModParks 寄り ／ 線で区切る</div>
+        <p>角丸4px、カードの枠なし。軽く見える代わりに、まとまりは余白頼りになる。設定は左サイドナビ。</p>
+    </a>
+    <a class="pick" href="C.html">
+        <h3>C案</h3>
+        <div class="sub">おまかせ ／ 見出しで区切る</div>
+        <p>枠でも線でもなく見出しで塊を示す。ヘッダーは半透明+blur で追従。角丸6px。</p>
+    </a>
+    <a class="pick" href="D/index.html" style="border-color:var(--color-primary)">
+        <h3>D案</h3>
+        <div class="sub">C + A のタブ ／ MUI で出せる形</div>
+        <p>C の骨格に A のタブ。入力欄を MUI の TextField に合わせ、ダークの境目も直した。ページごとに分けてあります。</p>
+    </a>
+</div>
+
+<div class="section-title">判断の材料</div>
+<div class="card">
+<dl>
+    <dt>色は既に揃っている</dt>
+    <dd>DokuFarm の <code>--color-primary</code> と ModParks legacy の primary はどちらも <code>#2563eb</code> でした。3案とも色は共通で、違うのは区切り方だけです。</dd>
+
+    <dt>ダークテーマが同時に入る</dt>
+    <dd>DokuFarm のトークンをそのまま使うので、<code>data-theme="dark"</code> の一式が最初から付いてきます。右上の「ダーク切替」で確認できます。</dd>
+
+    <dt>設定画面の再構成</dt>
+    <dd>今は <code>/profile</code> と <code>/security</code> に分かれていて、どちらに何があるか名前から分かりません。<code>/settings</code> にまとめ、「プロフィール / セキュリティ / 接続サービス / 表示」に分ける案を各ページに入れてあります。A は上部タブ、B と C は左サイドナビです。</dd>
+
+    <dt>ダークテーマの境目</dt>
+    <dd>DokuFarm のダークは面とページ背景のコントラストが 1.02:1 で、枠線が無いと段差が見えませんでした。面を上げ・背景を下げ・枠を明るくして直してあります（4案すべてに反映済み）。</dd>
+
+    <dt>ログインカード</dt>
+    <dd>ModParks に倣って1枚のカードに寄せています。A はアイコンを活かして縦積み、B は画像を使わずサービス名を大きく出す ModParks そのまま、C はその中間です。</dd>
+</dl>
+</div>
+
+</div>
+</div>
+</body>
+</html>

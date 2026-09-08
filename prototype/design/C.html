@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChreeID デザイン案 C - 見出しで区切る</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="c.css">
+</head>
+<body>
+
+<div class="demo-bar">
+    <div class="container">
+        <span><strong>C案</strong> おまかせ ／ 見出しで区切る</span>
+        <span>
+            <a href="A.html">A</a>
+            <a href="B.html">B</a>
+            <a href="C.html">C</a>
+            <a href="D/index.html">D</a>
+            <a href="#" id="themeSwitch">ダーク切替</a>
+        </span>
+    </div>
+</div>
+
+<p class="demo-note">
+    3サイトを見比べて出した折衷。DokuFarm と ModParks legacy の primary は
+    どちらも <code>#2563eb</code> で既に一致しているので、色はそのまま使う。
+    A が枠で、B が線で区切るのに対して、C は <strong>見出しで区切る</strong>。
+    見出しの左に primary の縦バーを置く WikiChree の作法を借りている。
+    ヘッダーは ModParks の AppBar に倣って半透明 + blur にし、スクロールしても残す。
+</p>
+
+<!-- ============ ログイン ============ -->
+<section class="demo-section">
+    <div class="container"><h2>ログイン</h2></div>
+
+    <div class="container container-narrow auth">
+        <div class="auth-card">
+            <div class="auth-brand">
+                <img src="../../public/icon.png" alt="">
+                <span class="auth-name">ChreeID</span>
+                <span class="auth-sub">WikiChree.COM 共通のアカウント</span>
+            </div>
+
+            <div class="field">
+                <label for="c-email">メールアドレス</label>
+                <input class="input" id="c-email" type="email" value="you@example.com">
+            </div>
+
+            <div class="field" style="margin-bottom:0.375rem">
+                <label for="c-pass">パスワード</label>
+                <input class="input" id="c-pass" type="password" value="password">
+            </div>
+
+            <div class="field-row"><a href="#">パスワードをお忘れですか？</a></div>
+
+            <button class="btn btn-primary btn-full btn-lg" style="margin-top:1.25rem">ログイン</button>
+
+            <div class="divider">または</div>
+
+            <div class="social">
+                <button class="btn btn-secondary"><i class="fa-brands fa-google"></i>Google</button>
+                <button class="btn btn-secondary"><i class="fa-solid fa-envelope"></i>メールで</button>
+            </div>
+
+            <p class="auth-foot"><a href="#">アカウントを作成する</a></p>
+        </div>
+    </div>
+</section>
+
+<!-- ============ ヘッダー + ダッシュボード ============ -->
+<section class="demo-section">
+    <div class="container"><h2>ヘッダー ／ パンくず ／ ダッシュボード</h2></div>
+
+    <header class="header">
+        <div class="container">
+            <a class="logo" href="#">
+                <img class="logo-image" src="../../public/icon.png" alt="">
+                <span class="logo-text">ChreeID</span>
+            </a>
+            <nav class="nav">
+                <a href="#"><i class="fa-solid fa-user"></i>アカウント</a>
+                <a href="#">設定</a>
+                <div class="account-menu">
+                    <button class="account-toggle" type="button" aria-label="アカウント"><i class="fa-solid fa-circle-user"></i></button>
+                    <div class="account-dropdown" hidden>
+                        <a class="account-link" href="#">プロフィール</a>
+                        <a class="account-link" href="#">セキュリティ</a>
+                        <a class="account-link" href="#">接続サービス</a>
+                        <div class="menu-divider"></div>
+                        <span class="menu-label">表示</span>
+                        <div class="switch-row" style="padding:0;border:none">
+                            <span style="font-size:0.875rem">ダークテーマ</span>
+                            <label class="switch">
+                                <input type="checkbox" class="theme-toggle-input">
+                                <span class="switch-track"></span>
+                                <span class="switch-circle"></span>
+                            </label>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <a class="account-link" href="#">ログアウト</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="#">ChreeID</a>
+            <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+            <span class="breadcrumb-current" aria-current="page">アカウント</span>
+        </nav>
+    </div>
+
+    <div class="page">
+        <div class="container container-mid">
+            <h1 class="page-title">アカウント</h1>
+            <p class="page-lead">連携先のサービスに渡される情報と、ログインに使える手段です</p>
+
+            <div class="card">
+                <div class="row" style="border:none">
+                    <div class="row-main">
+                        <div class="row-title">ぴたん <span class="chip">ユーザー</span></div>
+                        <div class="row-sub">admin@pitan76.net <span class="chip chip-success">確認済み</span></div>
+                        <div class="row-sub"><code>01m1xxh8xebcn9wr5rs6y2vn98</code></div>
+                    </div>
+                    <a class="btn btn-secondary btn-sm" href="#">編集</a>
+                </div>
+            </div>
+
+            <div class="section-title">
+                ログイン方法 <span class="section-note">3件</span>
+            </div>
+            <div class="card card-flush">
+                <ul class="rows">
+                    <li class="row">
+                        <div class="row-main">
+                            <div class="row-title"><i class="fa-solid fa-key row-icon"></i>パスワード</div>
+                            <div class="row-sub">最終利用 2026-09-08 18:20</div>
+                        </div>
+                        <button class="btn btn-text-danger btn-sm">削除</button>
+                    </li>
+                    <li class="row">
+                        <div class="row-main">
+                            <div class="row-title"><i class="fa-solid fa-mobile-screen row-icon"></i>認証アプリ (TOTP) <span class="chip chip-success">有効</span></div>
+                            <div class="row-sub">最終利用 2026-09-08 18:20</div>
+                        </div>
+                        <button class="btn btn-text-danger btn-sm">削除</button>
+                    </li>
+                    <li class="row">
+                        <div class="row-main">
+                            <div class="row-title"><i class="fa-solid fa-envelope row-icon"></i>メールでログイン</div>
+                            <div class="row-sub">未使用</div>
+                        </div>
+                        <button class="btn btn-text-danger btn-sm">削除</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="section-title">接続しているサービス <span class="section-note">1件</span></div>
+            <div class="card card-flush">
+                <ul class="rows">
+                    <li class="row">
+                        <div class="row-main">
+                            <div class="row-title"><i class="fa-solid fa-book row-icon"></i>DokuFarm <span class="chip">公式</span></div>
+                            <div class="row-sub">2026-09-08 に接続</div>
+                        </div>
+                        <button class="btn btn-text-danger btn-sm">解除</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div style="margin-top:1.5rem;display:flex;gap:0.5rem">
+                <a class="btn btn-secondary" href="#">設定</a>
+                <a class="btn btn-ghost" href="#"><i class="fa-solid fa-arrow-right-from-bracket"></i>ログアウト</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ 設定の再構成 ============ -->
+<section class="demo-section">
+    <div class="container"><h2>設定の再構成（左サイドナビ + 見出し区切り）</h2></div>
+
+    <p class="demo-note" style="padding-top:0.5rem">
+        設定を <code>/settings</code> にまとめ、左の並びで切り替える。サイドナビは追従させる。
+        本文側は枠を持たないので、縦に長くなっても見出しの縦バーだけで塊が追える。
+    </p>
+
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="#">ChreeID</a>
+            <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+            <a href="#">設定</a>
+            <span class="breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
+            <span class="breadcrumb-current" aria-current="page">セキュリティ</span>
+        </nav>
+    </div>
+
+    <div class="page" style="padding-top:0">
+        <div class="container container-mid">
+            <h1 class="page-title">設定</h1>
+
+            <div class="settings">
+                <nav class="sidenav">
+                    <a href="#"><i class="fa-solid fa-user"></i>プロフィール</a>
+                    <a href="#" class="is-active"><i class="fa-solid fa-shield-halved"></i>セキュリティ</a>
+                    <a href="#"><i class="fa-solid fa-plug"></i>接続サービス</a>
+                    <a href="#"><i class="fa-solid fa-palette"></i>表示</a>
+                </nav>
+
+                <div>
+                    <div class="section-title" style="margin-top:0">パスワード</div>
+                    <div class="card">
+                        <div class="row" style="border:none">
+                            <div class="row-main">
+                                <div class="row-title"><i class="fa-solid fa-key row-icon"></i>設定済み</div>
+                                <div class="row-sub">最後の変更 2026-09-08</div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm">変更</button>
+                        </div>
+                    </div>
+
+                    <div class="section-title">
+                        2段階認証 <span class="section-note">1つ有効</span>
+                    </div>
+                    <div class="card card-flush">
+                        <div class="switch-row">
+                            <div class="row-main">
+                                <div class="row-title"><i class="fa-solid fa-mobile-screen row-icon"></i>認証アプリ (TOTP)</div>
+                                <div class="row-sub">ログイン時に6桁のコードを求めます</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="switch-track"></span>
+                                <span class="switch-circle"></span>
+                            </label>
+                        </div>
+                        <div class="switch-row">
+                            <div class="row-main">
+                                <div class="row-title"><i class="fa-solid fa-envelope row-icon"></i>メールでログイン</div>
+                                <div class="row-sub">パスワードの代わりに、届いたリンクからログインします</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="switch-track"></span>
+                                <span class="switch-circle"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="section-title">パスキー</div>
+                    <div class="card">
+                        <p class="row-sub" style="margin:0.75rem 0">
+                            端末の生体認証だけでログインできます。単独で2段階認証を満たします。
+                        </p>
+                        <button class="btn btn-secondary" style="margin-bottom:0.75rem">この端末に登録する</button>
+                    </div>
+
+                    <div class="section-title">復旧コード</div>
+                    <div class="card">
+                        <div class="alert alert-warning" style="margin:0.75rem 0"><i class="fa-solid fa-triangle-exclamation"></i> 
+                            残り 0 本です。認証アプリの端末を失うとログインできなくなります。
+                        </div>
+                        <button class="btn btn-secondary" style="margin-bottom:0.75rem">作り直す</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+const root = document.documentElement;
+const setTheme = (dark) => root.setAttribute('data-theme', dark ? 'dark' : 'light');
+
+document.getElementById('themeSwitch').addEventListener('click', (e) => {
+    e.preventDefault();
+    setTheme(root.getAttribute('data-theme') !== 'dark');
+});
+
+document.querySelectorAll('.theme-toggle-input').forEach((input) => {
+    input.addEventListener('change', () => setTheme(input.checked));
+});
+
+// アカウントメニューの開閉
+document.querySelectorAll('.account-toggle').forEach((toggle) => {
+    const menu = toggle.parentElement.querySelector('.account-dropdown');
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.hidden = !menu.hidden;
+    });
+    menu.addEventListener('click', (e) => e.stopPropagation());
+});
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.account-dropdown').forEach((m) => { m.hidden = true; });
+});
+</script>
+
+</body>
+</html>

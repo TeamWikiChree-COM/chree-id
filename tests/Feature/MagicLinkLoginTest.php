@@ -162,7 +162,7 @@ class MagicLinkLoginTest extends TestCase {
         $this->account(enabled: false);
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 
-        $this->post('/security/magic-link')->assertRedirect('/security');
+        $this->post('/security/magic-link')->assertRedirect('/settings/security');
 
         $this->post('/logout');
         $this->post('/login/magic', ['email' => 'user@example.com']);

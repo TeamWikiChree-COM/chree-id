@@ -13,6 +13,16 @@ interface ExternalIdp {
     public function name(): string;
 
     /**
+     * 接続に必要な設定が揃っているか。
+     *
+     * 揃っていない IdP はログイン画面にボタンを出さない。
+     * 出してしまうと、押しても何も起きないボタンになる。
+     *
+     * @return bool
+     */
+    public function isConfigured(): bool;
+
+    /**
      * @param string $state CSRF 対策の値
      * @param string $nonce id_token に載せる値
      * @return string 利用者を飛ばす先

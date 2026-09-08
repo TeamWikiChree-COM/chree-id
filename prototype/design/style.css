@@ -1,0 +1,535 @@
+/*
+ * ChreeID デザイン案 - 共通の土台
+ *
+ * 色とレイアウトの寸法は DokuFarm (public/assets/css/style.css) から取る。
+ * 3サービスで同じ家族に見せるのが目的なので、トークン名も向こうに合わせている。
+ *
+ * 丸み・影・枠線の出し方は案ごとに違うので、ここでは変数にしておき
+ * a.css / b.css / c.css で上書きする。
+ */
+
+/* ---- 色。DokuFarm のトークンをそのまま持ってくる ---- */
+:root {
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-primary-light: #3b82f6;
+    --color-text: #1f2937;
+    --color-text-light: #6b7280;
+    --color-text-muted: #9ca3af;
+    --color-bg: #ffffff;
+    --color-bg-light: #f9fafb;
+    --color-bg-gray: #f3f4f6;
+    --color-border: #e5e7eb;
+    --color-border-dark: #d1d5db;
+    --color-link: #2563eb;
+    --color-success: #059669;
+    --color-warning: #d97706;
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --font-mono: "SF Mono", Monaco, "Cascadia Code", Consolas, monospace;
+
+    /* 案ごとに上書きする。既定は DokuFarm の値 */
+    --radius-card: 0.5rem;
+    --radius-control: 0.5rem;
+    --radius-input: 0.5rem;
+    --card-border: 1px solid var(--color-border);
+    --card-shadow: none;
+    --card-bg: var(--color-bg);
+}
+
+/*
+ * ダークは DokuFarm の値をそのまま使わない。
+ *
+ * 向こうは面 #0a0a0a / ページ背景 #0d0d0d でコントラスト比 1.02:1、
+ * つまり実質同じ色で、カードの枠線だけが境目を作っていた。
+ * 枠を外す案 (B / C / D) ではその境目が消えてしまう。
+ *
+ * 面を持ち上げてページを沈め、さらに枠を面より明確に明るくする。
+ * 段差の大きさは ModParks のダーク (1.17〜1.22:1) に合わせた。
+ *   面 vs ページ 1.14:1 ／ 枠 vs 面 1.46:1 ／ 枠 vs ページ 1.66:1
+ */
+[data-theme="dark"] {
+    --color-primary: #60a5fa;
+    --color-primary-dark: #3b82f6;
+    --color-primary-light: #93c5fd;
+    --color-text: #e5e7eb;
+    --color-text-light: #b6bec9;
+    --color-text-muted: #9aa3b0;
+    --color-bg: #1a1e25;
+    --color-bg-light: #0e1014;
+    --color-bg-gray: #252a33;
+    --color-border: #333a45;
+    --color-border-dark: #454e5c;
+    --color-link: #93c5fd;
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+    --color-danger-hover: #fca5a5;
+}
+
+/* ---- 土台 ---- */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-bg-light);
+}
+
+a { color: var(--color-link); }
+
+code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+}
+
+.container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.container-narrow { max-width: 460px; }
+.container-mid { max-width: 720px; }
+
+/* ---- ヘッダー。DokuFarm の構成 (ロゴ / ナビ / アカウントメニュー) ---- */
+.header {
+    background: var(--color-bg);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-image { width: 28px; height: 28px; object-fit: contain; }
+.logo-text { line-height: 1; color: var(--color-text); }
+
+.nav { display: flex; align-items: center; gap: 0.5rem; }
+
+.nav a {
+    color: var(--color-text-light);
+    text-decoration: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-control);
+    font-size: 0.875rem;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.nav a:hover { background: var(--color-bg-gray); color: var(--color-text); }
+
+.account-menu { position: relative; }
+
+.account-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text-light);
+    padding: 0.375rem 0.625rem;
+    border-radius: 999px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.account-toggle:hover { background: var(--color-bg-gray); color: var(--color-text); }
+
+.account-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    min-width: 230px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 50;
+}
+
+.account-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-control);
+}
+
+.account-link:hover { background: var(--color-bg-gray); }
+.menu-divider { height: 1px; background: var(--color-border); }
+.menu-label { font-size: 0.75rem; color: var(--color-text-muted); }
+
+/* ---- パンくず。DokuFarm と同じ「/」区切り ---- */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    padding: 0.75rem 0 0.25rem;
+}
+
+.breadcrumb a { color: var(--color-primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--color-text-muted); display: inline-flex; align-items: center; }
+.breadcrumb-current { color: var(--color-text-light); }
+
+/* ---- 面 ---- */
+.page { padding: 1rem 0 4rem; }
+
+.card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
+    padding: 1.25rem;
+}
+
+.card + .card { margin-top: 1rem; }
+.card-flush { padding: 0; overflow: hidden; }
+
+.section-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    letter-spacing: 0.02em;
+    margin: 1.75rem 0 0.5rem;
+}
+
+.page-title { font-size: 1.375rem; font-weight: 700; margin: 0 0 0.25rem; }
+.page-lead { color: var(--color-text-light); font-size: 0.875rem; margin: 0 0 1.25rem; }
+
+/* ---- ボタン。DokuFarm の寸法 + ModParks の質感 (太字・0.2s) ---- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 40px;
+    padding: 0 1rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--radius-control);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-dark); }
+
+.btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+    border-color: var(--color-border-dark);
+}
+
+.btn-secondary:hover { background: var(--color-bg-gray); }
+
+.btn-danger {
+    background: var(--color-bg);
+    color: var(--color-danger);
+    border-color: var(--color-border-dark);
+}
+
+.btn-danger:hover { background: var(--color-bg-gray); color: var(--color-danger-hover); }
+
+.btn-ghost { background: transparent; color: var(--color-text-light); }
+.btn-ghost:hover { background: var(--color-bg-gray); color: var(--color-text); }
+
+/* 取り消せない操作は赤。MUI の <Button color="error"> にあたる */
+.btn-text-danger { background: transparent; color: var(--color-danger); }
+.btn-text-danger:hover { background: rgba(220, 38, 38, 0.08); color: var(--color-danger-hover); }
+[data-theme="dark"] .btn-text-danger:hover { background: rgba(248, 113, 113, 0.12); }
+
+.btn-full { width: 100%; }
+.btn-lg { height: 48px; font-size: 0.9375rem; }
+.btn-sm { height: 32px; padding: 0 0.75rem; font-size: 0.8125rem; }
+
+/* ---- フォーム ---- */
+.field { margin-bottom: 1rem; }
+
+.field label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    margin-bottom: 0.375rem;
+}
+
+.input {
+    display: block;
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    line-height: 1.5;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-input);
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input::placeholder { color: var(--color-text-muted); }
+
+.input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.hint { font-size: 0.8125rem; color: var(--color-text-muted); margin-top: 0.375rem; }
+.field-row { display: flex; justify-content: flex-end; margin-top: 0.375rem; }
+.field-row a { font-size: 0.8125rem; text-decoration: none; }
+.field-row a:hover { text-decoration: underline; }
+
+/* ---- 区切り (「または」) ---- */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}
+
+/* ---- 通知 ---- */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-card);
+    font-size: 0.875rem;
+    border: 1px solid transparent;
+    margin-bottom: 1rem;
+}
+
+.alert-info { background: rgba(37, 99, 235, 0.08); border-color: rgba(37, 99, 235, 0.25); }
+.alert-success { background: rgba(5, 150, 105, 0.08); border-color: rgba(5, 150, 105, 0.25); color: var(--color-success); }
+.alert-warning { background: rgba(217, 119, 6, 0.08); border-color: rgba(217, 119, 6, 0.25); }
+.alert-danger { background: rgba(220, 38, 38, 0.08); border-color: rgba(220, 38, 38, 0.25); color: var(--color-danger); }
+
+/* ---- ラベル ---- */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 999px;
+    background: var(--color-bg-gray);
+    color: var(--color-text-light);
+    border: 1px solid var(--color-border);
+}
+
+.chip-success { background: rgba(5, 150, 105, 0.1); color: var(--color-success); border-color: rgba(5, 150, 105, 0.3); }
+.chip-warning { background: rgba(217, 119, 6, 0.1); color: var(--color-warning); border-color: rgba(217, 119, 6, 0.3); }
+
+/* ---- 行の一覧 (ログイン方法・接続サービス) ---- */
+.rows { list-style: none; margin: 0; padding: 0; }
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.row:last-child { border-bottom: none; }
+.row-main { min-width: 0; }
+.row-title { font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem; }
+.row-sub { font-size: 0.8125rem; color: var(--color-text-muted); }
+
+/* ---- トグル。WikiChree の switch3 を土台に、色だけトークン化 ---- */
+.switch {
+    width: 38px;
+    height: 20px;
+    position: relative;
+    display: inline-block;
+    flex: none;
+}
+
+.switch input { display: none; }
+
+.switch-track {
+    display: block;
+    cursor: pointer;
+    position: relative;
+    top: 3px;
+    height: 14px;
+    border-radius: 7px;
+    background-color: rgba(34, 31, 31, 0.26);
+    overflow: hidden;
+    transition: all 0.1s 0.4s;
+}
+
+.switch-track::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 7px;
+    transition: all 0.5s;
+}
+
+.switch-circle {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background-color: #f1f1f1;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    transition: all 0.5s;
+}
+
+.switch input:checked ~ .switch-circle {
+    left: 18px;
+    background-color: var(--color-primary);
+}
+
+.switch input:checked ~ .switch-track { transition: all 0s; }
+
+.switch input:checked ~ .switch-track::after {
+    background-color: var(--color-primary-light);
+    opacity: 0.5;
+    width: 100%;
+}
+
+.switch-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.switch-row:last-child { border-bottom: none; }
+
+/* ---- ログイン画面。ModParks の作り (中央寄せの1枚カード) ---- */
+.auth { padding: 3.5rem 0; }
+
+.auth-card {
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+}
+
+.auth-brand { text-align: center; margin-bottom: 1.5rem; }
+.auth-foot { margin-top: 1.25rem; text-align: center; font-size: 0.875rem; }
+.auth-foot a { text-decoration: none; }
+.auth-foot a:hover { text-decoration: underline; }
+
+.social { display: flex; gap: 0.75rem; }
+.social .btn { flex: 1 1 0; min-width: 0; }
+
+/* ---- アイコン (Font Awesome 6)。DokuFarm と同じ CDN・同じ版を使う ---- */
+
+/* 行頭のアイコン。幅を固定して、ラベルの頭を縦に揃える */
+.row-icon {
+    width: 1.125rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    flex: none;
+}
+
+/* ボタンの中のアイコンは .btn の gap で空くので、余白を足さない */
+.btn .fa-solid,
+.btn .fa-brands { font-size: 0.9375em; }
+
+/* サイドナビ・タブ・メニューは幅を揃えて、文字の頭を一列にする */
+.sidenav a,
+.tabs a,
+.account-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidenav a .fa-solid,
+.tabs a .fa-solid,
+.account-link .fa-solid {
+    width: 1rem;
+    text-align: center;
+    font-size: 0.875em;
+}
+
+/* パンくずの「>」は文字より小さく、色も落とす */
+.breadcrumb-sep .fa-solid { font-size: 0.6875rem; }
+
+/* 通知のアイコンは本文と同じ行に置く */
+.alert .fa-solid { margin-right: 0.25rem; }
+
+/* ---- 見本ページの飾り (実装には持ち込まない) ---- */
+.demo-bar {
+    background: var(--color-text);
+    color: #fff;
+    font-size: 0.8125rem;
+    padding: 0.5rem 0;
+}
+
+.demo-bar .container { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.demo-bar a { color: #fff; opacity: 0.75; text-decoration: none; margin-left: 0.75rem; }
+.demo-bar a:hover { opacity: 1; text-decoration: underline; }
+.demo-bar strong { font-weight: 700; }
+
+.demo-note {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 0;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+}
+
+.demo-section { padding: 2.5rem 0 0; }
+.demo-section > .container > h2 {
+    font-size: 1rem;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-border);
+}

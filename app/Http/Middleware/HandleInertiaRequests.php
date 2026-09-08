@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Registry\Domain\AdminAccess;
 use App\Support\Turnstile\TurnstileVerifier;
 use Illuminate\Http\Request;
@@ -68,6 +69,9 @@ class HandleInertiaRequests extends Middleware
 
             // 管理画面への導線を出すかどうか。権限そのものはミドルウェアが見る
             'isAdmin' => $this->isAdmin(),
+
+            // 設定が揃っている外部 IdP だけ。押しても何も起きないボタンを出さないため
+            'externalIdps' => app(ExternalIdpRegistry::class)->usableNames(),
         ];
     }
 }

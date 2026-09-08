@@ -1,22 +1,29 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import AppLayout from '../Components/AppLayout';
+import Icon from '../Components/Icon';
+import SectionTitle from '../Components/SectionTitle';
 import type { Account, CredentialSummary, CredentialTypeValue } from '../types';
 
 const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
     password: 'パスワード',
-    magic_link: 'メールでログイン',
+    magic_link: 'マジックリンク',
     totp: '認証アプリ (TOTP)',
     passkey: 'パスキー',
     oauth: '外部アカウント',
+};
+
+const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
+    password: 'key',
+    magic_link: 'envelope',
+    totp: 'mobile-screen',
+    passkey: 'fingerprint',
+    oauth: 'right-to-bracket',
 };
 
 interface DashboardProps {
@@ -25,84 +32,81 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ account, credentials }: DashboardProps) {
-    const { isAdmin } = usePage().props;
-
     return (
-        <>
-            <Head title="アカウント" />
-
-            <Container maxWidth="sm" sx={{ py: 6 }}>
-                <Stack spacing={3}>
+        <AppLayout
+            title="アカウント"
+            lead="連携先のサービスに渡される情報と、ログインに使える手段です"
+            crumbs={[{ label: 'ChreeID', href: '/' }, { label: 'アカウント' }]}
+        >
+            <Paper variant="outlined" sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                     <Box>
-                        <Typography variant="h6" component="h1">
+                        <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                             {account.displayName ?? '表示名を設定していません'}
+                            <Chip
+                                size="small"
+                                label={account.origin === 'user' ? 'ユーザー' : 'サービス'}
+                            />
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            {account.email ?? 'メールアドレス未設定'}
-                        </Typography>
-                    </Box>
 
-                    <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-                        <Stack spacing={1}>
-                            <Box>
-                                <Typography variant="body2" color="text.secondary">
-                                    ChreeID
-                                </Typography>
-                                <Typography variant="body2" component="code">
-                                    {account.id}
-                                </Typography>
-                            </Box>
-                            <Box>
+                        <Typography
+                            sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.8125rem', color: 'text.disabled' }}
+                        >
+                            {account.email ?? 'メールアドレス未設定'}
+                            {account.email !== null && (
                                 <Chip
                                     size="small"
-                                    label={account.origin === 'user' ? 'ユーザーアカウント' : 'サービスアカウント'}
+                                    label={account.emailVerified ? '確認済み' : '未確認'}
+                                    color={account.emailVerified ? 'success' : 'default'}
                                 />
-                            </Box>
-                        </Stack>
-                    </Paper>
-
-                    <Box>
-                        <Typography variant="subtitle2" gutterBottom>
-                            ログイン方法
+                            )}
                         </Typography>
 
-                        <Paper sx={{ border: '1px solid', borderColor: 'divider' }}>
-                            <List dense disablePadding>
-                                {credentials.length === 0 && (
-                                    <ListItem>
-                                        <ListItemText primary="登録されていません" />
-                                    </ListItem>
-                                )}
-                                {credentials.map((credential, index) => (
-                                    <ListItem key={`${credential.type}-${index}`} divider>
-                                        <ListItemText
-                                            primary={TYPE_LABELS[credential.type] ?? credential.type}
-                                            secondary={credential.lastUsedAt ? `最終利用 ${credential.lastUsedAt}` : '未使用'}
-                                        />
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Paper>
+                        <Typography component="code" sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
+                            {account.id}
+                        </Typography>
                     </Box>
 
-                    <Stack direction="row" spacing={1}>
-                        <Button variant="outlined" color="inherit" onClick={() => router.get('/profile')}>
-                            プロフィールを編集
-                        </Button>
-                        <Button variant="outlined" color="inherit" onClick={() => router.get('/security')}>
-                            ログイン方法を管理
-                        </Button>
-                        {isAdmin && (
-                            <Button variant="outlined" color="inherit" onClick={() => router.get('/admin/clients')}>
-                                接続サービスを管理
-                            </Button>
-                        )}
-                        <Button color="inherit" onClick={() => router.post('/logout')}>
-                            ログアウト
-                        </Button>
-                    </Stack>
+                    <Button size="small" color="inherit" onClick={() => router.get('/settings')}>
+                        編集
+                    </Button>
+                </Box>
+            </Paper>
+
+            <SectionTitle note={`${credentials.length}件`}>ログイン方法</SectionTitle>
+            <Paper variant="outlined">
+                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    {credentials.length === 0 && (
+                        <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
+                            登録されていません
+                        </Typography>
+                    )}
+
+                    {credentials.map((credential, index) => (
+                        <Box key={`${credential.type}-${index}`} sx={{ px: 2, py: 1.5 }}>
+                            <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
+                                <Icon
+                                    name={TYPE_ICONS[credential.type] ?? 'circle-question'}
+                                    sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
+                                />
+                                {TYPE_LABELS[credential.type] ?? credential.type}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
+                                {credential.lastUsedAt ? `最終利用 ${credential.lastUsedAt}` : '未使用'}
+                            </Typography>
+                        </Box>
+                    ))}
                 </Stack>
-            </Container>
-        </>
+            </Paper>
+
+            <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
+                <Button variant="outlined" color="inherit" startIcon={<Icon name="gear" />} onClick={() => router.get('/settings')}>
+                    設定
+                </Button>
+                <Button color="inherit" startIcon={<Icon name="arrow-right-from-bracket" />} onClick={() => router.post('/logout')}>
+                    ログアウト
+                </Button>
+            </Stack>
+        </AppLayout>
     );
 }

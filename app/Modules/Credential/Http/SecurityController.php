@@ -40,7 +40,7 @@ class SecurityController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        return Inertia::render('Security', [
+        return Inertia::render('Settings/Security', [
             'credentials' => $this->credentialsOf($accountId),
             'recoveryCodeCount' => $this->recoveryCodes->remaining($accountId),
             'pendingTotp' => $request->session()->get(self::PENDING_TOTP . '.uri'),
@@ -60,7 +60,7 @@ class SecurityController {
 
         $this->enableMagicLink->execute($accountId);
 
-        return redirect('/security');
+        return redirect('/settings/security');
     }
 
     /**
@@ -82,7 +82,7 @@ class SecurityController {
             'uri' => $this->totp->provisioningUri($secret, $accountId, is_string($label) ? $label : 'ChreeID'),
         ]);
 
-        return redirect('/security');
+        return redirect('/settings/security');
     }
 
     /**
@@ -112,7 +112,7 @@ class SecurityController {
 
         $request->session()->forget(self::PENDING_TOTP);
 
-        return redirect('/security');
+        return redirect('/settings/security');
     }
 
     /**
@@ -124,7 +124,7 @@ class SecurityController {
         if ($accountId === null) return redirect('/login');
 
         // 平文を見せられるのはこの1回だけなので、画面に持っていく
-        return redirect('/security')->with('recoveryCodes', $this->recoveryCodes->execute($accountId));
+        return redirect('/settings/security')->with('recoveryCodes', $this->recoveryCodes->execute($accountId));
     }
 
     /**
@@ -147,7 +147,7 @@ class SecurityController {
             throw ValidationException::withMessages(['type' => $e->getMessage()]);
         }
 
-        return redirect('/security');
+        return redirect('/settings/security');
     }
 
     /**

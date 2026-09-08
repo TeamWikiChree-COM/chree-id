@@ -33,20 +33,20 @@ class ProfileTest extends TestCase {
     }
 
     public function test_requiresLogin(): void {
-        $this->get('/profile')->assertRedirect('/login');
+        $this->get('/settings')->assertRedirect('/login');
         $this->post('/profile', ['display_name' => 'なまえ'])->assertRedirect('/login');
     }
 
     public function test_showsProfile(): void {
         $this->login('もとの名前');
 
-        $this->get('/profile')->assertOk();
+        $this->get('/settings')->assertOk();
     }
 
     public function test_setsDisplayNameWhenUnset(): void {
         $id = $this->login();
 
-        $this->post('/profile', ['display_name' => 'あたらしい名前'])->assertRedirect('/profile');
+        $this->post('/profile', ['display_name' => 'あたらしい名前'])->assertRedirect('/settings');
 
         $this->assertSame('あたらしい名前', app(ChreeAccountRepository::class)->findById($id)?->displayName);
     }

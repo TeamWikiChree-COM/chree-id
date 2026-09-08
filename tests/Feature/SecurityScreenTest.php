@@ -37,19 +37,19 @@ class SecurityScreenTest extends TestCase {
     }
 
     public function test_requiresLogin(): void {
-        $this->get('/security')->assertRedirect('/login');
+        $this->get('/settings/security')->assertRedirect('/login');
     }
 
     public function test_showsRegisteredCredentials(): void {
         $this->register();
 
-        $this->get('/security')->assertOk();
+        $this->get('/settings/security')->assertOk();
     }
 
     public function test_startsTotpSetupWithoutEnabling(): void {
         $accountId = $this->register();
 
-        $this->post('/security/totp/start')->assertRedirect('/security');
+        $this->post('/security/totp/start')->assertRedirect('/settings/security');
 
         // まだ有効化していない
         $this->assertSame(0, CredentialModel::query()
@@ -68,7 +68,7 @@ class SecurityScreenTest extends TestCase {
         $this->assertIsString($secret);
 
         $this->post('/security/totp/confirm', ['code' => app(Totp::class)->at($secret, intdiv(time(), 30))])
-            ->assertRedirect('/security');
+            ->assertRedirect('/settings/security');
 
         $row = CredentialModel::query()
             ->where('chree_account_id', $accountId)
@@ -94,7 +94,7 @@ class SecurityScreenTest extends TestCase {
     public function test_generatesRecoveryCodes(): void {
         $accountId = $this->register();
 
-        $this->post('/security/recovery-codes')->assertRedirect('/security');
+        $this->post('/security/recovery-codes')->assertRedirect('/settings/security');
 
         $this->assertSame(10, app(GenerateRecoveryCodes::class)->remaining($accountId));
         $this->assertIsArray(session('recoveryCodes'));
@@ -119,7 +119,7 @@ class SecurityScreenTest extends TestCase {
         $this->assertIsString($secret);
         $this->post('/security/totp/confirm', ['code' => app(Totp::class)->at($secret, intdiv(time(), 30))]);
 
-        $this->post('/security/credentials/remove', ['type' => 'totp'])->assertRedirect('/security');
+        $this->post('/security/credentials/remove', ['type' => 'totp'])->assertRedirect('/settings/security');
 
         $this->assertSame(0, CredentialModel::query()
             ->where('chree_account_id', $accountId)

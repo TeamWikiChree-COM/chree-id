@@ -68,7 +68,7 @@ class EmailVerificationTest extends TestCase {
     public function test_sendsVerificationMail(): void {
         $this->login();
 
-        $this->post('/profile/email/verify')->assertRedirect('/profile');
+        $this->post('/profile/email/verify')->assertRedirect('/settings');
 
         Mail::assertSent(VerifyEmailMail::class);
     }
@@ -78,7 +78,7 @@ class EmailVerificationTest extends TestCase {
         $this->post('/profile/email/verify');
 
         $token = $this->tokenFor(OneTimeTokenModel::PURPOSE_VERIFY_EMAIL);
-        $this->get("/profile/email/verify/{$token}")->assertRedirect('/profile');
+        $this->get("/profile/email/verify/{$token}")->assertRedirect('/settings');
 
         $this->assertTrue(app(ChreeAccountRepository::class)->findById($id)?->isEmailVerified());
     }
@@ -107,7 +107,7 @@ class EmailVerificationTest extends TestCase {
     public function test_doesNotChangeEmailUntilConfirmed(): void {
         $id = $this->login();
 
-        $this->post('/profile/email/change', ['email' => 'new@example.com'])->assertRedirect('/profile');
+        $this->post('/profile/email/change', ['email' => 'new@example.com'])->assertRedirect('/settings');
 
         $this->assertSame('old@example.com', app(ChreeAccountRepository::class)->findById($id)?->email);
         Mail::assertSent(VerifyEmailChangeMail::class);
@@ -129,7 +129,7 @@ class EmailVerificationTest extends TestCase {
         $token = Str::random(64);
         PendingEmailChangeModel::query()->update(['token_hash' => hash('sha256', $token)]);
 
-        $this->get("/profile/email/change/{$token}")->assertRedirect('/profile');
+        $this->get("/profile/email/change/{$token}")->assertRedirect('/settings');
 
         $account = app(ChreeAccountRepository::class)->findById($id);
         $this->assertNotNull($account);
@@ -158,7 +158,7 @@ class EmailVerificationTest extends TestCase {
             'expires_at' => now()->subMinute(),
         ]);
 
-        $this->get("/profile/email/change/{$token}")->assertRedirect('/profile');
+        $this->get("/profile/email/change/{$token}")->assertRedirect('/settings');
 
         $this->assertSame('old@example.com', app(ChreeAccountRepository::class)->findById($id)?->email);
     }

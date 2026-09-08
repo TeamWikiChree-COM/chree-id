@@ -1,0 +1,82 @@
+/*
+ * B案 - ModParks の new テーマ寄り
+ *
+ * 色は DokuFarm のままだが、丸みを 4px まで落とし、
+ * カードを枠で囲わずに区切り線だけで見せる。ModParks が
+ * legacy から new へ移すときにやっているのと同じ方向。
+ *
+ * 枠が減るぶん情報が軽く見える。項目が少ない画面ほど効く。
+ */
+:root {
+    --radius-card: 4px;
+    --radius-control: 4px;
+    --radius-input: 4px;
+    --card-border: none;
+    --card-shadow: none;
+    --card-bg: transparent;
+}
+
+body { background: var(--color-bg); }
+
+/* 面は下線だけで区切る */
+.card {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card + .card { margin-top: 0; }
+.card-flush { padding: 0; }
+.card:last-of-type { border-bottom: none; }
+
+.row, .switch-row { padding-left: 0; padding-right: 0; }
+
+/* ログインカードだけは枠を持たせる。ページに1枚しかないので浮かせたい */
+.auth-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    padding: 2rem;
+}
+
+/* ModParks のログイン: 画像を使わず、サービス名を大きく中央に置く */
+.auth-brand .auth-name {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    letter-spacing: -0.01em;
+}
+
+.auth-brand .auth-sub {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+/* 設定は左サイドナビ。項目が増えても縦に伸ばせる */
+.settings { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
+
+.sidenav { display: flex; flex-direction: column; gap: 0.125rem; }
+
+.sidenav a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    text-decoration: none;
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+}
+
+.sidenav a:hover { background: var(--color-bg-gray); color: var(--color-text); }
+
+.sidenav a.is-active {
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    background: var(--color-bg-gray);
+    font-weight: 600;
+}
+
+@media (max-width: 720px) {
+    .settings { grid-template-columns: 1fr; gap: 1rem; }
+    .sidenav { flex-direction: row; flex-wrap: wrap; }
+}

@@ -1,9 +1,31 @@
 import { createInertiaApp } from '@inertiajs/react';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { createRoot } from 'react-dom/client';
-import theme from './theme';
+import { useMemo } from 'react';
+import { buildTheme } from './theme';
+import { ThemeModeContext, useThemeMode } from './lib/theme-mode';
+
+/**
+ * テーマの供給。
+ *
+ * モードはブラウザにしか無いので、ここで持って全ページに配る。
+ */
+function Root({ children }: { children: ReactNode }) {
+    const { mode, toggle } = useThemeMode();
+    const theme = useMemo(() => buildTheme(mode), [mode]);
+    const value = useMemo(() => ({ mode, toggle }), [mode, toggle]);
+
+    return (
+        <ThemeModeContext value={value}>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
+        </ThemeModeContext>
+    );
+}
 
 createInertiaApp({
     title: (title: string) => (title ? `${title} - ChreeID` : 'ChreeID'),
@@ -19,10 +41,9 @@ createInertiaApp({
 
     setup({ el, App, props }) {
         createRoot(el).render(
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
+            <Root>
                 <App {...props} />
-            </ThemeProvider>,
+            </Root>,
         );
     },
 });

@@ -104,7 +104,7 @@ class TwoFactorLoginTest extends TestCase {
         $this->login();
 
         $this->get('/')->assertRedirect('/login');
-        $this->get('/security')->assertRedirect('/login');
+        $this->get('/settings/security')->assertRedirect('/login');
     }
 
     public function test_cancelDiscardsPendingState(): void {

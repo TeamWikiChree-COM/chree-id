@@ -68,6 +68,8 @@ declare module '@inertiajs/core' {
             turnstileSiteKey: string | null;
             /** 管理画面への導線を出すか */
             isAdmin: boolean;
+            /** 設定が揃っている外部 IdP の識別子 (例: ["google"]) */
+            externalIdps: string[];
         };
     }
 }

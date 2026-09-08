@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -8,6 +8,8 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+import InertiaLink from '../../Components/InertiaLink';
+import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
 export default function Login() {
@@ -25,31 +27,23 @@ export default function Login() {
 
     return (
         <AuthLayout
-            title="ChreeID にログイン"
+            title="ログイン"
             footer={
                 <Stack spacing={0.5}>
-                    <Typography variant="body2">
-                        <Link href="/login/magic">メールでログイン</Link>
-                    </Typography>
-                    <Typography variant="body2">
-                        <Link href="/password/forgot">パスワードをお忘れですか？</Link>
-                    </Typography>
-                    <Typography variant="body2">
-                        <Link href="/register">アカウントを作成する</Link>
-                    </Typography>
+                    <Box component={InertiaLink} href="/register" sx={{ color: 'primary.main' }}>
+                        アカウントを作成する
+                    </Box>
                 </Stack>
             }
         >
+            {flash.passwordReset && (
+                <Alert severity="success">パスワードを変更しました。新しいパスワードでログインしてください</Alert>
+            )}
+            {errors.email && <Alert severity="error">{errors.email}</Alert>}
+            {errors['cf-turnstile-response'] && <Alert severity="error">{errors['cf-turnstile-response']}</Alert>}
+
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
-                    {flash.passwordReset && (
-                        <Alert severity="success">パスワードを変更しました。新しいパスワードでログインしてください</Alert>
-                    )}
-                    {errors.email && <Alert severity="error">{errors.email}</Alert>}
-                    {errors['cf-turnstile-response'] && (
-                        <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
-                    )}
-
                     <TextField
                         label="メールアドレス"
                         type="email"
@@ -60,28 +54,39 @@ export default function Login() {
                         required
                     />
 
-                    <TextField
-                        label="パスワード"
-                        type="password"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                        autoComplete="current-password"
-                        required
-                    />
+                    <Box>
+                        <TextField
+                            label="パスワード"
+                            type="password"
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            autoComplete="current-password"
+                            required
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                            <Typography
+                                component={InertiaLink}
+                                href="/password/forgot"
+                                sx={{ fontSize: '0.8125rem', color: 'primary.main', textDecoration: 'none' }}
+                            >
+                                パスワードをお忘れですか？
+                            </Typography>
+                        </Box>
+                    </Box>
 
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
-                    <Button type="submit" variant="contained" disabled={processing}>
+                    <Button type="submit" variant="contained" size="large" fullWidth disabled={processing}>
                         ログイン
-                    </Button>
-
-                    <Divider>または</Divider>
-
-                    <Button component="a" href="/auth/google/redirect" variant="outlined" color="inherit">
-                        Google で続行
                     </Button>
                 </Stack>
             </Box>
+
+            <Divider sx={{ my: 1 }}>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>または</Typography>
+            </Divider>
+
+            <SocialLogins magicLinkHref="/login/magic" />
         </AuthLayout>
     );
 }

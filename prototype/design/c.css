@@ -1,0 +1,142 @@
+/*
+ * C案 - おまかせ。3サイトを見比べて出した折衷
+ *
+ * 3つを並べて分かったこと:
+ *   - DokuFarm と ModParks legacy の primary は同じ #2563eb。色は既に揃っている
+ *   - ModParks の特徴は半透明 + blur のバーと、角丸 4px の平たい面
+ *   - WikiChree は見出しに面を敷いたり左ボーダーを引いたりして階層を示す
+ *
+ * A は枠で囲って区切り、B は線だけで区切る。C は「見出しで区切る」を採る。
+ * ChreeID は設定画面のように小さな項目が並ぶ画面が多く、
+ * 枠を足すとうるさく、線だけだとどこまでが一塊か分からなくなるため。
+ *
+ * 見出しの左に primary の縦バーを置く (WikiChree の h4 の作法)。
+ * カードは枠なしで、内側の行だけ薄い線で分ける。
+ * ヘッダーは ModParks に倣って半透明 + blur で、スクロールしても残す。
+ * 角丸は 6px。DokuFarm の 8 と ModParks の 4 の間を取る。
+ */
+:root {
+    --radius-card: 6px;
+    --radius-control: 6px;
+    --radius-input: 6px;
+    --card-border: none;
+    --card-shadow: none;
+    --card-bg: var(--color-bg);
+    --header-bg: rgba(255, 255, 255, 0.82);
+}
+
+[data-theme="dark"] {
+    --header-bg: rgba(26, 30, 37, 0.82);
+    /* 面の塗りだけでは輪郭が弱いので、ダークでは細い枠を戻す */
+    --card-border: 1px solid var(--color-border);
+}
+
+body { background: var(--color-bg-light); }
+
+/* ヘッダー: ModParks の AppBar (半透明 + blur + 下線のみ) */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--header-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* 見出しで区切る。左の縦バーが「ここから新しい塊」の合図 */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 2rem 0 0.625rem;
+}
+
+.section-title::before {
+    content: "";
+    width: 3px;
+    height: 1em;
+    border-radius: 2px;
+    background: var(--color-primary);
+}
+
+.section-title .section-note {
+    font-weight: 400;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+/* 面は白のまま置き、枠は持たせない。中の行だけ薄く分ける */
+.card {
+    padding: 0.25rem 1rem;
+    border-radius: var(--radius-card);
+}
+
+.card + .card { margin-top: 0.75rem; }
+.card-flush { padding: 0.25rem 1rem; }
+.row, .switch-row { padding-left: 0; padding-right: 0; }
+
+/* ページ見出しは下線を太くする。WikiChree の h3 の作法 */
+.page-title {
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: 0.75rem;
+}
+
+/* ログイン: ModParks の1枚カード。ここだけは枠と影を持たせて浮かせる */
+.auth-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+}
+
+.auth-brand { margin-bottom: 1.75rem; }
+
+.auth-brand img {
+    width: 36px;
+    height: 36px;
+    vertical-align: -0.5rem;
+    margin-right: 0.5rem;
+}
+
+.auth-brand .auth-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+}
+
+.auth-brand .auth-sub {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+/* 設定は左サイドナビ。見出しで区切るぶん、縦に長くなっても追える */
+.settings { display: grid; grid-template-columns: 190px 1fr; gap: 2.5rem; }
+.sidenav { display: flex; flex-direction: column; gap: 0.125rem; position: sticky; top: 5rem; align-self: start; }
+
+.sidenav a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-text-light);
+    text-decoration: none;
+    border-radius: var(--radius-control);
+}
+
+.sidenav a:hover { background: var(--color-bg-gray); color: var(--color-text); }
+
+.sidenav a.is-active {
+    color: var(--color-primary);
+    background: rgba(37, 99, 235, 0.08);
+    font-weight: 700;
+}
+
+@media (max-width: 720px) {
+    .settings { grid-template-columns: 1fr; gap: 1rem; }
+    .sidenav { flex-direction: row; flex-wrap: wrap; position: static; }
+}

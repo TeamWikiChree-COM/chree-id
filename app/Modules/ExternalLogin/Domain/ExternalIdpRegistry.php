@@ -37,4 +37,18 @@ class ExternalIdpRegistry {
     public function names(): array {
         return array_keys($this->providers);
     }
+
+    /**
+     * 設定が揃っていて、実際にログインに使える IdP。
+     *
+     * @return list<string>
+     */
+    public function usableNames(): array {
+        $names = [];
+        foreach ($this->providers as $name => $provider) {
+            if ($provider->isConfigured()) $names[] = $name;
+        }
+
+        return $names;
+    }
 }

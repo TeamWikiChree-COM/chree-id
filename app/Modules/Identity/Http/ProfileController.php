@@ -38,7 +38,7 @@ class ProfileController {
         $account = $this->accounts->findById($accountId);
         if ($account === null) return redirect('/login');
 
-        return Inertia::render('Profile', [
+        return Inertia::render('Settings/Profile', [
             'displayName' => $account->displayName,
             'email' => $account->email,
             'emailVerified' => $account->isEmailVerified(),
@@ -61,7 +61,7 @@ class ProfileController {
         $displayName = $request->string('display_name')->trim()->toString();
         $this->accounts->updateDisplayName($accountId, $displayName === '' ? null : $displayName);
 
-        return redirect('/profile')->with('profileSaved', true);
+        return redirect('/settings')->with('profileSaved', true);
     }
 
     /**
@@ -75,7 +75,7 @@ class ProfileController {
 
         $this->requestVerification->execute($accountId);
 
-        return redirect('/profile')->with('verificationSent', true);
+        return redirect('/settings')->with('verificationSent', true);
     }
 
     /**
@@ -101,7 +101,7 @@ class ProfileController {
             ]);
         }
 
-        return redirect('/profile')->with('emailChangeSent', true);
+        return redirect('/settings')->with('emailChangeSent', true);
     }
 
     /**
@@ -113,7 +113,7 @@ class ProfileController {
     public function confirmEmailChange(string $token): RedirectResponse {
         $changed = $this->confirmChange->execute($token) !== null;
 
-        return redirect($this->session->isLoggedIn() ? '/profile' : '/login')
+        return redirect($this->session->isLoggedIn() ? '/settings' : '/login')
             ->with('emailChanged', $changed);
     }
 
@@ -129,7 +129,7 @@ class ProfileController {
     public function confirmEmail(string $token): RedirectResponse {
         $verified = $this->confirmVerification->execute($token) !== null;
 
-        return redirect($this->session->isLoggedIn() ? '/profile' : '/login')
+        return redirect($this->session->isLoggedIn() ? '/settings' : '/login')
             ->with('emailVerified', $verified);
     }
 }

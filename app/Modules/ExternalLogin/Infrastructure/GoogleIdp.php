@@ -26,6 +26,13 @@ class GoogleIdp implements ExternalIdp {
     }
 
     /**
+     * @return bool
+     */
+    public function isConfigured(): bool {
+        return $this->clientId() !== '' && $this->clientSecret() !== '';
+    }
+
+    /**
      * @param string $state CSRF 対策の値
      * @param string $nonce id_token に載る値
      * @return string

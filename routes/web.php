@@ -50,8 +50,16 @@ Route::get('/password/forgot/sent', [PasswordResetController::class, 'sent']);
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'edit'])->middleware('throttle:verify');
 Route::post('/password/reset', [PasswordResetController::class, 'update'])->middleware('throttle:verify');
 
+// 設定。プロフィールとセキュリティを1か所にまとめ、画面はタブで切り替える
+Route::get('/settings', [ProfileController::class, 'show']);
+Route::get('/settings/security', [SecurityController::class, 'show']);
+
+// 旧パス。手元のブックマークが死なないように残す。
+// Route::redirect は全メソッドに効いてしまい、下の POST /profile を飲み込むので GET だけにする
+Route::get('/profile', fn () => redirect('/settings'));
+Route::get('/security', fn () => redirect('/settings/security'));
+
 // プロフィール
-Route::get('/profile', [ProfileController::class, 'show']);
 Route::post('/profile', [ProfileController::class, 'update']);
 Route::post('/profile/email/verify', [ProfileController::class, 'sendEmailVerification'])->middleware('throttle:register');
 Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmEmail'])->middleware('throttle:verify');
@@ -59,7 +67,6 @@ Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])-
 Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
 // 認証方法の管理
-Route::get('/security', [SecurityController::class, 'show']);
 Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);
 Route::post('/security/totp/confirm', [SecurityController::class, 'confirmTotp']);
 Route::post('/security/recovery-codes', [SecurityController::class, 'generateRecoveryCodes']);
