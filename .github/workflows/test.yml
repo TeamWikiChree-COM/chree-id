@@ -45,5 +45,8 @@ jobs:
       - name: Run Larastan (Static Analysis)
         run: ./vendor/bin/phpstan analyse --error-format=github
 
-      - name: Run Tests (Unit & Feature)
-        run: php artisan test
+      - name: Run Unit Tests
+        run: php artisan test --testsuite=Unit
+
+      - name: Run Feature Tests
+        run: php artisan test --testsuite=Feature
