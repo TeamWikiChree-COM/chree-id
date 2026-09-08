@@ -19,13 +19,37 @@ class SetPassword {
      * @throws InvalidArgumentException 長さが足りない場合
      */
     public function execute(string $accountId, string $password): void {
+        $this->executeHashed($accountId, $this->hash($password));
+    }
+
+    /**
+     * ハッシュ済みのパスワードを設定する。
+     *
+     * メール確認を挟む登録のように、平文が手元に無い時点で保存する経路のために分けてある。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @param string $hash hash() が返したハッシュ
+     * @return void
+     */
+    public function executeHashed(string $accountId, string $hash): void {
+        CredentialModel::query()->updateOrCreate(
+            ['chree_account_id' => $accountId, 'type' => CredentialType::PASSWORD],
+            ['secret' => $hash],
+        );
+    }
+
+    /**
+     * 平文パスワードをハッシュにする。
+     *
+     * @param string $password 平文パスワード
+     * @return string
+     * @throws InvalidArgumentException 長さが足りない場合
+     */
+    public function hash(string $password): string {
         if (mb_strlen($password) < self::MIN_LENGTH) {
             throw new InvalidArgumentException('パスワードは' . self::MIN_LENGTH . '文字以上にしてください');
         }
 
-        CredentialModel::query()->updateOrCreate(
-            ['chree_account_id' => $accountId, 'type' => CredentialType::PASSWORD],
-            ['secret' => password_hash($password, PASSWORD_BCRYPT)],
-        );
+        return password_hash($password, PASSWORD_BCRYPT);
     }
 }

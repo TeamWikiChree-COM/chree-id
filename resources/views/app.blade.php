@@ -6,7 +6,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" href="/icon.png">
     @viteReactRefresh
-    @vite('resources/js/app.jsx')
+    @vite('resources/js/app.tsx')
     @inertiaHead
 </head>
 <body>

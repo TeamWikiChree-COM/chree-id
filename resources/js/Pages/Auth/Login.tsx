@@ -8,14 +8,17 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import type { FormEvent } from 'react';
+import TurnstileWidget from '../../Components/TurnstileWidget';
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
+        'cf-turnstile-response': '',
     });
 
-    const submit = (event) => {
+    const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post('/login');
     };
@@ -37,6 +40,9 @@ export default function Login() {
                         <Box component="form" onSubmit={submit} noValidate>
                             <Stack spacing={2}>
                                 {errors.email && <Alert severity="error">{errors.email}</Alert>}
+                                {errors['cf-turnstile-response'] && (
+                                    <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
+                                )}
 
                                 <TextField
                                     label="メールアドレス"
@@ -56,6 +62,8 @@ export default function Login() {
                                     autoComplete="current-password"
                                     required
                                 />
+
+                                <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                                 <Button type="submit" variant="contained" disabled={processing}>
                                     ログイン

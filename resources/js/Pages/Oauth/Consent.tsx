@@ -9,13 +9,23 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-const SCOPE_LABELS = {
+/** OIDC のスコープ名を画面表示用の日本語にする */
+const SCOPE_LABELS: Record<string, string> = {
     openid: 'アカウントの識別子',
     profile: '表示名',
     email: 'メールアドレス',
 };
 
-export default function Consent({ clientName, scopes, query }) {
+interface ConsentProps {
+    /** Registry に登録されたサービス名 */
+    clientName: string;
+    /** 要求されたスコープ */
+    scopes: string[];
+    /** 承認 POST にそのまま引き継ぐ認可リクエストのパラメータ */
+    query: Record<string, string>;
+}
+
+export default function Consent({ clientName, scopes, query }: ConsentProps) {
     return (
         <>
             <Head title="連携の確認" />

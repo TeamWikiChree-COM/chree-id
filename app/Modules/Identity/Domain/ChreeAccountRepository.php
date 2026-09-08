@@ -28,4 +28,12 @@ interface ChreeAccountRepository {
      * @return ChreeAccount 発行したアカウント
      */
     public function create(AccountOrigin $origin, ?string $email = null, ?string $displayName = null): ChreeAccount;
+
+    /**
+     * メールアドレスの到達性が確認できたことを記録する。
+     *
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function markEmailVerified(string $id): void;
 }

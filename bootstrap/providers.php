@@ -6,4 +6,5 @@ return [
     App\Providers\IdentityServiceProvider::class,
     App\Providers\FederationServiceProvider::class,
     App\Providers\OidcServiceProvider::class,
+    App\Providers\RateLimitServiceProvider::class,
 ];

@@ -5,7 +5,14 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-export default function OauthError({ error, reason }) {
+interface OauthErrorProps {
+    /** OAuth のエラーコード (invalid_request など) */
+    error: string;
+    /** 何が起きたかの説明 */
+    reason: string;
+}
+
+export default function OauthError({ error, reason }: OauthErrorProps) {
     return (
         <>
             <Head title="連携できません" />

@@ -8,15 +8,18 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import type { FormEvent } from 'react';
+import TurnstileWidget from '../../Components/TurnstileWidget';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         display_name: '',
         password: '',
+        'cf-turnstile-response': '',
     });
 
-    const submit = (event) => {
+    const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post('/register');
     };
@@ -38,6 +41,9 @@ export default function Register() {
                         <Box component="form" onSubmit={submit} noValidate>
                             <Stack spacing={2}>
                                 {errors.email && <Alert severity="error">{errors.email}</Alert>}
+                                {errors['cf-turnstile-response'] && (
+                                    <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
+                                )}
 
                                 <TextField
                                     label="メールアドレス"
@@ -54,8 +60,8 @@ export default function Register() {
                                     value={data.display_name}
                                     onChange={(e) => setData('display_name', e.target.value)}
                                     error={Boolean(errors.display_name)}
-                                    helperText={errors.display_name}
-                                    required
+                                    helperText={errors.display_name ?? '任意。後から変更できます'}
+                                    autoComplete="nickname"
                                 />
 
                                 <TextField
@@ -69,8 +75,10 @@ export default function Register() {
                                     required
                                 />
 
+                                <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
+
                                 <Button type="submit" variant="contained" disabled={processing}>
-                                    作成する
+                                    確認メールを送る
                                 </Button>
 
                                 <Divider>または</Divider>

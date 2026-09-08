@@ -1,8 +1,8 @@
 {
-  "resources/js/app.jsx": {
-    "file": "assets/app-Db_aiY-9.js",
+  "resources/js/app.tsx": {
+    "file": "assets/app-JjMghsO5.js",
     "name": "app",
-    "src": "resources/js/app.jsx",
+    "src": "resources/js/app.tsx",
     "isEntry": true
   }
 }
