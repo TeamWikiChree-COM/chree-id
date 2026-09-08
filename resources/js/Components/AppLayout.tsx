@@ -27,11 +27,8 @@ export default function AppLayout({ title, lead, crumbs, children }: AppLayoutPr
             <Head title={title} />
             <AppHeader />
 
-
             <Container maxWidth="md">
-                <Typography
-                    variant="h1"
-                    sx={{
+                <Typography variant="h1" sx={{
                         fontSize: '1.375rem',
                         fontWeight: 700,
                         pb: 1,

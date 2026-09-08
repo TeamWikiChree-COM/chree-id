@@ -74,7 +74,8 @@ export default function AppHeader() {
                         onClick={(event) => setAnchor(event.currentTarget)}
                         sx={{ color: 'text.secondary' }}
                     >
-                        <Icon name={isLoggedIn ? 'circle-user' : 'bars'} />
+                        {/* ログイン前後で絵を変えない。DokuFarm も同じ1つで通している */}
+                        <Icon name="circle-user" />
                     </IconButton>
 
                     <Menu
