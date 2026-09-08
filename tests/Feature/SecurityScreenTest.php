@@ -4,7 +4,10 @@ namespace Tests\Feature;
 use App\Modules\Credential\Application\GenerateRecoveryCodes;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
+use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Infrastructure\Totp;
+use App\Modules\Identity\Domain\AccountOrigin;
+use App\Modules\Identity\Domain\ChreeAccountRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
@@ -14,16 +17,18 @@ class SecurityScreenTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * 登録してログイン済みの状態にする
+     * アカウントを用意してログイン済みの状態にする。
+     *
+     * 登録画面はメール確認を挟むため、ここでは通さずに直接作る。
      *
      * @return string アカウントID (ULID)
      */
     private function register(): string {
-        $this->post('/register', [
-            'email' => 'user@example.com',
-            'display_name' => 'テスト',
-            'password' => 'correct-horse',
-        ]);
+        $account = app(ChreeAccountRepository::class)
+            ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+        app(SetPassword::class)->execute($account->id, 'correct-horse');
+
+        $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 
         $id = session('chreeid.account_id');
         $this->assertIsString($id);

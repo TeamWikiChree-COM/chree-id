@@ -55,8 +55,8 @@ export default function Register() {
                                     value={data.display_name}
                                     onChange={(e) => setData('display_name', e.target.value)}
                                     error={Boolean(errors.display_name)}
-                                    helperText={errors.display_name}
-                                    required
+                                    helperText={errors.display_name ?? '任意。後から変更できます'}
+                                    autoComplete="nickname"
                                 />
 
                                 <TextField
@@ -71,7 +71,7 @@ export default function Register() {
                                 />
 
                                 <Button type="submit" variant="contained" disabled={processing}>
-                                    作成する
+                                    確認メールを送る
                                 </Button>
 
                                 <Divider>または</Divider>

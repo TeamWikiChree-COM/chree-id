@@ -15,4 +15,7 @@ return [
 
     /* ID Token の寿命(秒) */
     'id_token_ttl' => (int) env('CHREEID_ID_TOKEN_TTL', 3600),
+
+    /* 登録の確認メールに載せるリンクの有効分数 */
+    'registration_ttl_minutes' => (int) env('CHREEID_REGISTRATION_TTL_MINUTES', 60),
 ];

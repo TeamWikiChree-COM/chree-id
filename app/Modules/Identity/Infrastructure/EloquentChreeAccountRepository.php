@@ -46,6 +46,14 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
     }
 
     /**
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function markEmailVerified(string $id): void {
+        ChreeAccountModel::query()->whereKey($id)->update(['email_verified_at' => now()]);
+    }
+
+    /**
      * @param ChreeAccountModel $model
      * @return ChreeAccount
      */

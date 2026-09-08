@@ -20,8 +20,11 @@ Route::get('/login', [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'destroy']);
 
+// 登録はメールを確認するまでアカウントを作らない。verify がアカウント作成の実体
 Route::get('/register', [RegisterController::class, 'show']);
 Route::post('/register', [RegisterController::class, 'store']);
+Route::get('/register/sent', [RegisterController::class, 'sent']);
+Route::get('/register/verify/{token}', [RegisterController::class, 'verify']);
 
 // 認証方法の管理
 Route::get('/security', [SecurityController::class, 'show']);
