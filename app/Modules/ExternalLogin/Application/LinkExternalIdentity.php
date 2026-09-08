@@ -67,11 +67,18 @@ class LinkExternalIdentity {
      * @return string
      */
     private function createAccount(ExternalIdentity $identity): string {
-        return $this->accounts->create(
+        $accountId = $this->accounts->create(
             AccountOrigin::USER,
             $identity->email,
             $identity->displayName,
         )->id;
+
+        // IdP が検証済みと言っているなら、こちらでも検証済みとして扱う。
+        // ここを立て忘れると ID Token の email_verified が偽のままになり、
+        // RP 側でメールを手がかりにした紐付けができなくなる
+        if ($identity->emailVerified) $this->accounts->markEmailVerified($accountId);
+
+        return $accountId;
     }
 
     /**

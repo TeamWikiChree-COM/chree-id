@@ -45,4 +45,15 @@ interface ChreeAccountRepository {
      * @return void
      */
     public function updateDisplayName(string $id, ?string $displayName): void;
+
+    /**
+     * メールアドレスを差し替える。
+     *
+     * 到達性の確認は呼び出し側の責任。検証済みかどうかはここでは触らない。
+     *
+     * @param string $id アカウントID (ULID)
+     * @param string $email 新しいメールアドレス
+     * @return void
+     */
+    public function updateEmail(string $id, string $email): void;
 }

@@ -57,6 +57,10 @@ class HandleInertiaRequests extends Middleware
                 'recoveryCodes' => $request->session()->get('recoveryCodes'),
                 'passwordReset' => $request->session()->get('passwordReset'),
                 'profileSaved' => $request->session()->get('profileSaved'),
+                'verificationSent' => $request->session()->get('verificationSent'),
+                'emailVerified' => $request->session()->get('emailVerified'),
+                'emailChangeSent' => $request->session()->get('emailChangeSent'),
+                'emailChanged' => $request->session()->get('emailChanged'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

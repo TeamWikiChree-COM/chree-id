@@ -4,6 +4,7 @@ namespace Tests\Feature;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\PendingCommand;
@@ -67,6 +68,23 @@ class PruneExpiredTokensTest extends TestCase {
         $this->prune();
 
         $this->assertSame(1, PendingRegistrationModel::query()->count());
+    }
+
+    // アドレス変更の申し込みも溜めない
+    public function test_deletesExpiredEmailChanges(): void {
+        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        foreach ([now()->subHour(), now()->addHour()] as $expiresAt) {
+            PendingEmailChangeModel::create([
+                'chree_account_id' => $account->id,
+                'new_email' => Str::random(8) . '@example.com',
+                'token_hash' => hash('sha256', Str::random(64)),
+                'expires_at' => $expiresAt,
+            ]);
+        }
+
+        $this->prune();
+
+        $this->assertSame(1, PendingEmailChangeModel::query()->count());
     }
 
     public function test_deletesUnusedExpiredTokens(): void {

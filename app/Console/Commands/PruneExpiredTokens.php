@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
+use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +29,10 @@ class PruneExpiredTokens extends Command {
             PendingRegistrationModel::query()->where('expires_at', '<', now()),
         );
 
+        $emailChanges = $this->prune(
+            PendingEmailChangeModel::query()->where('expires_at', '<', now()),
+        );
+
         $expired = $this->prune(
             OneTimeTokenModel::query()->whereNull('used_at')->where('expires_at', '<', now()),
         );
@@ -39,7 +44,10 @@ class PruneExpiredTokens extends Command {
                 ->where('used_at', '<', now()->subDays($this->days())),
         );
 
-        $this->info("登録申し込み {$registrations} 件、未使用トークン {$expired} 件、使用済みトークン {$used} 件を削除しました");
+        $this->info(
+            "登録申し込み {$registrations} 件、アドレス変更 {$emailChanges} 件、"
+            . "未使用トークン {$expired} 件、使用済みトークン {$used} 件を削除しました"
+        );
 
         return self::SUCCESS;
     }

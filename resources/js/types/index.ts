@@ -55,6 +55,14 @@ declare module '@inertiajs/core' {
                 passwordReset: boolean | null;
                 /** プロフィール保存の直後だけ true */
                 profileSaved: boolean | null;
+                /** 確認メールを送った直後だけ true */
+                verificationSent: boolean | null;
+                /** 確認リンクを開いた直後だけ入る。false なら期限切れなど */
+                emailVerified: boolean | null;
+                /** 変更の確認メールを送った直後だけ true */
+                emailChangeSent: boolean | null;
+                /** 変更リンクを開いた直後だけ入る。false なら期限切れなど */
+                emailChanged: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;

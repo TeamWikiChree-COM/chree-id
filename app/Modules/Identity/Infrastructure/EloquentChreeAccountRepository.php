@@ -63,6 +63,15 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
     }
 
     /**
+     * @param string $id アカウントID (ULID)
+     * @param string $email 新しいメールアドレス
+     * @return void
+     */
+    public function updateEmail(string $id, string $email): void {
+        ChreeAccountModel::query()->whereKey($id)->update(['email' => $email]);
+    }
+
+    /**
      * @param ChreeAccountModel $model
      * @return ChreeAccount
      */

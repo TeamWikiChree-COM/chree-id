@@ -53,6 +53,10 @@ Route::post('/password/reset', [PasswordResetController::class, 'update'])->midd
 // プロフィール
 Route::get('/profile', [ProfileController::class, 'show']);
 Route::post('/profile', [ProfileController::class, 'update']);
+Route::post('/profile/email/verify', [ProfileController::class, 'sendEmailVerification'])->middleware('throttle:register');
+Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmEmail'])->middleware('throttle:verify');
+Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])->middleware('throttle:register');
+Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
 // 認証方法の管理
 Route::get('/security', [SecurityController::class, 'show']);
