@@ -27,6 +27,20 @@ export interface CredentialSummary {
     lastUsedAt: string | null;
 }
 
+/** サービスの信頼状態。PHP の ServiceTrust と合わせる */
+export type TrustValue = 'official' | 'approved' | 'unapproved' | 'disabled';
+
+/** 管理画面が扱う接続サービス。client_secret はここには載らない */
+export interface OAuthClient {
+    id: string;
+    name: string;
+    redirectUris: string[];
+    scopes: string;
+    isConfidential: boolean;
+    trust: TrustValue;
+    createdAt: string | null;
+}
+
 /**
  * HandleInertiaRequests::share が全ページに配る値。
  *
@@ -44,6 +58,8 @@ declare module '@inertiajs/core' {
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;
+            /** 管理画面への導線を出すか */
+            isAdmin: boolean;
         };
     }
 }

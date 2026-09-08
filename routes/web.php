@@ -10,7 +10,9 @@ use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Identity\Http\RegisterController;
+use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
+use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
@@ -65,6 +67,17 @@ Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink
 // 外部 IdP へのログイン (ChreeID が RP 側)
 Route::get('/auth/{provider}/redirect', [ExternalLoginController::class, 'redirect']);
 Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callback']);
+
+// 管理画面。権限が無ければ 404 (そこに何かある事実も伏せる)
+Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void {
+    Route::get('/clients', [AdminClientController::class, 'index']);
+    Route::get('/clients/create', [AdminClientController::class, 'create']);
+    Route::post('/clients', [AdminClientController::class, 'store']);
+    Route::get('/clients/{client}/edit', [AdminClientController::class, 'edit']);
+    Route::post('/clients/{client}', [AdminClientController::class, 'updateClient']);
+    Route::post('/clients/{client}/secret', [AdminClientController::class, 'rotateSecret']);
+    Route::post('/clients/{client}/delete', [AdminClientController::class, 'destroy']);
+});
 
 // OIDC。ディスカバリのパスは仕様で決まっているので変えないこと
 Route::get('/.well-known/openid-configuration', DiscoveryController::class);

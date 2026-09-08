@@ -1,17 +1,18 @@
 <?php
 namespace App\Console\Commands;
 
+use App\Modules\Registry\Application\RegisterClient;
 use App\Modules\Registry\Domain\ServiceTrust;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 /**
  * サービス (OAuth クライアント) を登録する。
  *
- * MVP では登録画面を作らず、このコマンドだけで運用する。
+ * 同じことは管理画面 (/admin/clients) からもできる。登録の中身は RegisterClient にあり、
+ * こちらは入力を整えて結果を表示するだけ。
  */
 class RegisterOAuthClient extends Command {
+    #[\Override]
     protected $signature = 'chreeid:register-client
         {name : サービス名}
         {redirect-uri* : 許可するリダイレクト先 (複数可)}
@@ -19,7 +20,12 @@ class RegisterOAuthClient extends Command {
         {--trust=unapproved : official / approved / unapproved / disabled}
         {--public : PKCE のみの public クライアントにする}';
 
+    #[\Override]
     protected $description = 'ChreeID に接続するサービスを登録する';
+
+    public function __construct(private readonly RegisterClient $register) {
+        parent::__construct();
+    }
 
     /**
      * @return int
@@ -32,28 +38,22 @@ class RegisterOAuthClient extends Command {
             return self::FAILURE;
         }
 
-        $isConfidential = !$this->option('public');
-        $clientId = Str::lower(Str::ulid()->toString());
-        $secret = $isConfidential ? Str::random(64) : null;
-
         /** @var list<string> $redirectUris */
         $redirectUris = $this->argument('redirect-uri');
 
-        OAuthClientModel::create([
-            'id' => $clientId,
-            'secret_hash' => $secret === null ? null : hash('sha256', $secret),
-            'name' => (string) $this->argument('name'),
-            'redirect_uris' => $redirectUris,
-            'scopes' => (string) $this->option('scopes'),
-            'is_confidential' => $isConfidential,
-            'trust' => $trust,
-        ]);
+        $registered = $this->register->execute(
+            (string) $this->argument('name'),
+            $redirectUris,
+            (string) $this->option('scopes'),
+            $trust,
+            !$this->option('public'),
+        );
 
         $this->info('サービスを登録しました');
-        $this->line('client_id     : ' . $clientId);
+        $this->line('client_id     : ' . $registered->client->id);
 
         // 平文を出せるのはこの1回だけ。DB にはハッシュしか残らない
-        if ($secret !== null) $this->line('client_secret : ' . $secret);
+        if ($registered->secret !== null) $this->line('client_secret : ' . $registered->secret);
 
         $this->line('trust         : ' . $trust->value);
         $this->line('redirect_uris : ' . implode(', ', $redirectUris));

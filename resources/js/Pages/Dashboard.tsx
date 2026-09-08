@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -25,6 +25,8 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ account, credentials }: DashboardProps) {
+    const { isAdmin } = usePage().props;
+
     return (
         <>
             <Head title="アカウント" />
@@ -90,6 +92,11 @@ export default function Dashboard({ account, credentials }: DashboardProps) {
                         <Button variant="outlined" color="inherit" onClick={() => router.get('/security')}>
                             ログイン方法を管理
                         </Button>
+                        {isAdmin && (
+                            <Button variant="outlined" color="inherit" onClick={() => router.get('/admin/clients')}>
+                                接続サービスを管理
+                            </Button>
+                        )}
                         <Button color="inherit" onClick={() => router.post('/logout')}>
                             ログアウト
                         </Button>

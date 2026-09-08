@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Registry\Domain\AdminAccess;
 use App\Support\Turnstile\TurnstileVerifier;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -28,6 +31,16 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * @return bool ログイン中のアカウントが管理者か
+     */
+    private function isAdmin(): bool {
+        $accountId = app(ChreeSession::class)->accountId();
+        if ($accountId === null) return false;
+
+        return app(AdminAccess::class)->allows(app(ChreeAccountRepository::class)->findById($accountId));
+    }
+
+    /**
      * Define the props that are shared by default.
      *
      * @see https://inertiajs.com/shared-data
@@ -48,6 +61,9 @@ class HandleInertiaRequests extends Middleware
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める
             'turnstileSiteKey' => app(TurnstileVerifier::class)->siteKey(),
+
+            // 管理画面への導線を出すかどうか。権限そのものはミドルウェアが見る
+            'isAdmin' => $this->isAdmin(),
         ];
     }
 }

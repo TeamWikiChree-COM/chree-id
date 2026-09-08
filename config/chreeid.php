@@ -25,6 +25,15 @@ return [
         'secret_key' => env('CHREEID_TURNSTILE_SECRET_KEY'),
     ],
 
+    /*
+     * 管理画面に入れるアカウントのメールアドレス。カンマ区切り。
+     * 検証済みのアドレスだけを見るので、未検証のまま名乗っても通らない。
+     */
+    'admin_emails' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CHREEID_ADMIN_EMAILS', '')),
+    ))),
+
     /* 登録の確認メールに載せるリンクの有効分数 */
     'registration_ttl_minutes' => (int) env('CHREEID_REGISTRATION_TTL_MINUTES', 60),
 ];
