@@ -15,7 +15,6 @@ use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
 use App\Modules\Provider\Http\UserinfoController;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', DashboardController::class);
@@ -73,6 +72,6 @@ Route::get('/oauth/jwks', JwksController::class);
 Route::get('/oauth/authorize', AuthorizeController::class);
 Route::post('/oauth/authorize/approve', [AuthorizeController::class, 'approve']);
 
-// RP からのサーバ間通信。ブラウザのセッションを使わないので CSRF の対象外にする
-Route::post('/oauth/token', TokenController::class)->withoutMiddleware([ValidateCsrfToken::class]);
+// RP からのサーバ間通信。CSRF の除外は bootstrap/app.php 側で指定している
+Route::post('/oauth/token', TokenController::class);
 Route::get('/oauth/userinfo', UserinfoController::class);

@@ -16,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
+
+        // RP からのサーバ間通信。ブラウザのセッションを使わないので CSRF の対象外にする。
+        // ルート側の withoutMiddleware() では除外されないため、ここで指定する
+        $middleware->validateCsrfTokens(except: [
+            'oauth/token',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
