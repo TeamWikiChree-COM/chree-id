@@ -63,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 'emailChangeSent' => $request->session()->get('emailChangeSent'),
                 'emailChanged' => $request->session()->get('emailChanged'),
                 'serviceRevoked' => $request->session()->get('serviceRevoked'),
+                'migrationOutput' => $request->session()->get('migrationOutput'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

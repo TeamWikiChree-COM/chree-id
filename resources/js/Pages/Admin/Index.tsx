@@ -12,9 +12,11 @@ interface AdminIndexProps {
         accounts: number;
         suspended: number;
     };
+    /** まだ適用されていないマイグレーションの数 */
+    pendingMigrations: number;
 }
 
-export default function AdminIndex({ stats }: AdminIndexProps) {
+export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps) {
     return (
         <AppLayout
             title="システム管理"
@@ -41,6 +43,16 @@ export default function AdminIndex({ stats }: AdminIndexProps) {
                         title="接続サービス"
                         description="ChreeID でログインできるサービスの登録・編集"
                         href="/admin/clients"
+                    />
+                    <NavRow
+                        icon="database"
+                        title="データベース構造"
+                        description={
+                            pendingMigrations === 0
+                                ? '構造は最新です'
+                                : `未適用が ${pendingMigrations} 件あります`
+                        }
+                        href="/admin/migrations"
                     />
                 </Stack>
             </Paper>

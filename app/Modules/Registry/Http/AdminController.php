@@ -2,6 +2,7 @@
 namespace App\Modules\Registry\Http;
 
 use App\Modules\Identity\Infrastructure\ChreeAccountModel;
+use App\Modules\Registry\Application\DatabaseMigrations;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,6 +14,8 @@ use Inertia\Response;
  * ここに置くのは運営としての操作だけ。
  */
 class AdminController {
+    public function __construct(private readonly DatabaseMigrations $migrations) {}
+
     /**
      * @return Response
      */
@@ -23,6 +26,9 @@ class AdminController {
                 'accounts' => ChreeAccountModel::query()->whereNull('deleted_at')->count(),
                 'suspended' => ChreeAccountModel::query()->whereNotNull('suspended_at')->count(),
             ],
+
+            // デプロイ直後は構造が置き去りになる。トップで気付けるようにしておく
+            'pendingMigrations' => count($this->migrations->pending()),
         ]);
     }
 }

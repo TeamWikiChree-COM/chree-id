@@ -18,6 +18,7 @@ use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Registry\Http\AdminAccountController;
 use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Registry\Http\AdminController;
+use App\Modules\Registry\Http\AdminMigrationController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
@@ -96,6 +97,10 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     Route::get('/', AdminController::class);
 
     Route::get('/accounts', [AdminAccountController::class, 'index']);
+
+    // 本番のデプロイは artisan を走らせないので、構造の適用はここから
+    Route::get('/migrations', [AdminMigrationController::class, 'index']);
+    Route::post('/migrations/run', [AdminMigrationController::class, 'run']);
 
     Route::get('/clients', [AdminClientController::class, 'index']);
     Route::get('/clients/create', [AdminClientController::class, 'create']);

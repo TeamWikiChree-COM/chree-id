@@ -75,6 +75,8 @@ declare module '@inertiajs/core' {
                 emailChanged: boolean | null;
                 /** サービスの連携を切った直後だけ true */
                 serviceRevoked: boolean | null;
+                /** マイグレーションを走らせた直後だけ入る artisan の出力 */
+                migrationOutput: string | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;
