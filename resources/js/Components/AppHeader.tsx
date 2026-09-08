@@ -4,6 +4,7 @@ import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
@@ -92,17 +93,25 @@ export default function AppHeader() {
                         {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
                         {isAdmin && <MenuLink label="システム管理" onClick={() => go('/admin')} />}
 
-                        {isLoggedIn && <Divider />}
+                        {isLoggedIn && <Divider sx={{ my: 1 }} />}
 
-                        {/* メニューを閉じずに切り替えたいので MenuItem にはしない */}
-                        <Box
-                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1 }}
+                        {/* メニューを閉じずに切り替えたいので component="div" にする */}
+                        <MenuItem
+                            component="div"
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 2,
+                                cursor: 'default',
+                                '&:hover': { bgcolor: 'transparent' },
+                            }}
                         >
                             <Typography sx={{ fontSize: '1rem' }}>ダークテーマ</Typography>
                             <ToggleSwitch checked={mode === 'dark'} onChange={toggle} label="ダークテーマ" />
-                        </Box>
+                        </MenuItem>
 
-                        <Divider />
+                        <Divider sx={{ my: 1 }} />
 
                         {isLoggedIn ? (
                             <MenuLink
