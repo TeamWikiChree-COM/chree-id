@@ -62,11 +62,10 @@ export default function AppHeader() {
                 </Box>
 
                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                    {isLoggedIn && (
-                        <>
-                            <NavLink href="/">アカウント</NavLink>
-                            <NavLink href="/settings">設定</NavLink>
-                        </>
+                    {isLoggedIn ? (
+                        <NavLink href="/">アカウント</NavLink>
+                    ) : (
+                        <NavLink href="/login">ログイン</NavLink>
                     )}
 
                     <IconButton
@@ -87,14 +86,11 @@ export default function AppHeader() {
                         slotProps={{ paper: { variant: 'outlined', sx: { minWidth: 230, mt: 0.5 } } }}
                     >
                         {isLoggedIn && (
-                            <>
-                                <MenuLink icon="user" label="プロフィール" onClick={() => go('/settings')} />
-                                <MenuLink icon="shield-halved" label="セキュリティ" onClick={() => go('/settings/security')} />
-                            </>
+                            <MenuLink label="設定" onClick={() => go('/settings')} />
                         )}
 
                         {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
-                        {isAdmin && <MenuLink icon="screwdriver-wrench" label="システム管理" onClick={() => go('/admin')} />}
+                        {isAdmin && <MenuLink label="システム管理" onClick={() => go('/admin')} />}
 
                         {isLoggedIn && <Divider />}
 
@@ -102,7 +98,7 @@ export default function AppHeader() {
                         <Box
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1 }}
                         >
-                            <Typography sx={{ fontSize: '0.875rem' }}>ダークテーマ</Typography>
+                            <Typography sx={{ fontSize: '1rem' }}>ダークテーマ</Typography>
                             <ToggleSwitch checked={mode === 'dark'} onChange={toggle} label="ダークテーマ" />
                         </Box>
 
@@ -110,12 +106,11 @@ export default function AppHeader() {
 
                         {isLoggedIn ? (
                             <MenuLink
-                                icon="arrow-right-from-bracket"
                                 label="ログアウト"
                                 onClick={() => { setAnchor(null); router.post('/logout'); }}
                             />
                         ) : (
-                            <MenuLink icon="right-to-bracket" label="ログイン" onClick={() => go('/login')} />
+                            <MenuLink label="ログイン" onClick={() => go('/login')} />
                         )}
                     </Menu>
                 </Stack>
