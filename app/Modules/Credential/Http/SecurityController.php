@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\EnableTotp;
 use App\Modules\Credential\Application\GenerateRecoveryCodes;
 use App\Modules\Credential\Application\RemoveCredential;
@@ -28,6 +29,7 @@ class SecurityController {
         private readonly Totp $totp,
         private readonly GenerateRecoveryCodes $recoveryCodes,
         private readonly RemoveCredential $remove,
+        private readonly EnableMagicLink $enableMagicLink,
     ) {}
 
     /**
@@ -43,6 +45,22 @@ class SecurityController {
             'recoveryCodeCount' => $this->recoveryCodes->remaining($accountId),
             'pendingTotp' => $request->session()->get(self::PENDING_TOTP . '.uri'),
         ]);
+    }
+
+    /**
+     * メールでログインできるようにする。
+     *
+     * 有効化の行が無いとトークンを発行できない (MagicLinkVerifier 参照)。
+     *
+     * @return RedirectResponse
+     */
+    public function enableMagicLink(): RedirectResponse {
+        $accountId = $this->session->accountId();
+        if ($accountId === null) return redirect('/login');
+
+        $this->enableMagicLink->execute($accountId);
+
+        return redirect('/security');
     }
 
     /**

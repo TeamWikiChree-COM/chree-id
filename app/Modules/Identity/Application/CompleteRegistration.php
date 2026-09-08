@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Application;
 
+use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccount;
@@ -18,6 +19,7 @@ class CompleteRegistration {
     public function __construct(
         private readonly ChreeAccountRepository $accounts,
         private readonly SetPassword $setPassword,
+        private readonly EnableMagicLink $enableMagicLink,
     ) {}
 
     /**
@@ -56,6 +58,9 @@ class CompleteRegistration {
 
         $this->setPassword->executeHashed($account->id, $pending->password_hash);
         $this->accounts->markEmailVerified($account->id);
+
+        // ここまで来た時点でメールは届いているので、メールログインも使えるようにしておく
+        $this->enableMagicLink->execute($account->id);
 
         // 使い切りなので消す。used_at を残すより、申し込みが溜まらない方を取る
         $pending->delete();

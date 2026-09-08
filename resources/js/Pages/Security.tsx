@@ -58,6 +58,7 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
     };
 
     const hasTotp = credentials.some((c) => c.type === 'totp');
+    const hasMagicLink = credentials.some((c) => c.type === 'magic_link');
 
     return (
         <>
@@ -152,6 +153,25 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
                                     </Box>
                                 </Stack>
                             </Paper>
+                        )}
+                    </Box>
+
+                    <Box>
+                        <Typography variant="subtitle2" gutterBottom>
+                            メールでログイン
+                        </Typography>
+
+                        {hasMagicLink && <Alert severity="success">有効です</Alert>}
+
+                        {!hasMagicLink && (
+                            <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    パスワードの代わりに、メールで届くリンクからログインできるようにします
+                                </Typography>
+                                <Button variant="outlined" color="inherit" onClick={() => router.post('/security/magic-link')}>
+                                    有効にする
+                                </Button>
+                            </Stack>
                         )}
                     </Box>
 

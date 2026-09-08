@@ -2,6 +2,7 @@
 
 use App\Modules\Credential\Http\ChallengeController;
 use App\Modules\Credential\Http\LoginController;
+use App\Modules\Credential\Http\MagicLinkController;
 use App\Modules\Credential\Http\PasskeyController;
 use App\Modules\Credential\Http\PasswordResetController;
 use App\Modules\Credential\Http\SecurityController;
@@ -33,6 +34,12 @@ Route::post('/register', [RegisterController::class, 'store'])->middleware('thro
 Route::get('/register/sent', [RegisterController::class, 'sent']);
 Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->middleware('throttle:verify');
 
+// メールだけでログインする経路。{token} より先に /sent を置く (でないと sent がトークン扱いになる)
+Route::get('/login/magic', [MagicLinkController::class, 'show']);
+Route::post('/login/magic', [MagicLinkController::class, 'store'])->middleware('throttle:register');
+Route::get('/login/magic/sent', [MagicLinkController::class, 'sent']);
+Route::get('/login/magic/{token}', [MagicLinkController::class, 'consume'])->middleware('throttle:verify');
+
 // パスワード再設定。再設定してもログインはさせない (本人とは限らないため)
 Route::get('/password/forgot', [PasswordResetController::class, 'show']);
 Route::post('/password/forgot', [PasswordResetController::class, 'store'])->middleware('throttle:register');
@@ -48,6 +55,7 @@ Route::post('/security/recovery-codes', [SecurityController::class, 'generateRec
 Route::post('/security/credentials/remove', [SecurityController::class, 'removeCredential']);
 Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
 Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
+Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink']);
 
 // 外部 IdP へのログイン (ChreeID が RP 側)
 Route::get('/auth/{provider}/redirect', [ExternalLoginController::class, 'redirect']);
