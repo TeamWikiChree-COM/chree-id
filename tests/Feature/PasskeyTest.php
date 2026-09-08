@@ -5,13 +5,13 @@ use App\Modules\Credential\Application\StartPasskeyLogin;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
 use App\Modules\Credential\Domain\CredentialRegistry;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Verifiers\PasskeyVerifier;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccount;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 /**
@@ -58,8 +58,17 @@ class PasskeyTest extends TestCase {
         $this->assertNotSame($start->execute()->challenge, $start->execute()->challenge);
     }
 
+    // 実行環境の APP_URL に寄せると CI で落ちるので、issuer をこの場で決めて確かめる
     public function test_rpIdComesFromIssuer(): void {
-        $this->assertSame('chreeid.test', app(PasskeyContext::class)->rpId());
+        Config::set('chreeid.issuer', 'https://id.example.com');
+
+        $this->assertSame('id.example.com', app(PasskeyContext::class)->rpId());
+    }
+
+    public function test_originComesFromIssuer(): void {
+        Config::set('chreeid.issuer', 'https://id.example.com/');
+
+        $this->assertSame('https://id.example.com', app(PasskeyContext::class)->origin());
     }
 
     public function test_isRegisteredInRegistry(): void {
