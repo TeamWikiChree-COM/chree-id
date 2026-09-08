@@ -27,6 +27,23 @@ export default function AppLayout({ title, lead, crumbs, children }: AppLayoutPr
             <Head title={title} />
             <AppHeader />
 
+
+            <Caontainera maxWidth="md">
+            <Typography
+                variant="h1"
+                sx={{
+                    fontSize: '1.375rem',
+                    fontWeight: 700,
+                    pb: 1,
+                    mb: lead === undefined ? 1.5 : 1,
+                    borderBottom: '2px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                {title}
+            </Typography>
+            </Caontainera>
+
             {crumbs !== undefined && (
                 <Container maxWidth="md">
                     <Breadcrumbs items={crumbs} />
@@ -34,20 +51,6 @@ export default function AppLayout({ title, lead, crumbs, children }: AppLayoutPr
             )}
 
             <Container maxWidth="md" sx={{ pt: crumbs === undefined ? 3 : 1, pb: 8 }}>
-                <Typography
-                    variant="h1"
-                    sx={{
-                        fontSize: '1.375rem',
-                        fontWeight: 700,
-                        pb: 1,
-                        mb: lead === undefined ? 1.5 : 1,
-                        borderBottom: '2px solid',
-                        borderColor: 'divider',
-                    }}
-                >
-                    {title}
-                </Typography>
-
                 {lead !== undefined && (
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 2 }}>{lead}</Typography>
                 )}

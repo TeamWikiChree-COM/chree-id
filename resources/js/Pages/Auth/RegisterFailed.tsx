@@ -11,6 +11,7 @@ export default function RegisterFailed({ message }: RegisterFailedProps) {
     return (
         <AuthLayout
             title="登録を完了できません"
+            heading="登録を完了できません"
             footer={
                 <Typography variant="body2">
                     <Link href="/register">登録をやり直す</Link>

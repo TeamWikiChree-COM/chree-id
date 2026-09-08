@@ -35,6 +35,7 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
     return (
         <AuthLayout
             title="2段階認証"
+            heading="2段階認証"
             footer={
                 <Typography variant="body2">
                     <Link component="button" type="button" onClick={() => router.post('/login/challenge/cancel')}>

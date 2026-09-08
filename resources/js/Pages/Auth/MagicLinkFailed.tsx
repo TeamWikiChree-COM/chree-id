@@ -6,6 +6,7 @@ export default function MagicLinkFailed() {
     return (
         <AuthLayout
             title="このリンクは使えません"
+            heading="このリンクは使えません"
             footer={
                 <Typography variant="body2">
                     <Link href="/login/magic">もう一度リンクを送る</Link>

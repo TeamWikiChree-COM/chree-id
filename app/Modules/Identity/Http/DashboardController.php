@@ -5,6 +5,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Linking\Application\ListConnectedServices;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,6 +17,7 @@ class DashboardController {
     public function __construct(
         private readonly ChreeAccountRepository $accounts,
         private readonly ChreeSession $session,
+        private readonly ListConnectedServices $services,
     ) {}
 
     /**
@@ -37,6 +39,7 @@ class DashboardController {
                 'emailVerified' => $account->isEmailVerified(),
             ],
             'credentials' => $this->credentialsOf($accountId),
+            'services' => $this->services->execute($accountId),
         ]);
     }
 

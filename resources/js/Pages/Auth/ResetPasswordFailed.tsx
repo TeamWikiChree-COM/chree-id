@@ -6,6 +6,7 @@ export default function ResetPasswordFailed() {
     return (
         <AuthLayout
             title="このリンクは使えません"
+            heading="このリンクは使えません"
             footer={
                 <Typography variant="body2">
                     <Link href="/password/forgot">もう一度メールを送る</Link>

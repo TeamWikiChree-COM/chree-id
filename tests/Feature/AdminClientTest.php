@@ -78,11 +78,17 @@ class AdminClientTest extends TestCase {
         $this->get('/admin/clients')->assertOk();
     }
 
-    // /admin そのものにも入口を用意する (無いと管理者でも 404 になる)
-    public function test_adminRootRedirectsToClients(): void {
+    // /admin はシステム管理のトップ。利用者向けの設定とは入口を分けている
+    public function test_adminRootShowsPanel(): void {
         $this->loginAs(self::ADMIN_EMAIL);
 
-        $this->get('/admin')->assertRedirect('/admin/clients');
+        $this->get('/admin')->assertOk();
+    }
+
+    public function test_hidesAdminPanelFromNonAdmins(): void {
+        $this->loginAs('someone@example.com');
+
+        $this->get('/admin')->assertNotFound();
     }
 
     public function test_registersClient(): void {

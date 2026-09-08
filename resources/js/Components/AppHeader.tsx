@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -11,39 +10,22 @@ import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Icon from './Icon';
 import InertiaLink from './InertiaLink';
+import MenuLink from './MenuLink';
+import NavLink from './NavLink';
 import ToggleSwitch from './ToggleSwitch';
 import { headerBackground } from '../theme';
 import { useThemeModeContext } from '../lib/theme-mode';
-
-/** ヘッダーのリンク1つ分 */
-function NavLink({ href, children }: { href: string; children: string }) {
-    return (
-        <Typography
-            component={InertiaLink}
-            href={href}
-            sx={{
-                px: 1.5,
-                py: 0.75,
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-                textDecoration: 'none',
-                borderRadius: 1,
-                '&:hover': { bgcolor: 'action.hover', color: 'text.primary' },
-            }}
-        >
-            {children}
-        </Typography>
-    );
-}
 
 /**
  * 全ページ共通のヘッダー。
  *
  * 構成は DokuFarm (ロゴ / ナビ / アカウントメニュー) に合わせ、
  * 半透明 + blur で追従させるところは ModParks の AppBar に合わせている。
+ *
+ * ログインしていないときは、行き先の無いリンクを出さずロゴと表示設定だけにする。
  */
 export default function AppHeader() {
-    const { isAdmin } = usePage().props;
+    const { isAdmin, isLoggedIn } = usePage().props;
     const { mode, toggle } = useThemeModeContext();
     const theme = useTheme();
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -80,15 +62,19 @@ export default function AppHeader() {
                 </Box>
 
                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                    <NavLink href="/">アカウント</NavLink>
-                    <NavLink href="/settings">設定</NavLink>
+                    {isLoggedIn && (
+                        <>
+                            <NavLink href="/">アカウント</NavLink>
+                            <NavLink href="/settings">設定</NavLink>
+                        </>
+                    )}
 
                     <IconButton
-                        aria-label="アカウントメニュー"
+                        aria-label="メニュー"
                         onClick={(event) => setAnchor(event.currentTarget)}
                         sx={{ color: 'text.secondary' }}
                     >
-                        <Icon name="circle-user" />
+                        <Icon name={isLoggedIn ? 'circle-user' : 'bars'} />
                     </IconButton>
 
                     <Menu
@@ -99,22 +85,15 @@ export default function AppHeader() {
                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         slotProps={{ paper: { variant: 'outlined', sx: { minWidth: 230, mt: 0.5 } } }}
                     >
-                        <MenuItem onClick={() => go('/settings')}>
-                            <Icon name="user" sx={{ width: 20, mr: 1, fontSize: '0.875rem' }} />
-                            プロフィール
-                        </MenuItem>
-                        <MenuItem onClick={() => go('/settings/security')}>
-                            <Icon name="shield-halved" sx={{ width: 20, mr: 1, fontSize: '0.875rem' }} />
-                            セキュリティ
-                        </MenuItem>
-                        {isAdmin && (
-                            <MenuItem onClick={() => go('/admin/clients')}>
-                                <Icon name="plug" sx={{ width: 20, mr: 1, fontSize: '0.875rem' }} />
-                                接続サービス
-                            </MenuItem>
+                        {isLoggedIn && <MenuLink icon="user" label="プロフィール" onClick={() => go('/settings')} />}
+                        {isLoggedIn && (
+                            <MenuLink icon="shield-halved" label="セキュリティ" onClick={() => go('/settings/security')} />
                         )}
 
-                        <Divider />
+                        {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
+                        {isAdmin && <MenuLink icon="screwdriver-wrench" label="システム管理" onClick={() => go('/admin')} />}
+
+                        {isLoggedIn && <Divider />}
 
                         {/* メニューを閉じずに切り替えたいので MenuItem にはしない */}
                         <Box
@@ -126,10 +105,15 @@ export default function AppHeader() {
 
                         <Divider />
 
-                        <MenuItem onClick={() => { setAnchor(null); router.post('/logout'); }}>
-                            <Icon name="arrow-right-from-bracket" sx={{ width: 20, mr: 1, fontSize: '0.875rem' }} />
-                            ログアウト
-                        </MenuItem>
+                        {isLoggedIn ? (
+                            <MenuLink
+                                icon="arrow-right-from-bracket"
+                                label="ログアウト"
+                                onClick={() => { setAnchor(null); router.post('/logout'); }}
+                            />
+                        ) : (
+                            <MenuLink icon="right-to-bracket" label="ログイン" onClick={() => go('/login')} />
+                        )}
                     </Menu>
                 </Stack>
             </Container>

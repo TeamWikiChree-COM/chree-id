@@ -12,6 +12,7 @@ export default function MagicLinkSent({ email }: MagicLinkSentProps) {
     return (
         <AuthLayout
             title="ログインリンクを送りました"
+            heading="ログインリンクを送りました"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">パスワードでログインする</Link>

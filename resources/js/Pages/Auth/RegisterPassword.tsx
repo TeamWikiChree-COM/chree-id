@@ -26,7 +26,8 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
     };
 
     return (
-        <AuthLayout title="アカウントの作成">
+        <AuthLayout title="アカウントの作成"
+            heading="パスワードを決める">
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
                     {errors.token && <Alert severity="error">{errors.token}</Alert>}

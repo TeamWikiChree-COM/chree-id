@@ -27,6 +27,7 @@ export default function ResetPassword({ token }: ResetPasswordProps) {
     return (
         <AuthLayout
             title="新しいパスワード"
+            heading="新しいパスワードを決める"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">ログイン画面に戻る</Link>

@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
                 'emailVerified' => $request->session()->get('emailVerified'),
                 'emailChangeSent' => $request->session()->get('emailChangeSent'),
                 'emailChanged' => $request->session()->get('emailChanged'),
+                'serviceRevoked' => $request->session()->get('serviceRevoked'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める
@@ -72,6 +73,9 @@ class HandleInertiaRequests extends Middleware
 
             // 設定が揃っている外部 IdP だけ。押しても何も起きないボタンを出さないため
             'externalIdps' => app(ExternalIdpRegistry::class)->usableNames(),
+
+            // ヘッダーの中身を切り替えるためだけの値。認可には使わない
+            'isLoggedIn' => app(ChreeSession::class)->isLoggedIn(),
         ];
     }
 }

@@ -23,6 +23,7 @@ export default function ForgotPassword() {
     return (
         <AuthLayout
             title="パスワードの再設定"
+            heading="パスワードの再設定"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">ログイン画面に戻る</Link>

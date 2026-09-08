@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
 export default function Register() {
@@ -23,7 +24,8 @@ export default function Register() {
 
     return (
         <AuthLayout
-            title="ChreeID を新規作成"
+            title="アカウント登録"
+            heading="ChreeID を新規作成"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">アカウントをお持ちの方はこちら</Link>
@@ -57,13 +59,14 @@ export default function Register() {
                         メールを送信する
                     </Button>
 
-                    <Divider>または</Divider>
-
-                    <Button component="a" href="/auth/google/redirect" variant="outlined" color="inherit">
-                        Google で続行
-                    </Button>
                 </Stack>
             </Box>
+
+            <Divider sx={{ my: 1 }}>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>または</Typography>
+            </Divider>
+
+            <SocialLogins />
         </AuthLayout>
     );
 }

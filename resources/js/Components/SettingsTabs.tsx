@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 
@@ -7,6 +7,10 @@ import Tabs from '@mui/material/Tabs';
  *
  * 今は項目が少ないのでタブにしている。監査ログや通知設定が増えて
  * 横に溢れるようになったら、左サイドナビへ移す想定 (prototype/design/D 参照)。
+ *
+ * ここに並べるのは利用者自身の設定だけ。運営としての操作 (接続サービスの登録など) は
+ * /admin に置く。同じ画面に混ぜると、自分の設定を触っているつもりで
+ * システム全体を変えてしまう。
  */
 const ITEMS = [
     { href: '/settings', label: 'プロフィール' },
@@ -19,19 +23,13 @@ interface SettingsTabsProps {
 }
 
 export default function SettingsTabs({ current }: SettingsTabsProps) {
-    const { isAdmin } = usePage().props;
-
-    const items = isAdmin
-        ? [...ITEMS, { href: '/admin/clients', label: '接続サービス' }]
-        : [...ITEMS];
-
     return (
         <Tabs
             value={current}
             onChange={(_, href: string) => router.get(href)}
             sx={{ mb: 1, borderBottom: '1px solid', borderColor: 'divider' }}
         >
-            {items.map((item) => (
+            {ITEMS.map((item) => (
                 <Tab key={item.href} value={item.href} label={item.label} />
             ))}
         </Tabs>

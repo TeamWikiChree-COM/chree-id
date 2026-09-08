@@ -41,6 +41,16 @@ export interface OAuthClient {
     createdAt: string | null;
 }
 
+/** 利用者から見た、連携しているサービス */
+export interface ConnectedService {
+    clientId: string;
+    name: string;
+    trust: TrustValue;
+    connectedAt: string | null;
+    /** 有効なアクセストークンが残っているか */
+    hasActiveToken: boolean;
+}
+
 /**
  * HandleInertiaRequests::share が全ページに配る値。
  *
@@ -63,6 +73,8 @@ declare module '@inertiajs/core' {
                 emailChangeSent: boolean | null;
                 /** 変更リンクを開いた直後だけ入る。false なら期限切れなど */
                 emailChanged: boolean | null;
+                /** サービスの連携を切った直後だけ true */
+                serviceRevoked: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;
@@ -70,6 +82,8 @@ declare module '@inertiajs/core' {
             isAdmin: boolean;
             /** 設定が揃っている外部 IdP の識別子 (例: ["google"]) */
             externalIdps: string[];
+            /** ヘッダーの中身を切り替えるためだけの値 */
+            isLoggedIn: boolean;
         };
     }
 }

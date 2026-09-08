@@ -1,4 +1,5 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -6,9 +7,10 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AppLayout from '../Components/AppLayout';
+import RowAction from '../Components/RowAction';
 import Icon from '../Components/Icon';
 import SectionTitle from '../Components/SectionTitle';
-import type { Account, CredentialSummary, CredentialTypeValue } from '../types';
+import type { Account, ConnectedService, CredentialSummary, CredentialTypeValue } from '../types';
 
 const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
     password: 'パスワード',
@@ -29,15 +31,29 @@ const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
 interface DashboardProps {
     account: Account;
     credentials: CredentialSummary[];
+    services: ConnectedService[];
 }
 
-export default function Dashboard({ account, credentials }: DashboardProps) {
+export default function Dashboard({ account, credentials, services }: DashboardProps) {
+    const { flash } = usePage().props;
+
+    const revoke = (service: ConnectedService): void => {
+        const message = `${service.name} との連携を解除します。`
+            + '発行済みのアクセストークンが無効になり、次に使うときは改めてログインが必要です。';
+
+        if (!window.confirm(message)) return;
+
+        router.post(`/services/${service.clientId}/revoke`);
+    };
+
     return (
         <AppLayout
             title="アカウント"
             lead="連携先のサービスに渡される情報と、ログインに使える手段です"
             crumbs={[{ label: 'ChreeID', href: '/' }, { label: 'アカウント' }]}
         >
+            {flash.serviceRevoked && <Alert severity="success" sx={{ mb: 2 }}>連携を解除しました</Alert>}
+
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                     <Box>
@@ -94,6 +110,39 @@ export default function Dashboard({ account, credentials }: DashboardProps) {
                             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
                                 {credential.lastUsedAt ? `最終利用 ${credential.lastUsedAt}` : '未使用'}
                             </Typography>
+                        </Box>
+                    ))}
+                </Stack>
+            </Paper>
+
+            <SectionTitle note={`${services.length}件`}>連携しているサービス</SectionTitle>
+            <Paper variant="outlined">
+                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    {services.length === 0 && (
+                        <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
+                            まだどのサービスとも連携していません
+                        </Typography>
+                    )}
+
+                    {services.map((service) => (
+                        <Box
+                            key={service.clientId}
+                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
+                        >
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
+                                    <Icon name="plug" sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }} />
+                                    {service.name}
+                                    {service.trust === 'official' && <Chip size="small" label="公式" />}
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
+                                    {service.connectedAt ? `${service.connectedAt} に連携` : '連携済み'}
+                                    {!service.hasActiveToken && ' ・ 現在ログインしていません'}
+                                </Typography>
+                            </Box>
+                            <RowAction destructive onClick={() => revoke(service)}>
+                                解除
+                            </RowAction>
                         </Box>
                     ))}
                 </Stack>

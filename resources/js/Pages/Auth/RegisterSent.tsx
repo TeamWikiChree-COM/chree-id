@@ -12,6 +12,7 @@ export default function RegisterSent({ email }: RegisterSentProps) {
     return (
         <AuthLayout
             title="確認メールを送りました"
+            heading="確認メールを送りました"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">ログイン画面に戻る</Link>

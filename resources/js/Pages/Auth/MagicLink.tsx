@@ -23,6 +23,7 @@ export default function MagicLink() {
     return (
         <AuthLayout
             title="メールでログイン"
+            heading="マジックリンクでログイン"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">パスワードでログインする</Link>

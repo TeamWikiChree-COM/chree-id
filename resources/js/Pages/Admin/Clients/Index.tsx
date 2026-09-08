@@ -1,15 +1,14 @@
-import { Head, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import AppLayout from '../../../Components/AppLayout';
+import Icon from '../../../Components/Icon';
+import SectionTitle from '../../../Components/SectionTitle';
 import type { OAuthClient, TrustValue } from '../../../types';
 
 /** 信頼状態の表示。値そのものを出すと何が起きるか分からないので言い換える */
@@ -34,88 +33,65 @@ interface IndexProps {
 
 export default function Index({ clients, issued }: IndexProps) {
     return (
-        <>
-            <Head title="接続サービス" />
-
-            <Container maxWidth="md" sx={{ py: 6 }}>
-                <Stack spacing={3}>
-                    <Box>
-                        <Typography variant="h6" component="h1">
-                            接続サービス
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            ChreeID でログインできるサービスを管理します
-                        </Typography>
+        <AppLayout
+            title="接続サービス"
+            lead="ChreeID でログインできるサービスを管理します"
+            crumbs={[
+                { label: 'ChreeID', href: '/' },
+                { label: 'システム管理', href: '/admin' },
+                { label: '接続サービス' },
+            ]}
+        >
+            {issued?.secret && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                    <Typography sx={{ fontSize: '0.875rem', mb: 0.5 }}>
+                        この画面を離れると client_secret は二度と表示されません
+                    </Typography>
+                    <Box component="pre" sx={{ m: 0, fontSize: '0.8125rem', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                        {`client_id     : ${issued.clientId}
+client_secret : ${issued.secret}`}
                     </Box>
+                </Alert>
+            )}
 
-                    {issued?.secret && (
-                        <Alert severity="warning">
-                            <Typography variant="body2" gutterBottom>
-                                この画面を離れると client_secret は二度と表示されません
-                            </Typography>
-                            <Box component="pre" sx={{ m: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                                {`client_id     : ${issued.clientId}\nclient_secret : ${issued.secret}`}
-                            </Box>
-                        </Alert>
+            <Button variant="contained" startIcon={<Icon name="plus" />} onClick={() => router.get('/admin/clients/create')}>
+                サービスを登録
+            </Button>
+
+            <SectionTitle note={`${clients.length}件`}>登録済み</SectionTitle>
+            <Paper variant="outlined">
+                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    {clients.length === 0 && (
+                        <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
+                            登録されていません
+                        </Typography>
                     )}
 
-                    <Box>
-                        <Button variant="contained" onClick={() => router.get('/admin/clients/create')}>
-                            サービスを登録
-                        </Button>
-                    </Box>
-
-                    <Paper sx={{ border: '1px solid', borderColor: 'divider' }}>
-                        <List dense disablePadding>
-                            {clients.length === 0 && (
-                                <ListItem>
-                                    <ListItemText primary="登録されていません" />
-                                </ListItem>
-                            )}
-
-                            {clients.map((client) => (
-                                <ListItem
-                                    key={client.id}
-                                    divider
-                                    secondaryAction={
-                                        <Button
-                                            size="small"
-                                            color="inherit"
-                                            onClick={() => router.get(`/admin/clients/${client.id}/edit`)}
-                                        >
-                                            編集
-                                        </Button>
-                                    }
-                                >
-                                    <ListItemText
-                                        primary={
-                                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                                                <span>{client.name}</span>
-                                                <Chip size="small" label={TRUST_LABELS[client.trust]} />
-                                                {!client.isConfidential && <Chip size="small" label="public" />}
-                                            </Stack>
-                                        }
-                                        secondary={
-                                            <Box component="span" sx={{ display: 'block' }}>
-                                                <Box component="code">{client.id}</Box>
-                                                <Box component="span" sx={{ display: 'block' }}>
-                                                    {client.redirectUris.join(' / ')}
-                                                </Box>
-                                            </Box>
-                                        }
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Paper>
-
-                    <Box>
-                        <Button color="inherit" onClick={() => router.get('/')}>
-                            アカウントに戻る
-                        </Button>
-                    </Box>
+                    {clients.map((client) => (
+                        <Box
+                            key={client.id}
+                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
+                        >
+                            <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
+                                    {client.name}
+                                    <Chip size="small" label={TRUST_LABELS[client.trust]} />
+                                    {!client.isConfidential && <Chip size="small" label="public" />}
+                                </Typography>
+                                <Typography component="code" sx={{ display: 'block', fontSize: '0.8125rem', color: 'text.disabled' }}>
+                                    {client.id}
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', wordBreak: 'break-all' }}>
+                                    {client.redirectUris.join(' / ')}
+                                </Typography>
+                            </Box>
+                            <Button size="small" color="inherit" onClick={() => router.get(`/admin/clients/${client.id}/edit`)}>
+                                編集
+                            </Button>
+                        </Box>
+                    ))}
                 </Stack>
-            </Container>
-        </>
+            </Paper>
+        </AppLayout>
     );
 }

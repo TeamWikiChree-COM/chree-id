@@ -12,6 +12,7 @@ export default function ForgotPasswordSent({ email }: ForgotPasswordSentProps) {
     return (
         <AuthLayout
             title="再設定メールを送りました"
+            heading="再設定メールを送りました"
             footer={
                 <Typography variant="body2">
                     <Link href="/login">ログイン画面に戻る</Link>

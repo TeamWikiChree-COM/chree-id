@@ -1,8 +1,7 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
@@ -11,6 +10,9 @@ import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
+import AppLayout from '../../../Components/AppLayout';
+import Icon from '../../../Components/Icon';
+import SectionTitle from '../../../Components/SectionTitle';
 import type { OAuthClient } from '../../../types';
 
 interface TrustOption {
@@ -72,113 +74,107 @@ export default function Form({ client, trustOptions }: FormProps) {
     };
 
     return (
-        <>
-            <Head title={isNew ? 'サービスを登録' : 'サービスの設定'} />
+        <AppLayout
+            title={isNew ? 'サービスを登録' : client.name}
+            crumbs={[
+                { label: 'ChreeID', href: '/' },
+                { label: 'システム管理', href: '/admin' },
+                { label: '接続サービス', href: '/admin/clients' },
+                { label: isNew ? '登録' : '設定' },
+            ]}
+        >
+            {!isNew && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                    <Box component="code" sx={{ wordBreak: 'break-all' }}>{client.id}</Box>
+                </Alert>
+            )}
 
-            <Container maxWidth="sm" sx={{ py: 6 }}>
-                <Stack spacing={3}>
-                    <Typography variant="h6" component="h1">
-                        {isNew ? 'サービスを登録' : client.name}
-                    </Typography>
+            <Paper variant="outlined" sx={{ p: 2 }}>
+                <Box component="form" onSubmit={submit} noValidate>
+                    <Stack spacing={2}>
+                        <TextField
+                            label="サービス名"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            error={Boolean(errors.name)}
+                            helperText={errors.name ?? '同意画面に出ます'}
+                            autoFocus
+                            required
+                        />
 
-                    {!isNew && (
-                        <Alert severity="info">
-                            <Box component="code" sx={{ wordBreak: 'break-all' }}>{client.id}</Box>
-                        </Alert>
-                    )}
+                        <TextField
+                            label="リダイレクト先"
+                            value={data.redirect_uris}
+                            onChange={(e) => setData('redirect_uris', e.target.value)}
+                            error={Boolean(errors.redirect_uris)}
+                            helperText={errors.redirect_uris ?? '1行に1つ。完全一致で照合します'}
+                            multiline
+                            minRows={3}
+                            required
+                        />
 
-                    <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-                        <Box component="form" onSubmit={submit} noValidate>
-                            <Stack spacing={2}>
-                                <TextField
-                                    label="サービス名"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    error={Boolean(errors.name)}
-                                    helperText={errors.name ?? '同意画面に出ます'}
-                                    autoFocus
-                                    required
-                                />
+                        <TextField
+                            label="スコープ"
+                            value={data.scopes}
+                            onChange={(e) => setData('scopes', e.target.value)}
+                            error={Boolean(errors.scopes)}
+                            helperText={errors.scopes ?? '空白区切り'}
+                            required
+                        />
 
-                                <TextField
-                                    label="リダイレクト先"
-                                    value={data.redirect_uris}
-                                    onChange={(e) => setData('redirect_uris', e.target.value)}
-                                    error={Boolean(errors.redirect_uris)}
-                                    helperText={errors.redirect_uris ?? '1行に1つ。完全一致で照合します'}
-                                    multiline
-                                    minRows={3}
-                                    required
-                                />
+                        <TextField
+                            label="信頼状態"
+                            value={data.trust}
+                            onChange={(e) => setData('trust', e.target.value)}
+                            error={Boolean(errors.trust)}
+                            helperText={errors.trust}
+                            select
+                        >
+                            {trustOptions.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
 
-                                <TextField
-                                    label="スコープ"
-                                    value={data.scopes}
-                                    onChange={(e) => setData('scopes', e.target.value)}
-                                    error={Boolean(errors.scopes)}
-                                    helperText={errors.scopes ?? '空白区切り'}
-                                    required
-                                />
-
-                                <TextField
-                                    label="信頼状態"
-                                    value={data.trust}
-                                    onChange={(e) => setData('trust', e.target.value)}
-                                    error={Boolean(errors.trust)}
-                                    helperText={errors.trust}
-                                    select
-                                >
-                                    {trustOptions.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-
-                                {isNew && (
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={data.is_confidential}
-                                                onChange={(e) => setData('is_confidential', e.target.checked)}
-                                            />
-                                        }
-                                        label="client_secret を発行する"
+                        {isNew && (
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={data.is_confidential}
+                                        onChange={(e) => setData('is_confidential', e.target.checked)}
                                     />
-                                )}
+                                }
+                                label="client_secret を発行する"
+                            />
+                        )}
 
-                                <Button type="submit" variant="contained" disabled={processing}>
-                                    {isNew ? '登録する' : '保存する'}
-                                </Button>
-                            </Stack>
+                        <Box>
+                            <Button type="submit" variant="contained" disabled={processing}>
+                                {isNew ? '登録する' : '保存する'}
+                            </Button>
                         </Box>
-                    </Paper>
+                    </Stack>
+                </Box>
+            </Paper>
 
-                    {!isNew && (
-                        <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-                            <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
-                                <Typography variant="subtitle2">このサービスの操作</Typography>
-
-                                {client.isConfidential && (
-                                    <Button variant="outlined" color="inherit" onClick={rotate}>
-                                        client_secret を作り直す
-                                    </Button>
-                                )}
-
-                                <Button variant="outlined" color="error" onClick={remove}>
-                                    削除する
+            {!isNew && (
+                <>
+                    <SectionTitle>このサービスの操作</SectionTitle>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                        <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                            {client.isConfidential && (
+                                <Button variant="outlined" color="inherit" startIcon={<Icon name="rotate" />} onClick={rotate}>
+                                    client_secret を作り直す
                                 </Button>
-                            </Stack>
-                        </Paper>
-                    )}
-
-                    <Box>
-                        <Button color="inherit" onClick={() => router.get('/admin/clients')}>
-                            一覧に戻る
-                        </Button>
-                    </Box>
-                </Stack>
-            </Container>
-        </>
+                            )}
+                            <Button variant="outlined" color="error" startIcon={<Icon name="trash" />} onClick={remove}>
+                                削除する
+                            </Button>
+                        </Stack>
+                    </Paper>
+                </>
+            )}
+        </AppLayout>
     );
 }

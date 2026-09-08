@@ -5,11 +5,12 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
+import AppHeader from './AppHeader';
 
 interface AuthLayoutProps {
-    /** ブラウザのタイトル。カードの中には出さない */
+    /** ブラウザのタイトル */
     title: string;
-    /** カードの中の見出し。省略するとサービス名だけになる */
+    /** カードの中の見出し。サービス名の下に置く */
     heading?: string;
     children: ReactNode;
     /** 枠の下に置くリンクなど */
@@ -27,8 +28,9 @@ export default function AuthLayout({ title, heading, children, footer }: AuthLay
     return (
         <>
             <Head title={title} />
+            <AppHeader />
 
-            <Container maxWidth="xs" sx={{ py: 7 }}>
+            <Container maxWidth="xs" sx={{ py: 6 }}>
                 <Paper variant="outlined" sx={{ p: 4 }}>
                     <Box sx={{ textAlign: 'center', mb: 3.5 }}>
                         <Box
@@ -37,10 +39,7 @@ export default function AuthLayout({ title, heading, children, footer }: AuthLay
                             alt=""
                             sx={{ width: 36, height: 36, verticalAlign: '-0.5rem', mr: 1 }}
                         />
-                        <Box
-                            component="span"
-                            sx={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.01em' }}
-                        >
+                        <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
                             ChreeID
                         </Box>
 

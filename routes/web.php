@@ -9,10 +9,12 @@ use App\Modules\Credential\Http\SecurityController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\ProfileController;
+use App\Modules\Linking\Http\ConnectedServiceController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Registry\Http\AdminClientController;
+use App\Modules\Registry\Http\AdminController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
@@ -66,6 +68,9 @@ Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmE
 Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])->middleware('throttle:register');
 Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
+// 連携しているサービスを利用者自身が切る。管理画面の接続サービスとは別物
+Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'destroy']);
+
 // 認証方法の管理
 Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);
 Route::post('/security/totp/confirm', [SecurityController::class, 'confirmTotp']);
@@ -81,8 +86,7 @@ Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callba
 
 // 管理画面。権限が無ければ 404 (そこに何かある事実も伏せる)
 Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void {
-    // 入口。今は接続サービスしか無いのでそこへ送る
-    Route::get('/', fn () => redirect('/admin/clients'));
+    Route::get('/', AdminController::class);
 
     Route::get('/clients', [AdminClientController::class, 'index']);
     Route::get('/clients/create', [AdminClientController::class, 'create']);
