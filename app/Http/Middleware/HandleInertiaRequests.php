@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
             // 復旧コードの平文は発行直後の1回しか出せないので、フラッシュで渡す
             'flash' => [
                 'recoveryCodes' => $request->session()->get('recoveryCodes'),
+                'passwordReset' => $request->session()->get('passwordReset'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

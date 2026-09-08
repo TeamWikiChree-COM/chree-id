@@ -3,6 +3,7 @@
 use App\Modules\Credential\Http\ChallengeController;
 use App\Modules\Credential\Http\LoginController;
 use App\Modules\Credential\Http\PasskeyController;
+use App\Modules\Credential\Http\PasswordResetController;
 use App\Modules\Credential\Http\SecurityController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
@@ -31,6 +32,13 @@ Route::get('/register', [RegisterController::class, 'show']);
 Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:register');
 Route::get('/register/sent', [RegisterController::class, 'sent']);
 Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->middleware('throttle:verify');
+
+// パスワード再設定。再設定してもログインはさせない (本人とは限らないため)
+Route::get('/password/forgot', [PasswordResetController::class, 'show']);
+Route::post('/password/forgot', [PasswordResetController::class, 'store'])->middleware('throttle:register');
+Route::get('/password/forgot/sent', [PasswordResetController::class, 'sent']);
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'edit'])->middleware('throttle:verify');
+Route::post('/password/reset', [PasswordResetController::class, 'update'])->middleware('throttle:verify');
 
 // 認証方法の管理
 Route::get('/security', [SecurityController::class, 'show']);

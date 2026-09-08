@@ -37,6 +37,8 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             flash: {
                 recoveryCodes: string[] | null;
+                /** パスワード再設定の直後だけ true。ログイン画面で知らせる */
+                passwordReset: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;

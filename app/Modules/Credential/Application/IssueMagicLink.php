@@ -4,18 +4,19 @@ namespace App\Modules\Credential\Application;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
  * マジックリンクのトークンを発行する。
  *
- * 平文を返すのはこの1回だけで、DB にはハッシュしか残らない。
- * メールを送るのは呼び出し側の仕事。
+ * メールが登録されているだけで送れてしまうと「credentials が0件 = ログインする材料が無い」
+ * が崩れるため、有効化されていない場合は発行しない。
  */
 class IssueMagicLink {
     /** 発行から失効までの分数 */
     private const EXPIRES_MINUTES = 15;
+
+    public function __construct(private readonly IssueOneTimeToken $issue) {}
 
     /**
      * @param string $accountId アカウントID (ULID)
@@ -27,16 +28,7 @@ class IssueMagicLink {
             throw new RuntimeException("メールログインが有効になっていません: {$accountId}");
         }
 
-        $token = Str::random(64);
-
-        OneTimeTokenModel::create([
-            'chree_account_id' => $accountId,
-            'token_hash' => hash('sha256', $token),
-            'purpose' => OneTimeTokenModel::PURPOSE_LOGIN,
-            'expires_at' => now()->addMinutes(self::EXPIRES_MINUTES),
-        ]);
-
-        return $token;
+        return $this->issue->execute($accountId, OneTimeTokenModel::PURPOSE_LOGIN, self::EXPIRES_MINUTES);
     }
 
     /**

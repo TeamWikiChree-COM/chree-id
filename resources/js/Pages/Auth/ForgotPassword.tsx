@@ -2,7 +2,6 @@ import { Link, useForm } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -10,25 +9,23 @@ import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
-export default function Register() {
+export default function ForgotPassword() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
-        display_name: '',
-        password: '',
         'cf-turnstile-response': '',
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        post('/register');
+        post('/password/forgot');
     };
 
     return (
         <AuthLayout
-            title="ChreeID を新規作成"
+            title="パスワードの再設定"
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">アカウントをお持ちの方はこちら</Link>
+                    <Link href="/login">ログイン画面に戻る</Link>
                 </Typography>
             }
         >
@@ -38,6 +35,10 @@ export default function Register() {
                     {errors['cf-turnstile-response'] && (
                         <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
                     )}
+
+                    <Typography variant="body2" color="text.secondary">
+                        登録したメールアドレスに、再設定用のリンクを送ります。
+                    </Typography>
 
                     <TextField
                         label="メールアドレス"
@@ -49,36 +50,10 @@ export default function Register() {
                         required
                     />
 
-                    <TextField
-                        label="表示名"
-                        value={data.display_name}
-                        onChange={(e) => setData('display_name', e.target.value)}
-                        error={Boolean(errors.display_name)}
-                        helperText={errors.display_name ?? '任意。後から変更できます'}
-                        autoComplete="nickname"
-                    />
-
-                    <TextField
-                        label="パスワード"
-                        type="password"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                        error={Boolean(errors.password)}
-                        helperText={errors.password ?? '8文字以上'}
-                        autoComplete="new-password"
-                        required
-                    />
-
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" disabled={processing}>
-                        確認メールを送る
-                    </Button>
-
-                    <Divider>または</Divider>
-
-                    <Button component="a" href="/auth/google/redirect" variant="outlined" color="inherit">
-                        Google で続行
+                        再設定メールを送る
                     </Button>
                 </Stack>
             </Box>
