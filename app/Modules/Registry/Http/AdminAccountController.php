@@ -24,6 +24,8 @@ class AdminAccountController {
         $models = ChreeAccountModel::query()
             ->whereNull('deleted_at')
             ->orderByDesc('created_at')
+            // 同じ秒に作られた分の並びが揺れないよう、ULID で決着を付ける
+            ->orderByDesc('id')
             ->get()
             ->all();
 
