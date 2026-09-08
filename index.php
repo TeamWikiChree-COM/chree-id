@@ -2,9 +2,9 @@
 /**
  * ChreeID - Root Front Controller with Debug Catch
  */
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
+// ini_set('display_errors', '1');
+// ini_set('display_startup_errors', '1');
+// error_reporting(E_ALL);
 
 register_shutdown_function(function () {
     $error = error_get_last();
