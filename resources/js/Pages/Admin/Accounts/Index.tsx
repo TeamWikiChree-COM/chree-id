@@ -70,9 +70,13 @@ export default function Index({ accounts }: IndexProps) {
                                     <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>
                                         {account.displayName || '(未設定)'}
                                     </Typography>
+                                    <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        label={account.origin === 'service' ? 'サービス連携' : 'ユーザー'}
+                                    />
                                     {account.isAdmin && <Chip size="small" color="primary" label="管理者" />}
                                     {account.isSuspended && <Chip size="small" color="error" label="停止中" />}
-                                    {account.origin === 'service' && <Chip size="small" label="サービス連携" />}
                                     {account.email && (
                                         <Chip
                                             size="small"
