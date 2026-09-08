@@ -55,7 +55,8 @@ class GenerateSigningKey extends Command {
         }
 
         // 既存の鍵を黙って差し替えると、発行済みの ID Token が全部検証できなくなる
-        if (config('chreeid.signing_key') !== null && !$this->confirm('既に鍵があります。差し替えますか?')) {
+        $existing = config('chreeid.signing_key');
+        if (is_string($existing) && $existing !== '' && !$this->confirm('既に鍵があります。差し替えますか?')) {
             return self::SUCCESS;
         }
 
