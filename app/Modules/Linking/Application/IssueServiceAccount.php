@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Application;
 
+use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
@@ -22,6 +23,7 @@ class IssueServiceAccount {
     public function __construct(
         private readonly ChreeAccountRepository $accounts,
         private readonly ResolveSubject $subjects,
+        private readonly AdoptPasswordHash $passwords,
     ) {}
 
     /**
@@ -30,6 +32,7 @@ class IssueServiceAccount {
      * @param string|null $email サービスが把握しているアドレス
      * @param bool $emailVerified サービス側で到達性を確認済みか
      * @param string|null $displayName 表示名
+     * @param string|null $passwordHash 移行元が持っていた bcrypt ハッシュ
      * @return string サービスに渡す sub
      */
     public function execute(
@@ -38,6 +41,7 @@ class IssueServiceAccount {
         ?string $email = null,
         bool $emailVerified = false,
         ?string $displayName = null,
+        ?string $passwordHash = null,
     ): string {
         $existing = ServiceAccountLinkModel::query()
             ->where('client_id', $client->id)
@@ -50,6 +54,10 @@ class IssueServiceAccount {
         $accountId = DB::transaction(
             fn (): string => $this->link($client, $serviceUserId, $email, $emailVerified, $displayName),
         );
+
+        // 移行元のパスワードをそのまま使えるようにする。
+        // これが無いと、認証手段の無いアカウントが出来上がって本人が入れない
+        if ($passwordHash !== null) $this->passwords->execute($accountId, $passwordHash);
 
         return $this->subjects->execute($client, $accountId);
     }

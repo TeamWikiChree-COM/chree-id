@@ -42,10 +42,13 @@ class ServiceAccountController {
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'email_verified' => ['boolean'],
             'display_name' => ['nullable', 'string', 'max:100'],
+            // 平文は受け取らない。移行元が保存している bcrypt ハッシュをそのまま渡してもらう
+            'password_hash' => ['nullable', 'string', 'max:255'],
         ]);
 
         $email = $request->string('email')->trim()->toString();
         $displayName = $request->string('display_name')->trim()->toString();
+        $passwordHash = $request->string('password_hash')->toString();
 
         $sub = $this->issue->execute(
             $client,
@@ -53,6 +56,7 @@ class ServiceAccountController {
             $email === '' ? null : $email,
             $request->boolean('email_verified'),
             $displayName === '' ? null : $displayName,
+            $passwordHash === '' ? null : $passwordHash,
         );
 
         return response()->json(['sub' => $sub]);

@@ -1,6 +1,9 @@
 <?php
 namespace Tests\Feature;
 
+use App\Modules\Credential\Application\SetPassword;
+use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
@@ -8,6 +11,7 @@ use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -16,6 +20,12 @@ class ServiceAccountApiTest extends TestCase {
     use RefreshDatabase;
 
     private const SECRET = 'service-secret';
+
+    #[\Override]
+    protected function setUp(): void {
+        parent::setUp();
+        RateLimiter::clear('login');
+    }
 
     /**
      * @param ServiceTrust $trust 信頼状態
@@ -160,6 +170,53 @@ class ServiceAccountApiTest extends TestCase {
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => false]);
 
         $this->assertFalse(app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->isEmailVerified());
+    }
+
+    // --- パスワードの引き継ぎ ---
+
+    // 移行元と同じ bcrypt なので、ハッシュをそのまま移せば平文を運ばずに済む
+    public function test_adoptsTheMigratedPasswordHash(): void {
+        $client = $this->client();
+        $hash = password_hash('correct-horse', PASSWORD_DEFAULT);
+
+        $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true, 'password_hash' => $hash]);
+
+        $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse'])
+            ->assertRedirect('/');
+        $this->assertNotNull(session('chreeid.account_id'));
+    }
+
+    public function test_rejectsAHashThatIsNotBcrypt(): void {
+        $client = $this->client();
+
+        $this->issue($client, ['password_hash' => 'not-a-hash'])->assertOk();
+
+        $link = ServiceAccountLinkModel::query()->firstOrFail();
+        $this->assertSame(0, CredentialModel::query()
+            ->where('chree_account_id', $link->chree_account_id)
+            ->where('type', CredentialType::PASSWORD)
+            ->count());
+    }
+
+    // 本人が ChreeID で決め直した後に、サービスの古いハッシュで巻き戻さない
+    public function test_doesNotOverwriteAPasswordTheOwnerAlreadySet(): void {
+        $accounts = app(ChreeAccountRepository::class);
+        $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
+        $accounts->markEmailVerified($existing->id);
+        app(SetPassword::class)->execute($existing->id, 'chosen-in-chreeid');
+
+        $client = $this->client();
+        $this->issue($client, [
+            'email' => 'user@example.com',
+            'email_verified' => true,
+            'password_hash' => password_hash('old-service-password', PASSWORD_DEFAULT),
+        ]);
+
+        $this->post('/login', ['email' => 'user@example.com', 'password' => 'old-service-password'])
+            ->assertSessionHasErrors('email');
+
+        $this->post('/login', ['email' => 'user@example.com', 'password' => 'chosen-in-chreeid'])
+            ->assertRedirect('/');
     }
 
     // --- 呼べる相手を絞る ---

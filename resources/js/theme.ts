@@ -124,7 +124,33 @@ export function buildTheme(mode: PaletteMode): Theme {
 
             MuiOutlinedInput: {
                 styleOverrides: {
-                    notchedOutline: { borderColor: surface.borderStrong },
+                    root: {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                            borderColor: surface.borderStrong,
+                            transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: mode === 'light' ? '#9ca3af' : '#6b7280',
+                        },
+                        '&.Mui-focused': {
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: palette.primary.main,
+                                borderWidth: '1px',
+                                boxShadow: `0 0 0 1px ${palette.primary.main}`,
+                            },
+                        },
+                    },
+                    input: {
+                        outline: 'none',
+                    },
+                },
+            },
+
+            MuiMenuItem: {
+                styleOverrides: {
+                    root: {
+                        transition: 'background-color 0.15s ease-in-out, color 0.15s ease-in-out',
+                    },
                 },
             },
 
