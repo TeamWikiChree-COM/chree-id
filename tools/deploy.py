@@ -3,8 +3,10 @@
 
 安全設計:
   - 転送対象は `git ls-files` の結果から .deploy-ignore の除外を引いたもの。
-    追跡外の vendor/ や public/build/ は送らないため、依存関係とビルド成果物は
-    サーバ側で composer install / npm run build して用意する。
+    追跡外の vendor/ は送らないため、依存関係はサーバ側で composer install する。
+  - 例外として .deploy-include に書いたパスは、git 追跡外でも毎回そのまま送る。
+    ビルド成果物 (public/build) のように「リポジトリに置きたくないが
+    サーバには要る」ものを、履歴を汚さずに届けるための口。
   - サーバ側ファイルの削除は既定で行わない。--delete を明示した時だけ。
   - 前回デプロイ成功時のコミットを .deploy-state に記録し、次回はその差分のみ送る。
 
@@ -40,6 +42,7 @@ for stream in (sys.stdout, sys.stderr):
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STATE_FILE = REPO_ROOT / ".deploy-state"
 IGNORE_FILE = REPO_ROOT / ".deploy-ignore"
+INCLUDE_FILE = REPO_ROOT / ".deploy-include"
 
 # .deploy-ignore が無いときの既定 (詳しい理由はそのファイルのコメントを参照)。
 DEFAULT_EXCLUDES = ("tools/", "storage/", ".vscode/", ".github/", ".user.ini")
@@ -310,6 +313,39 @@ def commit_exists(sha: str) -> bool:
     return result.returncode == 0
 
 
+def load_includes() -> tuple[str, ...]:
+    """.deploy-include を読む。
+
+    git 追跡外でも毎回送るパスを 1 行 1 件で書く。ディレクトリなら末尾に / を付ける。
+    差分計算は git の履歴を見るので、追跡外のファイルは差分に現れない。
+    そのため、ここに挙げたものは毎回まるごと送る。
+    """
+    if not INCLUDE_FILE.is_file():
+        return ()
+
+    patterns = []
+    for raw in INCLUDE_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if line:
+            patterns.append(line)
+    return tuple(patterns)
+
+
+def collect_forced(includes: tuple[str, ...]) -> list[str]:
+    """.deploy-include に挙げたパスを、実在するファイルへ展開する。"""
+    found: set[str] = set()
+    for pattern in includes:
+        target = REPO_ROOT / pattern.rstrip("/")
+        if target.is_dir():
+            for path in target.rglob("*"):
+                if path.is_file():
+                    found.add(path.relative_to(REPO_ROOT).as_posix())
+        elif target.is_file():
+            found.add(target.relative_to(REPO_ROOT).as_posix())
+
+    return sorted(found)
+
+
 def collect_changes(full: bool, excludes: tuple[str, ...]) -> tuple[list[tuple[str, str]], list[str], str]:
     """(アップロード対象 [(状態, パス)], 削除候補, 基準の説明) を返す。"""
     head = git("rev-parse", "HEAD").strip()
@@ -353,7 +389,7 @@ def collect_changes(full: bool, excludes: tuple[str, ...]) -> tuple[list[tuple[s
     )
 
 
-LABELS = {"A": "追加", "M": "変更", "T": "種別変更", "C": "コピー", "ALL": "全件"}
+LABELS = {"A": "追加", "M": "変更", "T": "種別変更", "C": "コピー", "ALL": "全件", "FORCED": "追跡外"}
 
 
 def print_plan(upload: list[tuple[str, str]], delete: list[str], will_delete: bool) -> None:
@@ -398,10 +434,23 @@ def main() -> int:
     if excludes:
         print("除外パス: " + ", ".join(excludes))
 
+    includes = load_includes()
+    if includes:
+        print("追跡外でも送る: " + ", ".join(includes))
+
     if git("status", "--porcelain").strip():
         print("警告: 未コミットの変更があります。デプロイされるのは HEAD の内容です。\n")
 
     upload, delete, reason = collect_changes(args.full, excludes)
+
+    # 追跡外の強制送信分を足す。git の差分には現れないので毎回まるごと送る
+    forced = collect_forced(includes)
+    known = {path for _, path in upload}
+    upload = sorted(upload + [("FORCED", p) for p in forced if p not in known])
+
+    if includes and not forced:
+        print("警告: .deploy-include に挙げたパスに送るファイルがありません。"
+              "ビルドを実行し忘れていないか確認してください。\n")
 
     print(f"\n対象: {reason}")
     print(f"アップロード {len(upload)} 件 / 削除候補 {len(delete)} 件\n")

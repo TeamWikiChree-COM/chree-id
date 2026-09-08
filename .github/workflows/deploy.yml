@@ -37,7 +37,7 @@ jobs:
     name: Deploy (${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }})
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # ビルド成果物をリポジトリへ push するために必要
+      contents: read  # ビルド成果物を push しなくなったので読み取りだけでよい
     environment: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
     env:
       DEPLOY_ENV: ${{ inputs.environment || (github.ref_name == 'main' && 'prod') || 'test' }}
@@ -121,53 +121,20 @@ jobs:
           FTP_DIR=$FINAL_DIR
           EOF
 
-      - name: Detect frontend changes
-        id: frontend
-        run: |
-          # デプロイ状態ファイルから前回コミットを取得
-          if [ -f .deploy-state ]; then
-            BASE=$(cat .deploy-state | tr -d '[:space:]')
-          else
-            BASE=$(git rev-list --max-parents=0 HEAD)
-          fi
-          echo "Base commit: $BASE"
-          CHANGED=$(git diff --name-only "$BASE" HEAD -- \
-            'resources/js' 'resources/css' \
-            'package.json' 'package-lock.json' \
-            'vite.config.js' 'vite.config.ts')
-          if [ -n "$CHANGED" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "フロントエンドに変更あり:"
-            echo "$CHANGED"
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "フロントエンドに変更なし。ビルドをスキップします。"
-          fi
-
+      # ビルド成果物はリポジトリに置かず、ここで作ったものを deploy.py が直接送る
+      # (.deploy-include 参照)。変更の有無で分岐しないのは、送らなかった回に
+      # サーバ側が取り残されると、次に誰かが気付くまで古いままになるため。
       - name: Setup Node.js
-        if: steps.frontend.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install Node dependencies
-        if: steps.frontend.outputs.changed == 'true'
         run: npm ci
 
       - name: Build frontend assets (Vite)
-        if: steps.frontend.outputs.changed == 'true'
         run: npm run build
-
-      - name: Commit built assets
-        if: steps.frontend.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f public/build/
-          # 差分があるときだけコミット。[skip ci] でこの push による再トリガーを防止
-          git diff --staged --quiet || git commit -m "chore: build frontend assets [skip ci]"
-          git push
 
       - name: Run deploy script
         run: |
