@@ -85,9 +85,11 @@ export default function AppHeader() {
                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         slotProps={{ paper: { variant: 'outlined', sx: { minWidth: 230, mt: 0.5 } } }}
                     >
-                        {isLoggedIn && <MenuLink icon="user" label="プロフィール" onClick={() => go('/settings')} />}
                         {isLoggedIn && (
-                            <MenuLink icon="shield-halved" label="セキュリティ" onClick={() => go('/settings/security')} />
+                            <>
+                                <MenuLink icon="user" label="プロフィール" onClick={() => go('/settings')} />
+                                <MenuLink icon="shield-halved" label="セキュリティ" onClick={() => go('/settings/security')} />
+                            </>
                         )}
 
                         {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
