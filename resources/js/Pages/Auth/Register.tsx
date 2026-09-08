@@ -54,7 +54,7 @@ export default function Register() {
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" disabled={processing}>
-                        確認メールを送る
+                        メールを送信する
                     </Button>
 
                     <Divider>または</Divider>
