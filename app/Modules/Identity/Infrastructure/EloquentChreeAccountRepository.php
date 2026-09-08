@@ -64,6 +64,15 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
 
     /**
      * @param string $id アカウントID (ULID)
+     * @param AccountOrigin $origin 新しい発行経路
+     * @return void
+     */
+    public function changeOrigin(string $id, AccountOrigin $origin): void {
+        ChreeAccountModel::query()->whereKey($id)->update(['origin' => $origin]);
+    }
+
+    /**
+     * @param string $id アカウントID (ULID)
      * @param string $email 新しいメールアドレス
      * @return void
      */

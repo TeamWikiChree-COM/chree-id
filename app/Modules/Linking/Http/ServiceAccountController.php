@@ -1,9 +1,11 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\IssueServiceAccount;
 use App\Modules\Registry\Application\AuthenticateClient;
 use App\Modules\Registry\Domain\ServiceTrust;
+use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -19,6 +21,7 @@ class ServiceAccountController {
     public function __construct(
         private readonly AuthenticateClient $clients,
         private readonly IssueServiceAccount $issue,
+        private readonly ClaimTickets $tickets,
     ) {}
 
     /**
@@ -27,15 +30,8 @@ class ServiceAccountController {
      * @throws ValidationException
      */
     public function store(Request $request): JsonResponse {
-        $client = $this->clients->execute($request);
-
-        if ($client === null || !$client->is_confidential) {
-            return $this->error('invalid_client', 'クライアント認証に失敗しました', 401);
-        }
-
-        if ($client->trust !== ServiceTrust::OFFICIAL) {
-            return $this->error('access_denied', 'このサービスはアカウントを発行できません', 403);
-        }
+        $client = $this->authenticate($request);
+        if ($client instanceof JsonResponse) return $client;
 
         $request->validate([
             'service_user_id' => ['required', 'string', 'max:190'],
@@ -60,6 +56,58 @@ class ServiceAccountController {
         );
 
         return response()->json(['sub' => $sub]);
+    }
+
+    /**
+     * 引き取り用の一度きりの URL を発行する。
+     *
+     * サービス側でログイン中の利用者にだけ渡してもらう前提の URL なので、
+     * 誰の分かを言えるのはそのサービス自身だけ。ここでは本人確認をしない。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function claimTicket(Request $request): JsonResponse {
+        $client = $this->authenticate($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate(['service_user_id' => ['required', 'string', 'max:190']]);
+
+        $ticket = $this->tickets->issue($client, $request->string('service_user_id')->toString());
+
+        if ($ticket === null) {
+            return $this->error('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
+        }
+
+        if ($ticket->link->isClaimed()) {
+            return $this->error('already_claimed', 'このアカウントは既に引き取られています', 409);
+        }
+
+        return response()->json([
+            'claim_url' => url("/claim/{$ticket->token}"),
+            'expires_at' => $ticket->expiresAt->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * サービス自身を確かめる。通らなければ返す応答をそのまま返す。
+     *
+     * @param Request $request
+     * @return OAuthClientModel|JsonResponse
+     */
+    private function authenticate(Request $request): OAuthClientModel|JsonResponse {
+        $client = $this->clients->execute($request);
+
+        if ($client === null || !$client->is_confidential) {
+            return $this->error('invalid_client', 'クライアント認証に失敗しました', 401);
+        }
+
+        if ($client->trust !== ServiceTrust::OFFICIAL) {
+            return $this->error('access_denied', 'このサービスはアカウントを発行できません', 403);
+        }
+
+        return $client;
     }
 
     /**

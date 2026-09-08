@@ -47,6 +47,17 @@ interface ChreeAccountRepository {
     public function updateDisplayName(string $id, ?string $displayName): void;
 
     /**
+     * 発行経路を差し替える。
+     *
+     * サービスが裏で作ったアカウントを、本人が引き取ったときに user へ移す。
+     *
+     * @param string $id アカウントID (ULID)
+     * @param AccountOrigin $origin 新しい発行経路
+     * @return void
+     */
+    public function changeOrigin(string $id, AccountOrigin $origin): void;
+
+    /**
      * メールアドレスを差し替える。
      *
      * 到達性の確認は呼び出し側の責任。検証済みかどうかはここでは触らない。

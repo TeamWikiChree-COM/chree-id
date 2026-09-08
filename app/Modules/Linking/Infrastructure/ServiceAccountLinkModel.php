@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $chree_account_id
  * @property string $service_user_id
  * @property string|null $service_email
+ * @property string|null $claim_token_hash
+ * @property \Illuminate\Support\Carbon|null $claim_expires_at
  * @property \Illuminate\Support\Carbon|null $claimed_at
  */
 class ServiceAccountLinkModel extends Model {
@@ -26,10 +28,13 @@ class ServiceAccountLinkModel extends Model {
         'chree_account_id',
         'service_user_id',
         'service_email',
+        'claim_token_hash',
+        'claim_expires_at',
     ];
 
     #[\Override]
     protected $casts = [
+        'claim_expires_at' => 'datetime',
         'claimed_at' => 'datetime',
     ];
 
