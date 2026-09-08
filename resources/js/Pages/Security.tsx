@@ -13,8 +13,9 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { registerPasskey } from '../lib/passkey';
+import type { CredentialSummary, CredentialTypeValue } from '../types';
 
-const TYPE_LABELS = {
+const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
     password: 'パスワード',
     magic_link: 'メールでログイン',
     totp: '認証アプリ (TOTP)',
@@ -22,10 +23,18 @@ const TYPE_LABELS = {
     oauth: '外部アカウント',
 };
 
-export default function Security({ credentials, recoveryCodeCount, pendingTotp }) {
+interface SecurityProps {
+    credentials: CredentialSummary[];
+    /** 未使用の復旧コードの残り本数 */
+    recoveryCodeCount: number;
+    /** TOTP 設定の途中なら otpauth:// の URI。そうでなければ null */
+    pendingTotp: string | null;
+}
+
+export default function Security({ credentials, recoveryCodeCount, pendingTotp }: SecurityProps) {
     const { flash, errors } = usePage().props;
-    const [qr, setQr] = useState(null);
-    const [passkeyError, setPasskeyError] = useState(null);
+    const [qr, setQr] = useState<string | null>(null);
+    const [passkeyError, setPasskeyError] = useState<string | null>(null);
     const totpForm = useForm({ code: '' });
 
     useEffect(() => {
@@ -38,13 +47,13 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
         QRCode.toDataURL(pendingTotp, { margin: 1, width: 200 }).then(setQr);
     }, [pendingTotp]);
 
-    const addPasskey = async () => {
+    const addPasskey = async (): Promise<void> => {
         setPasskeyError(null);
         try {
             await registerPasskey();
             router.reload();
         } catch (error) {
-            setPasskeyError(error.message);
+            setPasskeyError(error instanceof Error ? error.message : String(error));
         }
     };
 
@@ -174,7 +183,7 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
                             </Alert>
                         )}
 
-                        <Stack spacing={1} alignItems="flex-start">
+                        <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
                             <Typography variant="body2" color="text.secondary">
                                 残り {recoveryCodeCount} 本
                             </Typography>

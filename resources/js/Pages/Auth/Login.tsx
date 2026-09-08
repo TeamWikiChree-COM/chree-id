@@ -8,29 +8,29 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import type { FormEvent } from 'react';
 
-export default function Register() {
+export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
-        display_name: '',
         password: '',
     });
 
-    const submit = (event) => {
+    const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        post('/register');
+        post('/login');
     };
 
     return (
         <>
-            <Head title="アカウント登録" />
+            <Head title="ログイン" />
 
             <Container maxWidth="xs" sx={{ py: 8 }}>
                 <Stack spacing={3}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5 }}>
                         <Box component="img" src="/icon.png" alt="ChreeID" sx={{ width: 32, height: 32 }} />
                         <Typography variant="h6" component="h1">
-                            ChreeID を新規作成
+                            ChreeID にログイン
                         </Typography>
                     </Box>
 
@@ -50,27 +50,16 @@ export default function Register() {
                                 />
 
                                 <TextField
-                                    label="表示名"
-                                    value={data.display_name}
-                                    onChange={(e) => setData('display_name', e.target.value)}
-                                    error={Boolean(errors.display_name)}
-                                    helperText={errors.display_name}
-                                    required
-                                />
-
-                                <TextField
                                     label="パスワード"
                                     type="password"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
-                                    error={Boolean(errors.password)}
-                                    helperText={errors.password ?? '8文字以上'}
-                                    autoComplete="new-password"
+                                    autoComplete="current-password"
                                     required
                                 />
 
                                 <Button type="submit" variant="contained" disabled={processing}>
-                                    作成する
+                                    ログイン
                                 </Button>
 
                                 <Divider>または</Divider>
@@ -83,7 +72,7 @@ export default function Register() {
                     </Paper>
 
                     <Typography variant="body2">
-                        <Link href="/login">アカウントをお持ちの方はこちら</Link>
+                        <Link href="/register">アカウントを作成する</Link>
                     </Typography>
                 </Stack>
             </Container>

@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import type { Shadows } from '@mui/material/styles';
 
 /**
  * ChreeID のテーマ。
@@ -18,7 +19,7 @@ const theme = createTheme({
     },
 
     // MUI は elevation 0-24 を影として持つが、全部なしにする
-    shadows: Array(25).fill('none'),
+    shadows: Array(25).fill('none') as unknown as Shadows,
 
     typography: {
         fontFamily: [

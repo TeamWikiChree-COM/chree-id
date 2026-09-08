@@ -9,8 +9,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import type { Account, CredentialSummary, CredentialTypeValue } from '../types';
 
-const TYPE_LABELS = {
+const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
     password: 'パスワード',
     magic_link: 'メールでログイン',
     totp: '認証アプリ (TOTP)',
@@ -18,7 +19,12 @@ const TYPE_LABELS = {
     oauth: '外部アカウント',
 };
 
-export default function Dashboard({ account, credentials }) {
+interface DashboardProps {
+    account: Account;
+    credentials: CredentialSummary[];
+}
+
+export default function Dashboard({ account, credentials }: DashboardProps) {
     return (
         <>
             <Head title="アカウント" />

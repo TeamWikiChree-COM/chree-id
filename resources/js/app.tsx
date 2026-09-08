@@ -1,16 +1,20 @@
 import { createInertiaApp } from '@inertiajs/react';
+import type { ComponentType } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { createRoot } from 'react-dom/client';
 import theme from './theme';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ChreeID` : 'ChreeID'),
+    title: (title: string) => (title ? `${title} - ChreeID` : 'ChreeID'),
 
-    resolve: (name) => {
-        const pages = import.meta.glob('./Pages/**/*.jsx', { eager: true });
+    resolve: (name: string) => {
+        const pages = import.meta.glob<{ default: ComponentType }>('./Pages/**/*.tsx', { eager: true });
+        const page = pages[`./Pages/${name}.tsx`];
 
-        return pages[`./Pages/${name}.jsx`];
+        if (page === undefined) throw new Error(`ページが見つかりません: ${name}`);
+
+        return page;
     },
 
     setup({ el, App, props }) {
