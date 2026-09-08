@@ -26,7 +26,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
         <MuiBreadcrumbs
             aria-label="パンくず"
             separator={<Icon name="chevron-right" sx={{ fontSize: '0.6875rem' }} />}
-            sx={{ pt: 1.5, pb: 0.5, fontSize: '0.875rem', color: 'text.secondary' }}
+            sx={{ pt: 0, pb: 1, fontSize: '0.875rem', color: 'text.secondary' }}
         >
             {items.map((item, index) => {
                 if (index === last || item.href === undefined) {
