@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'recoveryCodes' => $request->session()->get('recoveryCodes'),
                 'passwordReset' => $request->session()->get('passwordReset'),
+                'profileSaved' => $request->session()->get('profileSaved'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

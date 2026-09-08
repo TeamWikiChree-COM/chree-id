@@ -39,6 +39,8 @@ declare module '@inertiajs/core' {
                 recoveryCodes: string[] | null;
                 /** パスワード再設定の直後だけ true。ログイン画面で知らせる */
                 passwordReset: boolean | null;
+                /** プロフィール保存の直後だけ true */
+                profileSaved: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;

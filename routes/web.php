@@ -8,6 +8,7 @@ use App\Modules\Credential\Http\PasswordResetController;
 use App\Modules\Credential\Http\SecurityController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
+use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Provider\Http\DiscoveryController;
@@ -46,6 +47,10 @@ Route::post('/password/forgot', [PasswordResetController::class, 'store'])->midd
 Route::get('/password/forgot/sent', [PasswordResetController::class, 'sent']);
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'edit'])->middleware('throttle:verify');
 Route::post('/password/reset', [PasswordResetController::class, 'update'])->middleware('throttle:verify');
+
+// プロフィール
+Route::get('/profile', [ProfileController::class, 'show']);
+Route::post('/profile', [ProfileController::class, 'update']);
 
 // 認証方法の管理
 Route::get('/security', [SecurityController::class, 'show']);

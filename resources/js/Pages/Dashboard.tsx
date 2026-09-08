@@ -33,7 +33,7 @@ export default function Dashboard({ account, credentials }: DashboardProps) {
                 <Stack spacing={3}>
                     <Box>
                         <Typography variant="h6" component="h1">
-                            {account.displayName ?? 'ChreeID'}
+                            {account.displayName ?? '表示名を設定していません'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                             {account.email ?? 'メールアドレス未設定'}
@@ -84,6 +84,9 @@ export default function Dashboard({ account, credentials }: DashboardProps) {
                     </Box>
 
                     <Stack direction="row" spacing={1}>
+                        <Button variant="outlined" color="inherit" onClick={() => router.get('/profile')}>
+                            プロフィールを編集
+                        </Button>
                         <Button variant="outlined" color="inherit" onClick={() => router.get('/security')}>
                             ログイン方法を管理
                         </Button>

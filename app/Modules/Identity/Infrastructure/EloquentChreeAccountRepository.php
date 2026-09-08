@@ -54,6 +54,15 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
     }
 
     /**
+     * @param string $id アカウントID (ULID)
+     * @param string|null $displayName 表示名
+     * @return void
+     */
+    public function updateDisplayName(string $id, ?string $displayName): void {
+        ChreeAccountModel::query()->whereKey($id)->update(['display_name' => $displayName]);
+    }
+
+    /**
      * @param ChreeAccountModel $model
      * @return ChreeAccount
      */

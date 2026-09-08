@@ -36,4 +36,13 @@ interface ChreeAccountRepository {
      * @return void
      */
     public function markEmailVerified(string $id): void;
+
+    /**
+     * 表示名を差し替える。
+     *
+     * @param string $id アカウントID (ULID)
+     * @param string|null $displayName 未設定に戻す場合は null
+     * @return void
+     */
+    public function updateDisplayName(string $id, ?string $displayName): void;
 }
