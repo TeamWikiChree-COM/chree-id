@@ -37,7 +37,7 @@ export default function ForgotPassword() {
                     )}
 
                     <Typography variant="body2" color="text.secondary">
-                        登録したメールアドレスに、再設定用のリンクを送ります。
+                        登録したメールアドレスに、再設定リンクを送信します
                     </Typography>
 
                     <TextField
