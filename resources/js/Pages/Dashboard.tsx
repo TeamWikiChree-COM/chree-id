@@ -131,7 +131,7 @@ export default function Dashboard({ account, credentials, services }: DashboardP
                         >
                             <Box sx={{ minWidth: 0 }}>
                                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
-                                    <Icon name="plug" sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }} />
+                                    {/*<Icon name="plug" sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }} />*/}
                                     {service.name}
                                     {service.trust === 'official' && <Chip size="small" label="公式" />}
                                 </Typography>

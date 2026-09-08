@@ -121,7 +121,7 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
                         <Button
                             variant="outlined"
                             color="inherit"
-                            startIcon={<Icon name="mobile-screen" />}
+                            // startIcon={<Icon name="mobile-screen" />}
                             onClick={() => router.post('/security/totp/start')}
                         >
                             設定をはじめる
