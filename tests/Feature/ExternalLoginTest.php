@@ -3,31 +3,31 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
-use App\Modules\Federation\Application\LinkFederatedIdentity;
-use App\Modules\Federation\Domain\FederatedIdentity;
-use App\Modules\Federation\Domain\FederationLinkConflict;
-use App\Modules\Federation\Domain\FederationRegistry;
+use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
+use App\Modules\ExternalLogin\Domain\ExternalIdentity;
+use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
+use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 // 外部 IdP との紐付け (ChreeID が RP 側)
-class FederationTest extends TestCase {
+class ExternalLoginTest extends TestCase {
     use RefreshDatabase;
 
     /**
      * @param string $subject IdP 側のID
      * @param string|null $email
      * @param bool $verified IdP がメールを検証済みとしているか
-     * @return FederatedIdentity
+     * @return ExternalIdentity
      */
-    private function identity(string $subject, ?string $email, bool $verified = true): FederatedIdentity {
-        return new FederatedIdentity('google', $subject, $email, $verified, 'グーグル太郎');
+    private function identity(string $subject, ?string $email, bool $verified = true): ExternalIdentity {
+        return new ExternalIdentity('google', $subject, $email, $verified, 'グーグル太郎');
     }
 
     public function test_createsAccountWhenNothingMatches(): void {
-        $accountId = app(LinkFederatedIdentity::class)->execute($this->identity('g-1', 'new@example.com'));
+        $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'new@example.com'));
 
         $account = app(ChreeAccountRepository::class)->findById($accountId);
         $this->assertNotNull($account);
@@ -36,7 +36,7 @@ class FederationTest extends TestCase {
     }
 
     public function test_reusesAccountLinkedByExternalId(): void {
-        $link = app(LinkFederatedIdentity::class);
+        $link = app(LinkExternalIdentity::class);
         $first = $link->execute($this->identity('g-1', 'user@example.com'));
         $second = $link->execute($this->identity('g-1', 'changed@example.com'));
 
@@ -50,7 +50,7 @@ class FederationTest extends TestCase {
     public function test_linksToExistingAccountWhenEmailVerified(): void {
         $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
-        $accountId = app(LinkFederatedIdentity::class)->execute($this->identity('g-1', 'user@example.com', true));
+        $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'user@example.com', true));
 
         $this->assertSame($account->id, $accountId);
     }
@@ -62,21 +62,21 @@ class FederationTest extends TestCase {
     public function test_refusesToLinkWhenEmailIsUnverified(): void {
         app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
-        $this->expectException(FederationLinkConflict::class);
-        app(LinkFederatedIdentity::class)->execute($this->identity('g-1', 'user@example.com', false));
+        $this->expectException(ExternalIdentityConflict::class);
+        app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'user@example.com', false));
     }
 
     /**
      * 衝突しないなら、未検証でも新規アカウントは作れる
      */
     public function test_createsAccountWhenEmailIsUnverifiedAndUnused(): void {
-        $accountId = app(LinkFederatedIdentity::class)->execute($this->identity('g-1', 'fresh@example.com', false));
+        $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'fresh@example.com', false));
 
         $this->assertNotNull(app(ChreeAccountRepository::class)->findById($accountId));
     }
 
     public function test_storesProviderPrefixedIdentifier(): void {
-        app(LinkFederatedIdentity::class)->execute($this->identity('g-1', 'user@example.com'));
+        app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'user@example.com'));
 
         $this->assertSame(1, CredentialModel::query()
             ->where('type', CredentialType::OAUTH)
@@ -84,8 +84,8 @@ class FederationTest extends TestCase {
             ->count());
     }
 
-    public function test_registersGoogleProvider(): void {
-        $this->assertSame(['google'], app(FederationRegistry::class)->names());
+    public function test_registersGoogleIdp(): void {
+        $this->assertSame(['google'], app(ExternalIdpRegistry::class)->names());
     }
 
     public function test_redirectsToProvider(): void {

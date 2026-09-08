@@ -1,9 +1,9 @@
 <?php
-namespace App\Modules\Federation\Http;
+namespace App\Modules\ExternalLogin\Http;
 
-use App\Modules\Federation\Application\LinkFederatedIdentity;
-use App\Modules\Federation\Domain\FederationLinkConflict;
-use App\Modules\Federation\Domain\FederationRegistry;
+use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
+use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
+use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,13 +13,13 @@ use Throwable;
 /**
  * 外部 IdP へのログイン (ChreeID が RP 側)
  */
-class FederationController {
-    private const STATE_KEY = 'federation.state';
-    private const NONCE_KEY = 'federation.nonce';
+class ExternalLoginController {
+    private const STATE_KEY = 'external_login.state';
+    private const NONCE_KEY = 'external_login.nonce';
 
     public function __construct(
-        private readonly FederationRegistry $registry,
-        private readonly LinkFederatedIdentity $link,
+        private readonly ExternalIdpRegistry $registry,
+        private readonly LinkExternalIdentity $link,
         private readonly ChreeSession $session,
     ) {}
 
@@ -65,7 +65,7 @@ class FederationController {
         try {
             $identity = $idp->exchange($code, $nonce);
             $accountId = $this->link->execute($identity);
-        } catch (FederationLinkConflict) {
+        } catch (ExternalIdentityConflict) {
             return $this->fail('既存のアカウントでログインしてから連携してください');
         } catch (Throwable) {
             return $this->fail('連携に失敗しました');
