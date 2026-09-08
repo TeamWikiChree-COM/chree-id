@@ -10,10 +10,12 @@ use App\Modules\Identity\Mail\RegistrationExistsMail;
 use App\Modules\Identity\Mail\VerifyRegistrationMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-// アカウント登録。確認メールのリンクを踏むまでアカウントは作られない
+// アカウント登録。申し込みはメールアドレスだけで、パスワードはリンクを開いたあとに決める
 class RegisterTest extends TestCase {
     use RefreshDatabase;
 
@@ -21,17 +23,9 @@ class RegisterTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         Mail::fake();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function payload(): array {
-        return [
-            'email' => 'new@example.com',
-            'display_name' => '新規ユーザー',
-            'password' => 'correct-horse',
-        ];
+        RateLimiter::clear('register');
+        RateLimiter::clear('verify');
+        RateLimiter::clear('login');
     }
 
     /**
@@ -40,18 +34,29 @@ class RegisterTest extends TestCase {
      * DB にはハッシュしか無いので、テスト側でも同じ乱数は得られない。
      * ここではトークンを自前で作り直して差し替える。
      *
-     * @param array<string, string>|null $payload
+     * @param string $email 申し込むメールアドレス
      * @return string 確認 URL に載せる平文トークン
      */
-    private function requestRegistration(?array $payload = null): string {
-        $this->post('/register', $payload ?? $this->payload());
+    private function requestRegistration(string $email = 'new@example.com'): string {
+        $this->post('/register', ['email' => $email]);
 
         $token = Str::random(64);
         PendingRegistrationModel::query()
-            ->where('email', ($payload ?? $this->payload())['email'])
+            ->where('email', $email)
             ->update(['token_hash' => hash('sha256', $token)]);
 
         return $token;
+    }
+
+    /**
+     * パスワードを決めてアカウント作成まで進める。
+     *
+     * @param string $token 平文トークン
+     * @param string $password 決めるパスワード
+     * @return TestResponse<\Illuminate\Http\Response>
+     */
+    private function completeWith(string $token, string $password = 'correct-horse'): TestResponse {
+        return $this->post('/register/complete', ['token' => $token, 'password' => $password]);
     }
 
     public function test_showsRegisterPage(): void {
@@ -59,42 +64,78 @@ class RegisterTest extends TestCase {
     }
 
     public function test_doesNotCreateAccountBeforeVerification(): void {
-        $this->post('/register', $this->payload())->assertRedirect('/register/sent');
+        $this->post('/register', ['email' => 'new@example.com'])->assertRedirect('/register/sent');
 
         $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
         $this->assertNull(session('chreeid.account_id'));
     }
 
     public function test_sendsVerificationMail(): void {
-        $this->post('/register', $this->payload());
+        $this->post('/register', ['email' => 'new@example.com']);
 
         Mail::assertSent(VerifyRegistrationMail::class);
     }
 
-    public function test_createsAccountAndLogsInOnVerification(): void {
+    // 申し込みの時点で資格情報を預からない。
+    // 預かると、第三者が申し込んだパスワードのままアカウントが作られてしまう
+    public function test_doesNotStoreCredentialsBeforeVerification(): void {
+        $this->post('/register', [
+            'email' => 'new@example.com',
+            'password' => 'attacker-chosen',
+            'display_name' => '攻撃者が決めた名前',
+        ]);
+
+        $pending = PendingRegistrationModel::query()->firstOrFail();
+        $columns = array_keys($pending->getAttributes());
+
+        $this->assertNotContains('password_hash', $columns);
+        $this->assertNotContains('display_name', $columns);
+    }
+
+    public function test_verifyShowsPasswordFormWithoutCreating(): void {
         $token = $this->requestRegistration();
 
-        $this->get("/register/verify/{$token}")->assertRedirect('/');
+        $this->get("/register/verify/{$token}")->assertOk();
+
+        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(session('chreeid.account_id'));
+    }
+
+    public function test_createsAccountAndLogsInAfterSettingPassword(): void {
+        $token = $this->requestRegistration();
+
+        $this->completeWith($token)->assertRedirect('/');
 
         $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertSame(AccountOrigin::USER, $account->origin);
-        $this->assertSame('新規ユーザー', $account->displayName);
+        // 表示名は登録では受け取らない。/profile であとから設定する
+        $this->assertNull($account->displayName);
         $this->assertSame($account->id, session('chreeid.account_id'));
     }
 
-    public function test_marksEmailVerifiedOnVerification(): void {
+    public function test_chosenPasswordWorksForLogin(): void {
         $token = $this->requestRegistration();
-        $this->get("/register/verify/{$token}");
+        $this->completeWith($token, 'brand-new-password');
+        $this->post('/logout');
+
+        $this->post('/login', ['email' => 'new@example.com', 'password' => 'brand-new-password'])
+            ->assertRedirect('/');
+        $this->assertNotNull(session('chreeid.account_id'));
+    }
+
+    public function test_marksEmailVerified(): void {
+        $token = $this->requestRegistration();
+        $this->completeWith($token);
 
         $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertTrue($account->isEmailVerified());
     }
 
-    public function test_setsPasswordCredentialOnVerification(): void {
+    public function test_setsPasswordCredential(): void {
         $token = $this->requestRegistration();
-        $this->get("/register/verify/{$token}");
+        $this->completeWith($token);
 
         $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
@@ -105,33 +146,12 @@ class RegisterTest extends TestCase {
             ->count());
     }
 
-    public function test_allowsRegistrationWithoutDisplayName(): void {
-        $token = $this->requestRegistration(['email' => 'new@example.com', 'password' => 'correct-horse']);
-
-        $this->get("/register/verify/{$token}")->assertRedirect('/');
-
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
-        $this->assertNotNull($account);
-        $this->assertNull($account->displayName);
-    }
-
-    public function test_treatsBlankDisplayNameAsUnset(): void {
-        $token = $this->requestRegistration(
-            array_merge($this->payload(), ['display_name' => '   ']),
-        );
-        $this->get("/register/verify/{$token}");
-
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
-        $this->assertNotNull($account);
-        $this->assertNull($account->displayName);
-    }
-
     public function test_consumesTokenOnce(): void {
         $token = $this->requestRegistration();
-        $this->get("/register/verify/{$token}");
-
+        $this->completeWith($token);
         $this->post('/logout');
-        $this->get("/register/verify/{$token}")->assertOk();
+
+        $this->completeWith($token, 'another-password')->assertOk();
 
         $this->assertNull(session('chreeid.account_id'));
     }
@@ -141,6 +161,21 @@ class RegisterTest extends TestCase {
         PendingRegistrationModel::query()->update(['expires_at' => now()->subMinute()]);
 
         $this->get("/register/verify/{$token}")->assertOk();
+        $this->completeWith($token)->assertOk();
+
+        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+    }
+
+    public function test_rejectsUnknownToken(): void {
+        $this->completeWith(Str::random(64))->assertOk();
+
+        $this->assertNull(session('chreeid.account_id'));
+    }
+
+    public function test_rejectsShortPassword(): void {
+        $token = $this->requestRegistration();
+
+        $this->completeWith($token, 'short')->assertSessionHasErrors('password');
 
         $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
     }
@@ -149,25 +184,20 @@ class RegisterTest extends TestCase {
     public function test_hidesExistingEmailBehindSameResponse(): void {
         app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'new@example.com', '既存');
 
-        $this->post('/register', $this->payload())->assertRedirect('/register/sent');
+        $this->post('/register', ['email' => 'new@example.com'])->assertRedirect('/register/sent');
 
         Mail::assertSent(RegistrationExistsMail::class);
         Mail::assertNotSent(VerifyRegistrationMail::class);
         $this->assertSame(0, PendingRegistrationModel::query()->count());
     }
 
-    public function test_rejectsShortPassword(): void {
-        $this->post('/register', array_merge($this->payload(), ['password' => 'short']))
-            ->assertSessionHasErrors('password');
-    }
-
     public function test_dashboardRequiresLogin(): void {
         $this->get('/')->assertRedirect('/login');
     }
 
-    public function test_dashboardShowsAccountAfterVerification(): void {
+    public function test_dashboardShowsAccountAfterRegistration(): void {
         $token = $this->requestRegistration();
-        $this->get("/register/verify/{$token}");
+        $this->completeWith($token);
 
         $this->get('/')->assertOk();
     }

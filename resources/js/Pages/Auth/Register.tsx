@@ -13,8 +13,6 @@ import TurnstileWidget from '../../Components/TurnstileWidget';
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
-        display_name: '',
-        password: '',
         'cf-turnstile-response': '',
     });
 
@@ -39,6 +37,10 @@ export default function Register() {
                         <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
                     )}
 
+                    <Typography variant="body2" color="text.secondary">
+                        確認メールを送ります。パスワードはリンクを開いたあとに決めます。
+                    </Typography>
+
                     <TextField
                         label="メールアドレス"
                         type="email"
@@ -46,26 +48,6 @@ export default function Register() {
                         onChange={(e) => setData('email', e.target.value)}
                         autoComplete="username"
                         autoFocus
-                        required
-                    />
-
-                    <TextField
-                        label="表示名"
-                        value={data.display_name}
-                        onChange={(e) => setData('display_name', e.target.value)}
-                        error={Boolean(errors.display_name)}
-                        helperText={errors.display_name ?? '任意。後から変更できます'}
-                        autoComplete="nickname"
-                    />
-
-                    <TextField
-                        label="パスワード"
-                        type="password"
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
-                        error={Boolean(errors.password)}
-                        helperText={errors.password ?? '8文字以上'}
-                        autoComplete="new-password"
                         required
                     />
 

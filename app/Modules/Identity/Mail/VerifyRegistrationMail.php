@@ -29,6 +29,6 @@ class VerifyRegistrationMail extends Mailable {
      * @return Content
      */
     public function content(): Content {
-        return new Content(text: 'mail.verify-registration');
+        return new Content(view: 'mail.verify-registration', text: 'mail.text.verify-registration');
     }
 }

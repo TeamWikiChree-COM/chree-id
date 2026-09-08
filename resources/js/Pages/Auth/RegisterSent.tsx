@@ -21,8 +21,7 @@ export default function RegisterSent({ email }: RegisterSentProps) {
             <Stack spacing={2}>
                 <Typography variant="body2">{email} 宛にメールを送りました。</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    本文のリンクを開くとアカウントが作られ、そのままログインします。
-                    リンクを開くまでアカウントは作られません。
+                    メール内のリンクを開くとアカウントが作られ、そのままセットアップに進みます。
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                     届かない場合は、迷惑メールに振り分けられていないかご確認ください。

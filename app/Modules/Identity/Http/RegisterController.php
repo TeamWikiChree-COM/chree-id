@@ -15,8 +15,9 @@ use Inertia\Response;
 /**
  * ユーザーアカウントの登録。
  *
- * 確認メールのリンクを踏むまでアカウントは作られない。
- * そのため store() の応答はアドレスの登録有無で変わらず、存在確認には使えない。
+ * 申し込みで受け取るのはメールアドレスだけで、パスワードは確認リンクを開いたあとに決める。
+ * 確認メールのリンクを踏むまでアカウントは作られないので、
+ * store() の応答はアドレスの登録有無で変わらず、存在確認には使えない。
  */
 class RegisterController {
     /** 理由ごとの画面表示。内部の理由コードをそのまま出さないための対応表 */
@@ -50,15 +51,12 @@ class RegisterController {
     public function store(Request $request, TurnstileGuard $turnstile): RedirectResponse {
         $turnstile->check($request);
 
-        $validated = $this->validateInput($request);
+        $request->validate(['email' => ['required', 'string', 'email', 'max:255']]);
 
-        $this->startRegistration->execute(
-            $validated['email'],
-            $validated['display_name'],
-            $validated['password'],
-        );
+        $email = $request->string('email')->toString();
+        $this->startRegistration->execute($email);
 
-        return redirect('/register/sent')->with('registeredEmail', $validated['email']);
+        return redirect('/register/sent')->with('registeredEmail', $email);
     }
 
     /**
@@ -75,14 +73,39 @@ class RegisterController {
     }
 
     /**
-     * 確認リンクを受けてアカウントを作り、そのままログインさせる。
+     * 確認リンクの着地。ここでパスワードを決めてもらう。
      *
      * @param string $token メールに載せた平文トークン
-     * @return Response|RedirectResponse
+     * @return Response
      */
-    public function verify(string $token): Response|RedirectResponse {
+    public function verify(string $token): Response {
+        if (!$this->completeRegistration->isUsable($token)) {
+            return Inertia::render('Auth/RegisterFailed', [
+                'message' => self::FAILURE_MESSAGES[RegistrationTokenException::EXPIRED],
+            ]);
+        }
+
+        return Inertia::render('Auth/RegisterPassword', ['token' => $token]);
+    }
+
+    /**
+     * パスワードを受け取ってアカウントを作り、そのままログインさせる。
+     *
+     * @param Request $request
+     * @return RedirectResponse|Response
+     * @throws ValidationException
+     */
+    public function complete(Request $request): RedirectResponse|Response {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8'],
+        ]);
+
         try {
-            $account = $this->completeRegistration->execute($token);
+            $account = $this->completeRegistration->execute(
+                $request->string('token')->toString(),
+                $request->string('password')->toString(),
+            );
         } catch (RegistrationTokenException $e) {
             return Inertia::render('Auth/RegisterFailed', [
                 'message' => self::FAILURE_MESSAGES[$e->reason],
@@ -92,27 +115,5 @@ class RegisterController {
         $this->session->login($account->id);
 
         return redirect('/');
-    }
-
-    /**
-     * @param Request $request
-     * @return array{email: string, display_name: string|null, password: string}
-     * @throws ValidationException
-     */
-    private function validateInput(Request $request): array {
-        $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255'],
-            // 表示名は任意。DB も domain も null を許しており、Google 連携でも空のことがある
-            'display_name' => ['nullable', 'string', 'max:100'],
-            'password' => ['required', 'string', 'min:8'],
-        ]);
-
-        $displayName = $request->string('display_name')->trim()->toString();
-
-        return [
-            'email' => $request->string('email')->toString(),
-            'display_name' => $displayName === '' ? null : $displayName,
-            'password' => $request->string('password')->toString(),
-        ];
     }
 }

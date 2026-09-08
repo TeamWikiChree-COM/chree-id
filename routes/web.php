@@ -34,6 +34,7 @@ Route::get('/register', [RegisterController::class, 'show']);
 Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:register');
 Route::get('/register/sent', [RegisterController::class, 'sent']);
 Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->middleware('throttle:verify');
+Route::post('/register/complete', [RegisterController::class, 'complete'])->middleware('throttle:verify');
 
 // メールだけでログインする経路。{token} より先に /sent を置く (でないと sent がトークン扱いになる)
 Route::get('/login/magic', [MagicLinkController::class, 'show']);

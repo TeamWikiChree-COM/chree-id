@@ -28,6 +28,6 @@ class RegistrationExistsMail extends Mailable {
      * @return Content
      */
     public function content(): Content {
-        return new Content(text: 'mail.registration-exists');
+        return new Content(view: 'mail.registration-exists', text: 'mail.text.registration-exists');
     }
 }

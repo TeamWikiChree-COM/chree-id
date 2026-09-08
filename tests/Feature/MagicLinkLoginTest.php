@@ -142,12 +142,14 @@ class MagicLinkLoginTest extends TestCase {
     }
 
     public function test_registrationEnablesMagicLink(): void {
-        $this->post('/register', ['email' => 'new@example.com', 'password' => 'correct-horse']);
+        $this->post('/register', ['email' => 'new@example.com']);
 
         $token = Str::random(64);
         \App\Modules\Identity\Infrastructure\PendingRegistrationModel::query()
             ->update(['token_hash' => hash('sha256', $token)]);
-        $this->get("/register/verify/{$token}");
+
+        // 登録はパスワードを決めた時点で完了する
+        $this->post('/register/complete', ['token' => $token, 'password' => 'correct-horse']);
         $this->post('/logout');
 
         Mail::fake();
