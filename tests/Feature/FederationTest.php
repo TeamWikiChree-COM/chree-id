@@ -91,7 +91,7 @@ class FederationTest extends TestCase {
     public function test_redirectsToProvider(): void {
         config(['services.google.client_id' => 'test-client-id']);
 
-        $response = $this->get('/federation/google/redirect');
+        $response = $this->get('/auth/google/redirect');
 
         $response->assertRedirectContains('accounts.google.com');
         $response->assertRedirectContains('nonce=');
@@ -99,22 +99,22 @@ class FederationTest extends TestCase {
     }
 
     public function test_rejectsUnknownProvider(): void {
-        $this->get('/federation/unknown/redirect')->assertRedirect('/login');
+        $this->get('/auth/unknown/redirect')->assertRedirect('/login');
     }
 
     /**
      * state が一致しないリクエストは第三者に開始させられた可能性がある
      */
     public function test_rejectsCallbackWithWrongState(): void {
-        $this->get('/federation/google/redirect');
+        $this->get('/auth/google/redirect');
 
-        $this->get('/federation/google/callback?code=abc&state=wrong')
+        $this->get('/auth/google/callback?code=abc&state=wrong')
             ->assertRedirect('/login')
             ->assertSessionHasErrors('email');
     }
 
     public function test_rejectsCallbackWithoutSession(): void {
-        $this->get('/federation/google/callback?code=abc&state=whatever')
+        $this->get('/auth/google/callback?code=abc&state=whatever')
             ->assertRedirect('/login')
             ->assertSessionHasErrors('email');
     }
