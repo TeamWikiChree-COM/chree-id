@@ -7,6 +7,7 @@ use App\Modules\Provider\Domain\Claims\ScopeRegistry;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
 use App\Modules\Provider\Infrastructure\AuthCodeModel;
 use App\Modules\Provider\Infrastructure\IdTokenIssuer;
+use App\Modules\Registry\Application\AuthenticateClient;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class TokenController {
         private readonly ResolveSubject $subjects,
         private readonly IdTokenIssuer $idTokens,
         private readonly ScopeRegistry $scopes,
+        private readonly AuthenticateClient $clients,
     ) {}
 
     /**
@@ -37,7 +39,7 @@ class TokenController {
             return $this->error('unsupported_grant_type', 'grant_type は authorization_code のみ対応しています');
         }
 
-        $client = $this->authenticateClient($request);
+        $client = $this->clients->execute($request);
         if ($client === null) return $this->error('invalid_client', 'クライアント認証に失敗しました', 401);
 
         $code = $request->string('code')->toString();
@@ -67,41 +69,6 @@ class TokenController {
         $row->forceFill(['used_at' => now()])->save();
 
         return $this->issueTokens($client, $row);
-    }
-
-    /**
-     * confidential クライアントは client_secret を確かめる。
-     * public クライアントは秘密を持てないので PKCE で守る。
-     *
-     * @param Request $request
-     * @return OAuthClientModel|null
-     */
-    private function authenticateClient(Request $request): ?OAuthClientModel {
-        [$clientId, $secret] = $this->credentials($request);
-
-        $client = $clientId === '' ? null : OAuthClientModel::query()->find($clientId);
-        if ($client === null || !$client->trust->isUsable()) return null;
-
-        if (!$client->is_confidential) return $client;
-        if ($client->secret_hash === null || $secret === null) return null;
-
-        // 突き合わせは定数時間で行う
-        return hash_equals($client->secret_hash, hash('sha256', $secret)) ? $client : null;
-    }
-
-    /**
-     * Basic 認証とフォーム値の両方を受け付ける。
-     *
-     * @param Request $request
-     * @return array{0: string, 1: string|null}
-     */
-    private function credentials(Request $request): array {
-        $user = $request->getUser();
-        if (is_string($user) && $user !== '') return [$user, $request->getPassword()];
-
-        $secret = $request->string('client_secret')->toString();
-
-        return [$request->string('client_id')->toString(), $secret === '' ? null : $secret];
     }
 
     /**

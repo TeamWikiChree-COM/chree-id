@@ -10,6 +10,7 @@ use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Linking\Http\ConnectedServiceController;
+use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -105,4 +106,7 @@ Route::post('/oauth/authorize/approve', [AuthorizeController::class, 'approve'])
 
 // RP からのサーバ間通信。CSRF の除外は bootstrap/app.php 側で指定している
 Route::post('/oauth/token', TokenController::class);
+
+// サービスが自分の利用者ぶんの ChreeID を取りに来る。こちらもブラウザを介さない
+Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
 Route::get('/oauth/userinfo', UserinfoController::class);

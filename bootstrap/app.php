@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // ルート側の withoutMiddleware() では除外されないため、ここで指定する
         $middleware->validateCsrfTokens(except: [
             'oauth/token',
+            'api/v1/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
