@@ -1,6 +1,7 @@
 *.log
 .DS_Store
 .env
+.env.bak
 prod.env
 _diag.php
 _unzip.php
