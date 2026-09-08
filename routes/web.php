@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Credential\Http\ChallengeController;
 use App\Modules\Credential\Http\LoginController;
 use App\Modules\Credential\Http\PasskeyController;
 use App\Modules\Credential\Http\SecurityController;
@@ -19,6 +20,11 @@ Route::get('/', DashboardController::class);
 Route::get('/login', [LoginController::class, 'show'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login');
 Route::post('/logout', [LoginController::class, 'destroy']);
+
+// 二要素目の入力。一次認証を通しただけの状態はここを経由しないとログインにならない
+Route::get('/login/challenge', [ChallengeController::class, 'show']);
+Route::post('/login/challenge', [ChallengeController::class, 'store'])->middleware('throttle:challenge');
+Route::post('/login/challenge/cancel', [ChallengeController::class, 'destroy']);
 
 // 登録はメールを確認するまでアカウントを作らない。verify がアカウント作成の実体
 Route::get('/register', [RegisterController::class, 'show']);

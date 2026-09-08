@@ -5,6 +5,7 @@ use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
+use App\Modules\Credential\Infrastructure\PendingAuthentication;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
@@ -22,6 +23,7 @@ class LoginController {
         private readonly ChreeAccountRepository $accounts,
         private readonly VerifyCredential $verify,
         private readonly CompleteAuthentication $complete,
+        private readonly PendingAuthentication $pending,
         private readonly ChreeSession $session,
     ) {}
 
@@ -46,44 +48,50 @@ class LoginController {
             'password' => ['required', 'string'],
         ]);
 
-        $accountId = $this->authenticate(
-            $request->string('email')->toString(),
-            $request->string('password')->toString(),
+        $account = $this->accounts->findByEmail($request->string('email')->toString());
+        if ($account === null || $account->isSuspended()) throw $this->invalidCredentials();
+
+        $factors = new VerifiedFactors();
+        $verified = $this->verify->execute(
+            $account->id,
+            CredentialType::PASSWORD,
+            ['password' => $request->string('password')->toString()],
+            $factors,
         );
 
-        // アカウントの有無を出し分けると、総当たりで登録済みかを調べられてしまう
-        if ($accountId === null) {
-            throw ValidationException::withMessages([
-                'email' => 'メールアドレスまたはパスワードが違います',
-            ]);
+        if (!$verified->isSuccess()) throw $this->invalidCredentials();
+
+        // 2FA を有効にしているアカウントは、パスワードだけでは成立しない
+        if (!$this->complete->execute($account->id, $factors)) {
+            $this->pending->start($account->id, $factors);
+
+            return redirect('/login/challenge');
         }
 
-        $this->session->login($accountId);
+        $this->session->login($account->id);
 
         return redirect()->intended('/');
+    }
+
+    /**
+     * アカウントの有無を出し分けると、総当たりで登録済みかを調べられてしまうので文言を揃える。
+     *
+     * @return ValidationException
+     */
+    private function invalidCredentials(): ValidationException {
+        return ValidationException::withMessages([
+            'email' => 'メールアドレスまたはパスワードが違います',
+        ]);
     }
 
     /**
      * @return RedirectResponse
      */
     public function destroy(): RedirectResponse {
+        $this->pending->forget();
         $this->session->logout();
 
         return redirect('/login');
     }
 
-    /**
-     * @param string $email メールアドレス
-     * @param string $password パスワード
-     * @return string|null 認証できたアカウントID
-     */
-    private function authenticate(string $email, string $password): ?string {
-        $account = $this->accounts->findByEmail($email);
-        if ($account === null || $account->isSuspended()) return null;
-
-        $factors = new VerifiedFactors();
-        $this->verify->execute($account->id, CredentialType::PASSWORD, ['password' => $password], $factors);
-
-        return $this->complete->execute($account->id, $factors) ? $account->id : null;
-    }
 }

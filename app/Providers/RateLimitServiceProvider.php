@@ -29,6 +29,10 @@ class RateLimitServiceProvider extends ServiceProvider {
             Limit::perHour(10)->by($request->ip() ?? 'unknown'),
         ]);
 
+        // 6桁の TOTP は総当たりが現実的な桁数なので、ここは特に絞る
+        RateLimiter::for('challenge', fn (Request $request): Limit =>
+            Limit::perMinute(5)->by($request->session()->getId()));
+
         // 確認リンクは総当たりされうるが、正規の利用者が何度も開くことはない
         RateLimiter::for('verify', fn (Request $request): Limit =>
             Limit::perMinute(10)->by($request->ip() ?? 'unknown'));
