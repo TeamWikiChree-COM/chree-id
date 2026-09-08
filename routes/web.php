@@ -70,6 +70,9 @@ Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callba
 
 // 管理画面。権限が無ければ 404 (そこに何かある事実も伏せる)
 Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void {
+    // 入口。今は接続サービスしか無いのでそこへ送る
+    Route::get('/', fn () => redirect('/admin/clients'));
+
     Route::get('/clients', [AdminClientController::class, 'index']);
     Route::get('/clients/create', [AdminClientController::class, 'create']);
     Route::post('/clients', [AdminClientController::class, 'store']);
