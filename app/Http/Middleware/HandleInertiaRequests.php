@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Turnstile\TurnstileVerifier;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +43,9 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'recoveryCodes' => $request->session()->get('recoveryCodes'),
             ],
+
+            // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める
+            'turnstileSiteKey' => app(TurnstileVerifier::class)->siteKey(),
         ];
     }
 }

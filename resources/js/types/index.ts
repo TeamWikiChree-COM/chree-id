@@ -38,6 +38,8 @@ declare module '@inertiajs/core' {
             flash: {
                 recoveryCodes: string[] | null;
             };
+            /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
+            turnstileSiteKey: string | null;
         };
     }
 }

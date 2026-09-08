@@ -9,12 +9,14 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
+import TurnstileWidget from '../../Components/TurnstileWidget';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         display_name: '',
         password: '',
+        'cf-turnstile-response': '',
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -39,6 +41,9 @@ export default function Register() {
                         <Box component="form" onSubmit={submit} noValidate>
                             <Stack spacing={2}>
                                 {errors.email && <Alert severity="error">{errors.email}</Alert>}
+                                {errors['cf-turnstile-response'] && (
+                                    <Alert severity="error">{errors['cf-turnstile-response']}</Alert>
+                                )}
 
                                 <TextField
                                     label="メールアドレス"
@@ -69,6 +74,8 @@ export default function Register() {
                                     autoComplete="new-password"
                                     required
                                 />
+
+                                <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                                 <Button type="submit" variant="contained" disabled={processing}>
                                     確認メールを送る

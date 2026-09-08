@@ -5,6 +5,7 @@ use App\Modules\Identity\Application\CompleteRegistration;
 use App\Modules\Identity\Application\RegistrationTokenException;
 use App\Modules\Identity\Application\StartRegistration;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -42,10 +43,13 @@ class RegisterController {
      * 申し込みを受け付けて確認メールを送る。
      *
      * @param Request $request
+     * @param TurnstileGuard $turnstile
      * @return RedirectResponse
-     * @throws ValidationException 入力の検証に失敗した場合
+     * @throws ValidationException 入力または Turnstile の検証に失敗した場合
      */
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request, TurnstileGuard $turnstile): RedirectResponse {
+        $turnstile->check($request);
+
         $validated = $this->validateInput($request);
 
         $this->startRegistration->execute(

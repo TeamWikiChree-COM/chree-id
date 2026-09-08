@@ -7,6 +7,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -33,10 +34,13 @@ class LoginController {
 
     /**
      * @param Request $request
+     * @param TurnstileGuard $turnstile
      * @return RedirectResponse
      * @throws ValidationException 認証できなかった場合
      */
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request, TurnstileGuard $turnstile): RedirectResponse {
+        $turnstile->check($request);
+
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
