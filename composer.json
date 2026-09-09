@@ -6,12 +6,13 @@
     "keywords": ["oidc", "openid-connect", "webauthn", "laravel"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "inertiajs/inertia-laravel": "^3.3",
         "laravel/framework": "^13.17",
         "web-auth/webauthn-lib": "^5.3"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.11",
         "laravel/pail": "^1.2.5",

@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import InertiaLink from '../../Components/InertiaLink';
+import PasswordField from '../../Components/PasswordField';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
@@ -55,9 +56,8 @@ export default function Login() {
                     />
 
                     <Box>
-                        <TextField
+                        <PasswordField
                             label="パスワード"
-                            type="password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             autoComplete="current-password"

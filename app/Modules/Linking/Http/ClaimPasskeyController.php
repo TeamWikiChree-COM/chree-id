@@ -1,0 +1,81 @@
+<?php
+namespace App\Modules\Linking\Http;
+
+use App\Modules\Credential\Application\CompletePasskeyRegistration;
+use App\Modules\Credential\Application\StartPasskeyRegistration;
+use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
+use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Linking\Application\ClaimTickets;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use RuntimeException;
+use Webauthn\PublicKeyCredentialCreationOptions;
+
+/**
+ * 引き取り画面からのパスキー登録。
+ *
+ * ログイン前なので、セッションの利用者ではなく引き取りトークンで
+ * 対象アカウントを特定する。トークン自体の要求元・有効期限は
+ * ClaimTickets が保証する。
+ */
+class ClaimPasskeyController {
+    /** 応答の検証に、発行時と同じ options を使う。使い回すとリプレイを許す */
+    private const PENDING_OPTIONS = 'claim.passkey.creation_options';
+
+    public function __construct(
+        private readonly ClaimTickets $tickets,
+        private readonly ChreeAccountRepository $accounts,
+        private readonly StartPasskeyRegistration $start,
+        private readonly CompletePasskeyRegistration $complete,
+        private readonly PasskeySerializer $serializer,
+    ) {}
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function options(Request $request): JsonResponse {
+        $link = $this->tickets->find($request->string('token')->toString());
+        if ($link === null || $link->isClaimed()) return response()->json(['error' => 'invalid_ticket'], 404);
+
+        $account = $this->accounts->findById($link->chree_account_id);
+        if ($account === null) return response()->json(['error' => 'invalid_ticket'], 404);
+
+        $options = $this->start->execute($account);
+        $request->session()->put(self::PENDING_OPTIONS, serialize($options));
+
+        return response()->json(json_decode($this->serializer->encodeOptions($options), true));
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function register(Request $request): JsonResponse {
+        $link = $this->tickets->find($request->string('token')->toString());
+        if ($link === null || $link->isClaimed()) return response()->json(['error' => 'invalid_ticket'], 404);
+
+        $stored = $request->session()->pull(self::PENDING_OPTIONS);
+        if (!is_string($stored)) return response()->json(['error' => 'no_challenge'], 400);
+
+        $options = unserialize($stored, ['allowed_classes' => true]);
+        if (!$options instanceof PublicKeyCredentialCreationOptions) {
+            return response()->json(['error' => 'no_challenge'], 400);
+        }
+
+        $label = $request->string('label')->toString();
+
+        try {
+            $this->complete->execute(
+                $link->chree_account_id,
+                $options,
+                $request->string('credential')->toString(),
+                $label === '' ? null : $label,
+            );
+        } catch (RuntimeException) {
+            return response()->json(['error' => 'invalid_credential'], 422);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+}

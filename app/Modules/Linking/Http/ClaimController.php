@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Credential\Domain\CredentialRepository;
+use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Domain\ChreeAccountRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ClaimException;
@@ -26,17 +28,19 @@ class ClaimController {
         ClaimException::INVALID_TICKET => 'このリンクは使えません。お手数ですが、サービスの設定画面からやり直してください',
         ClaimException::ALREADY_CLAIMED => 'このアカウントは既に ChreeID として使えます。ログインをお試しください',
         ClaimException::EMAIL_TAKEN => 'このメールアドレスは既に使われています',
+        ClaimException::NO_CREDENTIAL => 'パスキーの登録が確認できませんでした。もう一度お試しください',
     ];
 
     public function __construct(
         private readonly ClaimTickets $tickets,
         private readonly ClaimServiceAccount $claim,
         private readonly ChreeAccountRepository $accounts,
+        private readonly CredentialRepository $credentials,
         private readonly ChreeSession $session,
     ) {}
 
     /**
-     * 入場券の着地。ここでパスワードを決めてもらう。
+     * 入場券の着地。ここで認証手段を決めてもらう。
      *
      * @param string $token URL に載っていた平文トークン
      * @return Response
@@ -55,6 +59,9 @@ class ClaimController {
             'email' => $account->email,
             'emailVerified' => $account->isEmailVerified(),
             'displayName' => $account->displayName,
+            // 元のサービスにパスワードが無かった (Google 等のみ) 場合は、
+            // 新しくパスワードを決めさせるより連携での引き取りを勧める
+            'hasPassword' => $this->credentials->has($account->id, CredentialType::PASSWORD),
         ]);
     }
 
@@ -66,7 +73,8 @@ class ClaimController {
     public function store(Request $request): RedirectResponse|Response {
         $request->validate([
             'token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8'],
+            'method' => ['required', 'in:password,passkey'],
+            'password' => ['required_if:method,password', 'nullable', 'string', 'min:8'],
             'display_name' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
         ]);
@@ -76,23 +84,23 @@ class ClaimController {
 
         $displayName = $request->string('display_name')->trim()->toString();
         $email = $request->string('email')->trim()->toString();
+        $displayName = $displayName === '' ? null : $displayName;
+        $email = $email === '' ? null : $email;
 
         try {
-            $accountId = $this->claim->execute(
-                $link,
-                $request->string('password')->toString(),
-                $displayName === '' ? null : $displayName,
-                $email === '' ? null : $email,
-            );
+            $accountId = $request->string('method')->toString() === 'password'
+                ? $this->claim->executeWithPassword($link, $request->string('password')->toString(), $displayName, $email)
+                : $this->claim->executeWithExistingCredential($link, $displayName, $email);
         } catch (ClaimException $e) {
-            if ($e->reason === ClaimException::EMAIL_TAKEN) {
-                throw ValidationException::withMessages(['email' => self::FAILURE_MESSAGES[$e->reason]]);
+            if ($e->reason === ClaimException::EMAIL_TAKEN || $e->reason === ClaimException::NO_CREDENTIAL) {
+                $field = $e->reason === ClaimException::EMAIL_TAKEN ? 'email' : 'method';
+                throw ValidationException::withMessages([$field => self::FAILURE_MESSAGES[$e->reason]]);
             }
 
             return $this->failed($e->reason);
         }
 
-        // 本人がパスワードを決めた直後なので、ここはログインさせてよい
+        // 本人が認証手段を決めた直後なので、ここはログインさせてよい
         $this->session->login($accountId);
 
         return redirect('/')->with('claimed', true);

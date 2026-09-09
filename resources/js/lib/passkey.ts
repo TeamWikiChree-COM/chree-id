@@ -37,19 +37,32 @@ function csrfToken(): string {
 }
 
 /**
- * この端末にパスキーを登録する
+ * パスキー登録の一連のやり取りを行う。
  *
+ * @param optionsUrl チャレンジ取得先
+ * @param registerUrl 登録応答の送信先
  * @param label 端末につける名前。省略するとサーバ側の既定になる
+ * @param extraFields 送信先の特定に必要な追加パラメータ (引き取り画面のトークン等)
  * @throws Error 非対応ブラウザ・キャンセル・サーバ側の失敗
  */
-export async function registerPasskey(label: string | null = null): Promise<void> {
+async function createPasskey(
+    optionsUrl: string,
+    registerUrl: string,
+    label: string | null,
+    extraFields: Record<string, string> = {},
+): Promise<void> {
     if (!window.PublicKeyCredential) {
         throw new Error('このブラウザはパスキーに対応していません');
     }
 
-    const optionsResponse = await fetch('/security/passkey/options', {
+    const optionsResponse = await fetch(optionsUrl, {
         method: 'POST',
-        headers: { 'X-XSRF-TOKEN': csrfToken(), Accept: 'application/json' },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-XSRF-TOKEN': csrfToken(),
+            Accept: 'application/json',
+        },
+        body: new URLSearchParams(extraFields).toString(),
     });
     if (!optionsResponse.ok) throw new Error('チャレンジを取得できませんでした');
 
@@ -80,15 +93,38 @@ export async function registerPasskey(label: string | null = null): Promise<void
         },
     };
 
-    const registerResponse = await fetch('/security/passkey/register', {
+    const registerResponse = await fetch(registerUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-XSRF-TOKEN': csrfToken(),
             Accept: 'application/json',
         },
-        body: JSON.stringify({ credential: JSON.stringify(payload), label }),
+        body: JSON.stringify({ ...extraFields, credential: JSON.stringify(payload), label }),
     });
 
     if (!registerResponse.ok) throw new Error('パスキーを登録できませんでした');
+}
+
+/**
+ * この端末にパスキーを登録する (ログイン中の設定画面から)
+ *
+ * @param label 端末につける名前。省略するとサーバ側の既定になる
+ * @throws Error 非対応ブラウザ・キャンセル・サーバ側の失敗
+ */
+export async function registerPasskey(label: string | null = null): Promise<void> {
+    await createPasskey('/security/passkey/options', '/security/passkey/register', label);
+}
+
+/**
+ * 引き取り (claim) 画面からこの端末にパスキーを登録する。
+ *
+ * ログイン前なので、対象アカウントは引き取りトークンで特定する。
+ *
+ * @param token 引き取りトークン
+ * @param label 端末につける名前。省略するとサーバ側の既定になる
+ * @throws Error 非対応ブラウザ・キャンセル・サーバ側の失敗
+ */
+export async function registerClaimPasskey(token: string, label: string | null = null): Promise<void> {
+    await createPasskey('/claim/passkey/options', '/claim/passkey/register', label, { token });
 }

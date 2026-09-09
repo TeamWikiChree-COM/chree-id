@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+import PasswordField from '../../Components/PasswordField';
 
 interface RegisterPasswordProps {
     /** メールに載せた平文トークン。そのまま送り返す */
@@ -36,9 +37,8 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
                         メールアドレスを確認できました。パスワードを決めるとアカウントが作られます。
                     </Typography>
 
-                    <TextField
+                    <PasswordField
                         label="パスワード"
-                        type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={Boolean(errors.password)}

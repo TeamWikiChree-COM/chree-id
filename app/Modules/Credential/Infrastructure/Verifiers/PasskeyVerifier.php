@@ -8,9 +8,9 @@ use App\Modules\Credential\Infrastructure\Passkey\PasskeyCeremony;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyStore;
+use App\Modules\Identity\Domain\ChreeAccountRepository;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
-use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialSource;
 
@@ -20,12 +20,20 @@ use Webauthn\PublicKeyCredentialSource;
  * 端末の所持と生体認証/PINの組み合わせで既に多要素なので、単独で認証を完了してよい。
  */
 class PasskeyVerifier extends AbstractVerifier {
-    public function __construct(
-        private readonly PasskeyCeremony $ceremony,
-        private readonly PasskeyContext $context,
-        private readonly PasskeyStore $store,
-        private readonly PasskeySerializer $serializer,
-    ) {}
+
+    private readonly PasskeyCeremony $ceremony;
+    private readonly PasskeyContext $context;
+    private readonly PasskeyStore $store;
+    private readonly PasskeySerializer $serializer;
+    private readonly ChreeAccountRepository $accounts;
+
+    public function __construct(PasskeyCeremony $ceremony, PasskeyContext $context, PasskeyStore $store, PasskeySerializer $serializer, ChreeAccountRepository $accounts) {
+        $this->ceremony = $ceremony;
+        $this->context = $context;
+        $this->store = $store;
+        $this->serializer = $serializer;
+        $this->accounts = $accounts;
+    }
 
     /**
      * @return CredentialType
@@ -64,6 +72,9 @@ class PasskeyVerifier extends AbstractVerifier {
 
         $source = $this->store->find($this->store->encodeId($credential->rawId));
         if ($source === null || $source->userHandle !== $accountId) return $this->failure();
+
+        $account = $this->accounts->findById($accountId);
+        if ($account === null || $account->isSuspended()) return $this->failure();
 
         try {
             $updated = $this->ceremony->assertionValidator()->check(

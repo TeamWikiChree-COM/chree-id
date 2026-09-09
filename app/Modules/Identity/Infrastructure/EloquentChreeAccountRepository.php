@@ -81,6 +81,14 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
     }
 
     /**
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function suspend(string $id): void {
+        ChreeAccountModel::query()->whereKey($id)->update(['suspended_at' => now()]);
+    }
+
+    /**
      * @param ChreeAccountModel $model
      * @return ChreeAccount
      */

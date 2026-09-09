@@ -10,6 +10,7 @@ use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Linking\Http\ClaimController;
+use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
 use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Identity\Http\RegisterController;
@@ -87,6 +88,8 @@ Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink
 // 裏で発行したアカウントの引き取り。サービスが渡した一度きりの URL から入る
 Route::get('/claim/{token}', [ClaimController::class, 'show'])->middleware('throttle:verify');
 Route::post('/claim', [ClaimController::class, 'store'])->middleware('throttle:verify');
+Route::post('/claim/passkey/options', [ClaimPasskeyController::class, 'options'])->middleware('throttle:verify');
+Route::post('/claim/passkey/register', [ClaimPasskeyController::class, 'register'])->middleware('throttle:verify');
 
 // 外部 IdP へのログイン (ChreeID が RP 側)
 Route::get('/auth/{provider}/redirect', [ExternalLoginController::class, 'redirect']);
@@ -123,4 +126,5 @@ Route::post('/oauth/token', TokenController::class);
 // サービスが自分の利用者ぶんの ChreeID を取りに来る。こちらもブラウザを介さない
 Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
 Route::post('/api/v1/service-accounts/claim-tickets', [ServiceAccountController::class, 'claimTicket']);
+Route::post('/api/v1/service-accounts/deactivate', [ServiceAccountController::class, 'deactivate']);
 Route::get('/oauth/userinfo', UserinfoController::class);

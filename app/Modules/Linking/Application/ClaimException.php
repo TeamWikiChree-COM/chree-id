@@ -18,6 +18,9 @@ class ClaimException extends RuntimeException {
     /** 指定されたアドレスが他の人に使われている */
     public const EMAIL_TAKEN = 'email_taken';
 
+    /** パスワード以外の方法で引き取ろうとしたが、認証手段が確認できない */
+    public const NO_CREDENTIAL = 'no_credential';
+
     /**
      * @param string $reason 上記の定数のいずれか
      */

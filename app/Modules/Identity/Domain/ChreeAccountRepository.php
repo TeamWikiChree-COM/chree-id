@@ -67,4 +67,15 @@ interface ChreeAccountRepository {
      * @return void
      */
     public function updateEmail(string $id, string $email): void;
+
+    /**
+     * アカウントを停止する (ソフトデリート)。
+     *
+     * 行は残したままログイン不能にする。移行元のアカウントが消えた場合など、
+     * 物理削除せずに済ませたいときに使う。
+     *
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function suspend(string $id): void;
 }

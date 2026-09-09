@@ -3,10 +3,10 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+import PasswordField from '../../Components/PasswordField';
 
 interface ResetPasswordProps {
     /** メールに載せた平文トークン。そのまま送り返す */
@@ -38,9 +38,8 @@ export default function ResetPassword({ token }: ResetPasswordProps) {
                 <Stack spacing={2}>
                     {errors.token && <Alert severity="error">{errors.token}</Alert>}
 
-                    <TextField
+                    <PasswordField
                         label="新しいパスワード"
-                        type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={Boolean(errors.password)}

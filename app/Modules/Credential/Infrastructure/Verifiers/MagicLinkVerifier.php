@@ -6,6 +6,7 @@ use App\Modules\Credential\Domain\VerificationResult;
 use App\Modules\Credential\Domain\Verifier\AbstractVerifier;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
+use App\Modules\Identity\Domain\ChreeAccountRepository;
 
 /**
  * マジックリンク認証
@@ -17,6 +18,13 @@ use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
  * 「credentials が0件 = ログインする材料が無い」が崩れるため、有効化の行を必須にしている。
  */
 class MagicLinkVerifier extends AbstractVerifier {
+    
+    private readonly ChreeAccountRepository $accounts;
+
+    public function __construct(ChreeAccountRepository $accounts) {
+        $this->accounts = $accounts;
+    }
+
     /**
      * @return CredentialType
      */
@@ -32,6 +40,9 @@ class MagicLinkVerifier extends AbstractVerifier {
     public function verify(string $accountId, array $input): VerificationResult {
         $token = $input['token'] ?? null;
         if (!\is_string($token) || $token === '') return $this->failure();
+
+        $account = $this->accounts->findById($accountId);
+        if ($account === null || $account->isSuspended()) return $this->failure();
 
         if (!$this->isEnabled($accountId)) return $this->failure();
 

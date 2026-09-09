@@ -178,7 +178,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here', 'display_name' => '太郎'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'display_name' => '太郎'])
             ->assertRedirect('/');
 
         $link = ServiceAccountLinkModel::query()->firstOrFail();
@@ -197,7 +197,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here']);
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here']);
         $this->post('/logout');
 
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'chosen-here'])
@@ -210,7 +210,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here']);
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here']);
 
         $this->get("/claim/{$token}")->assertInertia(fn (Assert $page) => $page->component('Claim/Failed'));
     }
@@ -228,7 +228,7 @@ class ClaimServiceAccountTest extends TestCase {
         $accounts->changeOrigin($accountId, AccountOrigin::USER);
         app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
 
-        $this->post('/claim', ['token' => $token, 'password' => 'taken-over'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'taken-over'])
             ->assertInertia(fn (Assert $page) => $page->component('Claim/Failed'));
 
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'chosen-in-chreeid'])
@@ -239,7 +239,7 @@ class ClaimServiceAccountTest extends TestCase {
         $client = $this->client();
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here']);
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here']);
 
         $this->requestTicket($client)->assertStatus(409);
     }
@@ -249,7 +249,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'short'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'short'])
             ->assertSessionHasErrors('password');
 
         $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
@@ -263,7 +263,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here', 'email' => 'new@example.com'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'email' => 'new@example.com'])
             ->assertRedirect('/');
 
         Mail::assertSentCount(1);
@@ -276,7 +276,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here', 'email' => 'taken@example.com'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'email' => 'taken@example.com'])
             ->assertSessionHasErrors('email');
 
         $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
@@ -288,7 +288,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => false]);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here', 'email' => 'user@example.com'])
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'email' => 'user@example.com'])
             ->assertRedirect('/');
 
         Mail::assertSentCount(1);
@@ -299,7 +299,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
 
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here', 'email' => 'user@example.com']);
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'email' => 'user@example.com']);
 
         Mail::assertNothingSent();
     }
@@ -311,7 +311,7 @@ class ClaimServiceAccountTest extends TestCase {
         $before = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
 
         $token = $this->ticketToken($client);
-        $this->post('/claim', ['token' => $token, 'password' => 'chosen-here']);
+        $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here']);
 
         $this->assertSame($before, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
     }

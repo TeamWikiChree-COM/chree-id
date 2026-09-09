@@ -2,6 +2,7 @@
 namespace App\Modules\Linking\Http;
 
 use App\Modules\Linking\Application\ClaimTickets;
+use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
 use App\Modules\Registry\Application\AuthenticateClient;
 use App\Modules\Registry\Domain\ServiceTrust;
@@ -18,11 +19,18 @@ use Illuminate\Validation\ValidationException;
  * そのサービスの都合で ChreeID の利用者が水増しされてしまう。
  */
 class ServiceAccountController {
-    public function __construct(
-        private readonly AuthenticateClient $clients,
-        private readonly IssueServiceAccount $issue,
-        private readonly ClaimTickets $tickets,
-    ) {}
+
+    private readonly AuthenticateClient $clients;
+    private readonly IssueServiceAccount $issue;
+    private readonly ClaimTickets $tickets;
+    private readonly DeactivateServiceAccount $deactivate;
+
+    public function __construct(AuthenticateClient $clients, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate) {
+        $this->clients = $clients;
+        $this->issue = $issue;
+        $this->tickets = $tickets;
+        $this->deactivate = $deactivate;
+    }
 
     /**
      * @param Request $request
@@ -88,6 +96,31 @@ class ServiceAccountController {
             'claim_url' => url("/claim/{$ticket->token}"),
             'expires_at' => $ticket->expiresAt->toIso8601String(),
         ]);
+    }
+
+    /**
+     * 移行元でアカウントが消えたときに呼んでもらう。
+     *
+     * 物理削除はせず、ログインできない状態にするだけ。呼び出し元がリトライしても
+     * 副作用が増えないよう、既に停止済みでも成功として扱う。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function deactivate(Request $request): JsonResponse {
+        $client = $this->authenticate($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate(['service_user_id' => ['required', 'string', 'max:190']]);
+
+        $found = $this->deactivate->execute($client, $request->string('service_user_id')->toString());
+
+        if (!$found) {
+            return $this->error('unknown_service_user', 'この利用者の ChreeID は見つかりませんでした', 404);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     /**
