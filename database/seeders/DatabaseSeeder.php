@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,11 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // 何も入れない。ChreeID のアカウントは本人の登録か、サービスからの
+        // 遅延発行でしか作らない。素性の分からない行を用意すると、
+        // それがどちらの経路で出来たものか追えなくなる
     }
 }
