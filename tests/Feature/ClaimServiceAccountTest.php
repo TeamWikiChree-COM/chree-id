@@ -215,17 +215,18 @@ class ClaimServiceAccountTest extends TestCase {
         $this->get("/claim/{$token}")->assertInertia(fn (Assert $page) => $page->component('Claim/Failed'));
     }
 
-    // 発行時に既存アカウントへ寄せた場合、そこは既に本人のもの。
-    // 引き取りを許すと、サービス経由で他人のパスワードを差し替えられてしまう
+    // 既に本人のものになっているアカウントは引き取らせない。
+    // 許すと、サービスが券を出すだけで他人のパスワードを差し替えられてしまう
     public function test_refusesToClaimAnAccountThatIsAlreadyTheOwners(): void {
-        $accounts = app(ChreeAccountRepository::class);
-        $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
-        $accounts->markEmailVerified($existing->id);
-        app(SetPassword::class)->execute($existing->id, 'chosen-in-chreeid');
-
         $client = $this->client();
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
         $token = $this->ticketToken($client);
+
+        // 券を配ったあとに、別経路 (統合など) で本人のものになった状況
+        $accounts = app(ChreeAccountRepository::class);
+        $accountId = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
+        $accounts->changeOrigin($accountId, AccountOrigin::USER);
+        app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
 
         $this->post('/claim', ['token' => $token, 'password' => 'taken-over'])
             ->assertInertia(fn (Assert $page) => $page->component('Claim/Failed'));

@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\DB;
  *
  * 返す sub は ResolveSubject が決める。OIDC でログインしたときと
  * 同じ値でなければ、サービス側から見て別人になってしまう。
+ *
+ * ここで既存の ChreeID に寄せることはしない。アドレスが一致していても、
+ * 統合するかどうかは本人が決める (ARCHITECTURE.md 8.7)。
  */
 class IssueServiceAccount {
     public function __construct(
@@ -90,12 +93,12 @@ class IssueServiceAccount {
     }
 
     /**
-     * 既にある ChreeID に相乗りするか、新しく作るかを決める。
+     * サービスアカウントの器を作る。
      *
-     * 同じ人が既に ChreeID を持っているなら、そこへ寄せたい。
-     * ただし寄せる判断はアドレスの一致だけを根拠にするので、
-     * サービス側とこちら側の両方で到達性が確かめられている場合に限る。
-     * 片方でも未確認だと、他人のアドレスを名乗るだけでアカウントを奪える。
+     * **アドレスが一致しても既存のアカウントには寄せない。** 寄せるかどうかは
+     * 本人が決めることで、こちらが裏で決めてよいことではない。同じアドレスを
+     * 使っているだけの別アカウントということも普通にある。
+     * 一致は「統合候補」として本人に見せる材料に留め、統合は本人の操作で行う。
      *
      * @param string|null $email サービスが把握しているアドレス
      * @param bool $emailVerified サービス側で到達性を確認済みか
@@ -103,20 +106,15 @@ class IssueServiceAccount {
      * @return string アカウントID (ULID)
      */
     private function resolveAccount(?string $email, bool $emailVerified, ?string $displayName): string {
-        $existing = $email === null ? null : $this->accounts->findByEmail($email);
+        // 既に誰かが使っているアドレスは持たせられない (email は一意)。
+        // サービスが何と言っていたかは service_email に控えが残る
+        $taken = $email !== null && $this->accounts->findByEmail($email) !== null;
 
-        if ($existing !== null) {
-            if ($emailVerified && $existing->isEmailVerified()) return $existing->id;
-
-            // 既に使われているアドレスは持たせられない。素の器だけ作る
-            return $this->accounts->create(AccountOrigin::SERVICE, null, $displayName)->id;
-        }
-
-        $account = $this->accounts->create(AccountOrigin::SERVICE, $email, $displayName);
+        $account = $this->accounts->create(AccountOrigin::SERVICE, $taken ? null : $email, $displayName);
 
         // 公式サービスが確認済みと言うなら、こちらでも確認済みとして扱う。
         // 外部 IdP の email_verified を信じているのと同じ判断
-        if ($email !== null && $emailVerified) $this->accounts->markEmailVerified($account->id);
+        if (!$taken && $email !== null && $emailVerified) $this->accounts->markEmailVerified($account->id);
 
         return $account->id;
     }

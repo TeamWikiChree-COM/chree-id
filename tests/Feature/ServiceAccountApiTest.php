@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Feature;
 
+use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
@@ -107,36 +108,14 @@ class ServiceAccountApiTest extends TestCase {
         $this->assertSame(2, ServiceAccountLinkModel::query()->count());
     }
 
-    // 同じ人が既に ChreeID を持っているなら、そこへ寄せる
-    public function test_reusesAnExistingAccountWhenBothSidesVerifiedTheAddress(): void {
+    // アドレスが一致しても勝手に寄せない。統合するかどうかは本人が決める
+    public function test_doesNotFoldIntoAnExistingAccountWithTheSameAddress(): void {
         $accounts = app(ChreeAccountRepository::class);
         $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
         $accounts->markEmailVerified($existing->id);
 
         $client = $this->client();
         $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true])->assertOk();
-
-        $this->assertSame($existing->id, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
-    }
-
-    // アドレスの一致だけで寄せると、他人のアドレスを名乗るだけで奪える
-    public function test_doesNotReuseWhenTheExistingAddressIsUnverified(): void {
-        $existing = app(ChreeAccountRepository::class)
-            ->create(AccountOrigin::USER, 'user@example.com', '既存');
-
-        $client = $this->client();
-        $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true])->assertOk();
-
-        $this->assertNotSame($existing->id, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
-    }
-
-    public function test_doesNotReuseWhenTheServiceDidNotVerify(): void {
-        $accounts = app(ChreeAccountRepository::class);
-        $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
-        $accounts->markEmailVerified($existing->id);
-
-        $client = $this->client();
-        $this->issue($client, ['email' => 'user@example.com', 'email_verified' => false])->assertOk();
 
         $this->assertNotSame($existing->id, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
     }
@@ -152,8 +131,20 @@ class ServiceAccountApiTest extends TestCase {
         $account = app(ChreeAccountRepository::class)->findById($link->chree_account_id);
 
         $this->assertNull($account?->email);
-        // サービスが何と言っていたかは控えとして残す
+        // 統合候補として見せるために、サービスが何と言っていたかは控えておく
         $this->assertSame('user@example.com', $link->service_email);
+    }
+
+    // 同じサービスの別利用者どうしも、アドレスが同じというだけで一緒にしない。
+    // WikiChree は1アカウント1Wiki なので、同じ人が同じアドレスで複数持つ
+    public function test_keepsTwoServiceUsersApartEvenWithTheSameAddress(): void {
+        $client = $this->client();
+
+        $a = $this->issue($client, ['service_user_id' => '1', 'email' => 'same@example.com', 'email_verified' => true]);
+        $b = $this->issue($client, ['service_user_id' => '2', 'email' => 'same@example.com', 'email_verified' => true]);
+
+        $this->assertNotSame($a->json('sub'), $b->json('sub'));
+        $this->assertSame(2, ServiceAccountLinkModel::query()->count());
     }
 
     public function test_trustsAVerifiedAddressFromAnOfficialService(): void {
@@ -186,6 +177,14 @@ class ServiceAccountApiTest extends TestCase {
         $this->assertNotNull(session('chreeid.account_id'));
     }
 
+    // 引き取り前でも移行元のパスワードで入れる。引き取りはまだ済んでいない
+    public function test_theMigratedAccountIsNotClaimedYet(): void {
+        $client = $this->client();
+        $this->issue($client, ['password_hash' => password_hash('correct-horse', PASSWORD_DEFAULT)]);
+
+        $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
+    }
+
     public function test_rejectsAHashThatIsNotBcrypt(): void {
         $client = $this->client();
 
@@ -200,17 +199,14 @@ class ServiceAccountApiTest extends TestCase {
 
     // 本人が ChreeID で決め直した後に、サービスの古いハッシュで巻き戻さない
     public function test_doesNotOverwriteAPasswordTheOwnerAlreadySet(): void {
-        $accounts = app(ChreeAccountRepository::class);
-        $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
-        $accounts->markEmailVerified($existing->id);
-        app(SetPassword::class)->execute($existing->id, 'chosen-in-chreeid');
-
         $client = $this->client();
-        $this->issue($client, [
-            'email' => 'user@example.com',
-            'email_verified' => true,
-            'password_hash' => password_hash('old-service-password', PASSWORD_DEFAULT),
-        ]);
+        $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true]);
+
+        $accountId = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
+        app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
+
+        // 移行元がもう一度ハッシュを送ってきても、決め直した方が残る
+        app(AdoptPasswordHash::class)->execute($accountId, password_hash('old-service-password', PASSWORD_DEFAULT));
 
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'old-service-password'])
             ->assertSessionHasErrors('email');
