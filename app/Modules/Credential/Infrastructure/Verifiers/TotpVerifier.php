@@ -16,7 +16,12 @@ use Illuminate\Support\Facades\Crypt;
  * コード生成に元の値が要るので、パスワードのようにハッシュ化してはいけない。
  */
 class TotpVerifier extends AbstractVerifier {
-    public function __construct(private readonly Totp $totp) {}
+
+    private readonly Totp $totp;
+
+    public function __construct(Totp $totp) {
+        $this->totp = $totp;
+    }
 
     /**
      * @return CredentialType

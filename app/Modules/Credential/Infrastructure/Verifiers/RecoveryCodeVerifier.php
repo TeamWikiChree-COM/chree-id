@@ -5,6 +5,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerificationResult;
 use App\Modules\Credential\Domain\Verifier\AbstractVerifier;
 use App\Modules\Credential\Infrastructure\CredentialModel;
+use function \{is_string, strtolower, trim, hash};
 
 /**
  * 復旧コードの検証
@@ -27,12 +28,12 @@ class RecoveryCodeVerifier extends AbstractVerifier {
      */
     public function verify(string $accountId, array $input): VerificationResult {
         $code = $input['code'] ?? null;
-        if (!\is_string($code) || $code === '') return $this->failure();
+        if (!is_string($code) || $code === '') return $this->failure();
 
         $row = CredentialModel::query()
             ->where('chree_account_id', $accountId)
             ->where('type', CredentialType::RECOVERY_CODE)
-            ->where('secret', hash('sha256', \strtolower(\trim($code))))
+            ->where('secret', hash('sha256', strtolower(trim($code))))
             ->first();
 
         if ($row === null) return $this->failure();
