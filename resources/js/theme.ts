@@ -135,8 +135,7 @@ export function buildTheme(mode: PaletteMode): Theme {
                         '&.Mui-focused': {
                             '& .MuiOutlinedInput-notchedOutline': {
                                 borderColor: palette.primary.main,
-                                borderWidth: '1px',
-                                boxShadow: `0 0 0 1px ${palette.primary.main}`,
+                                borderWidth: '2px',
                             },
                         },
                     },
