@@ -29,6 +29,7 @@ export default function Login() {
     return (
         <AuthLayout
             title="ログイン"
+            heading="ChreeID にログイン"
             footer={
                 <Stack spacing={0.5}>
                     <Box component={InertiaLink} href="/register" sx={{ color: 'primary.main' }}>
