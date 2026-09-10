@@ -23,10 +23,14 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
      * @param string $email メールアドレス
      * @return AuthIdentity|null
      */
-    public function findByEmail(string $email): ?AuthIdentity {
-        $model = AuthIdentityModel::query()->where('email', $email)->first();
+    public function findAllByEmail(string $email): array {
+        $found = [];
 
-        return $model === null ? null : $this->toDomain($model);
+        foreach (AuthIdentityModel::query()->where('email', $email)->orderBy('id')->get() as $model) {
+            $found[] = $this->toDomain($model);
+        }
+
+        return $found;
     }
 
     /**

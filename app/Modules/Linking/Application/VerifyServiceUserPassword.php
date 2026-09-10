@@ -5,7 +5,7 @@ use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Linking\Domain\ServiceAuthResult;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
@@ -22,7 +22,7 @@ use App\Modules\Registry\Infrastructure\OAuthClientModel;
  */
 class VerifyServiceUserPassword {
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
         private readonly VerifyCredential $verify,
         private readonly CompleteAuthentication $complete,
         private readonly ResolveSubject $subjects,
@@ -35,18 +35,27 @@ class VerifyServiceUserPassword {
      * @return ServiceAuthResult
      */
     public function execute(OAuthClientModel $client, string $email, string $password): ServiceAuthResult {
-        $account = $this->accounts->findByEmail($email);
-        if ($account === null || $account->isSuspended()) return ServiceAuthResult::invalid();
+        // 同じアドレスの認証主体は複数ありうる。呼び出し元のサービスに
+        // 紐付いているものだけに絞る。これでメールが一意でなくても一意に決まるし、
+        // この口が ChreeID 全体のパスワード試行機になることも防げる
+        $link = null;
+        $account = null;
 
-        // 呼び出し元のサービスに紐付いた利用者に限る。
-        // これが無いと、この口が ChreeID 全体のパスワード試行機になる
-        $link = ServiceAccountModel::query()
-            ->where('client_id', $client->id)
-            ->where('auth_identity_id', $account->id)
-            ->orderBy('id')
-            ->first();
+        foreach ($this->byEmail->candidates($email) as $candidate) {
+            $found = ServiceAccountModel::query()
+                ->where('client_id', $client->id)
+                ->where('auth_identity_id', $candidate->id)
+                ->orderBy('id')
+                ->first();
 
-        if ($link === null) return ServiceAuthResult::invalid();
+            if ($found === null) continue;
+
+            $link = $found;
+            $account = $candidate;
+            break;
+        }
+
+        if ($link === null || $account === null) return ServiceAuthResult::invalid();
 
         $factors = new VerifiedFactors();
         $verified = $this->verify->execute(

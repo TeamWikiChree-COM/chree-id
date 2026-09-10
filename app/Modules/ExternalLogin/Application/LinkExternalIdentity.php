@@ -5,6 +5,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -22,6 +23,7 @@ class LinkExternalIdentity {
     public function __construct(
         private readonly AuthIdentityRepository $accounts,
         private readonly UserAccounts $userAccounts,
+        private readonly ResolveByEmail $byEmail,
     ) {}
 
     /**
@@ -56,7 +58,9 @@ class LinkExternalIdentity {
     private function findByEmail(ExternalIdentity $identity): ?string {
         if ($identity->email === null) return null;
 
-        $account = $this->accounts->findByEmail($identity->email);
+        // 同じアドレスの認証主体は複数ありうる。寄せるなら束ねる人格を持つものへ。
+        // 決められないときは寄せずに新規発行する (勝手にどれかへ寄せない)
+        $account = $this->byEmail->primary($identity->email);
         if ($account === null) return null;
 
         if (!$identity->emailVerified) {

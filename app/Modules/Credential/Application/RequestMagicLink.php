@@ -4,7 +4,7 @@ namespace App\Modules\Credential\Application;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Mail\MagicLinkMail;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Application\ResolveByEmail;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -18,7 +18,7 @@ class RequestMagicLink {
     public const EXPIRES_MINUTES = 15;
 
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
         private readonly CredentialRepository $credentials,
         private readonly IssueMagicLink $issue,
     ) {}
@@ -28,7 +28,7 @@ class RequestMagicLink {
      * @return void
      */
     public function execute(string $email): void {
-        $account = $this->accounts->findByEmail($email);
+        $account = $this->byEmail->primary($email);
         if ($account === null || $account->isSuspended()) return;
 
         // 有効化していないアカウントに送ると「メールが届く = 登録済み」が漏れる、の前に

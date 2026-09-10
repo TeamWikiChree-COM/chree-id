@@ -14,10 +14,16 @@ interface AuthIdentityRepository {
     public function findById(string $id): ?AuthIdentity;
 
     /**
+     * 同じアドレスの認証主体をすべて返す。
+     *
+     * **メールは認証主体を一意に決めない。** 同じ人が同一サービスに複数の
+     * サービスアカウントを持つとき、そこには普通同じアドレスを使う
+     * (ARCHITECTURE.md 8.3)。どれを指すかの判断は `ResolveByEmail` が持つ。
+     *
      * @param string $email メールアドレス
-     * @return AuthIdentity|null 見つからなければ null
+     * @return list<AuthIdentity> 古い順
      */
-    public function findByEmail(string $email): ?AuthIdentity;
+    public function findAllByEmail(string $email): array;
 
     /**
      * アカウントを新規発行する。

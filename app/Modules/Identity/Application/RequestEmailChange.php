@@ -20,7 +20,10 @@ class RequestEmailChange {
     /** リンクの有効分数 */
     public const EXPIRES_MINUTES = 60;
 
-    public function __construct(private readonly AuthIdentityRepository $accounts) {}
+    public function __construct(
+        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
+    ) {}
 
     /**
      * @param string $accountId アカウントID (ULID)
@@ -32,7 +35,7 @@ class RequestEmailChange {
         if ($account === null) return false;
 
         // 他人が使っているアドレスには変更できない
-        $existing = $this->accounts->findByEmail($newEmail);
+        $existing = $this->byEmail->primary($newEmail);
         if ($existing !== null && $existing->id !== $accountId) return false;
 
         $token = $this->issue($accountId, $newEmail);

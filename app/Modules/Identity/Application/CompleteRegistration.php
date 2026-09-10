@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 class CompleteRegistration {
     public function __construct(
         private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
         private readonly SetPassword $setPassword,
         private readonly EnableMagicLink $enableMagicLink,
         private readonly UserAccounts $userAccounts,
@@ -36,7 +37,7 @@ class CompleteRegistration {
     public function isUsable(string $token): bool {
         $pending = $this->find($token);
 
-        return $pending !== null && $this->accounts->findByEmail($pending->email) === null;
+        return $pending !== null && !$this->byEmail->hasUserAccount($pending->email);
     }
 
     /**
@@ -52,7 +53,7 @@ class CompleteRegistration {
         if ($pending === null) throw RegistrationTokenException::notFound();
 
         // 申し込みから確認までの間に、同じアドレスが Google 連携などで先に使われている可能性がある
-        if ($this->accounts->findByEmail($pending->email) !== null) {
+        if ($this->byEmail->hasUserAccount($pending->email)) {
             $pending->delete();
 
             throw RegistrationTokenException::emailTaken();

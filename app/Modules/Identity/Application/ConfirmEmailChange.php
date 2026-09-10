@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\DB;
  * 差し替えと同時に検証済みにする。このリンクが開けた時点で到達性は確かめられている。
  */
 class ConfirmEmailChange {
-    public function __construct(private readonly AuthIdentityRepository $accounts) {}
+    public function __construct(
+        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
+    ) {}
 
     /**
      * @param string $token メールに載せた平文トークン
@@ -25,7 +28,7 @@ class ConfirmEmailChange {
         if ($pending === null || !$pending->isUsable()) return null;
 
         // 申し込みから確認までの間に、そのアドレスが他のアカウントに使われている可能性がある
-        $existing = $this->accounts->findByEmail($pending->new_email);
+        $existing = $this->byEmail->primary($pending->new_email);
         if ($existing !== null && $existing->id !== $pending->auth_identity_id) {
             $pending->delete();
 

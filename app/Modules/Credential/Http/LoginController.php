@@ -6,7 +6,7 @@ use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +20,7 @@ use Inertia\Response;
  */
 class LoginController {
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
         private readonly VerifyCredential $verify,
         private readonly CompleteAuthentication $complete,
         private readonly PendingAuthentication $pending,
@@ -48,8 +48,9 @@ class LoginController {
             'password' => ['required', 'string'],
         ]);
 
-        $account = $this->accounts->findByEmail($request->string('email')->toString());
-        if ($account === null || $account->isSuspended()) throw $this->invalidCredentials();
+        // メールが指すのは UserAccount。サービスアカウントはサービス経由で入る
+        $account = $this->byEmail->primary($request->string('email')->toString());
+        if ($account === null) throw $this->invalidCredentials();
 
         $factors = new VerifiedFactors();
         $verified = $this->verify->execute(

@@ -15,7 +15,7 @@ use App\Modules\Registry\Infrastructure\OAuthClientModel;
 class ListConnectedServices {
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{clientId: string, name: string, trust: string, connectedAt: string|null, hasActiveToken: bool}>
+     * @return list<array{id: string, clientId: string, name: string, trust: string, serviceUserId: string|null, connectedAt: string|null, hasActiveToken: bool}>
      */
     public function execute(string $accountId): array {
         $subjects = ServiceAccountModel::query()
@@ -38,7 +38,9 @@ class ListConnectedServices {
             if ($client === null) continue;
 
             $result[] = [
+                'id' => $subject->id,
                 'clientId' => $client->id,
+                'serviceUserId' => $subject->service_user_id,
                 'name' => $client->name,
                 'trust' => $client->trust->value,
                 'connectedAt' => $subject->created_at?->toDateTimeString(),

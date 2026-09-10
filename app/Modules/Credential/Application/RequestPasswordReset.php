@@ -3,7 +3,7 @@ namespace App\Modules\Credential\Application;
 
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Credential\Mail\PasswordResetMail;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Application\ResolveByEmail;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -17,7 +17,7 @@ class RequestPasswordReset {
     private const EXPIRES_MINUTES = 30;
 
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
+        private readonly ResolveByEmail $byEmail,
         private readonly IssueOneTimeToken $issue,
     ) {}
 
@@ -26,7 +26,7 @@ class RequestPasswordReset {
      * @return void
      */
     public function execute(string $email): void {
-        $account = $this->accounts->findByEmail($email);
+        $account = $this->byEmail->primary($email);
 
         // 停止中のアカウントに再設定させると、停止を回避する手段になりうる
         if ($account === null || $account->isSuspended()) return;

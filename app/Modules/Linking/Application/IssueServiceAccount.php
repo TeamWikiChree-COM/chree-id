@@ -106,15 +106,13 @@ class IssueServiceAccount {
      * @return string アカウントID (ULID)
      */
     private function resolveAccount(?string $email, bool $emailVerified, ?string $displayName): string {
-        // 既に誰かが使っているアドレスは持たせられない (email は一意)。
-        // サービスが何と言っていたかは service_email に控えが残る
-        $taken = $email !== null && $this->accounts->findByEmail($email) !== null;
-
-        $account = $this->accounts->create(AccountOrigin::SERVICE, $taken ? null : $email, $displayName);
+        // 同じアドレスのサービスアカウントが複数あるのは正常な状態 (ARCHITECTURE.md 8.3)。
+        // 以前は email が一意だったので2人目以降を null にしていたが、その回避はもう要らない
+        $account = $this->accounts->create(AccountOrigin::SERVICE, $email, $displayName);
 
         // 公式サービスが確認済みと言うなら、こちらでも確認済みとして扱う。
         // 外部 IdP の email_verified を信じているのと同じ判断
-        if (!$taken && $email !== null && $emailVerified) $this->accounts->markEmailVerified($account->id);
+        if ($email !== null && $emailVerified) $this->accounts->markEmailVerified($account->id);
 
         return $account->id;
     }
