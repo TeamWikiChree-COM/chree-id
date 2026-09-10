@@ -8,7 +8,7 @@ use App\Modules\Credential\Infrastructure\Passkey\PasskeyCeremony;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyStore;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\PublicKeyCredentialRequestOptions;
@@ -25,9 +25,9 @@ class PasskeyVerifier extends AbstractVerifier {
     private readonly PasskeyContext $context;
     private readonly PasskeyStore $store;
     private readonly PasskeySerializer $serializer;
-    private readonly ChreeAccountRepository $accounts;
+    private readonly AuthIdentityRepository $accounts;
 
-    public function __construct(PasskeyCeremony $ceremony, PasskeyContext $context, PasskeyStore $store, PasskeySerializer $serializer, ChreeAccountRepository $accounts) {
+    public function __construct(PasskeyCeremony $ceremony, PasskeyContext $context, PasskeyStore $store, PasskeySerializer $serializer, AuthIdentityRepository $accounts) {
         $this->ceremony = $ceremony;
         $this->context = $context;
         $this->store = $store;

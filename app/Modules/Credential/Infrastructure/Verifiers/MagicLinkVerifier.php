@@ -6,7 +6,7 @@ use App\Modules\Credential\Domain\VerificationResult;
 use App\Modules\Credential\Domain\Verifier\AbstractVerifier;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 
 /**
  * マジックリンク認証
@@ -19,9 +19,9 @@ use App\Modules\Identity\Domain\ChreeAccountRepository;
  */
 class MagicLinkVerifier extends AbstractVerifier {
     
-    private readonly ChreeAccountRepository $accounts;
+    private readonly AuthIdentityRepository $accounts;
 
-    public function __construct(ChreeAccountRepository $accounts) {
+    public function __construct(AuthIdentityRepository $accounts) {
         $this->accounts = $accounts;
     }
 
@@ -57,7 +57,7 @@ class MagicLinkVerifier extends AbstractVerifier {
      */
     private function isEnabled(string $accountId): bool {
         return CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::MAGIC_LINK)
             ->exists();
     }
@@ -74,7 +74,7 @@ class MagicLinkVerifier extends AbstractVerifier {
     private function consumeToken(string $accountId, string $token): VerificationResult {
         $row = OneTimeTokenModel::query()
             ->where('token_hash', hash('sha256', $token))
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('purpose', OneTimeTokenModel::PURPOSE_LOGIN)
             ->first();
 

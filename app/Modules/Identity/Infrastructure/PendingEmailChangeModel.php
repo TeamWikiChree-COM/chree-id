@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  * pending_email_changes テーブルのモデル (確認前のメールアドレス変更)
  *
  * @property string $id
- * @property string $chree_account_id
+ * @property string $auth_identity_id
  * @property string $new_email
  * @property string $token_hash
  * @property \Illuminate\Support\Carbon $expires_at
@@ -21,7 +21,7 @@ class PendingEmailChangeModel extends Model {
 
     #[\Override]
     protected $fillable = [
-        'chree_account_id',
+        'auth_identity_id',
         'new_email',
         'token_hash',
         'expires_at',

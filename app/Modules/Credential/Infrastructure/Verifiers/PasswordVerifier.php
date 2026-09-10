@@ -43,7 +43,7 @@ class PasswordVerifier extends AbstractVerifier {
         if ($password === null || $password === '') return $this->failure();
 
         $row = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::PASSWORD)
             ->first();
 

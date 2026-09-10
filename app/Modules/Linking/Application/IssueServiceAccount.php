@@ -3,8 +3,8 @@ namespace App\Modules\Linking\Application;
 
 use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  */
 class IssueServiceAccount {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly ResolveSubject $subjects,
         private readonly AdoptPasswordHash $passwords,
     ) {}
@@ -46,13 +46,13 @@ class IssueServiceAccount {
         ?string $displayName = null,
         ?string $passwordHash = null,
     ): string {
-        $existing = ServiceAccountLinkModel::query()
+        $existing = ServiceAccountModel::query()
             ->where('client_id', $client->id)
             ->where('service_user_id', $serviceUserId)
             ->first();
 
         // 二度目以降は同じものを返す。呼び出し側が何度叩いても増えない
-        if ($existing !== null) return $this->subjects->execute($client, $existing->chree_account_id);
+        if ($existing !== null) return $this->subjects->execute($client, $existing->auth_identity_id);
 
         $accountId = DB::transaction(
             fn (): string => $this->link($client, $serviceUserId, $email, $emailVerified, $displayName),
@@ -82,9 +82,9 @@ class IssueServiceAccount {
     ): string {
         $accountId = $this->resolveAccount($email, $emailVerified, $displayName);
 
-        ServiceAccountLinkModel::create([
+        ServiceAccountModel::create([
             'client_id' => $client->id,
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'service_user_id' => $serviceUserId,
             'service_email' => $email,
         ]);

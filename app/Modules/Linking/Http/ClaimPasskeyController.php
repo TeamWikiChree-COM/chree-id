@@ -4,7 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Application\ClaimTickets;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ class ClaimPasskeyController {
 
     public function __construct(
         private readonly ClaimTickets $tickets,
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly StartPasskeyRegistration $start,
         private readonly CompletePasskeyRegistration $complete,
         private readonly PasskeySerializer $serializer,
@@ -38,7 +38,7 @@ class ClaimPasskeyController {
         $link = $this->tickets->find($request->string('token')->toString());
         if ($link === null || $link->isClaimed()) return response()->json(['error' => 'invalid_ticket'], 404);
 
-        $account = $this->accounts->findById($link->chree_account_id);
+        $account = $this->accounts->findById($link->auth_identity_id);
         if ($account === null) return response()->json(['error' => 'invalid_ticket'], 404);
 
         $options = $this->start->execute($account);
@@ -67,7 +67,7 @@ class ClaimPasskeyController {
 
         try {
             $this->complete->execute(
-                $link->chree_account_id,
+                $link->auth_identity_id,
                 $options,
                 $request->string('credential')->toString(),
                 $label === '' ? null : $label,

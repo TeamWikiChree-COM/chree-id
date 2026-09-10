@@ -7,7 +7,7 @@ use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
@@ -24,7 +24,7 @@ class SecurityScreenTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function register(): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -53,7 +53,7 @@ class SecurityScreenTest extends TestCase {
 
         // まだ有効化していない
         $this->assertSame(0, CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::TOTP)
             ->count());
     }
@@ -71,7 +71,7 @@ class SecurityScreenTest extends TestCase {
             ->assertRedirect('/settings/security');
 
         $row = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::TOTP)
             ->firstOrFail();
 
@@ -122,7 +122,7 @@ class SecurityScreenTest extends TestCase {
         $this->post('/security/credentials/remove', ['type' => 'totp'])->assertRedirect('/settings/security');
 
         $this->assertSame(0, CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::TOTP)
             ->count());
     }

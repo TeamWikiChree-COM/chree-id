@@ -13,7 +13,7 @@ class EloquentCredentialRepository implements CredentialRepository {
      * @return bool
      */
     public function hasAny(string $accountId): bool {
-        return CredentialModel::query()->where('chree_account_id', $accountId)->exists();
+        return CredentialModel::query()->where('auth_identity_id', $accountId)->exists();
     }
 
     /**
@@ -33,7 +33,7 @@ class EloquentCredentialRepository implements CredentialRepository {
      */
     public function has(string $accountId, CredentialType $type): bool {
         return CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', $type)
             ->exists();
     }

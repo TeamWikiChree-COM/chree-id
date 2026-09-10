@@ -4,7 +4,7 @@ namespace Tests\Feature;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use App\Modules\Identity\Mail\RegistrationExistsMail;
 use App\Modules\Identity\Mail\VerifyRegistrationMail;
@@ -71,7 +71,7 @@ class RegisterTest extends TestCase {
     public function test_doesNotCreateAccountBeforeVerification(): void {
         $this->post('/register', ['email' => 'new@example.com'])->assertRedirect('/register/sent');
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
         $this->assertNull(session('chreeid.account_id'));
     }
 
@@ -102,7 +102,7 @@ class RegisterTest extends TestCase {
 
         $this->get("/register/verify/{$token}")->assertOk();
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
         $this->assertNull(session('chreeid.account_id'));
     }
 
@@ -111,7 +111,7 @@ class RegisterTest extends TestCase {
 
         $this->completeWith($token)->assertRedirect('/');
 
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
+        $account = app(AuthIdentityRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertSame(AccountOrigin::USER, $account->origin);
         // 表示名は任意なので、入れなければ未設定のまま
@@ -124,7 +124,7 @@ class RegisterTest extends TestCase {
 
         $this->completeWith($token, 'correct-horse', 'あたらしい人')->assertRedirect('/');
 
-        $this->assertSame('あたらしい人', app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->displayName);
+        $this->assertSame('あたらしい人', app(AuthIdentityRepository::class)->findByEmail('new@example.com')?->displayName);
     }
 
     public function test_treatsBlankDisplayNameAsUnset(): void {
@@ -132,7 +132,7 @@ class RegisterTest extends TestCase {
 
         $this->completeWith($token, 'correct-horse', '   ');
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->displayName);
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com')?->displayName);
     }
 
     public function test_chosenPasswordWorksForLogin(): void {
@@ -149,7 +149,7 @@ class RegisterTest extends TestCase {
         $token = $this->requestRegistration();
         $this->completeWith($token);
 
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
+        $account = app(AuthIdentityRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertTrue($account->isEmailVerified());
     }
@@ -158,11 +158,11 @@ class RegisterTest extends TestCase {
         $token = $this->requestRegistration();
         $this->completeWith($token);
 
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
+        $account = app(AuthIdentityRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
 
         $this->assertSame(1, CredentialModel::query()
-            ->where('chree_account_id', $account->id)
+            ->where('auth_identity_id', $account->id)
             ->where('type', CredentialType::PASSWORD)
             ->count());
     }
@@ -184,7 +184,7 @@ class RegisterTest extends TestCase {
         $this->get("/register/verify/{$token}")->assertOk();
         $this->completeWith($token)->assertOk();
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
     }
 
     public function test_rejectsUnknownToken(): void {
@@ -198,12 +198,12 @@ class RegisterTest extends TestCase {
 
         $this->completeWith($token, 'short')->assertSessionHasErrors('password');
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
     }
 
     // 応答からアドレスの存在を推測させないため、登録済みでも画面は同じ
     public function test_hidesExistingEmailBehindSameResponse(): void {
-        app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'new@example.com', '既存');
+        app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'new@example.com', '既存');
 
         $this->post('/register', ['email' => 'new@example.com'])->assertRedirect('/register/sent');
 

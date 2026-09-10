@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Registry\Domain\AdminAccess;
 use Closure;
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureAdmin {
     public function __construct(
         private readonly ChreeSession $session,
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly AdminAccess $access,
     ) {}
 

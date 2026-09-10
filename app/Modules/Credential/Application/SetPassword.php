@@ -33,7 +33,7 @@ class SetPassword {
      */
     public function executeHashed(string $accountId, string $hash): void {
         CredentialModel::query()->updateOrCreate(
-            ['chree_account_id' => $accountId, 'type' => CredentialType::PASSWORD],
+            ['auth_identity_id' => $accountId, 'type' => CredentialType::PASSWORD],
             ['secret' => $hash],
         );
     }

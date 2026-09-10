@@ -6,18 +6,18 @@ namespace App\Modules\Identity\Domain;
  *
  * Domain 側はこのインターフェースだけを知り、Eloquent の実装は Infrastructure に置く。
  */
-interface ChreeAccountRepository {
+interface AuthIdentityRepository {
     /**
      * @param string $id アカウントID (ULID)
-     * @return ChreeAccount|null 見つからなければ null
+     * @return AuthIdentity|null 見つからなければ null
      */
-    public function findById(string $id): ?ChreeAccount;
+    public function findById(string $id): ?AuthIdentity;
 
     /**
      * @param string $email メールアドレス
-     * @return ChreeAccount|null 見つからなければ null
+     * @return AuthIdentity|null 見つからなければ null
      */
-    public function findByEmail(string $email): ?ChreeAccount;
+    public function findByEmail(string $email): ?AuthIdentity;
 
     /**
      * アカウントを新規発行する。
@@ -25,9 +25,9 @@ interface ChreeAccountRepository {
      * @param AccountOrigin $origin 発行経路
      * @param string|null $email 連絡先。サービス発行では持たないことがある
      * @param string|null $displayName 表示名
-     * @return ChreeAccount 発行したアカウント
+     * @return AuthIdentity 発行したアカウント
      */
-    public function create(AccountOrigin $origin, ?string $email = null, ?string $displayName = null): ChreeAccount;
+    public function create(AccountOrigin $origin, ?string $email = null, ?string $displayName = null): AuthIdentity;
 
     /**
      * メールアドレスの到達性が確認できたことを記録する。

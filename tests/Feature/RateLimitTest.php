@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,7 +22,7 @@ class RateLimitTest extends TestCase {
     }
 
     public function test_throttlesRepeatedLoginFailures(): void {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -40,7 +40,7 @@ class RateLimitTest extends TestCase {
 
     // 正しいパスワードでも、上限に達していれば通さない
     public function test_throttleAppliesToCorrectPasswordToo(): void {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 

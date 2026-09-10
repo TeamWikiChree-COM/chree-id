@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * secret の中身は type によって性質が違う。詳しくはマイグレーションのコメントを参照。
  *
  * @property string $id
- * @property string $chree_account_id
+ * @property string $auth_identity_id
  * @property CredentialType $type
  * @property string|null $identifier
  * @property string|null $secret
@@ -30,7 +30,7 @@ class CredentialModel extends Model {
 
     #[\Override]
     protected $fillable = [
-        "chree_account_id",
+        "auth_identity_id",
         "type",
         "identifier",
         "secret",

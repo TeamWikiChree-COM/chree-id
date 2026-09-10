@@ -7,7 +7,7 @@ use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Credential\Mail\PasswordResetMail;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,7 +31,7 @@ class PasswordResetTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function account(): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'old-password');
 

@@ -3,12 +3,14 @@ namespace App\Modules\Linking\Http;
 
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Application\MergeException;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ClaimException;
 use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Linking\Application\MergeServiceAccount;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,12 +31,15 @@ class ClaimController {
         ClaimException::ALREADY_CLAIMED => 'このアカウントは既に ChreeID として使えます。ログインをお試しください',
         ClaimException::EMAIL_TAKEN => 'このメールアドレスは既に使われています',
         ClaimException::NO_CREDENTIAL => 'パスキーの登録が確認できませんでした。もう一度お試しください',
+        MergeException::SAME_ACCOUNT => 'このアカウントは既にお使いの ChreeID です',
+        MergeException::SAME_SERVICE => 'このサービスの別のアカウントが、既にお使いの ChreeID に紐付いています。お手数ですが問い合わせてください',
     ];
 
     public function __construct(
         private readonly ClaimTickets $tickets,
         private readonly ClaimServiceAccount $claim,
-        private readonly ChreeAccountRepository $accounts,
+        private readonly MergeServiceAccount $merge,
+        private readonly AuthIdentityRepository $accounts,
         private readonly CredentialRepository $credentials,
         private readonly ChreeSession $session,
     ) {}
@@ -50,8 +55,11 @@ class ClaimController {
         if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
         if ($link->isClaimed()) return $this->failed(ClaimException::ALREADY_CLAIMED);
 
-        $account = $this->accounts->findById($link->chree_account_id);
+        $account = $this->accounts->findById($link->auth_identity_id);
         if ($account === null) return $this->failed(ClaimException::INVALID_TICKET);
+
+        // 「ChreeID を持っている」を選んだ人がログインしたら、ここへ戻す
+        if (!$this->session->isLoggedIn()) redirect()->setIntendedUrl(url("/claim/{$token}"));
 
         return Inertia::render('Claim/Show', [
             'token' => $token,
@@ -62,6 +70,9 @@ class ClaimController {
             // 元のサービスにパスワードが無かった (Google 等のみ) 場合は、
             // 新しくパスワードを決めさせるより連携での引き取りを勧める
             'hasPassword' => $this->credentials->has($account->id, CredentialType::PASSWORD),
+            // 既に ChreeID を持っている人は、新しく作らせず統合へ送る。
+            // ログイン済みであること自体が、寄せ先が本人のものだという証明になる
+            'signedInAs' => $this->signedInAs(),
         ]);
     }
 
@@ -107,10 +118,52 @@ class ClaimController {
     }
 
     /**
-     * @param ServiceAccountLinkModel $link 対象の紐付け
+     * 既に持っている ChreeID へ寄せる。
+     *
+     * 寄せ先が本人のものだという証明は、この画面でログインしていること自体で足りる。
+     * メールアドレスの一致は候補を出す材料であって、実行の根拠にはしない。
+     *
+     * @param Request $request
+     * @return RedirectResponse|Response
+     * @throws ValidationException
+     */
+    public function merge(Request $request): RedirectResponse|Response {
+        $request->validate(['token' => ['required', 'string']]);
+
+        $targetId = $this->session->accountId();
+        if ($targetId === null) return $this->failed(ClaimException::INVALID_TICKET);
+
+        $link = $this->tickets->find($request->string('token')->toString());
+        if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
+
+        try {
+            $this->merge->execute($link, $targetId);
+        } catch (MergeException $e) {
+            throw ValidationException::withMessages(['token' => self::FAILURE_MESSAGES[$e->reason]]);
+        } catch (ClaimException $e) {
+            return $this->failed($e->reason);
+        }
+
+        return redirect('/')->with('merged', true);
+    }
+
+    /**
+     * @return array{id: string, email: string|null, displayName: string|null}|null
+     */
+    private function signedInAs(): ?array {
+        $id = $this->session->accountId();
+        $account = $id === null ? null : $this->accounts->findById($id);
+
+        if ($account === null || $account->isSuspended()) return null;
+
+        return ['id' => $account->id, 'email' => $account->email, 'displayName' => $account->displayName];
+    }
+
+    /**
+     * @param ServiceAccountModel $link 対象の紐付け
      * @return string 利用者に見せるサービス名
      */
-    private function serviceName(ServiceAccountLinkModel $link): string {
+    private function serviceName(ServiceAccountModel $link): string {
         // client_id は外部キーなので、紐付けがある限り必ず引ける
         return OAuthClientModel::query()->findOrFail($link->client_id)->name;
     }

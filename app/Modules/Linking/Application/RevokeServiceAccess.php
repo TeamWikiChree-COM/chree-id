@@ -18,7 +18,7 @@ class RevokeServiceAccess {
      */
     public function execute(string $accountId, string $clientId): int {
         return AccessTokenModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('client_id', $clientId)
             ->whereNull('revoked_at')
             ->update(['revoked_at' => now()]);

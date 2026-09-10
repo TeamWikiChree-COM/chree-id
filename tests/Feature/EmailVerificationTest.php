@@ -4,7 +4,7 @@ namespace Tests\Feature;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Mail\EmailChangeNoticeMail;
 use App\Modules\Identity\Mail\VerifyEmailChangeMail;
@@ -35,7 +35,7 @@ class EmailVerificationTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function login(): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'old@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -62,7 +62,7 @@ class EmailVerificationTest extends TestCase {
     public function test_accountStartsUnverified(): void {
         $id = $this->login();
 
-        $this->assertFalse(app(ChreeAccountRepository::class)->findById($id)?->isEmailVerified());
+        $this->assertFalse(app(AuthIdentityRepository::class)->findById($id)?->isEmailVerified());
     }
 
     public function test_sendsVerificationMail(): void {
@@ -80,7 +80,7 @@ class EmailVerificationTest extends TestCase {
         $token = $this->tokenFor(OneTimeTokenModel::PURPOSE_VERIFY_EMAIL);
         $this->get("/profile/email/verify/{$token}")->assertRedirect('/settings');
 
-        $this->assertTrue(app(ChreeAccountRepository::class)->findById($id)?->isEmailVerified());
+        $this->assertTrue(app(AuthIdentityRepository::class)->findById($id)?->isEmailVerified());
     }
 
     public function test_verificationLinkWorksOnlyOnce(): void {
@@ -95,7 +95,7 @@ class EmailVerificationTest extends TestCase {
 
     public function test_doesNotResendWhenAlreadyVerified(): void {
         $id = $this->login();
-        app(ChreeAccountRepository::class)->markEmailVerified($id);
+        app(AuthIdentityRepository::class)->markEmailVerified($id);
 
         $this->post('/profile/email/verify');
 
@@ -109,7 +109,7 @@ class EmailVerificationTest extends TestCase {
 
         $this->post('/profile/email/change', ['email' => 'new@example.com'])->assertRedirect('/settings');
 
-        $this->assertSame('old@example.com', app(ChreeAccountRepository::class)->findById($id)?->email);
+        $this->assertSame('old@example.com', app(AuthIdentityRepository::class)->findById($id)?->email);
         Mail::assertSent(VerifyEmailChangeMail::class);
     }
 
@@ -131,7 +131,7 @@ class EmailVerificationTest extends TestCase {
 
         $this->get("/profile/email/change/{$token}")->assertRedirect('/settings');
 
-        $account = app(ChreeAccountRepository::class)->findById($id);
+        $account = app(AuthIdentityRepository::class)->findById($id);
         $this->assertNotNull($account);
         $this->assertSame('new@example.com', $account->email);
         // 到達性が確かめられたので検証済みにもなる
@@ -139,7 +139,7 @@ class EmailVerificationTest extends TestCase {
     }
 
     public function test_rejectsAddressUsedByAnotherAccount(): void {
-        app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '他人');
+        app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '他人');
         $this->login();
 
         $this->post('/profile/email/change', ['email' => 'taken@example.com'])
@@ -160,7 +160,7 @@ class EmailVerificationTest extends TestCase {
 
         $this->get("/profile/email/change/{$token}")->assertRedirect('/settings');
 
-        $this->assertSame('old@example.com', app(ChreeAccountRepository::class)->findById($id)?->email);
+        $this->assertSame('old@example.com', app(AuthIdentityRepository::class)->findById($id)?->email);
     }
 
     public function test_requiresLogin(): void {

@@ -5,28 +5,30 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * service_account_links テーブルのモデル (サービス側ユーザーと ChreeID の対応)
+ * service_accounts テーブルのモデル (サービス側ユーザーと ChreeID の対応)
  *
  * @property string $id
  * @property string $client_id
- * @property string $chree_account_id
- * @property string $service_user_id
+ * @property string $auth_identity_id
+ * @property string|null $service_user_id
+ * @property string|null $sub
  * @property string|null $service_email
  * @property string|null $claim_token_hash
  * @property \Illuminate\Support\Carbon|null $claim_expires_at
  * @property \Illuminate\Support\Carbon|null $claimed_at
  */
-class ServiceAccountLinkModel extends Model {
+class ServiceAccountModel extends Model {
     use HasUlids;
 
     #[\Override]
-    protected $table = 'service_account_links';
+    protected $table = 'service_accounts';
 
     #[\Override]
     protected $fillable = [
         'client_id',
-        'chree_account_id',
+        'auth_identity_id',
         'service_user_id',
+        'sub',
         'service_email',
         'claim_token_hash',
         'claim_expires_at',

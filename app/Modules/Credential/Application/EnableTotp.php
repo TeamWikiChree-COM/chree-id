@@ -40,7 +40,7 @@ class EnableTotp {
         }
 
         CredentialModel::query()->updateOrCreate(
-            ['chree_account_id' => $accountId, 'type' => CredentialType::TOTP],
+            ['auth_identity_id' => $accountId, 'type' => CredentialType::TOTP],
             ['secret' => Crypt::encryptString($secret)],
         );
     }

@@ -29,7 +29,7 @@ class PasskeyStore {
                 'identifier' => $this->encodeId($source->publicKeyCredentialId),
             ],
             [
-                'chree_account_id' => $accountId,
+                'auth_identity_id' => $accountId,
                 'secret' => $this->serializer->encodeSource($source),
                 'data' => ['label' => $label],
             ],
@@ -76,7 +76,7 @@ class PasskeyStore {
      */
     public function credentialIdsOf(string $accountId): array {
         $ids = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::PASSKEY)
             ->pluck('identifier')
             ->all();

@@ -8,8 +8,8 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Verifiers\PasskeyVerifier;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -22,10 +22,10 @@ class PasskeyTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function makeAccount(): ChreeAccount {
-        return app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    private function makeAccount(): AuthIdentity {
+        return app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
     }
 
     public function test_buildsRegistrationChallenge(): void {

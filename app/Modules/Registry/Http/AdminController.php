@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Registry\Http;
 
-use App\Modules\Identity\Infrastructure\ChreeAccountModel;
+use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use App\Modules\Registry\Application\DatabaseMigrations;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Inertia\Inertia;
@@ -23,8 +23,8 @@ class AdminController {
         return Inertia::render('Admin/Index', [
             'stats' => [
                 'clients' => OAuthClientModel::query()->count(),
-                'accounts' => ChreeAccountModel::query()->whereNull('deleted_at')->count(),
-                'suspended' => ChreeAccountModel::query()->whereNotNull('suspended_at')->count(),
+                'accounts' => AuthIdentityModel::query()->whereNull('deleted_at')->count(),
+                'suspended' => AuthIdentityModel::query()->whereNotNull('suspended_at')->count(),
             ],
 
             // デプロイ直後は構造が置き去りになる。トップで気付けるようにしておく

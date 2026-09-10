@@ -1,8 +1,8 @@
 <?php
 namespace App\Providers;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
-use App\Modules\Identity\Infrastructure\EloquentChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Infrastructure\EloquentAuthIdentityRepository;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -14,6 +14,6 @@ class IdentityServiceProvider extends ServiceProvider {
      */
     #[\Override]
     public function register(): void {
-        $this->app->bind(ChreeAccountRepository::class, EloquentChreeAccountRepository::class);
+        $this->app->bind(AuthIdentityRepository::class, EloquentAuthIdentityRepository::class);
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * 平文は発行時にしか存在しない。DB にはハッシュだけ置く。
  *
  * @property string $id
- * @property string $chree_account_id
+ * @property string $auth_identity_id
  * @property string $token_hash
  * @property string $purpose
  * @property \Illuminate\Support\Carbon $expires_at
@@ -28,7 +28,7 @@ class OneTimeTokenModel extends Model {
 
     #[\Override]
     protected $fillable = [
-        "chree_account_id",
+        "auth_identity_id",
         "token_hash",
         "purpose",
         "expires_at",

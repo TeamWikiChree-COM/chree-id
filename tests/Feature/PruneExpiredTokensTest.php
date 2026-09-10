@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +37,7 @@ class PruneExpiredTokensTest extends TestCase {
      */
     private function token(string $accountId, \Illuminate\Support\Carbon $expiresAt, ?\Illuminate\Support\Carbon $usedAt = null): void {
         $row = OneTimeTokenModel::create([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'token_hash' => hash('sha256', Str::random(64)),
             'purpose' => OneTimeTokenModel::PURPOSE_LOGIN,
             'expires_at' => $expiresAt,
@@ -72,10 +72,10 @@ class PruneExpiredTokensTest extends TestCase {
 
     // アドレス変更の申し込みも溜めない
     public function test_deletesExpiredEmailChanges(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
         foreach ([now()->subHour(), now()->addHour()] as $expiresAt) {
             PendingEmailChangeModel::create([
-                'chree_account_id' => $account->id,
+                'auth_identity_id' => $account->id,
                 'new_email' => Str::random(8) . '@example.com',
                 'token_hash' => hash('sha256', Str::random(64)),
                 'expires_at' => $expiresAt,
@@ -88,7 +88,7 @@ class PruneExpiredTokensTest extends TestCase {
     }
 
     public function test_deletesUnusedExpiredTokens(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
         $this->token($account->id, now()->subHour());
         $this->token($account->id, now()->addHour());
 
@@ -99,7 +99,7 @@ class PruneExpiredTokensTest extends TestCase {
 
     // 使用済みは二重投入の検知に使うので、しばらく残す
     public function test_keepsRecentlyUsedTokens(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
         $this->token($account->id, now()->subHour(), now()->subDay());
 
         $this->prune();
@@ -108,7 +108,7 @@ class PruneExpiredTokensTest extends TestCase {
     }
 
     public function test_deletesOldUsedTokens(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
         $this->token($account->id, now()->subMonth(), now()->subDays(30));
 
         $this->prune();
@@ -117,7 +117,7 @@ class PruneExpiredTokensTest extends TestCase {
     }
 
     public function test_daysOptionChangesRetention(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'u@example.com', null);
         $this->token($account->id, now()->subHour(), now()->subDays(3));
 
         $this->prune(1);

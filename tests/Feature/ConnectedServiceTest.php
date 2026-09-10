@@ -3,9 +3,9 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
-use App\Modules\Provider\Infrastructure\ServiceSubjectIdModel;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,7 +28,7 @@ class ConnectedServiceTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function login(): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -57,16 +57,17 @@ class ConnectedServiceTest extends TestCase {
             'trust' => ServiceTrust::OFFICIAL,
         ]);
 
-        ServiceSubjectIdModel::create([
+        ServiceAccountModel::create([
             'client_id' => $client->id,
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
+            'service_user_id' => null,
             'sub' => Str::random(32),
         ]);
 
         AccessTokenModel::create([
             'token_hash' => hash('sha256', Str::random(64)),
             'client_id' => $client->id,
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'scope' => 'openid',
             'expires_at' => $active ? now()->addHour() : now()->subHour(),
         ]);
@@ -116,11 +117,11 @@ class ConnectedServiceTest extends TestCase {
     public function test_keepsTheSubjectSoReconnectingIsTheSameUser(): void {
         $accountId = $this->login();
         $clientId = $this->connect($accountId);
-        $before = ServiceSubjectIdModel::query()->firstOrFail()->sub;
+        $before = ServiceAccountModel::query()->firstOrFail()->sub;
 
         $this->post("/services/{$clientId}/revoke");
 
-        $this->assertSame($before, ServiceSubjectIdModel::query()->firstOrFail()->sub);
+        $this->assertSame($before, ServiceAccountModel::query()->firstOrFail()->sub);
     }
 
     // 解除しても記録は残るので、一覧からは消えない
@@ -139,11 +140,11 @@ class ConnectedServiceTest extends TestCase {
         $accountId = $this->login();
         $clientId = $this->connect($accountId);
 
-        $other = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'other@example.com', '他人');
+        $other = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'other@example.com', '他人');
         AccessTokenModel::create([
             'token_hash' => hash('sha256', Str::random(64)),
             'client_id' => $clientId,
-            'chree_account_id' => $other->id,
+            'auth_identity_id' => $other->id,
             'scope' => 'openid',
             'expires_at' => now()->addHour(),
         ]);
@@ -151,7 +152,7 @@ class ConnectedServiceTest extends TestCase {
         $this->post("/services/{$clientId}/revoke");
 
         $this->assertSame(1, AccessTokenModel::query()
-            ->where('chree_account_id', $other->id)
+            ->where('auth_identity_id', $other->id)
             ->whereNull('revoked_at')
             ->count());
     }

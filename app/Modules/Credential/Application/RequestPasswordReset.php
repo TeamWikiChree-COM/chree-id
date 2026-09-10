@@ -3,7 +3,7 @@ namespace App\Modules\Credential\Application;
 
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Credential\Mail\PasswordResetMail;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -17,7 +17,7 @@ class RequestPasswordReset {
     private const EXPIRES_MINUTES = 30;
 
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly IssueOneTimeToken $issue,
     ) {}
 

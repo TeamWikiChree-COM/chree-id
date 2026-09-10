@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $token_hash
  * @property string $client_id
- * @property string $chree_account_id
+ * @property string $auth_identity_id
  * @property string $scope
  * @property string|null $auth_code_hash
  * @property \Illuminate\Support\Carbon $expires_at
@@ -24,7 +24,7 @@ class AccessTokenModel extends Model {
     protected $fillable = [
         'token_hash',
         'client_id',
-        'chree_account_id',
+        'auth_identity_id',
         'scope',
         'auth_code_hash',
         'expires_at',

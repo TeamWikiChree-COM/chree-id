@@ -4,7 +4,7 @@ namespace App\Modules\Credential\Http;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class PasskeyController {
 
     public function __construct(
         private readonly ChreeSession $session,
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly StartPasskeyRegistration $start,
         private readonly CompletePasskeyRegistration $complete,
         private readonly PasskeySerializer $serializer,

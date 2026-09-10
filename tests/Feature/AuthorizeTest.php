@@ -3,8 +3,8 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Infrastructure\AuthCodeModel;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
@@ -34,10 +34,10 @@ class AuthorizeTest extends TestCase {
     }
 
     /**
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function loginAccount(): ChreeAccount {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    private function loginAccount(): AuthIdentity {
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 

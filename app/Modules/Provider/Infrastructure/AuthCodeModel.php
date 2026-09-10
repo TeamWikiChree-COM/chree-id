@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property string $code_hash
  * @property string $client_id
- * @property string $chree_account_id
+ * @property string $auth_identity_id
  * @property string $redirect_uri
  * @property string $scope
  * @property string|null $nonce
@@ -29,7 +29,7 @@ class AuthCodeModel extends Model {
     protected $fillable = [
         'code_hash',
         'client_id',
-        'chree_account_id',
+        'auth_identity_id',
         'redirect_uri',
         'scope',
         'nonce',

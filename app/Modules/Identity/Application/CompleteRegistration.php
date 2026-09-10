@@ -4,8 +4,8 @@ namespace App\Modules\Identity\Application;
 use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use Illuminate\Support\Facades\DB;
 
@@ -19,9 +19,10 @@ use Illuminate\Support\Facades\DB;
  */
 class CompleteRegistration {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly SetPassword $setPassword,
         private readonly EnableMagicLink $enableMagicLink,
+        private readonly UserAccounts $userAccounts,
     ) {}
 
     /**
@@ -42,10 +43,10 @@ class CompleteRegistration {
      * @param string $token メールに載せた平文トークン
      * @param string $password 平文パスワード
      * @param string|null $displayName 表示名。未入力なら null
-     * @return ChreeAccount
+     * @return AuthIdentity
      * @throws RegistrationTokenException|\Throwable トークンが無効・期限切れ、または先にアドレスが使われた場合
      */
-    public function execute(string $token, string $password, ?string $displayName = null): ChreeAccount {
+    public function execute(string $token, string $password, ?string $displayName = null): AuthIdentity {
         $pending = $this->find($token);
 
         if ($pending === null) throw RegistrationTokenException::notFound();
@@ -59,7 +60,7 @@ class CompleteRegistration {
 
         $hash = $this->setPassword->hash($password);
 
-        return DB::transaction(fn (): ChreeAccount => $this->create($pending, $hash, $displayName));
+        return DB::transaction(fn (): AuthIdentity => $this->create($pending, $hash, $displayName));
     }
 
     /**
@@ -80,10 +81,13 @@ class CompleteRegistration {
      * @param PendingRegistrationModel $pending 検証済みの申し込み
      * @param string $passwordHash SetPassword::hash() が返したハッシュ
      * @param string|null $displayName 表示名
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function create(PendingRegistrationModel $pending, string $passwordHash, ?string $displayName): ChreeAccount {
+    private function create(PendingRegistrationModel $pending, string $passwordHash, ?string $displayName): AuthIdentity {
         $account = $this->accounts->create(AccountOrigin::USER, $pending->email, $displayName);
+
+        // 本人が作りに来た経路なので、束ねる人格をここで持たせる
+        $this->userAccounts->ensure($account->id);
 
         $this->setPassword->executeHashed($account->id, $passwordHash);
         $this->accounts->markEmailVerified($account->id);

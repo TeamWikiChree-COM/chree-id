@@ -5,7 +5,7 @@ use App\Modules\Identity\Application\ConfirmEmailChange;
 use App\Modules\Identity\Application\ConfirmEmailVerification;
 use App\Modules\Identity\Application\RequestEmailChange;
 use App\Modules\Identity\Application\RequestEmailVerification;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Inertia\Response;
  */
 class ProfileController {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly ChreeSession $session,
         private readonly RequestEmailVerification $requestVerification,
         private readonly ConfirmEmailVerification $confirmVerification,

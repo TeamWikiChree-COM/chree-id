@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Linking\Application;
 
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use Illuminate\Support\Carbon;
 
 /**
@@ -12,12 +12,12 @@ use Illuminate\Support\Carbon;
  */
 class ClaimTicket {
     /**
-     * @param ServiceAccountLinkModel $link 対象の紐付け
+     * @param ServiceAccountModel $link 対象の紐付け
      * @param string $token サービスに一度だけ返す平文トークン
      * @param Carbon $expiresAt 失効時刻
      */
     public function __construct(
-        public readonly ServiceAccountLinkModel $link,
+        public readonly ServiceAccountModel $link,
         public readonly string $token,
         public readonly Carbon $expiresAt,
     ) {}

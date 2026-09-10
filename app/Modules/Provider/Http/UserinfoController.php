@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Provider\Domain\Claims\ScopeRegistry;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
  */
 class UserinfoController {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly ResolveSubject $subjects,
         private readonly ScopeRegistry $scopes,
     ) {}
@@ -32,7 +32,7 @@ class UserinfoController {
         $token = AccessTokenModel::query()->where('token_hash', hash('sha256', $bearer))->first();
         if ($token === null || !$token->isUsable()) return $this->unauthorized('トークンが不正です');
 
-        $account = $this->accounts->findById($token->chree_account_id);
+        $account = $this->accounts->findById($token->auth_identity_id);
         $client = OAuthClientModel::query()->find($token->client_id);
         if ($account === null || $client === null) return $this->unauthorized('トークンが不正です');
 

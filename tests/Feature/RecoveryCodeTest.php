@@ -11,8 +11,8 @@ use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,10 +23,10 @@ class RecoveryCodeTest extends TestCase {
     /**
      * TOTP まで有効にしたアカウントを作る
      *
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function makeAccountWithTotp(): ChreeAccount {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    private function makeAccountWithTotp(): AuthIdentity {
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
         $enable = app(EnableTotp::class);
@@ -53,7 +53,7 @@ class RecoveryCodeTest extends TestCase {
         $codes = app(GenerateRecoveryCodes::class)->execute($account->id);
 
         $stored = CredentialModel::query()
-            ->where('chree_account_id', $account->id)
+            ->where('auth_identity_id', $account->id)
             ->where('type', CredentialType::RECOVERY_CODE)
             ->pluck('secret')
             ->all();

@@ -20,14 +20,14 @@ class RemoveCredential {
      */
     public function execute(string $accountId, CredentialType $type): void {
         $remaining = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', '!=', $type->value)
             ->exists();
 
         if (!$remaining) throw new RuntimeException('最後の認証手段は削除できません');
 
         CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', $type)
             ->delete();
     }

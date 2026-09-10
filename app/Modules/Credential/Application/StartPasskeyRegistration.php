@@ -3,7 +3,7 @@ namespace App\Modules\Credential\Application;
 
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyStore;
-use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\AuthIdentity;
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialDescriptor;
@@ -23,10 +23,10 @@ class StartPasskeyRegistration {
     ) {}
 
     /**
-     * @param ChreeAccount $account
+     * @param AuthIdentity $account
      * @return PublicKeyCredentialCreationOptions
      */
-    public function execute(ChreeAccount $account): PublicKeyCredentialCreationOptions {
+    public function execute(AuthIdentity $account): PublicKeyCredentialCreationOptions {
         // 同じ端末を二重登録させない
         $exclude = [];
         foreach ($this->store->credentialIdsOf($account->id) as $id) {

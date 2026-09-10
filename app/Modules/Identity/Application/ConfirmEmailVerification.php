@@ -2,13 +2,13 @@
 namespace App\Modules\Identity\Application;
 
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 
 /**
  * 確認リンクを受けて、メールアドレスを検証済みにする。
  */
 class ConfirmEmailVerification {
-    public function __construct(private readonly ChreeAccountRepository $accounts) {}
+    public function __construct(private readonly AuthIdentityRepository $accounts) {}
 
     /**
      * @param string $token メールに載せた平文トークン
@@ -25,8 +25,8 @@ class ConfirmEmailVerification {
         // 使用済みにする。削除しないのは、同じリンクの二重投入を検知できるようにするため
         $row->forceFill(['used_at' => now()])->save();
 
-        $this->accounts->markEmailVerified($row->chree_account_id);
+        $this->accounts->markEmailVerified($row->auth_identity_id);
 
-        return $row->chree_account_id;
+        return $row->auth_identity_id;
     }
 }

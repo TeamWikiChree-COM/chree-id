@@ -6,7 +6,7 @@ use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
@@ -20,7 +20,7 @@ use Inertia\Response;
  */
 class LoginController {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly VerifyCredential $verify,
         private readonly CompleteAuthentication $complete,
         private readonly PendingAuthentication $pending,

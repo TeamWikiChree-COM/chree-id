@@ -3,7 +3,7 @@ namespace App\Modules\Identity\Http;
 
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +15,7 @@ use Inertia\Response;
  */
 class DashboardController {
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly ChreeSession $session,
         private readonly ListConnectedServices $services,
     ) {}
@@ -49,7 +49,7 @@ class DashboardController {
      */
     private function credentialsOf(string $accountId): array {
         $rows = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->orderBy('type')
             ->get();
 

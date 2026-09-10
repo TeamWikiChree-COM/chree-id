@@ -3,8 +3,8 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,7 +94,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->assertIsString($url);
         $this->assertStringContainsString('/claim/', $url);
         $this->assertNotNull($response->json('expires_at'));
-        $this->assertNotNull(ServiceAccountLinkModel::query()->firstOrFail()->claim_token_hash);
+        $this->assertNotNull(ServiceAccountModel::query()->firstOrFail()->claim_token_hash);
     }
 
     // 平文を持たれると、その気になれば誰の分でも引き取れてしまう
@@ -106,7 +106,7 @@ class ClaimServiceAccountTest extends TestCase {
 
         $this->assertSame(
             hash('sha256', $token),
-            ServiceAccountLinkModel::query()->firstOrFail()->claim_token_hash,
+            ServiceAccountModel::query()->firstOrFail()->claim_token_hash,
         );
     }
 
@@ -181,14 +181,14 @@ class ClaimServiceAccountTest extends TestCase {
         $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'display_name' => '太郎'])
             ->assertRedirect('/');
 
-        $link = ServiceAccountLinkModel::query()->firstOrFail();
-        $account = app(ChreeAccountRepository::class)->findById($link->chree_account_id);
+        $link = ServiceAccountModel::query()->firstOrFail();
+        $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
 
         $this->assertNotNull($account);
         $this->assertSame(AccountOrigin::USER, $account->origin);
         $this->assertSame('太郎', $account->displayName);
         $this->assertNotNull($link->claimed_at);
-        $this->assertSame($link->chree_account_id, session('chreeid.account_id'));
+        $this->assertSame($link->auth_identity_id, session('chreeid.account_id'));
     }
 
     // 引き取ったあとは ChreeID 単体でも入れなければ意味がない
@@ -223,8 +223,8 @@ class ClaimServiceAccountTest extends TestCase {
         $token = $this->ticketToken($client);
 
         // 券を配ったあとに、別経路 (統合など) で本人のものになった状況
-        $accounts = app(ChreeAccountRepository::class);
-        $accountId = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
+        $accounts = app(AuthIdentityRepository::class);
+        $accountId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
         $accounts->changeOrigin($accountId, AccountOrigin::USER);
         app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
 
@@ -252,7 +252,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'short'])
             ->assertSessionHasErrors('password');
 
-        $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
+        $this->assertNull(ServiceAccountModel::query()->firstOrFail()->claimed_at);
     }
 
     // --- 連絡先 ---
@@ -270,7 +270,7 @@ class ClaimServiceAccountTest extends TestCase {
     }
 
     public function test_rejectsAnAddressThatBelongsToSomeoneElse(): void {
-        app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '別人');
+        app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '別人');
 
         $client = $this->client();
         $this->issueAccount($client);
@@ -279,7 +279,7 @@ class ClaimServiceAccountTest extends TestCase {
         $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here', 'email' => 'taken@example.com'])
             ->assertSessionHasErrors('email');
 
-        $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
+        $this->assertNull(ServiceAccountModel::query()->firstOrFail()->claimed_at);
     }
 
     // 未確認のまま引き取ったアドレスは、この機会に確かめておく
@@ -308,11 +308,11 @@ class ClaimServiceAccountTest extends TestCase {
     public function test_keepsTheAccountTheServiceAlreadyKnows(): void {
         $client = $this->client();
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true]);
-        $before = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
+        $before = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
 
         $token = $this->ticketToken($client);
         $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'chosen-here']);
 
-        $this->assertSame($before, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
+        $this->assertSame($before, ServiceAccountModel::query()->firstOrFail()->auth_identity_id);
     }
 }

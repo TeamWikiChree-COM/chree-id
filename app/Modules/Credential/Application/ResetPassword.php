@@ -37,12 +37,12 @@ class ResetPassword {
         $hash = $this->setPassword->hash($password);
 
         return DB::transaction(function () use ($row, $hash): string {
-            $this->setPassword->executeHashed($row->chree_account_id, $hash);
+            $this->setPassword->executeHashed($row->auth_identity_id, $hash);
 
             // 使用済みにする。削除しないのは、同じリンクの二重投入を検知できるようにするため
             $row->forceFill(['used_at' => now()])->save();
 
-            return $row->chree_account_id;
+            return $row->auth_identity_id;
         });
     }
 

@@ -37,7 +37,7 @@ class IssueMagicLink {
      */
     private function isEnabled(string $accountId): bool {
         return CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::MAGIC_LINK)
             ->exists();
     }

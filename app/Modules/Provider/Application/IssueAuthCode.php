@@ -25,7 +25,7 @@ class IssueAuthCode {
         AuthCodeModel::create([
             'code_hash' => hash('sha256', $code),
             'client_id' => $request->client->id,
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'redirect_uri' => $request->redirectUri,
             'scope' => implode(' ', $request->scopes),
             'nonce' => $request->nonce,

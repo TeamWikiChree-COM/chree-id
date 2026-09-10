@@ -28,12 +28,12 @@ class ConsumeMagicLink {
         if ($row === null) return null;
 
         $result = $this->verify->execute(
-            $row->chree_account_id,
+            $row->auth_identity_id,
             CredentialType::MAGIC_LINK,
             ['token' => $token],
             $factors,
         );
 
-        return $result->isSuccess() ? $row->chree_account_id : null;
+        return $result->isSuccess() ? $row->auth_identity_id : null;
     }
 }

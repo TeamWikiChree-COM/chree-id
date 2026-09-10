@@ -5,8 +5,9 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use RuntimeException;
 
 /**
@@ -18,7 +19,10 @@ use RuntimeException;
  *   3. どちらも無ければ新規発行
  */
 class LinkExternalIdentity {
-    public function __construct(private readonly ChreeAccountRepository $accounts) {}
+    public function __construct(
+        private readonly AuthIdentityRepository $accounts,
+        private readonly UserAccounts $userAccounts,
+    ) {}
 
     /**
      * @param ExternalIdentity $identity IdP が主張してきた内容
@@ -31,7 +35,7 @@ class LinkExternalIdentity {
             ->where('identifier', $identity->credentialIdentifier())
             ->first();
 
-        if ($existing !== null) return $existing->chree_account_id;
+        if ($existing !== null) return $existing->auth_identity_id;
 
         $accountId = $this->findByEmail($identity) ?? $this->createAccount($identity);
         $this->link($accountId, $identity);
@@ -78,6 +82,9 @@ class LinkExternalIdentity {
         // RP 側でメールを手がかりにした紐付けができなくなる
         if ($identity->emailVerified) $this->accounts->markEmailVerified($accountId);
 
+        // 本人が外部 IdP で作りに来た経路なので、束ねる人格を持たせる
+        $this->userAccounts->ensure($accountId);
+
         return $accountId;
     }
 
@@ -88,7 +95,7 @@ class LinkExternalIdentity {
      */
     private function link(string $accountId, ExternalIdentity $identity): void {
         CredentialModel::create([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'type' => CredentialType::OAUTH,
             'identifier' => $identity->credentialIdentifier(),
             'data' => [

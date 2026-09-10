@@ -2,7 +2,7 @@
 namespace App\Modules\Identity\Application;
 
 use App\Modules\Credential\Application\IssueOneTimeToken;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use App\Modules\Identity\Mail\RegistrationExistsMail;
 use App\Modules\Identity\Mail\VerifyRegistrationMail;
@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  * 画面の応答からアドレスの存在を推測させないため。
  */
 class StartRegistration {
-    public function __construct(private readonly ChreeAccountRepository $accounts) {}
+    public function __construct(private readonly AuthIdentityRepository $accounts) {}
 
     /**
      * @param string $email メールアドレス

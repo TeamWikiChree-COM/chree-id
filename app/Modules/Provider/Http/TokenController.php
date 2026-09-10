@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Provider\Domain\Claims\ScopeRegistry;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
@@ -23,7 +23,7 @@ class TokenController {
     private const ACCESS_TOKEN_TTL = 3600;
 
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly ResolveSubject $subjects,
         private readonly IdTokenIssuer $idTokens,
         private readonly ScopeRegistry $scopes,
@@ -94,7 +94,7 @@ class TokenController {
      * @return JsonResponse
      */
     private function issueTokens(OAuthClientModel $client, AuthCodeModel $row): JsonResponse {
-        $account = $this->accounts->findById($row->chree_account_id);
+        $account = $this->accounts->findById($row->auth_identity_id);
         if ($account === null) return $this->error('invalid_grant', 'アカウントが見つかりません');
 
         $subject = $this->subjects->execute($client, $account->id);
@@ -104,7 +104,7 @@ class TokenController {
         AccessTokenModel::create([
             'token_hash' => hash('sha256', $accessToken),
             'client_id' => $client->id,
-            'chree_account_id' => $account->id,
+            'auth_identity_id' => $account->id,
             'scope' => $row->scope,
             'auth_code_hash' => $row->code_hash,
             'expires_at' => now()->addSeconds(self::ACCESS_TOKEN_TTL),

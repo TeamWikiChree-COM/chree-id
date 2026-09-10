@@ -2,7 +2,6 @@
 namespace App\Modules\Credential\Infrastructure;
 
 use InvalidArgumentException;
-use function \{str_split, strtoupper, rtrim, decbin, strlen, strpos, str_pad, preg_match};
 
 /**
  * TOTP (RFC 6238) の生成と検証。

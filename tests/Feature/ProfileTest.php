@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
@@ -23,7 +23,7 @@ class ProfileTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function login(?string $displayName = null): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', $displayName);
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -48,7 +48,7 @@ class ProfileTest extends TestCase {
 
         $this->post('/profile', ['display_name' => 'あたらしい名前'])->assertRedirect('/settings');
 
-        $this->assertSame('あたらしい名前', app(ChreeAccountRepository::class)->findById($id)?->displayName);
+        $this->assertSame('あたらしい名前', app(AuthIdentityRepository::class)->findById($id)?->displayName);
     }
 
     public function test_changesDisplayName(): void {
@@ -56,7 +56,7 @@ class ProfileTest extends TestCase {
 
         $this->post('/profile', ['display_name' => 'あたらしい名前']);
 
-        $this->assertSame('あたらしい名前', app(ChreeAccountRepository::class)->findById($id)?->displayName);
+        $this->assertSame('あたらしい名前', app(AuthIdentityRepository::class)->findById($id)?->displayName);
     }
 
     public function test_clearingReturnsToUnset(): void {
@@ -64,7 +64,7 @@ class ProfileTest extends TestCase {
 
         $this->post('/profile', ['display_name' => '   ']);
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findById($id)?->displayName);
+        $this->assertNull(app(AuthIdentityRepository::class)->findById($id)?->displayName);
     }
 
     public function test_rejectsTooLongDisplayName(): void {
@@ -76,12 +76,12 @@ class ProfileTest extends TestCase {
 
     // 他人の表示名を書き換えられてはいけない
     public function test_onlyChangesOwnAccount(): void {
-        $other = app(ChreeAccountRepository::class)
+        $other = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'other@example.com', 'ほかの人');
         $this->login('もとの名前');
 
         $this->post('/profile', ['display_name' => 'あたらしい名前']);
 
-        $this->assertSame('ほかの人', app(ChreeAccountRepository::class)->findById($other->id)?->displayName);
+        $this->assertSame('ほかの人', app(AuthIdentityRepository::class)->findById($other->id)?->displayName);
     }
 }

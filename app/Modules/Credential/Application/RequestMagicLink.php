@@ -4,7 +4,7 @@ namespace App\Modules\Credential\Application;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Mail\MagicLinkMail;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -18,7 +18,7 @@ class RequestMagicLink {
     public const EXPIRES_MINUTES = 15;
 
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly CredentialRepository $credentials,
         private readonly IssueMagicLink $issue,
     ) {}

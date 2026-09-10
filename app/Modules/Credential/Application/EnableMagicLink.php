@@ -17,7 +17,7 @@ class EnableMagicLink {
      */
     public function execute(string $accountId): void {
         CredentialModel::query()->firstOrCreate([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'type' => CredentialType::MAGIC_LINK,
         ]);
     }

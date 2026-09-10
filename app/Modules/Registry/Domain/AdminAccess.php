@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Registry\Domain;
 
-use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\AuthIdentity;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Config;
  */
 class AdminAccess {
     /**
-     * @param ChreeAccount|null $account ログイン中のアカウント
+     * @param AuthIdentity|null $account ログイン中のアカウント
      * @return bool
      */
-    public function allows(?ChreeAccount $account): bool {
+    public function allows(?AuthIdentity $account): bool {
         if ($account === null || $account->isSuspended()) return false;
 
         // 未検証のアドレスで名乗れると、管理者のアドレスを先に登録するだけで入れてしまう

@@ -6,7 +6,7 @@ use App\Modules\Credential\Application\GenerateRecoveryCodes;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
@@ -28,7 +28,7 @@ class TwoFactorLoginTest extends TestCase {
      * @return array{id: string, secret: string}
      */
     private function account(): array {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -117,7 +117,7 @@ class TwoFactorLoginTest extends TestCase {
 
     // 2FA を設定していないアカウントは今までどおり1段で入れる
     public function test_accountWithoutTotpLogsInDirectly(): void {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'plain@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 

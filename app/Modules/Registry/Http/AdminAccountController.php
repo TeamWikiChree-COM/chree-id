@@ -2,7 +2,7 @@
 namespace App\Modules\Registry\Http;
 
 use App\Modules\Credential\Infrastructure\CredentialModel;
-use App\Modules\Identity\Infrastructure\ChreeAccountModel;
+use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use App\Modules\Registry\Domain\AdminAccess;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +21,7 @@ class AdminAccountController {
      * @return Response
      */
     public function index(): Response {
-        $models = ChreeAccountModel::query()
+        $models = AuthIdentityModel::query()
             ->whereNull('deleted_at')
             ->orderByDesc('created_at')
             // 同じ秒に作られた分の並びが揺れないよう、ULID で決着を付ける
@@ -30,11 +30,11 @@ class AdminAccountController {
             ->all();
 
         $types = $this->credentialTypes(array_values(array_map(
-            fn (ChreeAccountModel $m): string => $m->id,
+            fn (AuthIdentityModel $m): string => $m->id,
             $models,
         )));
 
-        $accounts = array_values(array_map(fn (ChreeAccountModel $m): array => [
+        $accounts = array_values(array_map(fn (AuthIdentityModel $m): array => [
             'id' => $m->id,
             'email' => $m->email,
             'displayName' => $m->display_name,
@@ -62,18 +62,18 @@ class AdminAccountController {
 
         $types = [];
 
-        foreach (CredentialModel::query()->whereIn('chree_account_id', $accountIds)->get() as $credential) {
-            $types[$credential->chree_account_id][$credential->type->value] = true;
+        foreach (CredentialModel::query()->whereIn('auth_identity_id', $accountIds)->get() as $credential) {
+            $types[$credential->auth_identity_id][$credential->type->value] = true;
         }
 
         return array_map(fn (array $set): array => array_keys($set), $types);
     }
 
     /**
-     * @param ChreeAccountModel $account 判定するアカウント
+     * @param AuthIdentityModel $account 判定するアカウント
      * @return bool
      */
-    private function isAdmin(ChreeAccountModel $account): bool {
+    private function isAdmin(AuthIdentityModel $account): bool {
         // 未検証のアドレスで名乗れると、管理者のアドレスを先に登録するだけで管理者に見えてしまう
         if ($account->email === null || $account->email_verified_at === null) return false;
 

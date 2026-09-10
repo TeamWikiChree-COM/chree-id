@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Identity\Application;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Mail\EmailChangeNoticeMail;
 use App\Modules\Identity\Mail\VerifyEmailChangeMail;
@@ -20,7 +20,7 @@ class RequestEmailChange {
     /** リンクの有効分数 */
     public const EXPIRES_MINUTES = 60;
 
-    public function __construct(private readonly ChreeAccountRepository $accounts) {}
+    public function __construct(private readonly AuthIdentityRepository $accounts) {}
 
     /**
      * @param string $accountId アカウントID (ULID)
@@ -56,12 +56,12 @@ class RequestEmailChange {
      */
     private function issue(string $accountId, string $newEmail): string {
         // 申し込み直しのときは古いリンクを捨てる。最後に送ったものだけを有効にする
-        PendingEmailChangeModel::query()->where('chree_account_id', $accountId)->delete();
+        PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();
 
         $token = Str::random(64);
 
         PendingEmailChangeModel::create([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'new_email' => $newEmail,
             'token_hash' => hash('sha256', $token),
             'expires_at' => now()->addMinutes(self::EXPIRES_MINUTES),

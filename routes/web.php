@@ -13,6 +13,7 @@ use App\Modules\Linking\Http\ClaimController;
 use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
 use App\Modules\Linking\Http\ServiceAccountController;
+use App\Modules\Linking\Http\ServiceAuthController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -88,6 +89,8 @@ Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink
 // 裏で発行したアカウントの引き取り。サービスが渡した一度きりの URL から入る
 Route::get('/claim/{token}', [ClaimController::class, 'show'])->middleware('throttle:verify');
 Route::post('/claim', [ClaimController::class, 'store'])->middleware('throttle:verify');
+// 既に ChreeID を持っている人は、新しく作らずそちらへ寄せる
+Route::post('/claim/merge', [ClaimController::class, 'merge'])->middleware('throttle:verify');
 Route::post('/claim/passkey/options', [ClaimPasskeyController::class, 'options'])->middleware('throttle:verify');
 Route::post('/claim/passkey/register', [ClaimPasskeyController::class, 'register'])->middleware('throttle:verify');
 
@@ -127,4 +130,8 @@ Route::post('/oauth/token', TokenController::class);
 Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
 Route::post('/api/v1/service-accounts/claim-tickets', [ServiceAccountController::class, 'claimTicket']);
 Route::post('/api/v1/service-accounts/deactivate', [ServiceAccountController::class, 'deactivate']);
+
+// サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
+Route::post('/api/v1/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])
+    ->middleware('throttle:service-auth');
 Route::get('/oauth/userinfo', UserinfoController::class);

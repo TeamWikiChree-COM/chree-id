@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Infrastructure\Claims;
 
-use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\AuthIdentity;
 use App\Modules\Provider\Domain\Claims\ClaimsResolver;
 
 /**
@@ -14,10 +14,10 @@ class EmailClaims implements ClaimsResolver {
     }
 
     /**
-     * @param ChreeAccount $account
+     * @param AuthIdentity $account
      * @return array<string, mixed>
      */
-    public function resolve(ChreeAccount $account): array {
+    public function resolve(AuthIdentity $account): array {
         return [
             'email' => $account->email,
             'email_verified' => $account->isEmailVerified(),

@@ -8,7 +8,7 @@ use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Credential\Mail\MagicLinkMail;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -33,7 +33,7 @@ class MagicLinkLoginTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function account(bool $enabled = true): string {
-        $account = app(ChreeAccountRepository::class)
+        $account = app(AuthIdentityRepository::class)
             ->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 

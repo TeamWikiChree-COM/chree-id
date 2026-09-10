@@ -10,8 +10,8 @@ use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use RuntimeException;
@@ -22,10 +22,10 @@ class TotpFlowTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function makeAccount(): ChreeAccount {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    private function makeAccount(): AuthIdentity {
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
         return $account;
@@ -94,7 +94,7 @@ class TotpFlowTest extends TestCase {
         $secret = $this->enableTotp($account->id);
 
         $row = CredentialModel::query()
-            ->where('chree_account_id', $account->id)
+            ->where('auth_identity_id', $account->id)
             ->where('type', CredentialType::TOTP)
             ->firstOrFail();
 

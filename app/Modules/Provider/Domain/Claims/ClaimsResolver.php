@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Domain\Claims;
 
-use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\AuthIdentity;
 
 /**
  * scope ひとつ分の契約。要求されたときに返すクレームを組み立てる。
@@ -13,8 +13,8 @@ interface ClaimsResolver {
     public function scope(): string;
 
     /**
-     * @param ChreeAccount $account
+     * @param AuthIdentity $account
      * @return array<string, mixed>
      */
-    public function resolve(ChreeAccount $account): array;
+    public function resolve(AuthIdentity $account): array;
 }

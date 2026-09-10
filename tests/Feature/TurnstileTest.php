@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -75,7 +75,7 @@ class TurnstileTest extends TestCase {
 
         $this->post('/register', $this->payload())->assertSessionHasErrors(TurnstileGuard::FIELD);
 
-        $this->assertNull(app(ChreeAccountRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
         Mail::assertNothingSent();
     }
 

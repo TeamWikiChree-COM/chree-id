@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * chree_acountsテーブルのモデル
  */
-class ChreeAccountModel extends Model {
+class AuthIdentityModel extends Model {
     // 主キーのidにULIDを自動で割り当てるトレイト
     use HasUlids;
 
     #[\Override]
-    protected $table = "chree_accounts";
+    protected $table = "auth_identities";
 
     // どうやらHasUlidsくんがgetKeyTypeとかメソッドごとに
     // 書き換えてるみたいなのでここは無効にした

@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +30,7 @@ class AdminClientTest extends TestCase {
      * @return string アカウントID (ULID)
      */
     private function loginAs(string $email, bool $verified = true): string {
-        $accounts = app(ChreeAccountRepository::class);
+        $accounts = app(AuthIdentityRepository::class);
         $account = $accounts->create(AccountOrigin::USER, $email, 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 

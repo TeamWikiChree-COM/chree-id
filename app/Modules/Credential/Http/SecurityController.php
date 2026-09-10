@@ -156,7 +156,7 @@ class SecurityController {
      */
     private function credentialsOf(string $accountId): array {
         $rows = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', '!=', CredentialType::RECOVERY_CODE->value)
             ->orderBy('type')
             ->get();

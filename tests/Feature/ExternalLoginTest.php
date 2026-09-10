@@ -8,7 +8,7 @@ use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +29,7 @@ class ExternalLoginTest extends TestCase {
     public function test_createsAccountWhenNothingMatches(): void {
         $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'new@example.com'));
 
-        $account = app(ChreeAccountRepository::class)->findById($accountId);
+        $account = app(AuthIdentityRepository::class)->findById($accountId);
         $this->assertNotNull($account);
         $this->assertSame('new@example.com', $account->email);
         $this->assertSame(AccountOrigin::USER, $account->origin);
@@ -48,7 +48,7 @@ class ExternalLoginTest extends TestCase {
      * IdP 側でメールが検証済みなら、既存アカウントに紐付ける
      */
     public function test_linksToExistingAccountWhenEmailVerified(): void {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
         $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'user@example.com', true));
 
@@ -60,7 +60,7 @@ class ExternalLoginTest extends TestCase {
      * かといって黙って2つ目を作らず、明示的に断る
      */
     public function test_refusesToLinkWhenEmailIsUnverified(): void {
-        app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
+        app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
         $this->expectException(ExternalIdentityConflict::class);
         app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'user@example.com', false));
@@ -72,7 +72,7 @@ class ExternalLoginTest extends TestCase {
     public function test_createsAccountWhenEmailIsUnverifiedAndUnused(): void {
         $accountId = app(LinkExternalIdentity::class)->execute($this->identity('g-1', 'fresh@example.com', false));
 
-        $this->assertNotNull(app(ChreeAccountRepository::class)->findById($accountId));
+        $this->assertNotNull(app(AuthIdentityRepository::class)->findById($accountId));
     }
 
     public function test_storesProviderPrefixedIdentifier(): void {

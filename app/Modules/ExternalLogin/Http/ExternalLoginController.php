@@ -4,7 +4,7 @@ namespace App\Modules\ExternalLogin\Http;
 use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
@@ -29,7 +29,7 @@ class ExternalLoginController {
         private readonly ChreeSession $session,
         private readonly ClaimTickets $tickets,
         private readonly ClaimServiceAccount $claim,
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
     ) {}
 
     /**
@@ -109,7 +109,7 @@ class ExternalLoginController {
      */
     private function finalizeClaim(string $claimToken, string $accountId): void {
         $link = $this->tickets->find($claimToken);
-        if ($link === null || $link->isClaimed() || $link->chree_account_id !== $accountId) return;
+        if ($link === null || $link->isClaimed() || $link->auth_identity_id !== $accountId) return;
 
         try {
             $this->claim->executeWithExistingCredential($link);

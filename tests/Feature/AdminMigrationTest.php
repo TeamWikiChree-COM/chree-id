@@ -2,7 +2,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Registry\Application\DatabaseMigrations;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,7 +29,7 @@ class AdminMigrationTest extends TestCase {
     private function loginAs(string $email): void {
         Config::set('chreeid.admin_emails', [self::ADMIN_EMAIL]);
 
-        $accounts = app(ChreeAccountRepository::class);
+        $accounts = app(AuthIdentityRepository::class);
         $account = $accounts->create(AccountOrigin::USER, $email, '管理者');
         $accounts->markEmailVerified($account->id);
 

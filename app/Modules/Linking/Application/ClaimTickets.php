@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Linking\Application;
 
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Str;
 
@@ -27,7 +27,7 @@ class ClaimTickets {
      * @return ClaimTicket|null 紐付けが無ければ null
      */
     public function issue(OAuthClientModel $client, string $serviceUserId): ?ClaimTicket {
-        $link = ServiceAccountLinkModel::query()
+        $link = ServiceAccountModel::query()
             ->where('client_id', $client->id)
             ->where('service_user_id', $serviceUserId)
             ->first();
@@ -48,10 +48,10 @@ class ClaimTickets {
 
     /**
      * @param string $token URL に載っていた平文トークン
-     * @return ServiceAccountLinkModel|null 使えない券なら null
+     * @return ServiceAccountModel|null 使えない券なら null
      */
-    public function find(string $token): ?ServiceAccountLinkModel {
-        $link = ServiceAccountLinkModel::query()
+    public function find(string $token): ?ServiceAccountModel {
+        $link = ServiceAccountModel::query()
             ->where('claim_token_hash', hash('sha256', $token))
             ->first();
 
@@ -64,10 +64,10 @@ class ClaimTickets {
     /**
      * 使い終わった券を捨てる。
      *
-     * @param ServiceAccountLinkModel $link 対象の紐付け
+     * @param ServiceAccountModel $link 対象の紐付け
      * @return void
      */
-    public function consume(ServiceAccountLinkModel $link): void {
+    public function consume(ServiceAccountModel $link): void {
         $link->forceFill(['claim_token_hash' => null, 'claim_expires_at' => null])->save();
     }
 

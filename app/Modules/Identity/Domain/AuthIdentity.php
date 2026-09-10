@@ -6,9 +6,9 @@ use Carbon\CarbonInterface;
 /**
  * ChreeID アカウント。
  *
- * Eloquent を知らない素の値として扱う。永続化は ChreeAccountRepository の担当。
+ * Eloquent を知らない素の値として扱う。永続化は AuthIdentityRepository の担当。
  */
-readonly class ChreeAccount {
+readonly class AuthIdentity {
     public string $id;
     public ?string $email;
     public ?CarbonInterface $emailVerifiedAt;

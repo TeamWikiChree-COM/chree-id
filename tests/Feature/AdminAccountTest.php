@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\RateLimiter;
@@ -31,7 +31,7 @@ class AdminAccountTest extends TestCase {
      * @return string
      */
     private function loginAs(string $email, bool $verified = true): string {
-        $accounts = app(ChreeAccountRepository::class);
+        $accounts = app(AuthIdentityRepository::class);
         $account = $accounts->create(AccountOrigin::USER, $email, 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
@@ -57,7 +57,7 @@ class AdminAccountTest extends TestCase {
     public function test_listsAccountsForAdmin(): void {
         $this->loginAs(self::ADMIN_EMAIL);
 
-        $accounts = app(ChreeAccountRepository::class);
+        $accounts = app(AuthIdentityRepository::class);
         $accounts->create(AccountOrigin::SERVICE, 'service@example.com', 'Bot');
 
         // 新しい順に並ぶので、あとから作った service 側が先頭に来る

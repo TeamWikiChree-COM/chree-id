@@ -39,14 +39,14 @@ class AdoptPasswordHash {
         // 既に設定されているものは触らない。利用者が ChreeID 側で決め直した後に
         // サービスの古いハッシュで上書きすると、本人の変更が黙って巻き戻る
         $exists = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::PASSWORD)
             ->exists();
 
         if ($exists) return false;
 
         CredentialModel::create([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'type' => CredentialType::PASSWORD,
             'secret' => $hash,
         ]);

@@ -2,14 +2,15 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
-use App\Modules\Provider\Infrastructure\ServiceSubjectIdModel;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 
 /**
  * 利用者から見た「連携しているサービス」の一覧。
  *
- * service_subject_ids はサービスごとの sub を採番した記録で、
- * 初めてトークンを出した時点で作られる。つまり「一度でも繋がった」証跡になる。
+ * サービスアカウントの行がそのまま「そのサービスとの関わり」を表す。
+ * 遅延登録で裏に作られたものも含むので、まだ一度も ChreeID の画面を
+ * 通っていないサービスもここに出る。利用者から見ればどちらも同じ連携。
  */
 class ListConnectedServices {
     /**
@@ -17,8 +18,8 @@ class ListConnectedServices {
      * @return list<array{clientId: string, name: string, trust: string, connectedAt: string|null, hasActiveToken: bool}>
      */
     public function execute(string $accountId): array {
-        $subjects = ServiceSubjectIdModel::query()
-            ->where('chree_account_id', $accountId)
+        $subjects = ServiceAccountModel::query()
+            ->where('auth_identity_id', $accountId)
             ->orderBy('created_at')
             ->get();
 
@@ -55,7 +56,7 @@ class ListConnectedServices {
      */
     private function hasActiveToken(string $accountId, string $clientId): bool {
         return AccessTokenModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('client_id', $clientId)
             ->whereNull('revoked_at')
             ->where('expires_at', '>', now())

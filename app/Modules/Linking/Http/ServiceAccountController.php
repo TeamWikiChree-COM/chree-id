@@ -4,9 +4,8 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
-use App\Modules\Registry\Application\AuthenticateClient;
-use App\Modules\Registry\Domain\ServiceTrust;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Registry\Http\OfficialClientGuard;
+use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -20,13 +19,13 @@ use Illuminate\Validation\ValidationException;
  */
 class ServiceAccountController {
 
-    private readonly AuthenticateClient $clients;
+    private readonly OfficialClientGuard $guard;
     private readonly IssueServiceAccount $issue;
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;
 
-    public function __construct(AuthenticateClient $clients, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate) {
-        $this->clients = $clients;
+    public function __construct(OfficialClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate) {
+        $this->guard = $guard;
         $this->issue = $issue;
         $this->tickets = $tickets;
         $this->deactivate = $deactivate;
@@ -38,7 +37,7 @@ class ServiceAccountController {
      * @throws ValidationException
      */
     public function store(Request $request): JsonResponse {
-        $client = $this->authenticate($request);
+        $client = $this->guard->check($request);
         if ($client instanceof JsonResponse) return $client;
 
         $request->validate([
@@ -77,7 +76,7 @@ class ServiceAccountController {
      * @throws ValidationException
      */
     public function claimTicket(Request $request): JsonResponse {
-        $client = $this->authenticate($request);
+        $client = $this->guard->check($request);
         if ($client instanceof JsonResponse) return $client;
 
         $request->validate(['service_user_id' => ['required', 'string', 'max:190']]);
@@ -85,11 +84,11 @@ class ServiceAccountController {
         $ticket = $this->tickets->issue($client, $request->string('service_user_id')->toString());
 
         if ($ticket === null) {
-            return $this->error('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
+            return ApiError::make('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
         }
 
         if ($ticket->link->isClaimed()) {
-            return $this->error('already_claimed', 'このアカウントは既に引き取られています', 409);
+            return ApiError::make('already_claimed', 'このアカウントは既に引き取られています', 409);
         }
 
         return response()->json([
@@ -109,7 +108,7 @@ class ServiceAccountController {
      * @throws ValidationException
      */
     public function deactivate(Request $request): JsonResponse {
-        $client = $this->authenticate($request);
+        $client = $this->guard->check($request);
         if ($client instanceof JsonResponse) return $client;
 
         $request->validate(['service_user_id' => ['required', 'string', 'max:190']]);
@@ -117,39 +116,10 @@ class ServiceAccountController {
         $found = $this->deactivate->execute($client, $request->string('service_user_id')->toString());
 
         if (!$found) {
-            return $this->error('unknown_service_user', 'この利用者の ChreeID は見つかりませんでした', 404);
+            return ApiError::make('unknown_service_user', 'この利用者の ChreeID は見つかりませんでした', 404);
         }
 
         return response()->json(['ok' => true]);
     }
 
-    /**
-     * サービス自身を確かめる。通らなければ返す応答をそのまま返す。
-     *
-     * @param Request $request
-     * @return OAuthClientModel|JsonResponse
-     */
-    private function authenticate(Request $request): OAuthClientModel|JsonResponse {
-        $client = $this->clients->execute($request);
-
-        if ($client === null || !$client->is_confidential) {
-            return $this->error('invalid_client', 'クライアント認証に失敗しました', 401);
-        }
-
-        if ($client->trust !== ServiceTrust::OFFICIAL) {
-            return $this->error('access_denied', 'このサービスはアカウントを発行できません', 403);
-        }
-
-        return $client;
-    }
-
-    /**
-     * @param string $error 機械可読なコード
-     * @param string $description 人が読む説明
-     * @param int $status HTTP ステータス
-     * @return JsonResponse
-     */
-    private function error(string $error, string $description, int $status): JsonResponse {
-        return response()->json(['error' => $error, 'error_description' => $description], $status);
-    }
 }

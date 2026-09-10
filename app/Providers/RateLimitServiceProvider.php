@@ -33,9 +33,28 @@ class RateLimitServiceProvider extends ServiceProvider {
         RateLimiter::for('challenge', fn (Request $request): Limit =>
             Limit::perMinute(5)->by($request->session()->getId()));
 
+        // サービス経由のパスワード照会。呼び出し元はサービスのサーバなので、
+        // IP で数えるとそのサービスの利用者全員が巻き添えになる。アドレスとの組で数える
+        RateLimiter::for('service-auth', fn (Request $request): Limit =>
+            Limit::perMinute(5)->by($this->clientEmailKey($request)));
+
         // 確認リンクは総当たりされうるが、正規の利用者が何度も開くことはない
         RateLimiter::for('verify', fn (Request $request): Limit =>
             Limit::perMinute(10)->by($request->ip() ?? 'unknown'));
+    }
+
+    /**
+     * @param Request $request
+     * @return string アドレスとクライアントIDの組。呼び出し元のサービス単位で数える
+     */
+    private function clientEmailKey(Request $request): string {
+        $email = mb_strtolower($request->string('email')->trim()->toString());
+
+        // AuthenticateClient と同じく Basic 認証とフォーム値の両方を受け付ける
+        $user = $request->getUser();
+        $clientId = is_string($user) && $user !== '' ? $user : $request->string('client_id')->toString();
+
+        return $email . '|' . $clientId;
     }
 
     /**

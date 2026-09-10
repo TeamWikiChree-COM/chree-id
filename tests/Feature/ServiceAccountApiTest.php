@@ -6,8 +6,8 @@ use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
@@ -69,10 +69,10 @@ class ServiceAccountApiTest extends TestCase {
         $sub = $response->json('sub');
         $this->assertIsString($sub);
 
-        $link = ServiceAccountLinkModel::query()->firstOrFail();
+        $link = ServiceAccountModel::query()->firstOrFail();
         $this->assertSame('42', $link->service_user_id);
 
-        $account = app(ChreeAccountRepository::class)->findById($link->chree_account_id);
+        $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
         $this->assertSame(AccountOrigin::SERVICE, $account?->origin);
     }
 
@@ -84,7 +84,7 @@ class ServiceAccountApiTest extends TestCase {
         $second = $this->issue($client)->json('sub');
 
         $this->assertSame($first, $second);
-        $this->assertSame(1, ServiceAccountLinkModel::query()->count());
+        $this->assertSame(1, ServiceAccountModel::query()->count());
     }
 
     // ここが崩れると、後で OIDC ログインしたとき向こうから別人に見える
@@ -92,8 +92,8 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $sub = $this->issue($client)->json('sub');
 
-        $link = ServiceAccountLinkModel::query()->firstOrFail();
-        $viaOidc = app(ResolveSubject::class)->execute($client, $link->chree_account_id);
+        $link = ServiceAccountModel::query()->firstOrFail();
+        $viaOidc = app(ResolveSubject::class)->execute($client, $link->auth_identity_id);
 
         $this->assertSame($sub, $viaOidc);
     }
@@ -105,30 +105,30 @@ class ServiceAccountApiTest extends TestCase {
         $b = $this->issue($client, ['service_user_id' => '2'])->json('sub');
 
         $this->assertNotSame($a, $b);
-        $this->assertSame(2, ServiceAccountLinkModel::query()->count());
+        $this->assertSame(2, ServiceAccountModel::query()->count());
     }
 
     // アドレスが一致しても勝手に寄せない。統合するかどうかは本人が決める
     public function test_doesNotFoldIntoAnExistingAccountWithTheSameAddress(): void {
-        $accounts = app(ChreeAccountRepository::class);
+        $accounts = app(AuthIdentityRepository::class);
         $existing = $accounts->create(AccountOrigin::USER, 'user@example.com', '既存');
         $accounts->markEmailVerified($existing->id);
 
         $client = $this->client();
         $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true])->assertOk();
 
-        $this->assertNotSame($existing->id, ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id);
+        $this->assertNotSame($existing->id, ServiceAccountModel::query()->firstOrFail()->auth_identity_id);
     }
 
     // 使えないアドレスを新しいアカウントに持たせると、本来の持ち主が登録できなくなる
     public function test_leavesTheAddressOffWhenItBelongsToSomeoneElse(): void {
-        app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
+        app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
         $client = $this->client();
         $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true]);
 
-        $link = ServiceAccountLinkModel::query()->firstOrFail();
-        $account = app(ChreeAccountRepository::class)->findById($link->chree_account_id);
+        $link = ServiceAccountModel::query()->firstOrFail();
+        $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
 
         $this->assertNull($account?->email);
         // 統合候補として見せるために、サービスが何と言っていたかは控えておく
@@ -144,14 +144,14 @@ class ServiceAccountApiTest extends TestCase {
         $b = $this->issue($client, ['service_user_id' => '2', 'email' => 'same@example.com', 'email_verified' => true]);
 
         $this->assertNotSame($a->json('sub'), $b->json('sub'));
-        $this->assertSame(2, ServiceAccountLinkModel::query()->count());
+        $this->assertSame(2, ServiceAccountModel::query()->count());
     }
 
     public function test_trustsAVerifiedAddressFromAnOfficialService(): void {
         $client = $this->client();
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => true]);
 
-        $account = app(ChreeAccountRepository::class)->findByEmail('new@example.com');
+        $account = app(AuthIdentityRepository::class)->findByEmail('new@example.com');
         $this->assertNotNull($account);
         $this->assertTrue($account->isEmailVerified());
     }
@@ -160,7 +160,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => false]);
 
-        $this->assertFalse(app(ChreeAccountRepository::class)->findByEmail('new@example.com')?->isEmailVerified());
+        $this->assertFalse(app(AuthIdentityRepository::class)->findByEmail('new@example.com')?->isEmailVerified());
     }
 
     // --- パスワードの引き継ぎ ---
@@ -182,7 +182,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client, ['password_hash' => password_hash('correct-horse', PASSWORD_DEFAULT)]);
 
-        $this->assertNull(ServiceAccountLinkModel::query()->firstOrFail()->claimed_at);
+        $this->assertNull(ServiceAccountModel::query()->firstOrFail()->claimed_at);
     }
 
     public function test_rejectsAHashThatIsNotBcrypt(): void {
@@ -190,9 +190,9 @@ class ServiceAccountApiTest extends TestCase {
 
         $this->issue($client, ['password_hash' => 'not-a-hash'])->assertOk();
 
-        $link = ServiceAccountLinkModel::query()->firstOrFail();
+        $link = ServiceAccountModel::query()->firstOrFail();
         $this->assertSame(0, CredentialModel::query()
-            ->where('chree_account_id', $link->chree_account_id)
+            ->where('auth_identity_id', $link->auth_identity_id)
             ->where('type', CredentialType::PASSWORD)
             ->count());
     }
@@ -202,7 +202,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client, ['email' => 'user@example.com', 'email_verified' => true]);
 
-        $accountId = ServiceAccountLinkModel::query()->firstOrFail()->chree_account_id;
+        $accountId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
         app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
 
         // 移行元がもう一度ハッシュを送ってきても、決め直した方が残る
@@ -226,7 +226,7 @@ class ServiceAccountApiTest extends TestCase {
             'service_user_id' => '42',
         ])->assertStatus(401);
 
-        $this->assertSame(0, ServiceAccountLinkModel::query()->count());
+        $this->assertSame(0, ServiceAccountModel::query()->count());
     }
 
     // 承認済みの第三者に開けると、そのサービスの都合で利用者が水増しされる
@@ -235,7 +235,7 @@ class ServiceAccountApiTest extends TestCase {
 
         $this->issue($client)->assertStatus(403);
 
-        $this->assertSame(0, ServiceAccountLinkModel::query()->count());
+        $this->assertSame(0, ServiceAccountModel::query()->count());
     }
 
     // secret を持てないクライアントは、誰でも名乗れてしまう

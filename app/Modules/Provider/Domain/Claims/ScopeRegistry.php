@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Domain\Claims;
 
-use App\Modules\Identity\Domain\ChreeAccount;
+use App\Modules\Identity\Domain\AuthIdentity;
 use LogicException;
 
 /**
@@ -27,11 +27,11 @@ class ScopeRegistry {
     /**
      * 要求された scope の分だけクレームを集める。
      *
-     * @param ChreeAccount $account
+     * @param AuthIdentity $account
      * @param list<string> $scopes
      * @return array<string, mixed>
      */
-    public function claimsFor(ChreeAccount $account, array $scopes): array {
+    public function claimsFor(AuthIdentity $account, array $scopes): array {
         $claims = [];
         foreach ($scopes as $scope) {
             $resolver = $this->resolvers[$scope] ?? null;

@@ -25,7 +25,7 @@ class GenerateRecoveryCodes {
     public function execute(string $accountId): array {
         // 作り直したら前のコードは使えなくする
         CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::RECOVERY_CODE)
             ->delete();
 
@@ -35,7 +35,7 @@ class GenerateRecoveryCodes {
             $codes[] = $code;
 
             CredentialModel::create([
-                'chree_account_id' => $accountId,
+                'auth_identity_id' => $accountId,
                 'type' => CredentialType::RECOVERY_CODE,
                 // 十分な長さのランダム値なので、総当たりの心配がなく sha256 で引ける形にする
                 'secret' => hash('sha256', $code),
@@ -53,7 +53,7 @@ class GenerateRecoveryCodes {
      */
     public function remaining(string $accountId): int {
         return CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::RECOVERY_CODE)
             ->count();
     }

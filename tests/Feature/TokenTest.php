@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
 use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
@@ -42,7 +42,7 @@ class TokenTest extends TestCase {
      * @return string 平文の認可コード
      */
     private function obtainCode(OAuthClientModel $client, bool $withPkce = false): string {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト太郎');
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト太郎');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 

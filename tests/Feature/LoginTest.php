@@ -3,8 +3,8 @@ namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\ViewErrorBag;
 use Tests\TestCase;
@@ -14,10 +14,10 @@ class LoginTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    private function makeAccountWithPassword(): ChreeAccount {
-        $account = app(ChreeAccountRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
+    private function makeAccountWithPassword(): AuthIdentity {
+        $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
 
         return $account;

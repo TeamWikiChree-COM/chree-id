@@ -3,7 +3,7 @@ namespace App\Modules\Identity\Application;
 
 use App\Modules\Credential\Application\IssueOneTimeToken;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Mail;
 
@@ -19,7 +19,7 @@ class RequestEmailVerification {
     public const EXPIRES_MINUTES = 60;
 
     public function __construct(
-        private readonly ChreeAccountRepository $accounts,
+        private readonly AuthIdentityRepository $accounts,
         private readonly IssueOneTimeToken $issue,
     ) {}
 

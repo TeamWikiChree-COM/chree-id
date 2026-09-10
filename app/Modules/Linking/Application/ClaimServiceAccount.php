@@ -6,9 +6,9 @@ use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Application\RequestEmailChange;
 use App\Modules\Identity\Application\RequestEmailVerification;
-use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
-use App\Modules\Linking\Infrastructure\ServiceAccountLinkModel;
+use App\Modules\Identity\Application\UserAccounts;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,26 +22,28 @@ use Illuminate\Support\Facades\DB;
  */
 class ClaimServiceAccount {
 
-    private readonly ChreeAccountRepository $accounts;
+    private readonly AuthIdentityRepository $accounts;
     private readonly SetPassword $passwords;
     private readonly CredentialRepository $credentials;
     private readonly RequestEmailChange $requestEmailChange;
     private readonly RequestEmailVerification $requestVerification;
     private readonly ClaimTickets $tickets;
+    private readonly UserAccounts $userAccounts;
 
-    public function __construct(ChreeAccountRepository $accounts, SetPassword $passwords, CredentialRepository $credentials, RequestEmailChange $requestEmailChange, RequestEmailVerification $requestVerification, ClaimTickets $tickets) {
+    public function __construct(AuthIdentityRepository $accounts, SetPassword $passwords, CredentialRepository $credentials, RequestEmailChange $requestEmailChange, RequestEmailVerification $requestVerification, ClaimTickets $tickets, UserAccounts $userAccounts) {
         $this->accounts = $accounts;
         $this->passwords = $passwords;
         $this->credentials = $credentials;
         $this->requestEmailChange = $requestEmailChange;
         $this->requestVerification = $requestVerification;
         $this->tickets = $tickets;
+        $this->userAccounts = $userAccounts;
     }
 
     /**
      * パスワードを決めて引き取る。
      *
-     * @param ServiceAccountLinkModel $link 引き取る紐付け
+     * @param ServiceAccountModel $link 引き取る紐付け
      * @param string $password 本人が決めたパスワード
      * @param string|null $displayName 表示名
      * @param string|null $email 本人が入力したアドレス。変更しないなら null
@@ -49,7 +51,7 @@ class ClaimServiceAccount {
      * @throws ClaimException
      */
     public function executeWithPassword(
-        ServiceAccountLinkModel $link,
+        ServiceAccountModel $link,
         string $password,
         ?string $displayName = null,
         ?string $email = null,
@@ -66,14 +68,14 @@ class ClaimServiceAccount {
      * 紐付けを済ませておくこと。ここでは確定させるだけで、認証手段の
      * 追加は行わない。
      *
-     * @param ServiceAccountLinkModel $link 引き取る紐付け
+     * @param ServiceAccountModel $link 引き取る紐付け
      * @param string|null $displayName 表示名
      * @param string|null $email 本人が入力したアドレス。変更しないなら null
      * @return string アカウントID (ULID)
      * @throws ClaimException 認証手段が確認できない場合を含む
      */
     public function executeWithExistingCredential(
-        ServiceAccountLinkModel $link,
+        ServiceAccountModel $link,
         ?string $displayName = null,
         ?string $email = null,
     ): string {
@@ -86,7 +88,7 @@ class ClaimServiceAccount {
     }
 
     /**
-     * @param ServiceAccountLinkModel $link 引き取る紐付け
+     * @param ServiceAccountModel $link 引き取る紐付け
      * @param string|null $displayName 表示名
      * @param string|null $email 本人が入力したアドレス。変更しないなら null
      * @param callable(string):void $setupCredential 認証手段を確定させる処理。アカウントIDを受け取る
@@ -94,16 +96,16 @@ class ClaimServiceAccount {
      * @throws ClaimException
      */
     private function finalize(
-        ServiceAccountLinkModel $link,
+        ServiceAccountModel $link,
         ?string $displayName,
         ?string $email,
         callable $setupCredential,
     ): string {
-        $account = $this->accounts->findById($link->chree_account_id);
+        $account = $this->accounts->findById($link->auth_identity_id);
 
-        // 既に本人のものなら触らない。ここで上書きすると、
-        // 発行時に既存アカウントへ寄せた人のパスワードを巻き戻してしまう
-        if ($account === null || $account->origin === AccountOrigin::USER) {
+        // 既に本人のものなら触らない。許すと他人のパスワードを差し替えられる。
+        // 判定は UserAccount の有無で行う。origin は出自の記録なので使わない
+        if ($account === null || $this->userAccounts->exists($account->id)) {
             throw new ClaimException(ClaimException::ALREADY_CLAIMED);
         }
 
@@ -119,7 +121,8 @@ class ClaimServiceAccount {
 
             if ($displayName !== null) $this->accounts->updateDisplayName($account->id, $displayName);
 
-            $this->accounts->changeOrigin($account->id, AccountOrigin::USER);
+            // ここで束ねる人格ができる。origin (出自) は service のまま触らない
+            $this->userAccounts->ensure($account->id);
 
             $link->forceFill(['claimed_at' => now()])->save();
         });

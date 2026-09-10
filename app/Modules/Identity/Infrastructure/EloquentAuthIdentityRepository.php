@@ -2,29 +2,29 @@
 namespace App\Modules\Identity\Infrastructure;
 
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\ChreeAccount;
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentity;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 
 /**
- * ChreeAccountRepository の Eloquent 実装
+ * AuthIdentityRepository の Eloquent 実装
  */
-class EloquentChreeAccountRepository implements ChreeAccountRepository {
+class EloquentAuthIdentityRepository implements AuthIdentityRepository {
     /**
      * @param string $id アカウントID (ULID)
-     * @return ChreeAccount|null
+     * @return AuthIdentity|null
      */
-    public function findById(string $id): ?ChreeAccount {
-        $model = ChreeAccountModel::query()->find($id);
+    public function findById(string $id): ?AuthIdentity {
+        $model = AuthIdentityModel::query()->find($id);
 
         return $model === null ? null : $this->toDomain($model);
     }
 
     /**
      * @param string $email メールアドレス
-     * @return ChreeAccount|null
+     * @return AuthIdentity|null
      */
-    public function findByEmail(string $email): ?ChreeAccount {
-        $model = ChreeAccountModel::query()->where('email', $email)->first();
+    public function findByEmail(string $email): ?AuthIdentity {
+        $model = AuthIdentityModel::query()->where('email', $email)->first();
 
         return $model === null ? null : $this->toDomain($model);
     }
@@ -33,10 +33,10 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @param AccountOrigin $origin 発行経路
      * @param string|null $email 連絡先
      * @param string|null $displayName 表示名
-     * @return ChreeAccount
+     * @return AuthIdentity
      */
-    public function create(AccountOrigin $origin, ?string $email = null, ?string $displayName = null): ChreeAccount {
-        $model = ChreeAccountModel::create([
+    public function create(AccountOrigin $origin, ?string $email = null, ?string $displayName = null): AuthIdentity {
+        $model = AuthIdentityModel::create([
             'origin' => $origin,
             'email' => $email,
             'display_name' => $displayName,
@@ -50,7 +50,7 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @return void
      */
     public function markEmailVerified(string $id): void {
-        ChreeAccountModel::query()->whereKey($id)->update(['email_verified_at' => now()]);
+        AuthIdentityModel::query()->whereKey($id)->update(['email_verified_at' => now()]);
     }
 
     /**
@@ -59,7 +59,7 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @return void
      */
     public function updateDisplayName(string $id, ?string $displayName): void {
-        ChreeAccountModel::query()->whereKey($id)->update(['display_name' => $displayName]);
+        AuthIdentityModel::query()->whereKey($id)->update(['display_name' => $displayName]);
     }
 
     /**
@@ -68,7 +68,7 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @return void
      */
     public function changeOrigin(string $id, AccountOrigin $origin): void {
-        ChreeAccountModel::query()->whereKey($id)->update(['origin' => $origin]);
+        AuthIdentityModel::query()->whereKey($id)->update(['origin' => $origin]);
     }
 
     /**
@@ -77,7 +77,7 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @return void
      */
     public function updateEmail(string $id, string $email): void {
-        ChreeAccountModel::query()->whereKey($id)->update(['email' => $email]);
+        AuthIdentityModel::query()->whereKey($id)->update(['email' => $email]);
     }
 
     /**
@@ -85,15 +85,15 @@ class EloquentChreeAccountRepository implements ChreeAccountRepository {
      * @return void
      */
     public function suspend(string $id): void {
-        ChreeAccountModel::query()->whereKey($id)->update(['suspended_at' => now()]);
+        AuthIdentityModel::query()->whereKey($id)->update(['suspended_at' => now()]);
     }
 
     /**
-     * @param ChreeAccountModel $model
-     * @return ChreeAccount
+     * @param AuthIdentityModel $model
+     * @return AuthIdentity
      */
-    private function toDomain(ChreeAccountModel $model): ChreeAccount {
-        return new ChreeAccount(
+    private function toDomain(AuthIdentityModel $model): AuthIdentity {
+        return new AuthIdentity(
             $model->id,
             $model->email,
             $model->email_verified_at,

@@ -40,7 +40,7 @@ class TotpVerifier extends AbstractVerifier {
         if (!\is_string($code) || $code === '') return $this->failure();
 
         $row = CredentialModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::TOTP)
             ->first();
         if ($row === null || $row->secret === null) return $this->failure();

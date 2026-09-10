@@ -8,7 +8,7 @@
 | ChreeID は Laravel 標準の認証を使わない。
 |
 | 標準の認証は users テーブルと Authenticatable なモデルを前提にしているが、
-| こちらのアカウントは chree_accounts で、ログイン状態は ChreeSession が
+| こちらのアカウントは auth_identities で、ログイン状態は ChreeSession が
 | セッションに置くアカウントIDだけで表す。認証手段 (パスワード / パスキー /
 | TOTP / マジックリンク) も credentials に自前で持っている。
 |

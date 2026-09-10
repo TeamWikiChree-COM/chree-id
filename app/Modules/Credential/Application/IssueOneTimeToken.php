@@ -20,7 +20,7 @@ class IssueOneTimeToken {
     public function execute(string $accountId, string $purpose, int $ttlMinutes): string {
         // 同じ用途の未使用トークンは捨てる。最後に送ったリンクだけを有効にする
         OneTimeTokenModel::query()
-            ->where('chree_account_id', $accountId)
+            ->where('auth_identity_id', $accountId)
             ->where('purpose', $purpose)
             ->whereNull('used_at')
             ->delete();
@@ -28,7 +28,7 @@ class IssueOneTimeToken {
         $token = Str::random(64);
 
         OneTimeTokenModel::create([
-            'chree_account_id' => $accountId,
+            'auth_identity_id' => $accountId,
             'token_hash' => hash('sha256', $token),
             'purpose' => $purpose,
             'expires_at' => now()->addMinutes($ttlMinutes),

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Modules\Identity\Domain\ChreeAccountRepository;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Registry\Domain\AdminAccess;
@@ -38,7 +38,7 @@ class HandleInertiaRequests extends Middleware
         $accountId = app(ChreeSession::class)->accountId();
         if ($accountId === null) return false;
 
-        return app(AdminAccess::class)->allows(app(ChreeAccountRepository::class)->findById($accountId));
+        return app(AdminAccess::class)->allows(app(AuthIdentityRepository::class)->findById($accountId));
     }
 
     /**
