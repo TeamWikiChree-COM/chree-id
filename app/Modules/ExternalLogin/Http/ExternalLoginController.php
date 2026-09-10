@@ -23,6 +23,9 @@ class ExternalLoginController {
     /** 引き取り (claim) 中に連携を始めた場合、戻ってきたときに引き取りへつなげるためのトークン */
     private const CLAIM_TOKEN_KEY = 'external_login.claim_token';
 
+    /** 複数の認証主体に紐付いていたときの候補。選ばれるまで持っておく */
+    private const CANDIDATES_KEY = 'external_login.candidates';
+
     public function __construct(
         private readonly ExternalIdpRegistry $registry,
         private readonly LinkExternalIdentity $link,
@@ -78,6 +81,12 @@ class ExternalLoginController {
 
         try {
             $identity = $idp->exchange($code, $nonce);
+
+            // 分離すると、同じ外部アカウントが複数の認証主体に紐付きうる。
+            // 黙ってどれかを選ぶと別のアカウントとして入れてしまうので、本人に選ばせる
+            $candidates = $this->link->candidates($identity);
+            if (count($candidates) > 1) return $this->chooseIdentity($request, $candidates, $claimToken);
+
             $accountId = $this->link->execute($identity);
         } catch (ExternalIdentityConflict) {
             return $this->fail('既存のアカウントでログインしてから連携してください');
@@ -95,6 +104,76 @@ class ExternalLoginController {
         $this->session->login($accountId);
 
         return redirect('/');
+    }
+
+    /**
+     * どの認証主体として入るかを選ばせる画面へ送る。
+     *
+     * @param Request $request
+     * @param list<string> $candidates 紐付いている認証主体のID
+     * @param mixed $claimToken 引き取り中ならそのトークン
+     * @return RedirectResponse
+     */
+    private function chooseIdentity(Request $request, array $candidates, mixed $claimToken): RedirectResponse {
+        $request->session()->put(self::CANDIDATES_KEY, $candidates);
+        if (\is_string($claimToken) && $claimToken !== '') {
+            $request->session()->put(self::CLAIM_TOKEN_KEY, $claimToken);
+        }
+
+        return redirect('/login/choose');
+    }
+
+    /**
+     * 選ばれた認証主体で続ける。
+     *
+     * **画面から戻ってきたIDは信用しない。** セッションに置いた候補に無ければ通さない。
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     */
+    public function choose(Request $request): RedirectResponse {
+        $candidates = $request->session()->get(self::CANDIDATES_KEY);
+        if (!\is_array($candidates) || $candidates === []) return $this->fail('連携を確認できませんでした');
+
+        $chosen = $request->string('account_id')->toString();
+        if (!\in_array($chosen, $candidates, true)) return $this->fail('連携を確認できませんでした');
+
+        $account = $this->accounts->findById($chosen);
+        if ($account === null || $account->isSuspended()) return $this->fail('このアカウントは使用できません');
+
+        $request->session()->forget(self::CANDIDATES_KEY);
+        $claimToken = $request->session()->pull(self::CLAIM_TOKEN_KEY);
+
+        if (\is_string($claimToken) && $claimToken !== '') $this->finalizeClaim($claimToken, $chosen);
+
+        $this->session->login($chosen);
+
+        return redirect('/');
+    }
+
+    /**
+     * 選択画面。候補が無ければログインへ戻す。
+     *
+     * @param Request $request
+     * @return \Inertia\Response|RedirectResponse
+     */
+    public function showChoice(Request $request): \Inertia\Response|RedirectResponse {
+        $candidates = $request->session()->get(self::CANDIDATES_KEY);
+        if (!\is_array($candidates) || $candidates === []) return redirect('/login');
+
+        $accounts = [];
+        foreach ($candidates as $id) {
+            $account = \is_string($id) ? $this->accounts->findById($id) : null;
+            if ($account === null || $account->isSuspended()) continue;
+
+            $accounts[] = [
+                'id' => $account->id,
+                'email' => $account->email,
+                'displayName' => $account->displayName,
+            ];
+        }
+
+        return \Inertia\Inertia::render('Auth/ChooseIdentity', ['accounts' => $accounts]);
     }
 
     /**

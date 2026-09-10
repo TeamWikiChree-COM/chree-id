@@ -21,7 +21,7 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
 
     /**
      * @param string $email メールアドレス
-     * @return AuthIdentity|null
+     * @return list<AuthIdentity> 古い順
      */
     public function findAllByEmail(string $email): array {
         $found = [];

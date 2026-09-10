@@ -43,7 +43,11 @@ export interface OAuthClient {
 
 /** 利用者から見た、連携しているサービス */
 export interface ConnectedService {
+    /** サービスアカウントのID。分離はこれを指す */
+    id: string;
     clientId: string;
+    /** サービス側での識別子。OIDC 経由でできたものは分からない */
+    serviceUserId: string | null;
     name: string;
     trust: TrustValue;
     connectedAt: string | null;

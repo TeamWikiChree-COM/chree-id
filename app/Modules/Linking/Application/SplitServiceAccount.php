@@ -52,7 +52,7 @@ class SplitServiceAccount {
 
     /**
      * @param ServiceAccountModel $serviceAccount 切り離すサービスアカウント
-     * @param string $email 新しい側の連絡先。寄せ元とは別のアドレスが要る
+     * @param string|null $email 新しい側の連絡先。省略すると寄せ元のものを引き継ぐ
      * @param string|null $displayName 新しい側の表示名
      * @param list<string> $credentialIds 複製する認証手段のID
      * @return string 新しい認証主体のID (ULID)
@@ -60,16 +60,23 @@ class SplitServiceAccount {
      */
     public function execute(
         ServiceAccountModel $serviceAccount,
-        string $email,
+        ?string $email,
         ?string $displayName,
         array $credentialIds,
     ): string {
         $sourceId = $serviceAccount->auth_identity_id;
+        $source = $this->accounts->findById($sourceId);
+        if ($source === null) throw new SplitException(SplitException::NOT_FOUND);
 
         $carried = $this->carried($sourceId, $credentialIds);
 
         // 認証手段が1つも無いと、分離した先に誰も入れなくなる
         if ($carried === []) throw new SplitException(SplitException::NO_CREDENTIAL);
+
+        // メールは認証主体を一意に決めないので、同じものを引き継いでよい。
+        // どちらを指すかはサービス経由なら絞れる (ResolveByEmail)
+        $email ??= $source->email;
+        $displayName ??= $source->displayName;
 
         return DB::transaction(function () use ($serviceAccount, $email, $displayName, $carried): string {
             // 由来としては「サービスのために起きた」ので service。

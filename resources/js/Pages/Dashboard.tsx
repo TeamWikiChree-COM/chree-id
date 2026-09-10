@@ -126,7 +126,7 @@ export default function Dashboard({ account, credentials, services }: DashboardP
 
                     {services.map((service) => (
                         <Box
-                            key={service.clientId}
+                            key={service.id}
                             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
                         >
                             <Box sx={{ minWidth: 0 }}>
@@ -136,13 +136,18 @@ export default function Dashboard({ account, credentials, services }: DashboardP
                                     {service.trust === 'official' && <Chip size="small" label="公式" />}
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
-                                    {service.connectedAt ? `${service.connectedAt} に連携` : '連携済み'}
+                                    {service.serviceUserId ?? (service.connectedAt ? `${service.connectedAt} に連携` : '連携済み')}
                                     {!service.hasActiveToken && ' ・ 現在ログインしていません'}
                                 </Typography>
                             </Box>
-                            <RowAction destructive onClick={() => revoke(service)}>
-                                解除
-                            </RowAction>
+                            <Stack direction="row" spacing={1}>
+                                <RowAction onClick={() => router.get(`/services/${service.id}/split`)}>
+                                    外す
+                                </RowAction>
+                                <RowAction destructive onClick={() => revoke(service)}>
+                                    解除
+                                </RowAction>
+                            </Stack>
                         </Box>
                     ))}
                 </Stack>

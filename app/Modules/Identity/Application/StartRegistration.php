@@ -2,7 +2,6 @@
 namespace App\Modules\Identity\Application;
 
 use App\Modules\Credential\Application\IssueOneTimeToken;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use App\Modules\Identity\Mail\RegistrationExistsMail;
 use App\Modules\Identity\Mail\VerifyRegistrationMail;
@@ -20,17 +19,14 @@ use Illuminate\Support\Str;
  * 画面の応答からアドレスの存在を推測させないため。
  */
 class StartRegistration {
-    public function __construct(
-        private readonly AuthIdentityRepository $accounts,
-        private readonly ResolveByEmail $byEmail,
-    ) {}
+    public function __construct(private readonly ResolveByEmail $byEmail) {}
 
     /**
      * @param string $email メールアドレス
      * @return void
      */
     public function execute(string $email): void {
-        // 既に持っている人には、新規登録ではなくログインへの案内を送る
+        // 既に持っている人には、新規登録ではなくログインへの案内を送る。
         // サービスアカウントが同じアドレスを使っているのは正常な状態なので止めない。
         // 束ねる人格が既にあるときだけ「登録済み」として扱う
         if ($this->byEmail->hasUserAccount($email)) {

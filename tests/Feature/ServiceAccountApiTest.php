@@ -133,8 +133,9 @@ class ServiceAccountApiTest extends TestCase {
         $link = ServiceAccountModel::query()->firstOrFail();
         $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
 
-        $this->assertSame('user@example.com', $account?->email);
-        $this->assertTrue($account?->isEmailVerified());
+        $this->assertNotNull($account);
+        $this->assertSame('user@example.com', $account->email);
+        $this->assertTrue($account->isEmailVerified());
         // 統合候補として見せるために、サービスが何と言っていたかも控えておく
         $this->assertSame('user@example.com', $link->service_email);
     }

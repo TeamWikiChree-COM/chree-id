@@ -14,6 +14,7 @@ use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
 use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Linking\Http\ServiceAuthController;
+use App\Modules\Linking\Http\SplitServiceController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -77,6 +78,10 @@ Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmE
 // 連携しているサービスを利用者自身が切る。管理画面の接続サービスとは別物
 Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'destroy']);
 
+// まとめから外して単独のアカウントに戻す (統合の逆)
+Route::get('/services/{serviceAccount}/split', [SplitServiceController::class, 'show']);
+Route::post('/services/split', [SplitServiceController::class, 'store']);
+
 // 認証方法の管理
 Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);
 Route::post('/security/totp/confirm', [SecurityController::class, 'confirmTotp']);
@@ -97,6 +102,10 @@ Route::post('/claim/passkey/register', [ClaimPasskeyController::class, 'register
 // 外部 IdP へのログイン (ChreeID が RP 側)
 Route::get('/auth/{provider}/redirect', [ExternalLoginController::class, 'redirect']);
 Route::get('/auth/{provider}/callback', [ExternalLoginController::class, 'callback']);
+
+// 分離すると1つの外部アカウントが複数の認証主体に紐付きうる。どれで入るか選ばせる
+Route::get('/login/choose', [ExternalLoginController::class, 'showChoice']);
+Route::post('/login/choose', [ExternalLoginController::class, 'choose'])->middleware('throttle:login');
 
 // 管理画面。権限が無ければ 404 (そこに何かある事実も伏せる)
 Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void {

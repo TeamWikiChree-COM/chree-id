@@ -27,17 +27,40 @@ class LinkExternalIdentity {
     ) {}
 
     /**
+     * 同じ外部アカウントに紐付いている認証主体をすべて返す。
+     *
+     * 分離すると、1つの外部アカウントが複数の認証主体に紐付きうる (KAKUTEI.md)。
+     * 複数あるときは、どれとして入るかを本人に選ばせる必要がある。
+     *
+     * @param ExternalIdentity $identity IdP が主張してきた内容
+     * @return list<string> 紐付いている認証主体のID。古い順
+     */
+    public function candidates(ExternalIdentity $identity): array {
+        $found = [];
+
+        $rows = CredentialModel::query()
+            ->where('type', CredentialType::OAUTH)
+            ->where('identifier', $identity->credentialIdentifier())
+            ->orderBy('id')
+            ->get();
+
+        foreach ($rows as $row) {
+            $found[] = $row->auth_identity_id;
+        }
+
+        return $found;
+    }
+
+    /**
      * @param ExternalIdentity $identity IdP が主張してきた内容
      * @return string 紐付いた ChreeID のアカウントID
      * @throws RuntimeException 紐付けできない場合
      */
     public function execute(ExternalIdentity $identity): string {
-        $existing = CredentialModel::query()
-            ->where('type', CredentialType::OAUTH)
-            ->where('identifier', $identity->credentialIdentifier())
-            ->first();
+        $candidates = $this->candidates($identity);
 
-        if ($existing !== null) return $existing->auth_identity_id;
+        // 複数あるときの選択は呼び出し側 (ExternalLoginController) が済ませている
+        if ($candidates !== []) return $candidates[0];
 
         $accountId = $this->findByEmail($identity) ?? $this->createAccount($identity);
         $this->link($accountId, $identity);
