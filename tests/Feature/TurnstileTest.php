@@ -1,6 +1,7 @@
 <?php
 namespace Tests\Feature;
 
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,7 +76,7 @@ class TurnstileTest extends TestCase {
 
         $this->post('/register', $this->payload())->assertSessionHasErrors(TurnstileGuard::FIELD);
 
-        $this->assertNull(app(AuthIdentityRepository::class)->findByEmail('new@example.com'));
+        $this->assertNull(app(ResolveByEmail::class)->primary('new@example.com'));
         Mail::assertNothingSent();
     }
 

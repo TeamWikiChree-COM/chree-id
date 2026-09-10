@@ -6,6 +6,7 @@ use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
@@ -121,7 +122,9 @@ class ServiceAccountApiTest extends TestCase {
     }
 
     // 使えないアドレスを新しいアカウントに持たせると、本来の持ち主が登録できなくなる
-    public function test_leavesTheAddressOffWhenItBelongsToSomeoneElse(): void {
+    // 同じアドレスを既に誰かが使っていても、そのまま持たせる。
+    // 同一サービスに複数アカウントを持つ人は普通そこに同じアドレスを使う (ARCHITECTURE 8.3)
+    public function test_keepsTheAddressEvenWhenSomeoneElseUsesIt(): void {
         app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
         $client = $this->client();
@@ -130,8 +133,9 @@ class ServiceAccountApiTest extends TestCase {
         $link = ServiceAccountModel::query()->firstOrFail();
         $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
 
-        $this->assertNull($account?->email);
-        // 統合候補として見せるために、サービスが何と言っていたかは控えておく
+        $this->assertSame('user@example.com', $account?->email);
+        $this->assertTrue($account?->isEmailVerified());
+        // 統合候補として見せるために、サービスが何と言っていたかも控えておく
         $this->assertSame('user@example.com', $link->service_email);
     }
 
@@ -151,7 +155,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => true]);
 
-        $account = app(AuthIdentityRepository::class)->findByEmail('new@example.com');
+        $account = app(ResolveByEmail::class)->primary('new@example.com');
         $this->assertNotNull($account);
         $this->assertTrue($account->isEmailVerified());
     }
@@ -160,7 +164,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => false]);
 
-        $this->assertFalse(app(AuthIdentityRepository::class)->findByEmail('new@example.com')?->isEmailVerified());
+        $this->assertFalse(app(ResolveByEmail::class)->primary('new@example.com')?->isEmailVerified());
     }
 
     // --- パスワードの引き継ぎ ---

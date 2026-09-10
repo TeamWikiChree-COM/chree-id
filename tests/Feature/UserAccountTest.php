@@ -3,6 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
+use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use App\Modules\Identity\Infrastructure\UserAccountModel;
@@ -66,7 +67,7 @@ class UserAccountTest extends TestCase {
         $this->post('/register/complete', ['token' => $token, 'password' => 'correct-horse'])
             ->assertRedirect();
 
-        $account = app(AuthIdentityRepository::class)->findByEmail('me@example.com');
+        $account = app(ResolveByEmail::class)->primary('me@example.com');
         $this->assertNotNull($account);
         $this->assertTrue(app(UserAccounts::class)->exists($account->id));
     }
