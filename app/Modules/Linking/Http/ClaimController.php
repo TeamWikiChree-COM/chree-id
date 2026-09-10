@@ -31,7 +31,7 @@ class ClaimController {
         ClaimException::INVALID_TICKET => 'このリンクは使えません。お手数ですが、サービスの設定画面からやり直してください',
         ClaimException::ALREADY_CLAIMED => 'このアカウントは既に ChreeID として使えます。ログインをお試しください',
         ClaimException::EMAIL_TAKEN => 'このメールアドレスは既に使われています',
-        ClaimException::NO_CREDENTIAL => 'パスキーの登録が確認できませんでした。もう一度お試しください',
+        ClaimException::NO_CREDENTIAL => 'ログインする方法を用意できませんでした。もう一度お試しください',
         MergeException::SAME_ACCOUNT => 'このアカウントは既にお使いの ChreeID です',
         MergeException::SAME_SERVICE => 'このサービスの別のアカウントが、既にお使いの ChreeID に紐付いています。お手数ですが問い合わせてください',
     ];
