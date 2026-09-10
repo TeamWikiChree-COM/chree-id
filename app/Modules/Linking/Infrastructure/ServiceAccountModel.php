@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $claim_token_hash
  * @property \Illuminate\Support\Carbon|null $claim_expires_at
  * @property \Illuminate\Support\Carbon|null $claimed_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class ServiceAccountModel extends Model {
     use HasUlids;

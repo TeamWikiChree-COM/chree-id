@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property string $id
  * @property string $auth_identity_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class UserAccountModel extends Model {
     use HasUlids;

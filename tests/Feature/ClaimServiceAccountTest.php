@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
@@ -185,7 +186,10 @@ class ClaimServiceAccountTest extends TestCase {
         $account = app(AuthIdentityRepository::class)->findById($link->auth_identity_id);
 
         $this->assertNotNull($account);
-        $this->assertSame(AccountOrigin::USER, $account->origin);
+
+        // 束ねる人格ができる。origin は出自の記録なので service のまま動かない
+        $this->assertTrue(app(UserAccounts::class)->exists($account->id));
+        $this->assertSame(AccountOrigin::SERVICE, $account->origin);
         $this->assertSame('太郎', $account->displayName);
         $this->assertNotNull($link->claimed_at);
         $this->assertSame($link->auth_identity_id, session('chreeid.account_id'));
@@ -223,9 +227,8 @@ class ClaimServiceAccountTest extends TestCase {
         $token = $this->ticketToken($client);
 
         // 券を配ったあとに、別経路 (統合など) で本人のものになった状況
-        $accounts = app(AuthIdentityRepository::class);
         $accountId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
-        $accounts->changeOrigin($accountId, AccountOrigin::USER);
+        app(UserAccounts::class)->ensure($accountId);
         app(SetPassword::class)->execute($accountId, 'chosen-in-chreeid');
 
         $this->post('/claim', ['token' => $token, 'method' => 'password', 'password' => 'taken-over'])

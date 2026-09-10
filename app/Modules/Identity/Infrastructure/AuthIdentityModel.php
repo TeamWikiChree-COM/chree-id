@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * chree_acountsテーブルのモデル
+ * auth_identities テーブルのモデル (認証主体)
+ *
+ * @property string $id
+ * @property string|null $email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string|null $display_name
+ * @property AccountOrigin $origin
+ * @property \Illuminate\Support\Carbon|null $suspended_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class AuthIdentityModel extends Model {
     // 主キーのidにULIDを自動で割り当てるトレイト

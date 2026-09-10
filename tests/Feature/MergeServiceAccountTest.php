@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\AuthIdentityAliasModel;
@@ -181,7 +182,7 @@ class MergeServiceAccountTest extends TestCase {
     public function test_refusesAnAccountThatIsAlreadyAUserAccount(): void {
         $client = $this->client();
         $service = $this->serviceAccount($client);
-        app(AuthIdentityRepository::class)->changeOrigin($service['accountId'], AccountOrigin::USER);
+        app(UserAccounts::class)->ensure($service['accountId']);
 
         $this->signIn();
 
