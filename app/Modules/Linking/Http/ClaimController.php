@@ -47,7 +47,9 @@ class ClaimController {
     ) {}
 
     /**
-     * 入場券の着地。ここで認証手段を決めてもらう。
+     * 入場券の着地。まず「はじめて使う」か「持っている」かだけを聞く。
+     *
+     * 認証手段の選択とここを1画面に混ぜると、何を聞かれているのか分かりにくい。
      *
      * @param string $token URL に載っていた平文トークン
      * @return Response
@@ -57,11 +59,26 @@ class ClaimController {
         if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
         if ($link->isClaimed()) return $this->failed(ClaimException::ALREADY_CLAIMED);
 
+        return Inertia::render('Claim/Choose', [
+            'token' => $token,
+            'serviceName' => $this->serviceName($link),
+            'signedInAs' => $this->signedInAs(),
+        ]);
+    }
+
+    /**
+     * 新しく作るほう。認証手段はここで決めてもらう。
+     *
+     * @param string $token URL に載っていた平文トークン
+     * @return Response
+     */
+    public function create(string $token): Response {
+        $link = $this->tickets->find($token);
+        if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
+        if ($link->isClaimed()) return $this->failed(ClaimException::ALREADY_CLAIMED);
+
         $account = $this->accounts->findById($link->auth_identity_id);
         if ($account === null) return $this->failed(ClaimException::INVALID_TICKET);
-
-        // 「ChreeID を持っている」を選んだ人がログインしたら、ここへ戻す
-        if (!$this->session->isLoggedIn()) redirect()->setIntendedUrl(url("/claim/{$token}"));
 
         return Inertia::render('Claim/Show', [
             'token' => $token,
@@ -72,10 +89,28 @@ class ClaimController {
             // 元のサービスにパスワードが無かった (Google 等のみ) 場合は、
             // 新しくパスワードを決めさせるより連携での引き取りを勧める
             'hasPassword' => $this->credentials->has($account->id, CredentialType::PASSWORD),
-            // 既に ChreeID を持っている人は、新しく作らせず統合へ送る。
+        ]);
+    }
+
+    /**
+     * 既に持っている ChreeID へ寄せるほう。
+     *
+     * @param string $token URL に載っていた平文トークン
+     * @return Response
+     */
+    public function mergeForm(string $token): Response {
+        $link = $this->tickets->find($token);
+        if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
+        if ($link->isClaimed()) return $this->failed(ClaimException::ALREADY_CLAIMED);
+
+        // ログインして戻ってきたら、この画面に戻す
+        if (!$this->session->isLoggedIn()) redirect()->setIntendedUrl(url("/claim/{$token}/merge"));
+
+        return Inertia::render('Claim/Merge', [
+            'token' => $token,
+            'serviceName' => $this->serviceName($link),
             // ログイン済みであること自体が、寄せ先が本人のものだという証明になる
             'signedInAs' => $this->signedInAs(),
-            // 統合するとき、寄せ元から持っていける認証手段
             'transferable' => $this->transferableFor($link->auth_identity_id),
         ]);
     }

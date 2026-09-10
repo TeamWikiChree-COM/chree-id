@@ -13,8 +13,6 @@ import AuthLayout from "../../Components/AuthLayout";
 import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
 import { registerClaimPasskey } from "../../lib/passkey";
-import MergePanel from "./MergePanel";
-import type { SignedInAccount, TransferableCredential } from "./MergePanel";
 
 interface ClaimShowProps {
     /** サービスから渡された平文トークン。そのまま送り返す */
@@ -29,14 +27,7 @@ interface ClaimShowProps {
     displayName: string | null;
     /** 移行元で既にパスワードを使っていたか。false ならパスワード以外を勧める */
     hasPassword: boolean;
-    /** ログイン中のアカウント。既に ChreeID を持っている人はここへ寄せる */
-    signedInAs: SignedInAccount | null;
-    /** 統合で持っていける認証手段 */
-    transferable: TransferableCredential[];
 }
-
-/** 新しく作るか、既に持っている ChreeID へ寄せるか */
-type Mode = "create" | "merge";
 
 type Method = "password" | "passkey" | "google";
 
@@ -54,16 +45,9 @@ export default function ClaimShow({
     emailVerified,
     displayName,
     hasPassword,
-    signedInAs,
-    transferable,
 }: ClaimShowProps) {
     const { externalIdps } = usePage().props;
     const googleAvailable = externalIdps.includes("google");
-
-    // ログイン中なら、新しく作るより手持ちへ寄せるほうが本人の意図に近い
-    const [mode, setMode] = useState<Mode>(
-        signedInAs !== null ? "merge" : "create",
-    );
 
     const initialMethod: Method =
         hasPassword || !googleAvailable ? "password" : "google";
@@ -148,134 +132,110 @@ export default function ClaimShow({
         <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
             <Typography variant="body2" color="text.secondary">
                 {serviceName}
-                でお使いのアカウントを、WikiChree.COM 共通の ChreeID
-                として使えるようにします。
+                でお使いのアカウントを、ChreeID として使えるようにします。
                 これまでの利用状況はそのまま引き継がれます。
             </Typography>
 
-            <Tabs
-                value={mode}
-                onChange={(_, next: Mode) => setMode(next)}
-                variant="fullWidth"
-            >
-                <Tab value="create" label="はじめて使う" />
-                <Tab value="merge" label="ChreeID を持っている" />
-            </Tabs>
-
-            {mode === "merge" && (
-                <MergePanel
-                    token={token}
-                    serviceName={serviceName}
-                    signedInAs={signedInAs}
-                    transferable={transferable}
-                />
-            )}
-
-            {mode === "create" && !hasPassword && (
+            {!hasPassword && (
                 <Alert severity="info">
                     元のサービスではパスワードを使っていないようです。同じ方法で引き取れます
                 </Alert>
             )}
 
-            {mode === "create" && (
-                <Tabs
-                    value={method}
-                    onChange={(_, next: Method) => changeMethod(next)}
-                    variant="fullWidth"
-                >
-                    <Tab value="password" label="パスワード" />
-                    <Tab value="passkey" label="パスキー" />
-                    {googleAvailable && <Tab value="google" label="Google" />}
-                </Tabs>
-            )}
+            <Tabs
+                value={method}
+                onChange={(_, next: Method) => changeMethod(next)}
+                variant="fullWidth"
+            >
+                <Tab value="password" label="パスワード" />
+                <Tab value="passkey" label="パスキー" />
+                {googleAvailable && <Tab value="google" label="Google" />}
+            </Tabs>
 
-            {mode === "create" &&
-                (method === "google" ? (
+            {method === "google" ? (
+                <Stack spacing={2}>
+                    {emailField}
+                    <Typography variant="body2" color="text.secondary">
+                        このアカウントのメールアドレスと同じ Google
+                        アカウントで連携すると、そのまま引き取れます
+                    </Typography>
+                    <Button
+                        component="a"
+                        href={`/auth/google/redirect?claim_token=${encodeURIComponent(token)}`}
+                        variant="contained"
+                        startIcon={<Icon name="google" family="brands" />}
+                    >
+                        Google で引き取る
+                    </Button>
+                </Stack>
+            ) : (
+                <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
                         {emailField}
-                        <Typography variant="body2" color="text.secondary">
-                            このアカウントのメールアドレスと同じ Google
-                            アカウントで連携すると、そのまま引き取れます
-                        </Typography>
+
+                        {method === "password" && (
+                            <PasswordField
+                                label="パスワード"
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData("password", e.target.value)
+                                }
+                                error={Boolean(errors.password)}
+                                helperText={errors.password ?? "8文字以上"}
+                                autoComplete="new-password"
+                                required
+                            />
+                        )}
+
+                        {method === "passkey" && (
+                            <Stack spacing={1}>
+                                {passkeyError && (
+                                    <Alert severity="error">
+                                        {passkeyError}
+                                    </Alert>
+                                )}
+                                {errors.method && (
+                                    <Alert severity="error">
+                                        {errors.method}
+                                    </Alert>
+                                )}
+                                {passkeyRegistered ? (
+                                    <Alert severity="success">
+                                        この端末にパスキーを登録しました
+                                    </Alert>
+                                ) : (
+                                    <Button
+                                        variant="outlined"
+                                        color="inherit"
+                                        startIcon={<Icon name="fingerprint" />}
+                                        disabled={passkeyBusy}
+                                        onClick={() => void addPasskey()}
+                                    >
+                                        この端末にパスキーを登録する
+                                    </Button>
+                                )}
+                            </Stack>
+                        )}
+
+                        {displayNameField}
+
+                        {errors.token && (
+                            <Alert severity="error">{errors.token}</Alert>
+                        )}
+
                         <Button
-                            component="a"
-                            href={`/auth/google/redirect?claim_token=${encodeURIComponent(token)}`}
+                            type="submit"
                             variant="contained"
-                            startIcon={<Icon name="google" family="brands" />}
+                            disabled={
+                                processing ||
+                                (method === "passkey" && !passkeyRegistered)
+                            }
                         >
-                            Google で引き取る
+                            ChreeID を作成する
                         </Button>
                     </Stack>
-                ) : (
-                    <Box component="form" onSubmit={submit} noValidate>
-                        <Stack spacing={2}>
-                            {emailField}
-
-                            {method === "password" && (
-                                <PasswordField
-                                    label="パスワード"
-                                    value={data.password}
-                                    onChange={(e) =>
-                                        setData("password", e.target.value)
-                                    }
-                                    error={Boolean(errors.password)}
-                                    helperText={errors.password ?? "8文字以上"}
-                                    autoComplete="new-password"
-                                    required
-                                />
-                            )}
-
-                            {method === "passkey" && (
-                                <Stack spacing={1}>
-                                    {passkeyError && (
-                                        <Alert severity="error">
-                                            {passkeyError}
-                                        </Alert>
-                                    )}
-                                    {errors.method && (
-                                        <Alert severity="error">
-                                            {errors.method}
-                                        </Alert>
-                                    )}
-                                    {passkeyRegistered ? (
-                                        <Alert severity="success">
-                                            この端末にパスキーを登録しました
-                                        </Alert>
-                                    ) : (
-                                        <Button
-                                            variant="outlined"
-                                            color="inherit"
-                                            startIcon={
-                                                <Icon name="fingerprint" />
-                                            }
-                                            disabled={passkeyBusy}
-                                            onClick={() => void addPasskey()}
-                                        >
-                                            この端末にパスキーを登録する
-                                        </Button>
-                                    )}
-                                </Stack>
-                            )}
-
-                            {displayNameField}
-
-                            {errors.token && (
-                                <Alert severity="error">{errors.token}</Alert>
-                            )}
-
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={
-                                    processing ||
-                                    (method === "passkey" && !passkeyRegistered)
-                                }
-                            >
-                                ChreeID を作成する
-                            </Button>
-                        </Stack>
-                    </Box>
-                ))}
+                </Box>
+            )}
         </AuthLayout>
     );
 }

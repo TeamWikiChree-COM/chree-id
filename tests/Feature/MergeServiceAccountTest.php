@@ -203,9 +203,9 @@ class MergeServiceAccountTest extends TestCase {
         $service = $this->serviceAccount($client);
         $targetId = $this->signIn();
 
-        $this->get("/claim/{$service['token']}")
+        $this->get("/claim/{$service['token']}/merge")
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-                ->component('Claim/Show')
+                ->component('Claim/Merge')
                 ->where('signedInAs.id', $targetId));
     }
 }

@@ -93,6 +93,8 @@ Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink
 
 // 裏で発行したアカウントの引き取り。サービスが渡した一度きりの URL から入る
 Route::get('/claim/{token}', [ClaimController::class, 'show'])->middleware('throttle:verify');
+Route::get('/claim/{token}/create', [ClaimController::class, 'create'])->middleware('throttle:verify');
+Route::get('/claim/{token}/merge', [ClaimController::class, 'mergeForm'])->middleware('throttle:verify');
 Route::post('/claim', [ClaimController::class, 'store'])->middleware('throttle:verify');
 // 既に ChreeID を持っている人は、新しく作らずそちらへ寄せる
 Route::post('/claim/merge', [ClaimController::class, 'merge'])->middleware('throttle:verify');

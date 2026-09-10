@@ -143,13 +143,25 @@ class ClaimServiceAccountTest extends TestCase {
 
     // --- 引き取りの画面 ---
 
+    // 入場券の着地は「はじめて使う / 持っている」の2択だけを聞く
+    public function test_asksWhichWayFirst(): void {
+        $client = $this->client();
+        $this->issueAccount($client);
+
+        $token = $this->ticketToken($client);
+
+        $this->get("/claim/{$token}")->assertInertia(fn (Assert $page) => $page
+            ->component('Claim/Choose')
+            ->where('serviceName', 'DokuFarm'));
+    }
+
     public function test_showsTheClaimScreen(): void {
         $client = $this->client();
         $this->issueAccount($client, ['email' => 'user@example.com', 'email_verified' => true, 'display_name' => '太郎']);
 
         $token = $this->ticketToken($client);
 
-        $this->get("/claim/{$token}")->assertInertia(fn (Assert $page) => $page
+        $this->get("/claim/{$token}/create")->assertInertia(fn (Assert $page) => $page
             ->component('Claim/Show')
             ->where('serviceName', 'DokuFarm')
             ->where('email', 'user@example.com')
