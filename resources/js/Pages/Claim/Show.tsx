@@ -27,19 +27,20 @@ interface ClaimShowProps {
     displayName: string | null;
     /** 移行元で既にパスワードを使っていたか。false ならパスワード以外を勧める */
     hasPassword: boolean;
-    /** 移行元の認証手段を引き継いでいるか。true なら決め直させる必要はない */
+    /** 移行元の認証手段を引き継いでいるか */
     hasCredential: boolean;
 }
 
-/** `existing` は移行元から引き継いだ認証手段をそのまま使う */
-type Method = "existing" | "password" | "passkey" | "google";
+/** ログイン方法が1つも無いときだけ、ここから決めてもらう */
+type Method = "password" | "passkey" | "google";
 
 /**
- * 引き取り (claim) の画面。
+ * 移行 (claim) の画面。
  *
- * 利用者から見れば新規作成だが、実際にはサービス利用時に裏で用意された
- * アカウントを自分のものにする操作。そこは説明せず、結果だけ伝える。
- * 認証手段はパスワードに限らず、パスキーや Google 連携でも引き取れる。
+ * **移行元の認証手段は発行時に引き継いでいる**ので、たいていは何も決めさせない。
+ * 決めてもらうのは、引き継ぐものが1つも無かった場合だけ
+ * (Google だけで使っていた等)。ここを取り違えると、既に入れる人に
+ * わざわざパスワードを作り直させることになる。
  */
 export default function ClaimShow({
     token,
@@ -53,13 +54,8 @@ export default function ClaimShow({
     const { externalIdps } = usePage().props;
     const googleAvailable = externalIdps.includes("google");
 
-    // 移行元の認証手段をそのまま使えるなら、決め直させない。
-    // 新しく決めさせていたのは「引き取り前は credentials が0件」という前提の名残
-    const initialMethod: Method = hasCredential
-        ? "existing"
-        : hasPassword || !googleAvailable
-          ? "password"
-          : "google";
+    const initialMethod: Method =
+        hasPassword || !googleAvailable ? "password" : "google";
     const [method, setMethod] = useState<Method>(initialMethod);
     const [passkeyError, setPasskeyError] = useState<string | null>(null);
     const [passkeyRegistered, setPasskeyRegistered] = useState(false);
@@ -67,13 +63,14 @@ export default function ClaimShow({
 
     const { data, setData, post, processing, errors } = useForm<{
         token: string;
-        method: Method;
+        method: Method | "existing";
         password: string;
         display_name: string;
         email: string;
     }>({
         token,
-        method: initialMethod,
+        // 引き継げるならそのまま確定する
+        method: hasCredential ? "existing" : initialMethod,
         password: "",
         display_name: displayName ?? "",
         email: email ?? "",
@@ -97,9 +94,7 @@ export default function ClaimShow({
             setPasskeyRegistered(true);
         } catch (e) {
             setPasskeyError(
-                e instanceof Error
-                    ? e.message
-                    : "パスキーを登録できませんでした",
+                e instanceof Error ? e.message : "パスキーを登録できませんでした",
             );
         } finally {
             setPasskeyBusy(false);
@@ -137,19 +132,54 @@ export default function ClaimShow({
         />
     );
 
+    const intro = (
+        <Typography variant="body2" color="text.secondary">
+            {serviceName}
+            でお使いのアカウントを、ChreeID として使えるようにします。
+            これまでの利用状況はそのまま引き継がれます。
+        </Typography>
+    );
+
+    const errorAlert = errors.token && (
+        <Alert severity="error">{errors.token}</Alert>
+    );
+
+    // 引き継ぐものがある。ログイン方法は決め直させず、確認だけで済ませる
+    if (hasCredential) {
+        return (
+            <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
+                {intro}
+
+                <Alert severity="info">
+                    {serviceName}
+                    でお使いのログイン方法をそのまま使えます。決め直す必要はありません
+                </Alert>
+
+                <Box component="form" onSubmit={submit} noValidate>
+                    <Stack spacing={2}>
+                        {emailField}
+                        {displayNameField}
+                        {errorAlert}
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={processing}
+                        >
+                            ChreeID を作成する
+                        </Button>
+                    </Stack>
+                </Box>
+            </AuthLayout>
+        );
+    }
+
     return (
         <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
-            <Typography variant="body2" color="text.secondary">
-                {serviceName}
-                でお使いのアカウントを、ChreeID として使えるようにします。
-                これまでの利用状況はそのまま引き継がれます。
-            </Typography>
+            {intro}
 
-            {!hasCredential && !hasPassword && (
-                <Alert severity="info">
-                    元のサービスではパスワードを使っていないようです。同じ方法で引き取れます
-                </Alert>
-            )}
+            <Alert severity="info">
+                このアカウントにはログイン方法がまだありません。1つ決めてください
+            </Alert>
 
             <Tabs
                 value={method}
@@ -174,20 +204,13 @@ export default function ClaimShow({
                         variant="contained"
                         startIcon={<Icon name="google" family="brands" />}
                     >
-                        Google で引き取る
+                        Google で続ける
                     </Button>
                 </Stack>
             ) : (
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
                         {emailField}
-
-                        {method === "existing" && (
-                            <Alert severity="success">
-                                {serviceName}
-                                でお使いのログイン方法をそのまま使えます。新しく決め直す必要はありません
-                            </Alert>
-                        )}
 
                         {method === "password" && (
                             <PasswordField
@@ -206,14 +229,10 @@ export default function ClaimShow({
                         {method === "passkey" && (
                             <Stack spacing={1}>
                                 {passkeyError && (
-                                    <Alert severity="error">
-                                        {passkeyError}
-                                    </Alert>
+                                    <Alert severity="error">{passkeyError}</Alert>
                                 )}
                                 {errors.method && (
-                                    <Alert severity="error">
-                                        {errors.method}
-                                    </Alert>
+                                    <Alert severity="error">{errors.method}</Alert>
                                 )}
                                 {passkeyRegistered ? (
                                     <Alert severity="success">
@@ -234,10 +253,7 @@ export default function ClaimShow({
                         )}
 
                         {displayNameField}
-
-                        {errors.token && (
-                            <Alert severity="error">{errors.token}</Alert>
-                        )}
+                        {errorAlert}
 
                         <Button
                             type="submit"

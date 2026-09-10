@@ -3,6 +3,7 @@ namespace App\Modules\Linking\Http;
 
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\MergeException;
 use App\Modules\Identity\Application\TransferableCredentials;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -89,9 +90,9 @@ class ClaimController {
             // 元のサービスにパスワードが無かった (Google 等のみ) 場合は、
             // 新しくパスワードを決めさせるより連携での引き取りを勧める
             'hasPassword' => $this->credentials->has($account->id, CredentialType::PASSWORD),
-            // 移行元の認証手段を引き継いでいるなら、決め直させる必要はない。
-            // そのまま確定できると伝える
-            'hasCredential' => $this->credentials->hasAny($account->id),
+            // 移行元から引き継いだ認証手段。どれを持っていくか本人に選ばせる。
+            // 決め直させるのは、引き継ぐものが1つも無いときだけ
+            'carried' => $this->carriedFor($account->id),
         ]);
     }
 
@@ -127,6 +128,8 @@ class ClaimController {
         $request->validate([
             'token' => ['required', 'string'],
             'method' => ['required', 'in:existing,password,passkey'],
+            'credentials' => ['array'],
+            'credentials.*' => ['string'],
             'password' => ['required_if:method,password', 'nullable', 'string', 'min:8'],
             'display_name' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
@@ -141,9 +144,12 @@ class ClaimController {
         $email = $email === '' ? null : $email;
 
         try {
+            /** @var list<string>|null $keep */
+            $keep = $request->has('credentials') ? $request->input('credentials', []) : null;
+
             $accountId = $request->string('method')->toString() === 'password'
                 ? $this->claim->executeWithPassword($link, $request->string('password')->toString(), $displayName, $email)
-                : $this->claim->executeWithExistingCredential($link, $displayName, $email);
+                : $this->claim->executeWithExistingCredential($link, $displayName, $email, $keep);
         } catch (ClaimException $e) {
             if ($e->reason === ClaimException::EMAIL_TAKEN || $e->reason === ClaimException::NO_CREDENTIAL) {
                 $field = $e->reason === ClaimException::EMAIL_TAKEN ? 'email' : 'method';
@@ -194,6 +200,25 @@ class ClaimController {
         }
 
         return redirect('/')->with('merged', true);
+    }
+
+    /**
+     * 移行元が持っている認証手段。パスキーはこの経路では動かないのでそのまま出す。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @return list<array{id: string, type: string}>
+     */
+    private function carriedFor(string $accountId): array {
+        $carried = [];
+
+        foreach (CredentialModel::query()->where('auth_identity_id', $accountId)->orderBy('id')->get() as $credential) {
+            // 復旧コードは TOTP に付随するので、単独では選ばせない
+            if ($credential->type === CredentialType::RECOVERY_CODE) continue;
+
+            $carried[] = ['id' => $credential->id, 'type' => $credential->type->value];
+        }
+
+        return $carried;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Modules\Linking\Application;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\RequestEmailChange;
 use App\Modules\Identity\Application\RequestEmailVerification;
 use App\Modules\Identity\Application\UserAccounts;
@@ -71,6 +72,7 @@ class ClaimServiceAccount {
      * @param ServiceAccountModel $link 引き取る紐付け
      * @param string|null $displayName 表示名
      * @param string|null $email 本人が入力したアドレス。変更しないなら null
+     * @param list<string>|null $keepCredentialIds 引き継ぐものとして選ばれたID。null なら全部残す
      * @return string アカウントID (ULID)
      * @throws ClaimException 認証手段が確認できない場合を含む
      */
@@ -78,11 +80,37 @@ class ClaimServiceAccount {
         ServiceAccountModel $link,
         ?string $displayName = null,
         ?string $email = null,
+        ?array $keepCredentialIds = null,
     ): string {
-        return $this->finalize($link, $displayName, $email, function (string $accountId): void {
-            // 1つも無いと、引き取ったあと誰も入れなくなる
+        return $this->finalize($link, $displayName, $email, function (string $accountId) use ($keepCredentialIds): void {
+            // 引き継ぐものを選ばせている場合は、外されたものを落とす
+            if ($keepCredentialIds !== null) $this->dropUnchosen($accountId, $keepCredentialIds);
+
+            // 1つも無いと、移行したあと誰も入れなくなる
             if (!$this->credentials->hasAny($accountId)) throw new ClaimException(ClaimException::NO_CREDENTIAL);
         });
+    }
+
+    /**
+     * 選ばれなかった認証手段を落とす。
+     *
+     * 移行では認証主体が変わらないので、引き継ぐ／引き継がないは
+     * 「その ChreeID に残すかどうか」になる。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @param list<string> $keepIds 残すものとして選ばれたID
+     * @return void
+     */
+    private function dropUnchosen(string $accountId, array $keepIds): void {
+        $rows = CredentialModel::query()->where('auth_identity_id', $accountId)->get();
+
+        foreach ($rows as $row) {
+            // 復旧コードは TOTP に付随するので、単独では消さない
+            if ($row->type === CredentialType::RECOVERY_CODE) continue;
+            if (in_array($row->id, $keepIds, true)) continue;
+
+            $row->delete();
+        }
     }
 
     /**
