@@ -163,19 +163,27 @@ class MergeServiceAccountTest extends TestCase {
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->component('Claim/Failed'));
     }
 
-    // 統合後にそのサービスぶんの sub が2つになり、どちらを渡すか決められない
-    public function test_refusesWhenBothAreLinkedToTheSameService(): void {
+    // 同じサービスに複数持つ形にまとめられる (WikiChree は1アカウント1Wiki)。
+    // sub はサービスアカウント側にあるので、それぞれ自分の sub を保ったまま寄る
+    public function test_mergesEvenWhenBothAreLinkedToTheSameService(): void {
         $client = $this->client();
         $service = $this->serviceAccount($client);
         $targetId = $this->signIn();
 
         // 寄せ先も同じサービスを使っている状態にする
-        app(ResolveSubject::class)->execute($client, $targetId);
+        $targetSub = app(ResolveSubject::class)->execute($client, $targetId);
+        $sourceSub = app(ResolveSubject::class)->forServiceAccount($service['link']);
 
-        $this->post('/claim/merge', ['token' => $service['token']])
-            ->assertSessionHasErrors('token');
+        $this->post('/claim/merge', ['token' => $service['token']])->assertRedirect('/');
 
-        $this->assertSame($service['accountId'], ServiceAccountModel::query()->firstOrFail()->auth_identity_id);
+        $subs = ServiceAccountModel::query()
+            ->where('auth_identity_id', $targetId)
+            ->pluck('sub')
+            ->all();
+
+        $this->assertCount(2, $subs);
+        $this->assertContains($targetSub, $subs);
+        $this->assertContains($sourceSub, $subs);
     }
 
     // 既に本人のものになっているアカウントを、サービス経由で他人の側へ寄せられては困る

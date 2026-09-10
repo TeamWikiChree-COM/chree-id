@@ -25,6 +25,7 @@ class AccessTokenModel extends Model {
         'token_hash',
         'client_id',
         'auth_identity_id',
+        'service_account_id',
         'scope',
         'auth_code_hash',
         'expires_at',

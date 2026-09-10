@@ -2,7 +2,9 @@
 namespace App\Modules\Provider\Http;
 
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Provider\Application\AmbiguousServiceAccountException;
 use App\Modules\Provider\Application\IssueAuthCode;
+use App\Modules\Provider\Application\SelectServiceAccount;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
 use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Domain\AuthorizeRequest;
@@ -21,6 +23,7 @@ class AuthorizeController {
         private readonly ValidateAuthorizeRequest $validate,
         private readonly IssueAuthCode $issue,
         private readonly ChreeSession $session,
+        private readonly SelectServiceAccount $select,
     ) {}
 
     /**
@@ -49,7 +52,7 @@ class AuthorizeController {
             ]);
         }
 
-        return $this->redirectWithCode($authorize, $accountId);
+        return $this->redirectWithCode($authorize, $accountId, $request);
     }
 
     /**
@@ -70,21 +73,55 @@ class AuthorizeController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect()->guest('/login');
 
-        return $this->redirectWithCode($authorize, $accountId);
+        return $this->redirectWithCode($authorize, $accountId, $request);
     }
 
     /**
      * @param AuthorizeRequest $authorize
      * @param string $accountId
-     * @return RedirectResponse
+     * @param Request $request
+     * @return RedirectResponse|InertiaResponse
      */
-    private function redirectWithCode(AuthorizeRequest $authorize, string $accountId): RedirectResponse {
-        $code = $this->issue->execute($authorize, $accountId);
+    private function redirectWithCode(AuthorizeRequest $authorize, string $accountId, Request $request): RedirectResponse|InertiaResponse {
+        $chosen = $request->string('service_account_id')->toString();
+
+        try {
+            $serviceAccount = $this->select->execute($authorize->client, $accountId, $chosen === '' ? null : $chosen);
+        } catch (AmbiguousServiceAccountException) {
+            // 統合で同じサービスに複数持っている人。黙ってどれかを選ぶと別人として入れてしまう
+            return $this->chooseAccount($authorize, $accountId, $request);
+        }
+
+        $code = $this->issue->execute($authorize, $accountId, $serviceAccount->id);
 
         $params = ['code' => $code];
         if ($authorize->state !== null) $params['state'] = $authorize->state;
 
         return redirect()->away($authorize->redirectUri . '?' . http_build_query($params));
+    }
+
+    /**
+     * どのサービスアカウントとして入るか選ばせる。
+     *
+     * @param AuthorizeRequest $authorize
+     * @param string $accountId
+     * @param Request $request
+     * @return InertiaResponse
+     */
+    private function chooseAccount(AuthorizeRequest $authorize, string $accountId, Request $request): InertiaResponse {
+        $accounts = $this->select->candidates($authorize->client, $accountId)
+            ->map(fn ($account): array => [
+                'id' => $account->id,
+                'serviceUserId' => $account->service_user_id,
+                'connectedAt' => $account->created_at?->toDateTimeString(),
+            ])
+            ->all();
+
+        return Inertia::render('Oauth/ChooseAccount', [
+            'clientName' => $authorize->client->name,
+            'accounts' => $accounts,
+            'query' => $request->query(),
+        ]);
     }
 
     /**

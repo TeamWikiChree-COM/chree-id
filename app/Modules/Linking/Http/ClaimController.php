@@ -4,6 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Application\MergeException;
+use App\Modules\Identity\Application\TransferableCredentials;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ClaimException;
@@ -39,6 +40,7 @@ class ClaimController {
         private readonly ClaimTickets $tickets,
         private readonly ClaimServiceAccount $claim,
         private readonly MergeServiceAccount $merge,
+        private readonly TransferableCredentials $transferable,
         private readonly AuthIdentityRepository $accounts,
         private readonly CredentialRepository $credentials,
         private readonly ChreeSession $session,
@@ -73,6 +75,8 @@ class ClaimController {
             // 既に ChreeID を持っている人は、新しく作らせず統合へ送る。
             // ログイン済みであること自体が、寄せ先が本人のものだという証明になる
             'signedInAs' => $this->signedInAs(),
+            // 統合するとき、寄せ元から持っていける認証手段
+            'transferable' => $this->transferableFor($link->auth_identity_id),
         ]);
     }
 
@@ -128,7 +132,11 @@ class ClaimController {
      * @throws ValidationException
      */
     public function merge(Request $request): RedirectResponse|Response {
-        $request->validate(['token' => ['required', 'string']]);
+        $request->validate([
+            'token' => ['required', 'string'],
+            'credentials' => ['array'],
+            'credentials.*' => ['string'],
+        ]);
 
         $targetId = $this->session->accountId();
         if ($targetId === null) return $this->failed(ClaimException::INVALID_TICKET);
@@ -137,7 +145,10 @@ class ClaimController {
         if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);
 
         try {
-            $this->merge->execute($link, $targetId);
+            /** @var list<string> $chosen */
+            $chosen = $request->input('credentials', []);
+
+            $this->merge->execute($link, $targetId, $chosen);
         } catch (MergeException $e) {
             throw ValidationException::withMessages(['token' => self::FAILURE_MESSAGES[$e->reason]]);
         } catch (ClaimException $e) {
@@ -145,6 +156,21 @@ class ClaimController {
         }
 
         return redirect('/')->with('merged', true);
+    }
+
+    /**
+     * 寄せ先が決まっているときだけ、持っていける認証手段を数える。
+     *
+     * @param string $sourceId 寄せ元の認証主体のID (ULID)
+     * @return list<array{id: string, type: string}>
+     */
+    private function transferableFor(string $sourceId): array {
+        $targetId = $this->session->accountId();
+        if ($targetId === null) return [];
+
+        return $this->transferable->execute($sourceId, $targetId)
+            ->map(fn ($credential): array => ['id' => $credential->id, 'type' => $credential->type->value])
+            ->all();
     }
 
     /**

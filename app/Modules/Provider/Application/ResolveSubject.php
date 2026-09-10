@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
  * 一度発行した sub は変えない。値そのものも意味を持たせない。
  */
 class ResolveSubject {
+    public function __construct(private readonly SelectServiceAccount $select) {}
+
     /**
      * そのサービスにとってのこの人の sub を返す。まだ無ければ採番する。
      *
@@ -25,28 +27,7 @@ class ResolveSubject {
      * @throws AmbiguousServiceAccountException 同じサービスに複数のサービスアカウントがある場合
      */
     public function execute(OAuthClientModel $client, string $accountId): string {
-        $accounts = ServiceAccountModel::query()
-            ->where('client_id', $client->id)
-            ->where('auth_identity_id', $accountId)
-            ->orderBy('id')
-            ->get();
-
-        // 統合で1人が同じサービスに複数のサービスアカウントを持つことがある。
-        // どれとして入るのかはアカウントだけでは決まらないので、選ばせる画面が要る
-        if ($accounts->count() > 1) throw new AmbiguousServiceAccountException($client->id, $accountId);
-
-        $existing = $accounts->first();
-        if ($existing !== null) return $this->ensureSub($existing);
-
-        // OIDC でログインしただけの人。サービス側の識別子はまだ分からない
-        $created = ServiceAccountModel::create([
-            'client_id' => $client->id,
-            'auth_identity_id' => $accountId,
-            'service_user_id' => null,
-            'sub' => $this->generate(),
-        ]);
-
-        return $created->sub ?? '';
+        return $this->ensureSub($this->select->execute($client, $accountId));
     }
 
     /**

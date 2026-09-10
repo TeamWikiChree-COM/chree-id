@@ -2,6 +2,7 @@
 namespace App\Modules\Provider\Http;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Provider\Domain\Claims\ScopeRegistry;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
@@ -97,7 +98,15 @@ class TokenController {
         $account = $this->accounts->findById($row->auth_identity_id);
         if ($account === null) return $this->error('invalid_grant', 'アカウントが見つかりません');
 
-        $subject = $this->subjects->execute($client, $account->id);
+        // 認可のときに決めたサービスアカウントで sub を出す。
+        // 入れ替え前に出したコードには載っていないので、その場合だけ認証主体から引く
+        $serviceAccount = $row->service_account_id === null
+            ? null
+            : ServiceAccountModel::query()->find($row->service_account_id);
+
+        $subject = $serviceAccount === null
+            ? $this->subjects->execute($client, $account->id)
+            : $this->subjects->forServiceAccount($serviceAccount);
         $scopes = array_values(array_filter(explode(' ', $row->scope), static fn (string $s): bool => $s !== ''));
 
         $accessToken = Str::random(64);
@@ -105,6 +114,7 @@ class TokenController {
             'token_hash' => hash('sha256', $accessToken),
             'client_id' => $client->id,
             'auth_identity_id' => $account->id,
+            'service_account_id' => $serviceAccount?->id,
             'scope' => $row->scope,
             'auth_code_hash' => $row->code_hash,
             'expires_at' => now()->addSeconds(self::ACCESS_TOKEN_TTL),

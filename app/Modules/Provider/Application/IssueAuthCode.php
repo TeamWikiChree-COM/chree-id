@@ -17,15 +17,17 @@ class IssueAuthCode {
     /**
      * @param AuthorizeRequest $request 検証済みの認可リクエスト
      * @param string $accountId アカウントID (ULID)
+     * @param string $serviceAccountId どのサービスアカウントとして入るか
      * @return string リダイレクトに載せる平文コード
      */
-    public function execute(AuthorizeRequest $request, string $accountId): string {
+    public function execute(AuthorizeRequest $request, string $accountId, string $serviceAccountId): string {
         $code = Str::random(64);
 
         AuthCodeModel::create([
             'code_hash' => hash('sha256', $code),
             'client_id' => $request->client->id,
             'auth_identity_id' => $accountId,
+            'service_account_id' => $serviceAccountId,
             'redirect_uri' => $request->redirectUri,
             'scope' => implode(' ', $request->scopes),
             'nonce' => $request->nonce,

@@ -2,6 +2,7 @@
 namespace App\Modules\Provider\Http;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
 use App\Modules\Provider\Domain\Claims\ScopeRegistry;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
@@ -36,9 +37,16 @@ class UserinfoController {
         $client = OAuthClientModel::query()->find($token->client_id);
         if ($account === null || $client === null) return $this->unauthorized('トークンが不正です');
 
-        // sub は発行時と同じ値でなければ RP 側で突き合わせできない
+        // sub は発行時と同じ値でなければ RP 側で突き合わせできない。
+        // トークンに控えたサービスアカウントを使う
+        $serviceAccount = $token->service_account_id === null
+            ? null
+            : ServiceAccountModel::query()->find($token->service_account_id);
+
         $claims = array_merge(
-            ['sub' => $this->subjects->execute($client, $account->id)],
+            ['sub' => $serviceAccount === null
+                ? $this->subjects->execute($client, $account->id)
+                : $this->subjects->forServiceAccount($serviceAccount)],
             $this->scopes->claimsFor($account, $token->scopes()),
         );
 

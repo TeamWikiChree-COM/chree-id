@@ -14,7 +14,7 @@ import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
 import { registerClaimPasskey } from "../../lib/passkey";
 import MergePanel from "./MergePanel";
-import type { SignedInAccount } from "./MergePanel";
+import type { SignedInAccount, TransferableCredential } from "./MergePanel";
 
 interface ClaimShowProps {
     /** サービスから渡された平文トークン。そのまま送り返す */
@@ -31,6 +31,8 @@ interface ClaimShowProps {
     hasPassword: boolean;
     /** ログイン中のアカウント。既に ChreeID を持っている人はここへ寄せる */
     signedInAs: SignedInAccount | null;
+    /** 統合で持っていける認証手段 */
+    transferable: TransferableCredential[];
 }
 
 /** 新しく作るか、既に持っている ChreeID へ寄せるか */
@@ -53,6 +55,7 @@ export default function ClaimShow({
     displayName,
     hasPassword,
     signedInAs,
+    transferable,
 }: ClaimShowProps) {
     const { externalIdps } = usePage().props;
     const googleAvailable = externalIdps.includes("google");
@@ -164,6 +167,7 @@ export default function ClaimShow({
                     token={token}
                     serviceName={serviceName}
                     signedInAs={signedInAs}
+                    transferable={transferable}
                 />
             )}
 

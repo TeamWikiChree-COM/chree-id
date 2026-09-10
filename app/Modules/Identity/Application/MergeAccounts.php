@@ -2,6 +2,7 @@
 namespace App\Modules\Identity\Application;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Infrastructure\AuthIdentityAliasModel;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use Illuminate\Support\Facades\DB;
@@ -22,18 +23,26 @@ class MergeAccounts {
     /**
      * @param string $sourceId 消える側のアカウントID (ULID)
      * @param string $targetId 生き残る側のアカウントID (ULID)
+     * @param list<string> $credentialIds 寄せ先へ持っていく認証手段のID
      * @return void
-     * @throws MergeException 同じサービスに両方が紐付いている場合
+     * @throws MergeException 寄せ先と寄せ元が同じ場合
      */
-    public function execute(string $sourceId, string $targetId): void {
+    public function execute(string $sourceId, string $targetId, array $credentialIds = []): void {
         if ($sourceId === $targetId) throw new MergeException(MergeException::SAME_ACCOUNT);
 
-        $this->assertNoSharedService($sourceId, $targetId);
-
-        DB::transaction(function () use ($sourceId, $targetId): void {
+        DB::transaction(function () use ($sourceId, $targetId, $credentialIds): void {
             ServiceAccountModel::query()
                 ->where('auth_identity_id', $sourceId)
                 ->update(['auth_identity_id' => $targetId]);
+
+            // 選ばれた認証手段だけを移す。何を持っていくかは本人が決める。
+            // 残ったものは寄せ元に付いたままだが、停止するのでどれも通らない
+            if ($credentialIds !== []) {
+                CredentialModel::query()
+                    ->where('auth_identity_id', $sourceId)
+                    ->whereIn('id', $credentialIds)
+                    ->update(['auth_identity_id' => $targetId]);
+            }
 
             AuthIdentityAliasModel::create([
                 'legacy_id' => $sourceId,
@@ -47,35 +56,4 @@ class MergeAccounts {
         });
     }
 
-    /**
-     * 同じサービスに両方が紐付いていると、統合後は1人がそのサービスに
-     * 複数のサービスアカウントを持つ。sub はサービスアカウント側にあるので
-     * データとしては成り立つが、ログイン時にどれとして入るかを選ぶ画面がまだ無い。
-     * 通すとそのサービスに入れなくなるので、画面ができるまでは受け付けない。
-     *
-     * @param string $sourceId 消える側のアカウントID (ULID)
-     * @param string $targetId 生き残る側のアカウントID (ULID)
-     * @return void
-     * @throws MergeException
-     */
-    private function assertNoSharedService(string $sourceId, string $targetId): void {
-        $shared = array_intersect($this->clientIdsOf($sourceId), $this->clientIdsOf($targetId));
-
-        if ($shared !== []) throw new MergeException(MergeException::SAME_SERVICE);
-    }
-
-    /**
-     *
-     * @param string $accountId アカウントID (ULID)
-     * @return list<string> そのアカウントが関わっているサービスのID
-     */
-    private function clientIdsOf(string $accountId): array {
-        $ids = [];
-
-        foreach (ServiceAccountModel::query()->where('auth_identity_id', $accountId)->get() as $link) {
-            $ids[$link->client_id] = true;
-        }
-
-        return array_keys($ids);
-    }
 }

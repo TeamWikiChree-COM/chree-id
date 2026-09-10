@@ -30,6 +30,7 @@ class AuthCodeModel extends Model {
         'code_hash',
         'client_id',
         'auth_identity_id',
+        'service_account_id',
         'redirect_uri',
         'scope',
         'nonce',
