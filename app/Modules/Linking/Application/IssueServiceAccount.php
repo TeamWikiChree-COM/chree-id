@@ -36,6 +36,7 @@ class IssueServiceAccount {
      * @param bool $emailVerified サービス側で到達性を確認済みか
      * @param string|null $displayName 表示名
      * @param string|null $passwordHash 移行元が持っていた bcrypt ハッシュ
+     * @param string|null $knownSub 既に分かっている sub。紐付けだけ作り直したいときに渡す
      * @return string サービスに渡す sub
      */
     public function execute(
@@ -45,6 +46,7 @@ class IssueServiceAccount {
         bool $emailVerified = false,
         ?string $displayName = null,
         ?string $passwordHash = null,
+        ?string $knownSub = null,
     ): string {
         $existing = ServiceAccountModel::query()
             ->where('client_id', $client->id)
@@ -52,7 +54,14 @@ class IssueServiceAccount {
             ->first();
 
         // 二度目以降は同じものを返す。呼び出し側が何度叩いても増えない
-        if ($existing !== null) return $this->subjects->execute($client, $existing->auth_identity_id);
+        if ($existing !== null) return $this->subjects->forServiceAccount($existing);
+
+        // OIDC でログインしただけで、サービス側の識別子をまだ知らない行がありうる。
+        // そこへ結び付け直す。新しくアカウントを作ると本人が2つに割れてしまう
+        if ($knownSub !== null) {
+            $bound = $this->bind($client, $serviceUserId, $knownSub);
+            if ($bound !== null) return $bound;
+        }
 
         $accountId = DB::transaction(
             fn (): string => $this->link($client, $serviceUserId, $email, $emailVerified, $displayName),
@@ -63,6 +72,30 @@ class IssueServiceAccount {
         if ($passwordHash !== null) $this->passwords->execute($accountId, $passwordHash);
 
         return $this->subjects->execute($client, $accountId);
+    }
+
+    /**
+     * 既にある行に、サービス側の識別子を書き入れる。
+     *
+     * **そのサービス自身の行にしか書けない。** 他所のアカウントを名乗ることはできない。
+     *
+     * @param OAuthClientModel $client 呼び出したサービス
+     * @param string $serviceUserId サービス側での利用者の識別子
+     * @param string $knownSub サービスが既に知っている sub
+     * @return string|null 結び付けられなければ null
+     */
+    private function bind(OAuthClientModel $client, string $serviceUserId, string $knownSub): ?string {
+        $found = ServiceAccountModel::query()
+            ->where('client_id', $client->id)
+            ->where('sub', $knownSub)
+            ->first();
+
+        // 既に別の利用者に割り当たっている行は触らない
+        if ($found === null || $found->service_user_id !== null) return null;
+
+        $found->forceFill(['service_user_id' => $serviceUserId])->save();
+
+        return $this->subjects->forServiceAccount($found);
     }
 
     /**

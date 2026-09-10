@@ -50,11 +50,14 @@ class ServiceAccountController {
             'display_name' => ['nullable', 'string', 'max:100'],
             // 平文は受け取らない。移行元が保存している bcrypt ハッシュをそのまま渡してもらう
             'password_hash' => ['nullable', 'string', 'max:255'],
+            // 既に sub を知っている場合。紐付けだけ作り直したいときに使う
+            'sub' => ['nullable', 'string', 'max:64'],
         ]);
 
         $email = $request->string('email')->trim()->toString();
         $displayName = $request->string('display_name')->trim()->toString();
         $passwordHash = $request->string('password_hash')->toString();
+        $knownSub = $request->string('sub')->toString();
 
         $sub = $this->issue->execute(
             $client,
@@ -63,6 +66,7 @@ class ServiceAccountController {
             $request->boolean('email_verified'),
             $displayName === '' ? null : $displayName,
             $passwordHash === '' ? null : $passwordHash,
+            $knownSub === '' ? null : $knownSub,
         );
 
         return response()->json(['sub' => $sub]);
