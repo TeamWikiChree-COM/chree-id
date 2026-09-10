@@ -27,9 +27,12 @@ interface ClaimShowProps {
     displayName: string | null;
     /** 移行元で既にパスワードを使っていたか。false ならパスワード以外を勧める */
     hasPassword: boolean;
+    /** 移行元の認証手段を引き継いでいるか。true なら決め直させる必要はない */
+    hasCredential: boolean;
 }
 
-type Method = "password" | "passkey" | "google";
+/** `existing` は移行元から引き継いだ認証手段をそのまま使う */
+type Method = "existing" | "password" | "passkey" | "google";
 
 /**
  * 引き取り (claim) の画面。
@@ -45,12 +48,18 @@ export default function ClaimShow({
     emailVerified,
     displayName,
     hasPassword,
+    hasCredential,
 }: ClaimShowProps) {
     const { externalIdps } = usePage().props;
     const googleAvailable = externalIdps.includes("google");
 
-    const initialMethod: Method =
-        hasPassword || !googleAvailable ? "password" : "google";
+    // 移行元の認証手段をそのまま使えるなら、決め直させない。
+    // 新しく決めさせていたのは「引き取り前は credentials が0件」という前提の名残
+    const initialMethod: Method = hasCredential
+        ? "existing"
+        : hasPassword || !googleAvailable
+          ? "password"
+          : "google";
     const [method, setMethod] = useState<Method>(initialMethod);
     const [passkeyError, setPasskeyError] = useState<string | null>(null);
     const [passkeyRegistered, setPasskeyRegistered] = useState(false);
@@ -136,7 +145,7 @@ export default function ClaimShow({
                 これまでの利用状況はそのまま引き継がれます。
             </Typography>
 
-            {!hasPassword && (
+            {!hasCredential && !hasPassword && (
                 <Alert severity="info">
                     元のサービスではパスワードを使っていないようです。同じ方法で引き取れます
                 </Alert>
@@ -172,6 +181,13 @@ export default function ClaimShow({
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
                         {emailField}
+
+                        {method === "existing" && (
+                            <Alert severity="success">
+                                {serviceName}
+                                でお使いのログイン方法をそのまま使えます。新しく決め直す必要はありません
+                            </Alert>
+                        )}
 
                         {method === "password" && (
                             <PasswordField

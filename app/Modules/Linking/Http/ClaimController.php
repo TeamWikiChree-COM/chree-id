@@ -89,6 +89,9 @@ class ClaimController {
             // 元のサービスにパスワードが無かった (Google 等のみ) 場合は、
             // 新しくパスワードを決めさせるより連携での引き取りを勧める
             'hasPassword' => $this->credentials->has($account->id, CredentialType::PASSWORD),
+            // 移行元の認証手段を引き継いでいるなら、決め直させる必要はない。
+            // そのまま確定できると伝える
+            'hasCredential' => $this->credentials->hasAny($account->id),
         ]);
     }
 
@@ -123,7 +126,7 @@ class ClaimController {
     public function store(Request $request): RedirectResponse|Response {
         $request->validate([
             'token' => ['required', 'string'],
-            'method' => ['required', 'in:password,passkey'],
+            'method' => ['required', 'in:existing,password,passkey'],
             'password' => ['required_if:method,password', 'nullable', 'string', 'min:8'],
             'display_name' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'string', 'email', 'max:255'],

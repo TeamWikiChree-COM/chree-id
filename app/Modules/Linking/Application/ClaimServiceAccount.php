@@ -62,11 +62,11 @@ class ClaimServiceAccount {
     }
 
     /**
-     * パスキーや外部ログインなど、既に用意済みの認証手段で引き取る。
+     * 既にある認証手段のまま引き取る。
      *
-     * 呼び出す前に、対象アカウントへパスキーの登録または外部ログインの
-     * 紐付けを済ませておくこと。ここでは確定させるだけで、認証手段の
-     * 追加は行わない。
+     * **移行元のパスワードは発行時に引き継いでいるので、たいていはこちらで足りる。**
+     * わざわざ新しい認証手段を決め直させる必要はない (ARCHITECTURE.md 8.4 の改訂)。
+     * パスキーや Google をこの場で登録した場合も、登録後にここへ来る。
      *
      * @param ServiceAccountModel $link 引き取る紐付け
      * @param string|null $displayName 表示名
@@ -80,10 +80,8 @@ class ClaimServiceAccount {
         ?string $email = null,
     ): string {
         return $this->finalize($link, $displayName, $email, function (string $accountId): void {
-            $hasPasskey = $this->credentials->has($accountId, CredentialType::PASSKEY);
-            $hasOAuth = $this->credentials->has($accountId, CredentialType::OAUTH);
-
-            if (!$hasPasskey && !$hasOAuth) throw new ClaimException(ClaimException::NO_CREDENTIAL);
+            // 1つも無いと、引き取ったあと誰も入れなくなる
+            if (!$this->credentials->hasAny($accountId)) throw new ClaimException(ClaimException::NO_CREDENTIAL);
         });
     }
 
