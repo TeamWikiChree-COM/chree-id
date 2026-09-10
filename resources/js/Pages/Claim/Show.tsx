@@ -2,6 +2,8 @@ import { useForm, usePage } from "@inertiajs/react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -27,9 +29,24 @@ interface ClaimShowProps {
     displayName: string | null;
     /** 移行元で既にパスワードを使っていたか。false ならパスワード以外を勧める */
     hasPassword: boolean;
-    /** 移行元の認証手段を引き継いでいるか */
-    hasCredential: boolean;
+    /** 移行元から引き継いだ認証手段。既定は全部オン */
+    carried: CarriedCredential[];
 }
+
+/** 移行元から引き継いだ認証手段 */
+interface CarriedCredential {
+    id: string;
+    type: string;
+}
+
+/** 画面に出す名前 */
+const CREDENTIAL_LABELS: Record<string, string> = {
+    password: "パスワード",
+    passkey: "パスキー",
+    totp: "認証アプリ (2段階認証)",
+    magic_link: "メールでログイン",
+    oauth: "Google 連携",
+};
 
 /** ログイン方法が1つも無いときだけ、ここから決めてもらう */
 type Method = "password" | "passkey" | "google";
@@ -49,7 +66,7 @@ export default function ClaimShow({
     emailVerified,
     displayName,
     hasPassword,
-    hasCredential,
+    carried,
 }: ClaimShowProps) {
     const { externalIdps } = usePage().props;
     const googleAvailable = externalIdps.includes("google");
@@ -61,20 +78,33 @@ export default function ClaimShow({
     const [passkeyRegistered, setPasskeyRegistered] = useState(false);
     const [passkeyBusy, setPasskeyBusy] = useState(false);
 
+    const hasCarried = carried.length > 0;
+
     const { data, setData, post, processing, errors } = useForm<{
         token: string;
         method: Method | "existing";
         password: string;
         display_name: string;
         email: string;
+        credentials: string[];
     }>({
         token,
-        // 引き継げるならそのまま確定する
-        method: hasCredential ? "existing" : initialMethod,
+        // 引き継ぐものがあるなら、ログイン方法は決め直させない
+        method: hasCarried ? "existing" : initialMethod,
         password: "",
         display_name: displayName ?? "",
         email: email ?? "",
+        credentials: carried.map((credential) => credential.id),
     });
+
+    const toggle = (id: string): void => {
+        setData(
+            "credentials",
+            data.credentials.includes(id)
+                ? data.credentials.filter((chosen) => chosen !== id)
+                : [...data.credentials, id],
+        );
+    };
 
     const changeMethod = (next: Method): void => {
         setMethod(next);
@@ -94,7 +124,9 @@ export default function ClaimShow({
             setPasskeyRegistered(true);
         } catch (e) {
             setPasskeyError(
-                e instanceof Error ? e.message : "パスキーを登録できませんでした",
+                e instanceof Error
+                    ? e.message
+                    : "パスキーを登録できませんでした",
             );
         } finally {
             setPasskeyBusy(false);
@@ -144,26 +176,72 @@ export default function ClaimShow({
         <Alert severity="error">{errors.token}</Alert>
     );
 
-    // 引き継ぐものがある。ログイン方法は決め直させず、確認だけで済ませる
-    if (hasCredential) {
+    // 引き継ぐものがある。ログイン方法は決め直させず、どれを引き継ぐかだけ選ばせる
+    if (hasCarried) {
+        const keepsNothing = data.credentials.length === 0;
+
         return (
             <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
                 {intro}
 
-                <Alert severity="info">
-                    {serviceName}
-                    でお使いのログイン方法をそのまま使えます。決め直す必要はありません
-                </Alert>
-
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
+                        <Box
+                            sx={{
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 2,
+                                p: 2,
+                            }}
+                        >
+                            <Typography variant="body2" sx={{ mb: 1 }}>
+                                引き継ぐログイン方法を選んでください
+                            </Typography>
+                            {carried.map((credential) => (
+                                <FormControlLabel
+                                    key={credential.id}
+                                    control={
+                                        <Checkbox
+                                            checked={data.credentials.includes(
+                                                credential.id,
+                                            )}
+                                            onChange={() =>
+                                                toggle(credential.id)
+                                            }
+                                        />
+                                    }
+                                    label={
+                                        CREDENTIAL_LABELS[credential.type] ??
+                                        credential.type
+                                    }
+                                    sx={{ display: "flex" }}
+                                />
+                            ))}
+                            <Typography variant="body2" color="text.secondary">
+                                外したものは、この ChreeID
+                                では使えなくなります。
+                                {serviceName} 側の利用状況には影響しません。
+                            </Typography>
+                            {errors.method && (
+                                <Alert severity="error" sx={{ mt: 1 }}>
+                                    {errors.method}
+                                </Alert>
+                            )}
+                        </Box>
+
+                        {keepsNothing && (
+                            <Alert severity="warning">
+                                すべて外すとログインできなくなります。1つ以上残してください
+                            </Alert>
+                        )}
+
                         {emailField}
                         {displayNameField}
                         {errorAlert}
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={processing}
+                            disabled={processing || keepsNothing}
                         >
                             ChreeID を作成する
                         </Button>
@@ -229,10 +307,14 @@ export default function ClaimShow({
                         {method === "passkey" && (
                             <Stack spacing={1}>
                                 {passkeyError && (
-                                    <Alert severity="error">{passkeyError}</Alert>
+                                    <Alert severity="error">
+                                        {passkeyError}
+                                    </Alert>
                                 )}
                                 {errors.method && (
-                                    <Alert severity="error">{errors.method}</Alert>
+                                    <Alert severity="error">
+                                        {errors.method}
+                                    </Alert>
                                 )}
                                 {passkeyRegistered ? (
                                     <Alert severity="success">
