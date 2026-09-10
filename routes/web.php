@@ -140,6 +140,7 @@ Route::post('/oauth/token', TokenController::class);
 // サービスが自分の利用者ぶんの ChreeID を取りに来る。こちらもブラウザを介さない
 Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
 Route::post('/api/v1/service-accounts/claim-tickets', [ServiceAccountController::class, 'claimTicket']);
+Route::post('/api/v1/service-accounts/status', [ServiceAccountController::class, 'status']);
 Route::post('/api/v1/service-accounts/deactivate', [ServiceAccountController::class, 'deactivate']);
 
 // サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る

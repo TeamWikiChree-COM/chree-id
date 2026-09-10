@@ -62,6 +62,18 @@ class ServiceAccountApiTest extends TestCase {
         ], $payload));
     }
 
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function askStatus(OAuthClientModel $client): \Illuminate\Testing\TestResponse {
+        return $this->postJson('/api/v1/service-accounts/status', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'service_user_id' => '42',
+        ]);
+    }
+
     public function test_issuesAnAccountForAServiceUser(): void {
         $client = $this->client();
 
@@ -138,6 +150,51 @@ class ServiceAccountApiTest extends TestCase {
         $this->assertTrue($account->isEmailVerified());
         // 統合候補として見せるために、サービスが何と言っていたかも控えておく
         $this->assertSame('user@example.com', $link->service_email);
+    }
+
+    // --- 状態の照会 ---
+
+    // 参照だけの口。移行の導線を出すかどうかをサービスが決めるために使う
+    public function test_reportsThatTheUserHasNotMigratedYet(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->askStatus($client)->assertOk()->assertJson(['migrated' => false]);
+    }
+
+    public function test_reportsThatTheUserHasMigrated(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+        app(\App\Modules\Identity\Application\UserAccounts::class)->ensure($link->auth_identity_id);
+
+        $this->askStatus($client)->assertOk()->assertJson(['migrated' => true]);
+    }
+
+    // 券を発行してしまうと、画面を出すたびに前の券が無効になる
+    public function test_doesNotIssueATicket(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->askStatus($client)->assertOk();
+
+        $this->assertNull(ServiceAccountModel::query()->firstOrFail()->claim_token_hash);
+    }
+
+    public function test_refusesStatusForAnUnknownServiceUser(): void {
+        $this->askStatus($this->client())->assertStatus(404);
+    }
+
+    public function test_refusesStatusWithoutClientAuthentication(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->postJson('/api/v1/service-accounts/status', [
+            'client_id' => $client->id,
+            'client_secret' => 'wrong',
+            'service_user_id' => '42',
+        ])->assertStatus(401);
     }
 
     // 同じサービスの別利用者どうしも、アドレスが同じというだけで一緒にしない。

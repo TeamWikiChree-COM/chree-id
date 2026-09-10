@@ -3,6 +3,7 @@ namespace App\Modules\Linking\Http;
 
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
+use App\Modules\Linking\Application\DescribeServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
 use App\Modules\Registry\Http\OfficialClientGuard;
 use App\Support\Api\ApiError;
@@ -23,12 +24,14 @@ class ServiceAccountController {
     private readonly IssueServiceAccount $issue;
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;
+    private readonly DescribeServiceAccount $describe;
 
-    public function __construct(OfficialClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate) {
+    public function __construct(OfficialClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe) {
         $this->guard = $guard;
         $this->issue = $issue;
         $this->tickets = $tickets;
         $this->deactivate = $deactivate;
+        $this->describe = $describe;
     }
 
     /**
@@ -95,6 +98,31 @@ class ServiceAccountController {
             'claim_url' => url("/claim/{$ticket->token}"),
             'expires_at' => $ticket->expiresAt->toIso8601String(),
         ]);
+    }
+
+    /**
+     * 利用者の状態を返す。参照だけで、何も発行しない。
+     *
+     * サービス側が「移行の導線を出すかどうか」を決めるための口。
+     * 入場券の発行で代用すると、画面を出すたびに券が切り替わってしまう。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function status(Request $request): JsonResponse {
+        $client = $this->guard->check($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate(['service_user_id' => ['required', 'string', 'max:190']]);
+
+        $status = $this->describe->execute($client, $request->string('service_user_id')->toString());
+
+        if ($status === null) {
+            return ApiError::make('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
+        }
+
+        return response()->json($status);
     }
 
     /**

@@ -121,7 +121,7 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
                                 }
                             />
                             <Button type="submit" variant="outlined" color="inherit" disabled={emailForm.processing}>
-                                変更を申し込む
+                                確認メールを送信する
                             </Button>
                         </Stack>
                     </Box>
