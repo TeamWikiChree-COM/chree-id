@@ -62,21 +62,24 @@ class TransferableCredentials {
      * @return list<string> 実際に移すID
      */
     public function accept(string $sourceId, string $targetId, array $chosenIds): array {
-        $offered = $this->execute($sourceId, $targetId);
+        $accepted = [];
+        $takesTotp = false;
 
-        $accepted = $offered
-            ->filter(fn (CredentialModel $credential): bool => in_array($credential->id, $chosenIds, true))
-            ->pluck('id')
-            ->all();
+        foreach ($this->execute($sourceId, $targetId) as $credential) {
+            if (!in_array($credential->id, $chosenIds, true)) continue;
+
+            $accepted[$credential->id] = true;
+            if ($credential->type === CredentialType::TOTP) $takesTotp = true;
+        }
 
         // TOTP を持っていくなら復旧コードも一緒に。片方だけでは詰む
-        if ($this->includesTotp($offered, $accepted)) {
+        if ($takesTotp) {
             foreach ($this->credentialsOf($sourceId) as $credential) {
-                if (in_array($credential->type, self::FOLLOWS_TOTP, true)) $accepted[] = $credential->id;
+                if (in_array($credential->type, self::FOLLOWS_TOTP, true)) $accepted[$credential->id] = true;
             }
         }
 
-        return array_values(array_unique($accepted));
+        return array_keys($accepted);
     }
 
     /**
@@ -96,18 +99,6 @@ class TransferableCredentials {
     }
 
     /**
-     * @param Collection<int, CredentialModel> $offered 候補
-     * @param list<string> $accepted 選ばれたID
-     * @return bool TOTP が選ばれているか
-     */
-    private function includesTotp(Collection $offered, array $accepted): bool {
-        return $offered->contains(
-            fn (CredentialModel $credential): bool => $credential->type === CredentialType::TOTP
-                && in_array($credential->id, $accepted, true),
-        );
-    }
-
-    /**
      * @param string $identityId 認証主体のID (ULID)
      * @return Collection<int, CredentialModel>
      */
@@ -120,10 +111,11 @@ class TransferableCredentials {
      * @return list<CredentialType>
      */
     private function typesOf(string $identityId): array {
-        return $this->credentialsOf($identityId)
-            ->map(fn (CredentialModel $credential): CredentialType => $credential->type)
-            ->unique()
-            ->values()
-            ->all();
+        $types = [];
+        foreach ($this->credentialsOf($identityId) as $credential) {
+            $types[$credential->type->value] = $credential->type;
+        }
+
+        return array_values($types);
     }
 }

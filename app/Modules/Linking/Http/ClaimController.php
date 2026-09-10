@@ -168,9 +168,12 @@ class ClaimController {
         $targetId = $this->session->accountId();
         if ($targetId === null) return [];
 
-        return $this->transferable->execute($sourceId, $targetId)
-            ->map(fn ($credential): array => ['id' => $credential->id, 'type' => $credential->type->value])
-            ->all();
+        $offered = [];
+        foreach ($this->transferable->execute($sourceId, $targetId) as $credential) {
+            $offered[] = ['id' => $credential->id, 'type' => $credential->type->value];
+        }
+
+        return $offered;
     }
 
     /**

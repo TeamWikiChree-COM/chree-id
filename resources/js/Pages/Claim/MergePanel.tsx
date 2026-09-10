@@ -1,12 +1,12 @@
-import { useForm } from '@inertiajs/react';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import type { FormEvent } from 'react';
+import { useForm } from "@inertiajs/react";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import type { FormEvent } from "react";
 
 /** ログイン中のアカウント。していなければ null */
 export interface SignedInAccount {
@@ -23,10 +23,10 @@ export interface TransferableCredential {
 
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
 const CREDENTIAL_LABELS: Record<string, string> = {
-    password: 'パスワード',
-    totp: '認証アプリ (2段階認証)',
-    magic_link: 'メールでログイン',
-    oauth: 'Google 連携',
+    password: "パスワード",
+    totp: "認証アプリ (2段階認証)",
+    magic_link: "メールでログイン",
+    oauth: "Google 連携",
 };
 
 interface MergePanelProps {
@@ -46,15 +46,23 @@ interface MergePanelProps {
  * 寄せ先が本人のものだという証明は、ここでログインしていること自体で足りる。
  * メールアドレスが一致しているかは問わない。
  */
-export default function MergePanel({ token, serviceName, signedInAs, transferable }: MergePanelProps) {
-    const { data, setData, post, processing, errors } = useForm<{ token: string; credentials: string[] }>({
+export default function MergePanel({
+    token,
+    serviceName,
+    signedInAs,
+    transferable,
+}: MergePanelProps) {
+    const { data, setData, post, processing, errors } = useForm<{
+        token: string;
+        credentials: string[];
+    }>({
         token,
         credentials: transferable.map((credential) => credential.id),
     });
 
     const toggle = (id: string): void => {
         setData(
-            'credentials',
+            "credentials",
             data.credentials.includes(id)
                 ? data.credentials.filter((chosen) => chosen !== id)
                 : [...data.credentials, id],
@@ -63,7 +71,7 @@ export default function MergePanel({ token, serviceName, signedInAs, transferabl
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        post('/claim/merge');
+        post("/claim/merge");
     };
 
     if (signedInAs === null) {
@@ -83,25 +91,45 @@ export default function MergePanel({ token, serviceName, signedInAs, transferabl
     return (
         <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={2}>
-                <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                <Box
+                    sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 2,
+                        p: 2,
+                    }}
+                >
                     <Typography variant="body2" color="text.secondary">
                         ログイン中
                     </Typography>
-                    <Typography>{signedInAs.displayName ?? signedInAs.email ?? signedInAs.id}</Typography>
-                    {signedInAs.displayName !== null && signedInAs.email !== null && (
-                        <Typography variant="body2" color="text.secondary">
-                            {signedInAs.email}
-                        </Typography>
-                    )}
+                    <Typography>
+                        {signedInAs.displayName ??
+                            signedInAs.email ??
+                            signedInAs.id}
+                    </Typography>
+                    {signedInAs.displayName !== null &&
+                        signedInAs.email !== null && (
+                            <Typography variant="body2" color="text.secondary">
+                                {signedInAs.email}
+                            </Typography>
+                        )}
                 </Box>
 
                 <Typography variant="body2" color="text.secondary">
                     {serviceName}
-                    でお使いのアカウントを、この ChreeID に追加します。これまでの利用状況はそのまま引き継がれます。
+                    でお使いのアカウントを、この ChreeID
+                    に追加します。これまでの利用状況はそのまま引き継がれます。
                 </Typography>
 
                 {transferable.length > 0 && (
-                    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2 }}>
+                    <Box
+                        sx={{
+                            border: "1px solid",
+                            borderColor: "divider",
+                            borderRadius: 2,
+                            p: 2,
+                        }}
+                    >
                         <Typography variant="body2" sx={{ mb: 1 }}>
                             引き継ぐ認証方法を選んでください
                         </Typography>
@@ -110,16 +138,22 @@ export default function MergePanel({ token, serviceName, signedInAs, transferabl
                                 key={credential.id}
                                 control={
                                     <Checkbox
-                                        checked={data.credentials.includes(credential.id)}
+                                        checked={data.credentials.includes(
+                                            credential.id,
+                                        )}
                                         onChange={() => toggle(credential.id)}
                                     />
                                 }
-                                label={CREDENTIAL_LABELS[credential.type] ?? credential.type}
-                                sx={{ display: 'flex' }}
+                                label={
+                                    CREDENTIAL_LABELS[credential.type] ??
+                                    credential.type
+                                }
+                                sx={{ display: "flex" }}
                             />
                         ))}
                         <Typography variant="body2" color="text.secondary">
-                            外したものは使えなくなります。パスキーは引き継げないので、必要ならこの ChreeID で登録し直してください。
+                            外したものは使えなくなります。パスキーは引き継げないので、必要ならこの
+                            ChreeID で登録し直してください。
                         </Typography>
                     </Box>
                 )}
