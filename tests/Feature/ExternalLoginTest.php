@@ -84,8 +84,9 @@ class ExternalLoginTest extends TestCase {
             ->count());
     }
 
+    // 完全一致で見ると IdP を足すたびに壊れる。居ることだけ確かめる
     public function test_registersGoogleIdp(): void {
-        $this->assertSame(['google'], app(ExternalIdpRegistry::class)->names());
+        $this->assertContains('google', app(ExternalIdpRegistry::class)->names());
     }
 
     public function test_redirectsToProvider(): void {

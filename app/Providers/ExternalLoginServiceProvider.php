@@ -2,6 +2,7 @@
 namespace App\Providers;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
+use App\Modules\ExternalLogin\Infrastructure\GitHubIdp;
 use App\Modules\ExternalLogin\Infrastructure\GoogleIdp;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +20,7 @@ class ExternalLoginServiceProvider extends ServiceProvider {
 
             // 外部 IdP の一覧。増やすときはここに1行
             $registry->register($this->app->make(GoogleIdp::class));
+            $registry->register($this->app->make(GitHubIdp::class));
 
             return $registry;
         });
