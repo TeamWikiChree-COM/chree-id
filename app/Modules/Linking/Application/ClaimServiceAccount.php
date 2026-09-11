@@ -6,6 +6,7 @@ use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\RequestEmailChange;
+use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Application\RequestEmailVerification;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -138,7 +139,9 @@ class ClaimServiceAccount {
         // 打ち直された場合だけ変更として扱う。同じものを送り返されたときは確認だけでよい
         $changing = $email !== null && $email !== $account->email;
 
-        if ($changing && !$this->requestEmailChange->execute($account->id, (string)$email)) {
+        // SENT 以外はどれも「そのアドレスにはできない」。$changing を通っているので
+        // SAME_AS_CURRENT にはならず、実際に起きるのは TAKEN だけ
+        if ($changing && $this->requestEmailChange->execute($account->id, (string)$email) !== EmailChangeResult::SENT) {
             throw new ClaimException(ClaimException::EMAIL_TAKEN);
         }
 
