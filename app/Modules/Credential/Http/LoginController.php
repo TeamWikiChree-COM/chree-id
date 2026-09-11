@@ -8,6 +8,7 @@ use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
 use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Provider\Infrastructure\LoginHint;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,13 +26,14 @@ class LoginController {
         private readonly CompleteAuthentication $complete,
         private readonly PendingAuthentication $pending,
         private readonly ChreeSession $session,
+        private readonly LoginHint $loginHint,
     ) {}
 
     /**
      * @return Response
      */
     public function show(): Response {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', ['email' => $this->loginHint->pull()]);
     }
 
     /**

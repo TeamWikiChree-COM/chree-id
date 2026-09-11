@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import AuthLayout from "../../Components/AuthLayout";
+import ServiceIcon from "../../Components/ServiceIcon";
 
 interface ChoosableAccount {
     /** サービスアカウントのID */
@@ -18,6 +19,8 @@ interface ChoosableAccount {
 interface ChooseAccountProps {
     /** 入ろうとしているサービス名 */
     clientName: string;
+    /** アイコンの URL。未設定なら null */
+    clientIconUrl: string | null;
     /** 選べるサービスアカウント */
     accounts: ChoosableAccount[];
     /** 認可リクエストのパラメータ。そのまま送り返す */
@@ -32,6 +35,7 @@ interface ChooseAccountProps {
  */
 export default function ChooseAccount({
     clientName,
+    clientIconUrl,
     accounts,
     query,
 }: ChooseAccountProps) {
@@ -48,10 +52,13 @@ export default function ChooseAccount({
 
     return (
         <AuthLayout title="アカウントを選択" heading="アカウントを選択">
-            <Typography variant="body2" color="text.secondary">
-                {clientName}{" "}
-                には、お使いのアカウントが複数あります。どれで続けますか？
-            </Typography>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                <ServiceIcon name={clientName} iconUrl={clientIconUrl} />
+                <Typography variant="body2" color="text.secondary">
+                    {clientName}
+                    には、お使いのアカウントが複数あります。どれで続けますか？
+                </Typography>
+            </Stack>
 
             <Stack spacing={1}>
                 {accounts.map((account) => (

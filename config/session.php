@@ -32,7 +32,9 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    // 既定の 120 分 (無操作2時間) は認証基盤には短い。ここで切れると、
+    // 連携している全サービスへの入り直しが要る。14日の無操作で切る
+    'lifetime' => (int) env('SESSION_LIFETIME', 20160),
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 

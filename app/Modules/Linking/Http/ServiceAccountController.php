@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Linking\Application\ChangeServiceAccountPassword;
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\DescribeServiceAccount;
@@ -25,13 +26,15 @@ class ServiceAccountController {
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;
     private readonly DescribeServiceAccount $describe;
+    private readonly ChangeServiceAccountPassword $changePassword;
 
-    public function __construct(ProvisioningClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe) {
+    public function __construct(ProvisioningClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe, ChangeServiceAccountPassword $changePassword) {
         $this->guard = $guard;
         $this->issue = $issue;
         $this->tickets = $tickets;
         $this->deactivate = $deactivate;
         $this->describe = $describe;
+        $this->changePassword = $changePassword;
     }
 
     /**
@@ -55,6 +58,8 @@ class ServiceAccountController {
             // 移行元が把握している外部IdPの識別子。"google:123" の形
             'external' => ['array'],
             'external.*' => ['string', 'max:190'],
+            // 移行元がメールリンクでログインさせているか
+            'magic_link' => ['boolean'],
         ]);
 
         $email = $request->string('email')->trim()->toString();
@@ -74,6 +79,7 @@ class ServiceAccountController {
             $passwordHash === '' ? null : $passwordHash,
             $knownSub === '' ? null : $knownSub,
             $external,
+            $request->boolean('magic_link'),
         );
 
         return response()->json(['sub' => $sub]);
@@ -134,6 +140,40 @@ class ServiceAccountController {
         }
 
         return response()->json($status);
+    }
+
+    /**
+     * 移行元でパスワードが変えられたときに呼んでもらう。
+     *
+     * **パスワードの正解を持っているのは ChreeID だけ**にしたいので、
+     * サービスが自分の画面で変更を受け付けたら必ず流してもらう。
+     * これが無いと、古いパスワードが向こうに残ったまま通り続ける。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function changePassword(Request $request): JsonResponse {
+        $client = $this->guard->check($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate([
+            'service_user_id' => ['required', 'string', 'max:190'],
+            // 平文は受け取らない
+            'password_hash' => ['required', 'string', 'max:255'],
+        ]);
+
+        $changed = $this->changePassword->execute(
+            $client,
+            $request->string('service_user_id')->toString(),
+            $request->string('password_hash')->toString(),
+        );
+
+        if (!$changed) {
+            return ApiError::make('not_applicable', 'このアカウントのパスワードは変更できません', 409);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     /**

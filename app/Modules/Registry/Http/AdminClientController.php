@@ -63,6 +63,7 @@ class AdminClientController {
             $request->boolean('is_confidential', true),
             $input['skips_consent'],
             $input['can_provision'],
+            $input['icon_url'],
         );
 
         return redirect('/admin/clients')->with('issuedSecret', [
@@ -134,7 +135,7 @@ class AdminClientController {
 
     /**
      * @param Request $request
-     * @return array{name: string, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool}
+     * @return array{name: string, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
@@ -147,6 +148,8 @@ class AdminClientController {
             'trust' => ['required', 'string'],
             'skips_consent' => ['boolean'],
             'can_provision' => ['boolean'],
+            // 画像そのものは持たない。置き場所はサービス側に任せる
+            'icon_url' => ['nullable', 'string', 'url', 'max:500'],
         ]);
 
         $trust = ServiceTrust::tryFrom($request->string('trust')->toString());
@@ -170,11 +173,12 @@ class AdminClientController {
             // 同意の省略も発行権限も、信頼状態とは別の設定
             'skips_consent' => $request->boolean('skips_consent'),
             'can_provision' => $request->boolean('can_provision'),
+            'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
         ];
     }
 
     /**
-     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, createdAt: string|null}>
+     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, createdAt: string|null}>
      */
     private function all(): array {
         $result = [];
@@ -187,7 +191,7 @@ class AdminClientController {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, createdAt: string|null}
+     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, createdAt: string|null}
      */
     private function toArray(OAuthClientModel $client): array {
         return [
@@ -199,8 +203,19 @@ class AdminClientController {
             'trust' => $client->trust->value,
             'skipsConsent' => $client->skips_consent,
             'canProvision' => $client->can_provision,
+            'iconUrl' => $client->icon_url,
             'createdAt' => $client->created_at?->toDateTimeString(),
         ];
+    }
+
+    /**
+     * @param string $value 入力値
+     * @return string|null 空なら null
+     */
+    private function trimmedOrNull(string $value): ?string {
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 
     /**

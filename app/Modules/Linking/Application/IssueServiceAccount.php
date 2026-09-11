@@ -2,6 +2,7 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Credential\Application\AdoptPasswordHash;
+use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
@@ -29,6 +30,7 @@ class IssueServiceAccount {
         private readonly AuthIdentityRepository $accounts,
         private readonly ResolveSubject $subjects,
         private readonly AdoptPasswordHash $passwords,
+        private readonly EnableMagicLink $magicLinks,
     ) {}
 
     /**
@@ -40,6 +42,7 @@ class IssueServiceAccount {
      * @param string|null $passwordHash 移行元が持っていた bcrypt ハッシュ
      * @param string|null $knownSub 既に分かっている sub。紐付けだけ作り直したいときに渡す
      * @param list<string> $externalIdentities 移行元が把握している外部IdPの識別子 ("google:123" 形式)
+     * @param bool $magicLink 移行元がメールリンクでログインさせているか
      * @return string サービスに渡す sub
      */
     public function execute(
@@ -51,14 +54,25 @@ class IssueServiceAccount {
         ?string $passwordHash = null,
         ?string $knownSub = null,
         array $externalIdentities = [],
+        bool $magicLink = false,
     ): string {
         $existing = ServiceAccountModel::query()
             ->where('client_id', $client->id)
             ->where('service_user_id', $serviceUserId)
             ->first();
 
-        // 二度目以降は同じものを返す。呼び出し側が何度叩いても増えない
-        if ($existing !== null) return $this->subjects->forServiceAccount($existing);
+        // 二度目以降は同じものを返す。呼び出し側が何度叩いても増えない。
+        // ただし、まだ渡されていない外部IdPはここで足す。
+        // 発行のあとに移行元で Google を繋いだ人を、遡って拾えるようにするため
+        if ($existing !== null) {
+            foreach ($externalIdentities as $identity) {
+                $this->adoptExternal($existing->auth_identity_id, $identity);
+            }
+
+            if ($magicLink) $this->magicLinks->execute($existing->auth_identity_id);
+
+            return $this->subjects->forServiceAccount($existing);
+        }
 
         // OIDC でログインしただけで、サービス側の識別子をまだ知らない行がありうる。
         // そこへ結び付け直す。新しくアカウントを作ると本人が2つに割れてしまう
@@ -80,6 +94,10 @@ class IssueServiceAccount {
         foreach ($externalIdentities as $identity) {
             $this->adoptExternal($accountId, $identity);
         }
+
+        // 移行元がメールリンクで入らせているなら、こちらでも使えるようにする。
+        // 有効化していないと RequestMagicLink が黙って何もしない
+        if ($magicLink) $this->magicLinks->execute($accountId);
 
         return $this->subjects->execute($client, $accountId);
     }

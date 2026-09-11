@@ -38,6 +38,8 @@ export interface OAuthClient {
     scopes: string;
     isConfidential: boolean;
     trust: TrustValue;
+    /** アイコンの URL。未設定なら null */
+    iconUrl: string | null;
     /** 同意画面を省略するか。信頼状態とは別の設定 */
     skipsConsent: boolean;
     /** サービスアカウントを扱えるか。信頼状態とは別の設定 */
@@ -50,6 +52,8 @@ export interface ConnectedService {
     /** サービスアカウントのID。分離はこれを指す */
     id: string;
     clientId: string;
+    /** アイコンの URL。未設定なら null */
+    iconUrl: string | null;
     /** サービス側での識別子。OIDC 経由でできたものは分からない */
     serviceUserId: string | null;
     name: string;

@@ -213,6 +213,110 @@ class ServiceAccountApiTest extends TestCase {
         $this->issue($client)->assertStatus(403);
     }
 
+    // 発行のあとに移行元で Google を繋いだ人を、遡って拾えるようにする
+    public function test_topsUpExternalIdentitiesOnAnExistingLink(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->issue($client, ['external' => ['google:123456']])->assertOk();
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+        $this->assertTrue(\App\Modules\Credential\Infrastructure\CredentialModel::query()
+            ->where('auth_identity_id', $link->auth_identity_id)
+            ->where('identifier', 'google:123456')
+            ->exists());
+
+        // 何度叩いても増えない
+        $this->issue($client, ['external' => ['google:123456']]);
+        $this->assertSame(1, \App\Modules\Credential\Infrastructure\CredentialModel::query()
+            ->where('auth_identity_id', $link->auth_identity_id)
+            ->where('type', \App\Modules\Credential\Domain\CredentialType::OAUTH)
+            ->count());
+    }
+
+    // 移行元が「まだ渡していないもの」を判断できるように返す
+    public function test_reportsWhichCredentialsTheAccountHas(): void {
+        $client = $this->client();
+        $this->issue($client, ['password_hash' => password_hash('x', PASSWORD_BCRYPT)]);
+
+        $this->askStatus($client)->assertOk()->assertJson(['credential_types' => ['password']]);
+    }
+
+    // 有効化していないと RequestMagicLink が黙って何もしない。
+    // 移行元がメールリンクで入らせているなら、引き継がないとその経路が消える
+    public function test_carriesTheMagicLinkCapability(): void {
+        $client = $this->client();
+        $this->issue($client, ['magic_link' => true])->assertOk();
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+
+        $this->assertTrue(app(\App\Modules\Credential\Domain\CredentialRepository::class)
+            ->has($link->auth_identity_id, \App\Modules\Credential\Domain\CredentialType::MAGIC_LINK));
+    }
+
+    public function test_doesNotEnableMagicLinkUnlessAsked(): void {
+        $client = $this->client();
+        $this->issue($client)->assertOk();
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+
+        $this->assertFalse(app(\App\Modules\Credential\Domain\CredentialRepository::class)
+            ->has($link->auth_identity_id, \App\Modules\Credential\Domain\CredentialType::MAGIC_LINK));
+    }
+
+    // --- パスワードの反映 ---
+
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @param string $hash 反映するハッシュ
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function sendPassword(OAuthClientModel $client, string $hash): \Illuminate\Testing\TestResponse {
+        return $this->postJson('/api/v1/service-accounts/password', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'service_user_id' => '42',
+            'password_hash' => $hash,
+        ]);
+    }
+
+    // 流し忘れると古いパスワードが通り続けるので、変更は必ず届く必要がある
+    public function test_appliesAChangedPassword(): void {
+        $client = $this->client();
+        $this->issue($client, ['password_hash' => password_hash('old', PASSWORD_BCRYPT)]);
+
+        $new = password_hash('brand-new', PASSWORD_BCRYPT);
+        $this->sendPassword($client, $new)->assertOk();
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+        $stored = \App\Modules\Credential\Infrastructure\CredentialModel::query()
+            ->where('auth_identity_id', $link->auth_identity_id)
+            ->where('type', \App\Modules\Credential\Domain\CredentialType::PASSWORD)
+            ->firstOrFail();
+
+        $this->assertTrue(password_verify('brand-new', (string)$stored->secret));
+        $this->assertFalse(password_verify('old', (string)$stored->secret));
+    }
+
+    // 本人のものになっていたら、サービス経由では触らせない
+    public function test_refusesToChangeThePasswordOfAUserAccount(): void {
+        $client = $this->client();
+        $this->issue($client, ['password_hash' => password_hash('old', PASSWORD_BCRYPT)]);
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+        app(\App\Modules\Identity\Application\UserAccounts::class)->ensure($link->auth_identity_id);
+
+        $this->sendPassword($client, password_hash('taken-over', PASSWORD_BCRYPT))->assertStatus(409);
+    }
+
+    // bcrypt 以外を書くと、パスワードはあるのに絶対に通らないアカウントになる
+    public function test_refusesANonBcryptHash(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->sendPassword($client, 'not-a-bcrypt-hash')->assertStatus(409);
+    }
+
     // --- 状態の照会 ---
 
     // 参照だけの口。移行の導線を出すかどうかをサービスが決めるために使う

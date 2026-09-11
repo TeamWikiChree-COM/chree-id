@@ -141,9 +141,16 @@ Route::post('/oauth/token', TokenController::class);
 Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
 Route::post('/api/v1/service-accounts/claim-tickets', [ServiceAccountController::class, 'claimTicket']);
 Route::post('/api/v1/service-accounts/status', [ServiceAccountController::class, 'status']);
+Route::post('/api/v1/service-accounts/password', [ServiceAccountController::class, 'changePassword']);
 Route::post('/api/v1/service-accounts/deactivate', [ServiceAccountController::class, 'deactivate']);
 
 // サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
 Route::post('/api/v1/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])
     ->middleware('throttle:service-auth');
+
+// サービスが自前で出すメールリンクの裏付け。画面もメールも向こうのまま
+Route::post('/api/v1/service-auth/magic-link', [ServiceAuthController::class, 'issueMagicLink'])
+    ->middleware('throttle:service-auth');
+Route::post('/api/v1/service-auth/magic-link/consume', [ServiceAuthController::class, 'consumeMagicLink'])
+    ->middleware('throttle:verify');
 Route::get('/oauth/userinfo', UserinfoController::class);

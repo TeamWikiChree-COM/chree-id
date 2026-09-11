@@ -8,6 +8,7 @@ use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
+use App\Modules\Provider\Infrastructure\LoginHint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -27,13 +28,14 @@ class MagicLinkController {
         private readonly CompleteAuthentication $complete,
         private readonly PendingAuthentication $pending,
         private readonly ChreeSession $session,
+        private readonly LoginHint $loginHint,
     ) {}
 
     /**
      * @return Response
      */
     public function show(): Response {
-        return Inertia::render('Auth/MagicLink');
+        return Inertia::render('Auth/MagicLink', ['email' => $this->loginHint->pull()]);
     }
 
     /**

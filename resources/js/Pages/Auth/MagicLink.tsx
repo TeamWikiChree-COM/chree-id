@@ -9,9 +9,14 @@ import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
-export default function MagicLink() {
+interface MagicLinkProps {
+    /** サービスが login_hint で添えてきたアドレス */
+    email: string | null;
+}
+
+export default function MagicLink({ email }: MagicLinkProps) {
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
+        email: email ?? '',
         'cf-turnstile-response': '',
     });
 

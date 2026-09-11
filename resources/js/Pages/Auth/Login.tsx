@@ -13,10 +13,15 @@ import PasswordField from '../../Components/PasswordField';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 
-export default function Login() {
+interface LoginProps {
+    /** サービスが login_hint で添えてきたアドレス。二度打たせないために埋める */
+    email: string | null;
+}
+
+export default function Login({ email }: LoginProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
+        email: email ?? '',
         password: '',
         'cf-turnstile-response': '',
     });

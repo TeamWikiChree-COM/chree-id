@@ -6,6 +6,7 @@ use App\Modules\Provider\Application\AmbiguousServiceAccountException;
 use App\Modules\Provider\Application\IssueAuthCode;
 use App\Modules\Provider\Application\SelectServiceAccount;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
+use App\Modules\Provider\Infrastructure\LoginHint;
 use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Domain\AuthorizeRequest;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ class AuthorizeController {
         private readonly IssueAuthCode $issue,
         private readonly ChreeSession $session,
         private readonly SelectServiceAccount $select,
+        private readonly LoginHint $loginHint,
     ) {}
 
     /**
@@ -37,8 +39,13 @@ class AuthorizeController {
             return $this->handleError($request, $error);
         }
 
-        // 未ログインならログインさせ、戻ってきたら同じURLで続きから
-        if (!$this->session->isLoggedIn()) return redirect()->guest('/login');
+        // 未ログインならログインさせ、戻ってきたら同じURLで続きから。
+        // サービスが添えてきたアドレスは、二度打たせないようログイン画面まで運ぶ
+        if (!$this->session->isLoggedIn()) {
+            $this->loginHint->remember();
+
+            return redirect()->guest('/login');
+        }
 
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect()->guest('/login');
@@ -48,6 +55,7 @@ class AuthorizeController {
         if (!$authorize->client->skips_consent) {
             return Inertia::render('Oauth/Consent', [
                 'clientName' => $authorize->client->name,
+                'clientIconUrl' => $authorize->client->icon_url,
                 'scopes' => $authorize->scopes,
                 'query' => $request->query(),
             ]);
@@ -120,6 +128,7 @@ class AuthorizeController {
 
         return Inertia::render('Oauth/ChooseAccount', [
             'clientName' => $authorize->client->name,
+            'clientIconUrl' => $authorize->client->icon_url,
             'accounts' => $accounts,
             'query' => $request->query(),
         ]);

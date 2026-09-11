@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $secret_hash
  * @property string $name
  * @property string|null $homepage_url
+ * @property string|null $icon_url
  * @property list<string> $redirect_uris
  * @property string $scopes
  * @property bool $is_confidential
@@ -31,6 +32,7 @@ class OAuthClientModel extends Model {
         'secret_hash',
         'name',
         'homepage_url',
+        'icon_url',
         'redirect_uris',
         'scopes',
         'is_confidential',

@@ -204,4 +204,79 @@ class ServiceAuthApiTest extends TestCase {
 
         $this->verify($client)->assertStatus(429);
     }
+
+    // --- メールリンク ---
+
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @param array<string, mixed> $payload 追加の入力
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function askMagicLink(OAuthClientModel $client, array $payload = []): \Illuminate\Testing\TestResponse {
+        return $this->postJson('/api/v1/service-auth/magic-link', array_merge([
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'email' => self::EMAIL,
+        ], $payload));
+    }
+
+    // 画面もメールもサービスのまま。ChreeID は合図を出すだけ
+    public function test_issuesAMagicLinkTokenForItsOwnUser(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        app(\App\Modules\Credential\Application\EnableMagicLink::class)->execute($accountId);
+
+        $token = $this->askMagicLink($client)->assertOk()->json('token');
+
+        $this->assertIsString($token);
+
+        $this->postJson('/api/v1/service-auth/magic-link/consume', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'token' => $token,
+        ])->assertOk()->assertJson(['service_user_id' => '42']);
+    }
+
+    // 一度きり。二度目は通らない
+    public function test_consumesTheTokenOnlyOnce(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        app(\App\Modules\Credential\Application\EnableMagicLink::class)->execute($accountId);
+
+        $token = $this->askMagicLink($client)->json('token');
+        $this->assertIsString($token);
+
+        $consume = [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'token' => $token,
+        ];
+
+        $this->postJson('/api/v1/service-auth/magic-link/consume', $consume)->assertOk();
+        $this->postJson('/api/v1/service-auth/magic-link/consume', $consume)->assertStatus(401);
+    }
+
+    // 有効化していない相手には出さない。勝手に経路を生やさないため
+    public function test_refusesWhenMagicLinkIsNotEnabled(): void {
+        $client = $this->client();
+        $this->account($client);
+
+        $this->askMagicLink($client)->assertStatus(404);
+    }
+
+    // 他所のサービスが出した合図は使えない
+    public function test_refusesATokenFromAnotherService(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        app(\App\Modules\Credential\Application\EnableMagicLink::class)->execute($accountId);
+
+        $token = $this->askMagicLink($client)->json('token');
+        $this->assertIsString($token);
+
+        $this->postJson('/api/v1/service-auth/magic-link/consume', [
+            'client_id' => $this->client()->id,
+            'client_secret' => self::SECRET,
+            'token' => $token,
+        ])->assertStatus(401);
+    }
 }

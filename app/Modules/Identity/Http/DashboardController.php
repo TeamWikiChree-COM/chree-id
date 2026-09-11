@@ -3,6 +3,7 @@ namespace App\Modules\Identity\Http;
 
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
+use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
@@ -18,6 +19,7 @@ class DashboardController {
         private readonly AuthIdentityRepository $accounts,
         private readonly ChreeSession $session,
         private readonly ListConnectedServices $services,
+        private readonly SuggestMergeCandidates $candidates,
     ) {}
 
     /**
@@ -40,6 +42,8 @@ class DashboardController {
             ],
             'credentials' => $this->credentialsOf($accountId),
             'services' => $this->services->execute($accountId),
+            // 同じアドレスの別アカウント。挙げるだけで、統合は本人の操作を通す
+            'mergeCandidates' => $this->candidates->execute($accountId),
         ]);
     }
 

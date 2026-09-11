@@ -19,6 +19,7 @@ class RegisterClient {
      * @param ServiceTrust $trust 信頼状態
      * @param bool $skipsConsent 同意画面を省略するか。信頼状態とは別の設定
      * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定
+     * @param string|null $iconUrl アイコンの URL
      * @param bool $isConfidential secret を持てるクライアントか
      * @return RegisteredClient 平文 secret はここでしか取れない
      */
@@ -30,6 +31,7 @@ class RegisterClient {
         bool $isConfidential,
         bool $skipsConsent = false,
         bool $canProvision = false,
+        ?string $iconUrl = null,
     ): RegisteredClient {
         $secret = $isConfidential ? Str::random(64) : null;
 
@@ -43,6 +45,7 @@ class RegisterClient {
             'trust' => $trust,
             'skips_consent' => $skipsConsent,
             'can_provision' => $canProvision,
+            'icon_url' => $iconUrl,
         ]);
 
         return new RegisteredClient($client, $secret);

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Linking\Application\ServiceMagicLink;
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
 use App\Modules\Registry\Http\ProvisioningClientGuard;
@@ -22,6 +23,7 @@ class ServiceAuthController {
     public function __construct(
         private readonly ProvisioningClientGuard $guard,
         private readonly VerifyServiceUserPassword $verify,
+        private readonly ServiceMagicLink $magicLinks,
     ) {}
 
     /**
@@ -58,5 +60,54 @@ class ServiceAuthController {
             'sub' => $result->sub,
             'service_user_id' => $result->serviceUserId,
         ]);
+    }
+
+    /**
+     * サービスが自前で出すメールリンクの、一度きりの合図を発行する。
+     *
+     * **画面もメールもサービスのまま。** 利用者はブラウザを移動しない。
+     *
+     * アドレスを知らなくても、知っているように振る舞わない。
+     * 呼び出し元は結果にかかわらず同じ画面を出すこと。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function issueMagicLink(Request $request): JsonResponse {
+        $client = $this->guard->check($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate(['email' => ['required', 'string', 'email', 'max:255']]);
+
+        $token = $this->magicLinks->issue($client, $request->string('email')->trim()->toString());
+
+        if ($token === null) {
+            return ApiError::make('not_applicable', 'このアドレスには出せません', 404);
+        }
+
+        return response()->json(['token' => $token]);
+    }
+
+    /**
+     * メールリンクの合図を使い切る。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function consumeMagicLink(Request $request): JsonResponse {
+        $client = $this->guard->check($request);
+        if ($client instanceof JsonResponse) return $client;
+
+        $request->validate(['token' => ['required', 'string', 'max:128']]);
+
+        $serviceUserId = $this->magicLinks->consume($client, $request->string('token')->toString());
+
+        if ($serviceUserId === null) {
+            return ApiError::make('invalid_grant', 'このリンクは使えません', 401);
+        }
+
+        return response()->json(['service_user_id' => $serviceUserId]);
     }
 }
