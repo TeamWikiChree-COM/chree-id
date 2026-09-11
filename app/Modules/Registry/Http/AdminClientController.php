@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Registry\Http;
 
+use App\Modules\Identity\Infrastructure\UserAccountModel;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Application\RegisterClient;
 use App\Modules\Registry\Application\RotateClientSecret;
 use App\Modules\Registry\Application\UpdateClient;
@@ -178,7 +180,7 @@ class AdminClientController {
     }
 
     /**
-     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, createdAt: string|null}>
+     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}>
      */
     private function all(): array {
         $result = [];
@@ -191,7 +193,7 @@ class AdminClientController {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, createdAt: string|null}
+     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
      */
     private function toArray(OAuthClientModel $client): array {
         return [
@@ -204,8 +206,32 @@ class AdminClientController {
             'skipsConsent' => $client->skips_consent,
             'canProvision' => $client->can_provision,
             'iconUrl' => $client->icon_url,
+            // 移行元へ落とす経路をいつ消せるかの目安になる
+            'serviceAccounts' => $this->countServiceAccounts($client->id),
+            'migratedAccounts' => $this->countMigrated($client->id),
             'createdAt' => $client->created_at?->toDateTimeString(),
         ];
+    }
+
+    /**
+     * @param string $clientId サービスの client_id
+     * @return int このサービスのサービスアカウント数
+     */
+    private function countServiceAccounts(string $clientId): int {
+        return ServiceAccountModel::query()->where('client_id', $clientId)->count();
+    }
+
+    /**
+     * 束ねる人格を持つに至った数。移行がどこまで進んでいるかの目安。
+     *
+     * @param string $clientId サービスの client_id
+     * @return int
+     */
+    private function countMigrated(string $clientId): int {
+        return ServiceAccountModel::query()
+            ->where('client_id', $clientId)
+            ->whereIn('auth_identity_id', UserAccountModel::query()->select('auth_identity_id'))
+            ->count();
     }
 
     /**

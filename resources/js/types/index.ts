@@ -40,6 +40,10 @@ export interface OAuthClient {
     trust: TrustValue;
     /** アイコンの URL。未設定なら null */
     iconUrl: string | null;
+    /** このサービスのサービスアカウント数 */
+    serviceAccounts: number;
+    /** そのうち、束ねる人格を持つに至った数 */
+    migratedAccounts: number;
     /** 同意画面を省略するか。信頼状態とは別の設定 */
     skipsConsent: boolean;
     /** サービスアカウントを扱えるか。信頼状態とは別の設定 */
