@@ -494,4 +494,82 @@ class ServiceAccountApiTest extends TestCase {
             'Authorization' => 'Basic ' . base64_encode("{$client->id}:" . self::SECRET),
         ])->assertOk();
     }
+
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function retire(OAuthClientModel $client): \Illuminate\Testing\TestResponse {
+        return $this->postJson('/api/v1/service-accounts/deactivate', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'service_user_id' => '42',
+        ]);
+    }
+
+    // 退会: サービス上の人格しか無ければ、認証主体ごと消す
+    public function test_retirementRemovesAnUnclaimedIdentityOutright(): void {
+        $client = $this->client();
+        $this->issue($client, ['password_hash' => password_hash('x', PASSWORD_BCRYPT)]);
+
+        $identityId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
+
+        $this->retire($client)->assertOk();
+
+        $this->assertSame(0, ServiceAccountModel::query()->count());
+        $this->assertNull(app(AuthIdentityRepository::class)->findById($identityId));
+
+        // cascade で認証情報も残らない
+        $this->assertFalse(CredentialModel::query()
+            ->where('auth_identity_id', $identityId)->exists());
+    }
+
+    // 退会: 移行済みなら ChreeID 本体は残す。
+    // 一律に停止していた頃は、他サービスからも入れなくなっていた
+    public function test_retirementKeepsAnIdentityThatHasAUserAccount(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $identityId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
+        \App\Modules\Identity\Infrastructure\UserAccountModel::create([
+            'id' => Str::lower(Str::ulid()->toString()),
+            'auth_identity_id' => $identityId,
+        ]);
+
+        $this->retire($client)->assertOk();
+
+        $this->assertSame(0, ServiceAccountModel::query()->count());
+
+        $identity = app(AuthIdentityRepository::class)->findById($identityId);
+        $this->assertNotNull($identity);
+        $this->assertNull($identity->suspendedAt);
+    }
+
+    // 他のサービスで使っている人を巻き添えにしない
+    public function test_retirementKeepsAnIdentityThatStillServesAnotherService(): void {
+        $client = $this->client();
+        $other = $this->client();
+        $this->issue($client);
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+        ServiceAccountModel::create([
+            'client_id' => $other->id,
+            'auth_identity_id' => $link->auth_identity_id,
+            'service_user_id' => '99',
+        ]);
+
+        $this->retire($client)->assertOk();
+
+        $this->assertNotNull(app(AuthIdentityRepository::class)->findById($link->auth_identity_id));
+        $this->assertSame(1, ServiceAccountModel::query()->count());
+    }
+
+    // 畳んだあとの再送は 404。呼び出し元は投げっぱなしでよい
+    public function test_retirementIsGoneOnASecondCall(): void {
+        $client = $this->client();
+        $this->issue($client);
+
+        $this->retire($client)->assertOk();
+        $this->retire($client)->assertStatus(404);
+    }
 }

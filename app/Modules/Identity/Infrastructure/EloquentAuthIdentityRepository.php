@@ -92,6 +92,10 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
         AuthIdentityModel::query()->whereKey($id)->update(['suspended_at' => now()]);
     }
 
+    public function delete(string $id): void {
+        AuthIdentityModel::query()->whereKey($id)->delete();
+    }
+
     /**
      * @param AuthIdentityModel $model
      * @return AuthIdentity

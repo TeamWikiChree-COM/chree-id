@@ -84,4 +84,19 @@ interface AuthIdentityRepository {
      * @return void
      */
     public function suspend(string $id): void;
+
+    /**
+     * èªè¨¼ä¸»ä½ãç©çåé¤ããã
+     *
+     * credentials / service_accounts / user_accounts ãªã©ã¯ FK ã®
+     * cascade ã§ä¸ç·ã«æ¶ããã
+     *
+     * **æ®ãã¹ããã®ãç¡ãã¨ç¢ºããã¦ããå¼ã¶ãã¨ã**
+     * UserAccount ãä»ã® ServiceAccount ãæ®ã£ã¦ããèªè¨¼ä¸»ä½ãæ¶ãã¨ã
+     * ä»ãµã¼ãã¹ã®äººæ ¼ã¾ã§å·»ãæ·»ãã«ããã
+     *
+     * @param string $id ã¢ã«ã¦ã³ãID (ULID)
+     * @return void
+     */
+    public function delete(string $id): void;
 }
