@@ -19,8 +19,8 @@ interface SplitOption {
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
 const CREDENTIAL_LABELS: Record<string, string> = {
     password: "パスワード",
-    totp: "認証アプリ (2段階認証)",
-    magic_link: "メールでログイン",
+    totp: "認証アプリ (2FA)",
+    magic_link: "マジックリンク",
     oauth: "Google 連携",
 };
 
