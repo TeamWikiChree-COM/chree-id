@@ -31,7 +31,6 @@ export default function ClaimChoose({
         title: string,
         description: string,
         path: string,
-        recommended: boolean,
     ) => (
         <ButtonBase
             onClick={() => go(path)}
@@ -40,7 +39,7 @@ export default function ClaimChoose({
                 width: "100%",
                 textAlign: "left",
                 border: "1px solid",
-                borderColor: recommended ? "primary.main" : "divider",
+                borderColor: "divider",
                 borderRadius: 2,
                 p: 2,
                 "&:hover": {
@@ -64,26 +63,23 @@ export default function ClaimChoose({
         <AuthLayout title="ChreeID を用意する" heading="ChreeID を用意する">
             <Typography variant="body2" color="text.secondary">
                 {serviceName}
-                でお使いのアカウントを、WikiChree.COM 共通の ChreeID
-                として使えるようにします。
+                でお使いのアカウントを ChreeID として使えるようにします。
                 これまでの利用状況はそのまま引き継がれます。
             </Typography>
 
             <Stack spacing={2}>
                 {card(
-                    "ChreeID を持っている",
+                    "既に ChreeID を持っている",
                     hasChreeId
                         ? `${signedInAs.displayName ?? signedInAs.email ?? "お使いのアカウント"} に追加します。`
-                        : "お使いの ChreeID にログインして、このアカウントをそこに追加します。",
+                        : "お使いの ChreeID にログインし、このアカウントをそこに統合します。",
                     "merge",
-                    hasChreeId,
                 )}
 
                 {card(
-                    "はじめて使う",
+                    "はじめて利用する",
                     "新しく ChreeID を作ります。ログイン方法をこのあと決めます。",
                     "create",
-                    !hasChreeId,
                 )}
             </Stack>
         </AuthLayout>
