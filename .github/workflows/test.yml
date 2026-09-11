@@ -45,8 +45,7 @@ jobs:
       - name: Run Larastan (Static Analysis)
         run: ./vendor/bin/phpstan analyse --error-format=github
 
-      - name: Run Unit Tests
-        run: php artisan test --testsuite=Unit
-
-      - name: Run Feature Tests
-        run: php artisan test --testsuite=Feature
+      # 並列で流す。絞らないので取りこぼしが無く、それでいて速い。
+      # 失敗はクラス名で出るので、Unit / Feature を分けなくても追える
+      - name: Run Tests
+        run: php artisan test --parallel
