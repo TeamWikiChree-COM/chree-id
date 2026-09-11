@@ -17,6 +17,8 @@ class UpdateClient {
      * @param list<string> $redirectUris 許可するリダイレクト先
      * @param string $scopes 空白区切りのスコープ
      * @param ServiceTrust $trust 信頼状態
+     * @param bool $skipsConsent 同意画面を省略するか。信頼状態とは別の設定
+     * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定 信頼状態
      * @return void
      */
     public function execute(
@@ -25,12 +27,16 @@ class UpdateClient {
         array $redirectUris,
         string $scopes,
         ServiceTrust $trust,
+        bool $skipsConsent = false,
+        bool $canProvision = false,
     ): void {
         $client->forceFill([
             'name' => $name,
             'redirect_uris' => $redirectUris,
             'scopes' => $scopes,
             'trust' => $trust,
+            'skips_consent' => $skipsConsent,
+            'can_provision' => $canProvision,
         ])->save();
     }
 }

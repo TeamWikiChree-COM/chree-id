@@ -30,6 +30,8 @@ class AuthorizeTest extends TestCase {
             'scopes' => 'openid profile email',
             'is_confidential' => $confidential,
             'trust' => $trust,
+            // 同意の省略は信頼状態とは別の設定。公式の既定に合わせる
+            'skips_consent' => $trust === ServiceTrust::OFFICIAL,
         ]);
     }
 

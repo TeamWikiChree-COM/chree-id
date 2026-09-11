@@ -44,7 +44,8 @@ class AuthorizeController {
         if ($accountId === null) return redirect()->guest('/login');
 
         // 公式サービスは ChreeID の一部とみなせるので、毎回の同意を求めない
-        if (!$authorize->client->trust->skipsConsent()) {
+        // 同意の省略は信頼状態とは別の設定。承認済みでも省略したいサービスがある
+        if (!$authorize->client->skips_consent) {
             return Inertia::render('Oauth/Consent', [
                 'clientName' => $authorize->client->name,
                 'scopes' => $authorize->scopes,

@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $scopes
  * @property bool $is_confidential
  * @property ServiceTrust $trust
+ * @property bool $skips_consent
+ * @property bool $can_provision
  */
 class OAuthClientModel extends Model {
     protected $table = 'oauth_clients';
@@ -33,11 +35,15 @@ class OAuthClientModel extends Model {
         'scopes',
         'is_confidential',
         'trust',
+        'skips_consent',
+        'can_provision',
     ];
 
     protected $casts = [
         'redirect_uris' => 'array',
         'is_confidential' => 'boolean',
+        'skips_consent' => 'boolean',
+        'can_provision' => 'boolean',
         'trust' => ServiceTrust::class,
     ];
 

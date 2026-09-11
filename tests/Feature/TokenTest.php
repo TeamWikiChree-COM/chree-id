@@ -31,6 +31,7 @@ class TokenTest extends TestCase {
             'scopes' => 'openid profile email',
             'is_confidential' => $confidential,
             'trust' => ServiceTrust::OFFICIAL,
+            'skips_consent' => true,
         ]);
     }
 

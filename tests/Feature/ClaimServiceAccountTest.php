@@ -40,6 +40,8 @@ class ClaimServiceAccountTest extends TestCase {
             'scopes' => 'openid profile email',
             'is_confidential' => true,
             'trust' => $trust,
+            // 発行権限は信頼状態とは別の設定。公式の既定に合わせる
+            'can_provision' => $trust === ServiceTrust::OFFICIAL,
         ]);
     }
 

@@ -61,6 +61,8 @@ class AdminClientController {
             $input['scopes'],
             $input['trust'],
             $request->boolean('is_confidential', true),
+            $input['skips_consent'],
+            $input['can_provision'],
         );
 
         return redirect('/admin/clients')->with('issuedSecret', [
@@ -98,6 +100,8 @@ class AdminClientController {
             $input['redirect_uris'],
             $input['scopes'],
             $input['trust'],
+            $input['skips_consent'],
+            $input['can_provision'],
         );
 
         return redirect('/admin/clients');
@@ -130,7 +134,7 @@ class AdminClientController {
 
     /**
      * @param Request $request
-     * @return array{name: string, redirect_uris: list<string>, scopes: string, trust: ServiceTrust}
+     * @return array{name: string, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
@@ -141,6 +145,8 @@ class AdminClientController {
             'redirect_uris.*' => ['required', 'string', 'url', 'max:500'],
             'scopes' => ['required', 'string', 'max:255'],
             'trust' => ['required', 'string'],
+            'skips_consent' => ['boolean'],
+            'can_provision' => ['boolean'],
         ]);
 
         $trust = ServiceTrust::tryFrom($request->string('trust')->toString());
@@ -161,11 +167,14 @@ class AdminClientController {
             'redirect_uris' => $uris,
             'scopes' => $request->string('scopes')->toString(),
             'trust' => $trust,
+            // 同意の省略も発行権限も、信頼状態とは別の設定
+            'skips_consent' => $request->boolean('skips_consent'),
+            'can_provision' => $request->boolean('can_provision'),
         ];
     }
 
     /**
-     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, createdAt: string|null}>
+     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, createdAt: string|null}>
      */
     private function all(): array {
         $result = [];
@@ -178,7 +187,7 @@ class AdminClientController {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, createdAt: string|null}
+     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, createdAt: string|null}
      */
     private function toArray(OAuthClientModel $client): array {
         return [
@@ -188,6 +197,8 @@ class AdminClientController {
             'scopes' => $client->scopes,
             'isConfidential' => $client->is_confidential,
             'trust' => $client->trust->value,
+            'skipsConsent' => $client->skips_consent,
+            'canProvision' => $client->can_provision,
             'createdAt' => $client->created_at?->toDateTimeString(),
         ];
     }
@@ -197,7 +208,7 @@ class AdminClientController {
      */
     private function trustOptions(): array {
         return [
-            ['value' => ServiceTrust::OFFICIAL->value, 'label' => '公式 (同意画面を省略)'],
+            ['value' => ServiceTrust::OFFICIAL->value, 'label' => '公式'],
             ['value' => ServiceTrust::APPROVED->value, 'label' => '承認済み'],
             ['value' => ServiceTrust::UNAPPROVED->value, 'label' => '未承認'],
             ['value' => ServiceTrust::DISABLED->value, 'label' => '停止中 (ログインさせない)'],

@@ -38,6 +38,10 @@ export interface OAuthClient {
     scopes: string;
     isConfidential: boolean;
     trust: TrustValue;
+    /** 同意画面を省略するか。信頼状態とは別の設定 */
+    skipsConsent: boolean;
+    /** サービスアカウントを扱えるか。信頼状態とは別の設定 */
+    canProvision: boolean;
     createdAt: string | null;
 }
 

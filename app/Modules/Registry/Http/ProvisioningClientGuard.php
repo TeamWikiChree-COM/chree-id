@@ -2,21 +2,22 @@
 namespace App\Modules\Registry\Http;
 
 use App\Modules\Registry\Application\AuthenticateClient;
-use App\Modules\Registry\Domain\ServiceTrust;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * サーバ間 API を叩けるサービスかどうかを確かめる。
+ * サービスアカウントを扱えるクライアントかどうかを確かめる。
  *
  * ブラウザを介さず、利用者の同意も挟まずにアカウントを触る口なので、
- * 公式サービス (`trust=official`) の機密クライアントに限る。
- * 承認済みの第三者に開けると、そのサービスの都合で ChreeID の利用者を水増ししたり、
+ * **明示的に許したクライアント (`can_provision`) の機密クライアントに限る。**
+ * 誰にでも開けると、そのサービスの都合で ChreeID の利用者を水増ししたり、
  * 他所の利用者のパスワードを試したりできてしまう。
+ *
+ * `trust` では判定しない。あれは外部から見た信頼の表明であって権限ではない。
  */
-class OfficialClientGuard {
+class ProvisioningClientGuard {
     public function __construct(private readonly AuthenticateClient $clients) {}
 
     /**
@@ -32,7 +33,7 @@ class OfficialClientGuard {
             return ApiError::make('invalid_client', 'クライアント認証に失敗しました', 401);
         }
 
-        if ($client->trust !== ServiceTrust::OFFICIAL) {
+        if (!$client->can_provision) {
             return ApiError::make('access_denied', 'このサービスはこの操作を行えません', 403);
         }
 

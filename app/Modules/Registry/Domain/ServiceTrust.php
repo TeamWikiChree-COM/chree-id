@@ -18,17 +18,6 @@ enum ServiceTrust: string {
     case DISABLED = 'disabled';
 
     /**
-     * 同意画面を省略してよいか。
-     *
-     * 公式サービスは ChreeID 自身の一部とみなせるので、毎回の同意を求めない。
-     *
-     * @return bool
-     */
-    public function skipsConsent(): bool {
-        return $this === self::OFFICIAL;
-    }
-
-    /**
      * 認証に使えるか。
      *
      * @return bool

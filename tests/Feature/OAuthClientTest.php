@@ -90,10 +90,20 @@ class OAuthClientTest extends TestCase {
         $this->assertFalse($client->allowsScopes(['openid', 'email']));
     }
 
-    public function test_onlyOfficialSkipsConsent(): void {
-        $this->assertTrue(ServiceTrust::OFFICIAL->skipsConsent());
-        $this->assertFalse(ServiceTrust::APPROVED->skipsConsent());
-        $this->assertFalse(ServiceTrust::UNAPPROVED->skipsConsent());
+    // 同意の省略は信頼状態とは別の設定。承認済みでも省略したいサービスがある
+    public function test_consentSkippingIsIndependentOfTrust(): void {
+        $approved = OAuthClientModel::create([
+            'id' => 'approved-skipping',
+            'name' => '承認済みだが同意は省略',
+            'redirect_uris' => ['https://rp.example.com/callback'],
+            'scopes' => 'openid',
+            'is_confidential' => true,
+            'trust' => ServiceTrust::APPROVED,
+            'skips_consent' => true,
+        ]);
+
+        $this->assertTrue($approved->skips_consent);
+        $this->assertSame(ServiceTrust::APPROVED, $approved->trust);
     }
 
     public function test_disabledServiceIsNotUsable(): void {

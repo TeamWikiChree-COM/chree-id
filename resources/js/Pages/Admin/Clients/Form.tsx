@@ -35,6 +35,8 @@ export default function Form({ client, trustOptions }: FormProps) {
         redirect_uris: string;
         scopes: string;
         trust: string;
+        skips_consent: boolean;
+        can_provision: boolean;
         is_confidential: boolean;
     }>({
         name: client?.name ?? '',
@@ -42,6 +44,8 @@ export default function Form({ client, trustOptions }: FormProps) {
         redirect_uris: (client?.redirectUris ?? []).join('\n'),
         scopes: client?.scopes ?? 'openid profile email',
         trust: client?.trust ?? 'unapproved',
+        skips_consent: client?.skipsConsent ?? false,
+        can_provision: client?.canProvision ?? false,
         is_confidential: client?.isConfidential ?? true,
     });
 
@@ -136,6 +140,26 @@ export default function Form({ client, trustOptions }: FormProps) {
                                 </MenuItem>
                             ))}
                         </TextField>
+
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={data.skips_consent}
+                                    onChange={(e) => setData('skips_consent', e.target.checked)}
+                                />
+                            }
+                            label="同意画面を省略する"
+                        />
+
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={data.can_provision}
+                                    onChange={(e) => setData('can_provision', e.target.checked)}
+                                />
+                            }
+                            label="サービスアカウントを扱える (遅延登録・移行)"
+                        />
 
                         {isNew && (
                             <FormControlLabel

@@ -17,6 +17,8 @@ class RegisterClient {
      * @param list<string> $redirectUris 許可するリダイレクト先
      * @param string $scopes 空白区切りのスコープ
      * @param ServiceTrust $trust 信頼状態
+     * @param bool $skipsConsent 同意画面を省略するか。信頼状態とは別の設定
+     * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定
      * @param bool $isConfidential secret を持てるクライアントか
      * @return RegisteredClient 平文 secret はここでしか取れない
      */
@@ -26,6 +28,8 @@ class RegisterClient {
         string $scopes,
         ServiceTrust $trust,
         bool $isConfidential,
+        bool $skipsConsent = false,
+        bool $canProvision = false,
     ): RegisteredClient {
         $secret = $isConfidential ? Str::random(64) : null;
 
@@ -37,6 +41,8 @@ class RegisterClient {
             'scopes' => $scopes,
             'is_confidential' => $isConfidential,
             'trust' => $trust,
+            'skips_consent' => $skipsConsent,
+            'can_provision' => $canProvision,
         ]);
 
         return new RegisteredClient($client, $secret);

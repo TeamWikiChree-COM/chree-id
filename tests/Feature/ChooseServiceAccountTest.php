@@ -30,6 +30,7 @@ class ChooseServiceAccountTest extends TestCase {
             'scopes' => 'openid profile email',
             'is_confidential' => true,
             'trust' => ServiceTrust::OFFICIAL,
+            'skips_consent' => true,
         ]);
     }
 

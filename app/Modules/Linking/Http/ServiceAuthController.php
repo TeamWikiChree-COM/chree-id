@@ -3,7 +3,7 @@ namespace App\Modules\Linking\Http;
 
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
-use App\Modules\Registry\Http\OfficialClientGuard;
+use App\Modules\Registry\Http\ProvisioningClientGuard;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,12 +15,12 @@ use Illuminate\Validation\ValidationException;
  * サービス側のアカウントは見せかけで、実体は ChreeID なので、
  * パスワードはサービスに置かない。ここが唯一の照合場所になる。
  *
- * **平文のパスワードが流れる。** 呼べるのは公式サービスの機密クライアントだけで、
+ * **平文のパスワードが流れる。** 呼べるのは発行を許したクライアントだけで、
  * かつ呼び出し元に紐付いた利用者しか引けない (VerifyServiceUserPassword)。
  */
 class ServiceAuthController {
     public function __construct(
-        private readonly OfficialClientGuard $guard,
+        private readonly ProvisioningClientGuard $guard,
         private readonly VerifyServiceUserPassword $verify,
     ) {}
 
