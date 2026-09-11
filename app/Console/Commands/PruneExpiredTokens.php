@@ -2,17 +2,14 @@
 
 namespace App\Console\Commands;
 
-use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
-use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
-use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
+use App\Modules\Registry\Application\PruneTokens;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * 使い終わった使い捨てトークンと、確認されなかった登録申し込みを消す。
  *
- * pending_registrations にはパスワードハッシュが入っているので、
- * 期限が切れたものを残しておく理由が無い。
+ * 削除そのものは PruneTokens が持つ。ここは日次で叩くための入口で、
+ * 管理画面からも同じものを呼ぶ。
  */
 class PruneExpiredTokens extends Command {
     #[\Override]
@@ -22,52 +19,17 @@ class PruneExpiredTokens extends Command {
     protected $description = '期限切れの登録申し込みと使い捨てトークンを削除する';
 
     /**
+     * @param PruneTokens $prune 掃除の本体
      * @return int
      */
-    public function handle(): int {
-        $registrations = $this->prune(
-            PendingRegistrationModel::query()->where('expires_at', '<', now()),
-        );
-
-        $emailChanges = $this->prune(
-            PendingEmailChangeModel::query()->where('expires_at', '<', now()),
-        );
-
-        $expired = $this->prune(
-            OneTimeTokenModel::query()->whereNull('used_at')->where('expires_at', '<', now()),
-        );
-
-        // 使用済みは二重投入の検知に使うので、すぐには消さず少し残す
-        $used = $this->prune(
-            OneTimeTokenModel::query()
-                ->whereNotNull('used_at')
-                ->where('used_at', '<', now()->subDays($this->days())),
-        );
+    public function handle(PruneTokens $prune): int {
+        $pruned = $prune->execute((int) $this->option('days'));
 
         $this->info(
-            "登録申し込み {$registrations} 件、アドレス変更 {$emailChanges} 件、"
-            . "未使用トークン {$expired} 件、使用済みトークン {$used} 件を削除しました"
+            "登録申し込み {$pruned->registrations} 件、アドレス変更 {$pruned->emailChanges} 件、"
+            . "未使用トークン {$pruned->expiredTokens} 件、使用済みトークン {$pruned->usedTokens} 件を削除しました"
         );
 
         return self::SUCCESS;
-    }
-
-    /**
-     * @param Builder<covariant \Illuminate\Database\Eloquent\Model> $query 消す対象
-     * @return int 消した件数
-     */
-    private function prune(Builder $query): int {
-        $deleted = $query->delete();
-
-        return is_int($deleted) ? $deleted : 0;
-    }
-
-    /**
-     * @return int 使用済みトークンを残す日数
-     */
-    private function days(): int {
-        $days = (int) $this->option('days');
-
-        return $days > 0 ? $days : 7;
     }
 }

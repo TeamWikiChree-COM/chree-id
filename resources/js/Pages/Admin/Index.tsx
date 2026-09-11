@@ -54,6 +54,12 @@ export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps
                         }
                         href="/admin/migrations"
                     />
+                    <NavRow
+                        icon="broom"
+                        title="掃除"
+                        description="期限切れの申し込みと使い捨てトークンの削除"
+                        href="/admin/maintenance"
+                    />
                 </Stack>
             </Paper>
         </AppLayout>

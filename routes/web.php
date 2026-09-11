@@ -21,6 +21,7 @@ use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Registry\Http\AdminAccountController;
 use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Registry\Http\AdminController;
+use App\Modules\Registry\Http\AdminMaintenanceController;
 use App\Modules\Registry\Http\AdminMigrationController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
@@ -118,6 +119,10 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     // 本番のデプロイは artisan を走らせないので、構造の適用はここから
     Route::get('/migrations', [AdminMigrationController::class, 'index']);
     Route::post('/migrations/run', [AdminMigrationController::class, 'run']);
+
+    // cron を組めていない間も手で流せるようにしておく
+    Route::get('/maintenance', [AdminMaintenanceController::class, 'index']);
+    Route::post('/maintenance/prune', [AdminMaintenanceController::class, 'prune']);
 
     Route::get('/clients', [AdminClientController::class, 'index']);
     Route::get('/clients/create', [AdminClientController::class, 'create']);

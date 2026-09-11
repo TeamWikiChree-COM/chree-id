@@ -93,6 +93,8 @@ declare module '@inertiajs/core' {
                 serviceRevoked: boolean | null;
                 /** マイグレーションを走らせた直後だけ入る artisan の出力 */
                 migrationOutput: string | null;
+                /** 掃除を流した直後だけ入る削除件数 */
+                prunedTokens: number | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;
