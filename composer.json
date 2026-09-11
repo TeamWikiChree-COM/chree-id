@@ -13,7 +13,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
-        "brianium/paratest": "*",
+        "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.11",
         "laravel/pail": "^1.2.5",
