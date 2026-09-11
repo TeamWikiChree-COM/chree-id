@@ -15,6 +15,7 @@ readonly class AuthIdentity {
     public ?string $displayName;
     public AccountOrigin $origin;
     public ?CarbonInterface $suspendedAt;
+    public ?CarbonInterface $deletedAt;
 
     /**
      * @param string $id アカウントID (ULID)
@@ -23,6 +24,7 @@ readonly class AuthIdentity {
      * @param string|null $displayName 表示名
      * @param AccountOrigin $origin 発行経路
      * @param CarbonInterface|null $suspendedAt 停止日時
+     * @param CarbonInterface|null $deletedAt 退会日時。猶予のあいだ残し、過ぎたら行ごと消す
      */
     public function __construct(
         string $id,
@@ -31,6 +33,7 @@ readonly class AuthIdentity {
         ?string $displayName,
         AccountOrigin $origin,
         ?CarbonInterface $suspendedAt,
+        ?CarbonInterface $deletedAt = null,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -38,6 +41,7 @@ readonly class AuthIdentity {
         $this->displayName = $displayName;
         $this->origin = $origin;
         $this->suspendedAt = $suspendedAt;
+        $this->deletedAt = $deletedAt;
     }
 
     /** @return bool */
@@ -48,5 +52,20 @@ readonly class AuthIdentity {
     /** @return bool */
     public function isSuspended(): bool {
         return $this->suspendedAt !== null;
+    }
+
+    /**
+     * 退会済みか。
+     *
+     * **ログインの可否をここで見ない。** 退会は `suspended_at` も同時に立てるので、
+     * 既存の `isSuspended()` を見ている経路がそのまま遮断する。判定を増やすと
+     * 新しい認証経路で片方だけ見る取りこぼしが起きる。
+     *
+     * これは「猶予のあいだ残っているだけの行か」を区別するためのもの。
+     *
+     * @return bool
+     */
+    public function isDeleted(): bool {
+        return $this->deletedAt !== null;
     }
 }

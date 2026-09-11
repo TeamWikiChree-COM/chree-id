@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Registry\Application\PruneTokens;
 use Illuminate\Console\Command;
 
@@ -20,15 +21,20 @@ class PruneExpiredTokens extends Command {
 
     /**
      * @param PruneTokens $prune 掃除の本体
+     * @param PurgeDeletedAccounts $purge 猶予を過ぎた退会アカウントの削除
      * @return int
      */
-    public function handle(PruneTokens $prune): int {
+    public function handle(PruneTokens $prune, PurgeDeletedAccounts $purge): int {
         $pruned = $prune->execute((int) $this->option('days'));
 
         $this->info(
             "登録申し込み {$pruned->registrations} 件、アドレス変更 {$pruned->emailChanges} 件、"
             . "未使用トークン {$pruned->expiredTokens} 件、使用済みトークン {$pruned->usedTokens} 件を削除しました"
         );
+
+        // 退会は印を付けるだけなので、実際に消すのは日次のここ
+        $accounts = $purge->execute();
+        $this->info("猶予を過ぎた退会アカウント {$accounts} 件を削除しました");
 
         return self::SUCCESS;
     }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Registry\Http;
 
+use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Registry\Application\PruneTokens;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -13,13 +14,17 @@ use Inertia\Response;
  * 組めていない間も、ここから手で流せるようにしておくためのもの。
  */
 class AdminMaintenanceController {
-    public function __construct(private readonly PruneTokens $prune) {}
+    public function __construct(
+        private readonly PruneTokens $prune,
+        private readonly PurgeDeletedAccounts $purge,
+    ) {}
 
     /**
      * @return Response
      */
     public function index(): Response {
         $pending = $this->prune->pending();
+        $accounts = $this->purge->due();
 
         return Inertia::render('Admin/Maintenance/Index', [
             'pending' => [
@@ -27,9 +32,11 @@ class AdminMaintenanceController {
                 'emailChanges' => $pending->emailChanges,
                 'expiredTokens' => $pending->expiredTokens,
                 'usedTokens' => $pending->usedTokens,
-                'total' => $pending->total(),
+                'withdrawnAccounts' => $accounts,
+                'total' => $pending->total() + $accounts,
             ],
             'keepDays' => PruneTokens::DEFAULT_DAYS,
+            'graceDays' => PurgeDeletedAccounts::graceDays(),
         ]);
     }
 
@@ -39,6 +46,9 @@ class AdminMaintenanceController {
     public function prune(): RedirectResponse {
         $pruned = $this->prune->execute();
 
-        return redirect('/admin/maintenance')->with('prunedTokens', $pruned->total());
+        // 退会は印を付けるだけなので、実際に消えるのはここ
+        $accounts = $this->purge->execute();
+
+        return redirect('/admin/maintenance')->with('prunedTokens', $pruned->total() + $accounts);
     }
 }

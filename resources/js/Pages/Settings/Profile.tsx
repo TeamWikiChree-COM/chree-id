@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AppLayout from '../../Components/AppLayout';
+import InertiaLink from '../../Components/InertiaLink';
 import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
@@ -128,6 +129,18 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
                             </Button>
                         </Stack>
                     </Box>
+                </Stack>
+            </Paper>
+
+            <SectionTitle>退会</SectionTitle>
+            <Paper variant="outlined" sx={{ p: 2 }}>
+                <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                    <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                        連携しているサービスのアカウントも使えなくなります
+                    </Typography>
+                    <Button component={InertiaLink} href="/settings/withdraw" variant="outlined" color="error">
+                        退会の手続きへ
+                    </Button>
                 </Stack>
             </Paper>
         </AppLayout>

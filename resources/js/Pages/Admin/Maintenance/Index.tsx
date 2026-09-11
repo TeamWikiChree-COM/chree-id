@@ -18,6 +18,8 @@ interface Pending {
     expiredTokens: number;
     /** 残す期間を過ぎた使用済みトークン */
     usedTokens: number;
+    /** 猶予を過ぎた退会済みアカウント */
+    withdrawnAccounts: number;
     total: number;
 }
 
@@ -25,6 +27,8 @@ interface IndexProps {
     pending: Pending;
     /** 使用済みトークンを残す日数 */
     keepDays: number;
+    /** 退会したアカウントを消すまでの日数 */
+    graceDays: number;
 }
 
 /** 表に出す名前と、なぜ消してよいかの一言 */
@@ -37,6 +41,11 @@ const ROWS: { key: keyof Omit<Pending, 'total'>; label: string; note: string }[]
     { key: 'emailChanges', label: '期限切れのアドレス変更', note: 'リンクは既に使えない' },
     { key: 'expiredTokens', label: '未使用のまま期限切れ', note: '使い捨てトークン' },
     { key: 'usedTokens', label: '使用済みトークン', note: '二重投入の検知に使うので少し残してある' },
+    {
+        key: 'withdrawnAccounts',
+        label: '猶予を過ぎた退会アカウント',
+        note: '認証情報ごと消える。ここを通ると元に戻せない',
+    },
 ];
 
 /**
@@ -45,7 +54,7 @@ const ROWS: { key: keyof Omit<Pending, 'total'>; label: string; note: string }[]
  * 日次の `chreeid:prune-tokens` と同じ処理を呼ぶ。
  * 共用サーバで cron を組めていない間の逃げ道として置いている。
  */
-export default function Index({ pending, keepDays }: IndexProps) {
+export default function Index({ pending, keepDays, graceDays }: IndexProps) {
     const { prunedTokens } = usePage().props.flash;
     const [running, setRunning] = useState(false);
 
@@ -95,7 +104,8 @@ export default function Index({ pending, keepDays }: IndexProps) {
                     {running ? '削除中…' : '削除する'}
                 </Button>
                 <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                    使用済みトークンは {keepDays} 日ぶん残します。日次の chreeid:prune-tokens と同じ処理です
+                    使用済みトークンは {keepDays} 日ぶん、退会したアカウントは {graceDays} 日ぶん残します。
+                    日次の chreeid:prune-tokens と同じ処理です
                 </Typography>
             </Box>
         </AppLayout>

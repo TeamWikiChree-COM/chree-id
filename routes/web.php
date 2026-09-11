@@ -9,6 +9,7 @@ use App\Modules\Credential\Http\SecurityController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\ProfileController;
+use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
 use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
@@ -63,6 +64,10 @@ Route::post('/password/reset', [PasswordResetController::class, 'update'])->midd
 // 設定。プロフィールとセキュリティを1か所にまとめ、画面はタブで切り替える
 Route::get('/settings', [ProfileController::class, 'show']);
 Route::get('/settings/security', [SecurityController::class, 'show']);
+
+// 取り返しがつかないので、設定画面に混ぜず専用の画面に分ける
+Route::get('/settings/withdraw', [WithdrawalController::class, 'show']);
+Route::post('/settings/withdraw', [WithdrawalController::class, 'store']);
 
 // 旧パス。手元のブックマークが死なないように残す。
 // Route::redirect は全メソッドに効いてしまい、下の POST /profile を飲み込むので GET だけにする

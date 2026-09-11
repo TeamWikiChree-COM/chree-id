@@ -99,4 +99,40 @@ interface AuthIdentityRepository {
      * @return void
      */
     public function delete(string $id): void;
+
+    /**
+     * 退会させる。行は猶予のあいだ残す。
+     *
+     * **`suspended_at` も同時に立てる。** ログインの可否を見ているのは
+     * `isSuspended()` なので、そこに乗せておけば全経路がそのまま遮断する。
+     * 退会用の判定を別に足すと、新しい経路で見落とす。
+     *
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function softDelete(string $id): void;
+
+    /**
+     * 退会を取り消す。猶予のあいだだけ間に合う。
+     *
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function restore(string $id): void;
+
+    /**
+     * 猶予を過ぎた退会済みアカウントを消す。
+     *
+     * @param int $days 退会から何日残すか
+     * @return int 消した件数
+     */
+    public function purgeDeletedBefore(int $days): int;
+
+    /**
+     * 猶予を過ぎて消える対象の件数。消さずに数えるだけ。
+     *
+     * @param int $days 退会から何日残すか
+     * @return int
+     */
+    public function countDeletedBefore(int $days): int;
 }

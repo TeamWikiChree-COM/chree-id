@@ -34,6 +34,12 @@ return [
         explode(',', (string) env('CHREEID_ADMIN_EMAILS', '')),
     ))),
 
+    /*
+     * 退会したアカウントを消すまでの日数。
+     * 押し間違いや乗っ取りから戻せるように、すぐには消さない。
+     */
+    'account_purge_days' => (int) env('CHREEID_ACCOUNT_PURGE_DAYS', 31),
+
     /* 登録の確認メールに載せるリンクの有効分数 */
     'registration_ttl_minutes' => (int) env('CHREEID_REGISTRATION_TTL_MINUTES', 60),
 ];

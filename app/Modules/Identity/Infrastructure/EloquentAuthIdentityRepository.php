@@ -96,6 +96,45 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
         AuthIdentityModel::query()->whereKey($id)->delete();
     }
 
+    public function softDelete(string $id): void {
+        AuthIdentityModel::query()->whereKey($id)->update([
+            'deleted_at' => now(),
+            'suspended_at' => now(),
+        ]);
+    }
+
+    public function restore(string $id): void {
+        AuthIdentityModel::query()->whereKey($id)->update([
+            'deleted_at' => null,
+            'suspended_at' => null,
+        ]);
+    }
+
+    public function countDeletedBefore(int $days): int {
+        return $this->dueForPurge($days)->count();
+    }
+
+    public function purgeDeletedBefore(int $days): int {
+        // 1件ずつ消す。まとめて delete すると FK の cascade が効かない環境がある
+        $due = $this->dueForPurge($days)->get();
+
+        foreach ($due as $model) $model->delete();
+
+        return $due->count();
+    }
+
+    /**
+     * 数えるのと消すのが同じ条件でないと、画面に出した件数と結果が食い違う。
+     *
+     * @param int $days 退会から何日残すか
+     * @return \Illuminate\Database\Eloquent\Builder<AuthIdentityModel>
+     */
+    private function dueForPurge(int $days): \Illuminate\Database\Eloquent\Builder {
+        return AuthIdentityModel::query()
+            ->whereNotNull('deleted_at')
+            ->where('deleted_at', '<', now()->subDays($days));
+    }
+
     /**
      * @param AuthIdentityModel $model
      * @return AuthIdentity
@@ -108,6 +147,7 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
             $model->display_name,
             $model->origin,
             $model->suspended_at,
+            $model->deleted_at,
         );
     }
 }
