@@ -65,6 +65,7 @@ class HandleInertiaRequests extends Middleware
                 'serviceRevoked' => $request->session()->get('serviceRevoked'),
                 'migrationOutput' => $request->session()->get('migrationOutput'),
                 'prunedTokens' => $request->session()->get('prunedTokens'),
+                'accountCreated' => $request->session()->get('accountCreated'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

@@ -86,6 +86,17 @@ interface AuthIdentityRepository {
     public function suspend(string $id): void;
 
     /**
+     * 停止を解除する。
+     *
+     * **退会の取り消しには使わない。** `deleted_at` は触らないので、
+     * 退会済みのまま停止だけ解けてしまう。そちらは `restore()`。
+     *
+     * @param string $id アカウントID (ULID)
+     * @return void
+     */
+    public function unsuspend(string $id): void;
+
+    /**
      * アカウントを物理削除する。
      *
      * credentials / service_accounts / user_accounts などは FK の

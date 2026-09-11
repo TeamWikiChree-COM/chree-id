@@ -95,6 +95,8 @@ declare module '@inertiajs/core' {
                 migrationOutput: string | null;
                 /** 掃除を流した直後だけ入る削除件数 */
                 prunedTokens: number | null;
+                /** 管理画面でアカウントを作った直後だけ true */
+                accountCreated: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;

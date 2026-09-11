@@ -2,10 +2,17 @@
 namespace App\Modules\Registry\Http;
 
 use App\Modules\Credential\Infrastructure\CredentialModel;
+use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Identity\Infrastructure\AuthIdentityModel;
+use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Registry\Application\ManageAccount;
 use App\Modules\Registry\Domain\AdminAccess;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 /**
  * 管理画面のアカウント一覧。
@@ -15,6 +22,8 @@ use Inertia\Response;
 class AdminAccountController {
     public function __construct(
         private readonly AdminAccess $adminAccess,
+        private readonly ManageAccount $manage,
+        private readonly ChreeSession $session,
     ) {}
 
     /**
@@ -22,7 +31,6 @@ class AdminAccountController {
      */
     public function index(): Response {
         $models = AuthIdentityModel::query()
-            ->whereNull('deleted_at')
             ->orderByDesc('created_at')
             // 同じ秒に作られた分の並びが揺れないよう、ULID で決着を付ける
             ->orderByDesc('id')
@@ -41,6 +49,8 @@ class AdminAccountController {
             'origin' => $m->origin->value,
             'isEmailVerified' => $m->email_verified_at !== null,
             'isSuspended' => $m->suspended_at !== null,
+            'isDeleted' => $m->deleted_at !== null,
+            'deletedAt' => $m->deleted_at?->format('Y/m/d H:i'),
             'isAdmin' => $this->isAdmin($m),
             'createdAt' => $m->created_at?->format('Y/m/d H:i') ?? '',
             'credentialTypes' => $types[$m->id] ?? [],
@@ -48,7 +58,114 @@ class AdminAccountController {
 
         return Inertia::render('Admin/Accounts/Index', [
             'accounts' => $accounts,
+            // 自分の行では操作ボタンを出さない。締め出されると戻れなくなる
+            'selfId' => $this->session->accountId(),
+            'graceDays' => PurgeDeletedAccounts::graceDays(),
         ]);
+    }
+
+    /**
+     * アカウントを作る。認証手段は付かないので、本人に再設定してもらう。
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws ValidationException
+     */
+    public function store(Request $request): RedirectResponse {
+        $request->validate([
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'display_name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $this->manage->create(
+            $request->string('email')->toString(),
+            $this->nullableName($request),
+        );
+
+        return redirect('/admin/accounts')->with('accountCreated', true);
+    }
+
+    /**
+     * @param Request $request
+     * @param string $account 対象のアカウントID
+     * @return RedirectResponse
+     * @throws ValidationException
+     */
+    public function update(Request $request, string $account): RedirectResponse {
+        $request->validate([
+            'email' => ['nullable', 'string', 'email', 'max:255'],
+            'display_name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $email = $request->string('email')->trim()->toString();
+
+        return $this->run(fn () => $this->manage->update(
+            $this->actor(),
+            $account,
+            $this->nullableName($request),
+            $email === '' ? null : $email,
+        ));
+    }
+
+    /**
+     * 停止・解除・退会・復帰・物理削除。何をするかは action で決まる。
+     *
+     * @param Request $request
+     * @param string $account 対象のアカウントID
+     * @return RedirectResponse
+     * @throws ValidationException
+     */
+    public function act(Request $request, string $account): RedirectResponse {
+        $request->validate([
+            'action' => ['required', 'string', 'in:suspend,unsuspend,withdraw,restore,purge'],
+        ]);
+
+        $actor = $this->actor();
+        $action = $request->string('action')->toString();
+
+        return $this->run(fn () => match ($action) {
+            'suspend' => $this->manage->suspend($actor, $account),
+            'unsuspend' => $this->manage->unsuspend($actor, $account),
+            'withdraw' => $this->manage->withdraw($actor, $account),
+            'restore' => $this->manage->restore($actor, $account),
+            'purge' => $this->manage->purge($actor, $account),
+            // validate が in: で絞っているが、そちらを足してここを忘れると黙って何もしない
+            default => throw new RuntimeException('不明な操作です'),
+        });
+    }
+
+    /**
+     * 断られた理由をそのまま画面に出す。1つに潰すと直しかたが分からない。
+     *
+     * @param callable(): void $operation 実行する操作
+     * @return RedirectResponse
+     * @throws ValidationException 操作が断られた場合
+     */
+    private function run(callable $operation): RedirectResponse {
+        try {
+            $operation();
+        } catch (RuntimeException $e) {
+            throw ValidationException::withMessages(['account' => $e->getMessage()]);
+        }
+
+        return redirect('/admin/accounts');
+    }
+
+    /**
+     * @return string 操作している管理者のアカウントID
+     */
+    private function actor(): string {
+        return $this->session->accountId() ?? '';
+    }
+
+    /**
+     * @param Request $request
+     * @return string|null 空欄は未設定として扱う
+     */
+    private function nullableName(Request $request): ?string {
+        $name = $request->string('display_name')->trim()->toString();
+
+        return $name === '' ? null : $name;
     }
 
     /**

@@ -120,6 +120,10 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     Route::get('/', AdminController::class);
 
     Route::get('/accounts', [AdminAccountController::class, 'index']);
+    Route::post('/accounts', [AdminAccountController::class, 'store']);
+    Route::post('/accounts/{account}', [AdminAccountController::class, 'update']);
+    // 停止 / 解除 / 退会 / 復帰 / 物理削除。何をするかは action で決まる
+    Route::post('/accounts/{account}/act', [AdminAccountController::class, 'act']);
 
     // 本番のデプロイは artisan を走らせないので、構造の適用はここから
     Route::get('/migrations', [AdminMigrationController::class, 'index']);

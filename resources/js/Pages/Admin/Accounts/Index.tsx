@@ -1,52 +1,92 @@
+import { useForm, usePage } from '@inertiajs/react';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import type { FormEvent } from 'react';
 import AppLayout from '../../../Components/AppLayout';
-import Icon from '../../../Components/Icon';
 import SectionTitle from '../../../Components/SectionTitle';
-
-interface AdminAccount {
-    id: string;
-    email: string | null;
-    displayName: string | null;
-    origin: 'user' | 'service';
-    isEmailVerified: boolean;
-    isSuspended: boolean;
-    isAdmin: boolean;
-    createdAt: string;
-    credentialTypes: string[];
-}
+import AccountRow from './AccountRow';
+import type { AdminAccount } from './types';
 
 interface IndexProps {
     accounts: AdminAccount[];
+    /** 操作している管理者のアカウントID。自分の行では操作を出さない */
+    selfId: string | null;
+    /** 退会したアカウントが消えるまでの日数 */
+    graceDays: number;
 }
-
-/** 認証方式の表示ラベル */
-const CREDENTIAL_LABELS: Record<string, string> = {
-    password: 'パスワード',
-    passkey: 'パスキー',
-    totp: '2FA',
-    magic_link: 'マジックリンク',
-};
 
 /**
  * システム管理のアカウント一覧。
  *
- * 登録済みアカウントの利用状態を運営者向けに一覧表示する。
+ * 退会済みのものも出す。猶予のあいだは取り消せるので、
+ * 隠すと戻せることに気付けない。
  */
-export default function Index({ accounts }: IndexProps) {
+export default function Index({ accounts, selfId, graceDays }: IndexProps) {
+    const { accountCreated } = usePage().props.flash;
+    const { errors } = usePage().props;
+    const form = useForm({ email: '', display_name: '' });
+
+    const submit = (event: FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+        form.post('/admin/accounts', { onSuccess: () => form.reset() });
+    };
+
     return (
         <AppLayout
             title="アカウント"
-            lead="登録されている ChreeID アカウントを一覧で確認します"
+            lead="登録されている ChreeID アカウントを管理します"
             crumbs={[
                 { label: 'ChreeID', href: '/' },
                 { label: 'システム管理', href: '/admin' },
                 { label: 'アカウント' },
             ]}
         >
+            {accountCreated && (
+                <Alert severity="success">
+                    アカウントを作りました。ログイン手段は付いていないので、本人にパスワード再設定から入ってもらってください
+                </Alert>
+            )}
+
+            {errors.account && <Alert severity="error">{errors.account}</Alert>}
+
+            <SectionTitle>アカウントを作る</SectionTitle>
+            <Paper variant="outlined" sx={{ p: 2 }}>
+                <Box component="form" onSubmit={submit} noValidate>
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <TextField
+                            size="small"
+                            label="メールアドレス"
+                            type="email"
+                            value={form.data.email}
+                            onChange={(e) => form.setData('email', e.target.value)}
+                            error={Boolean(form.errors.email)}
+                            helperText={form.errors.email}
+                        />
+                        <TextField
+                            size="small"
+                            label="表示名"
+                            value={form.data.display_name}
+                            onChange={(e) => form.setData('display_name', e.target.value)}
+                            error={Boolean(form.errors.display_name)}
+                            helperText={form.errors.display_name}
+                        />
+                        <Button type="submit" variant="contained" size="small" disabled={form.processing}>
+                            作成
+                        </Button>
+                    </Stack>
+                </Box>
+
+                <Typography sx={{ mt: 1.5, fontSize: '0.8125rem', color: 'text.disabled' }}>
+                    ログイン手段は付けません。管理者が決めたパスワードは本人以外が知っている状態になるので、
+                    本人にパスワード再設定かマジックリンクで入ってもらいます
+                </Typography>
+            </Paper>
+
             <SectionTitle note={`${accounts.length}件`}>アカウント一覧</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
@@ -57,58 +97,12 @@ export default function Index({ accounts }: IndexProps) {
                     )}
 
                     {accounts.map((account) => (
-                        <Box
+                        <AccountRow
                             key={account.id}
-                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
-                        >
-                            <Box sx={{ minWidth: 0 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mb: 0.5 }}>
-                                    <Icon
-                                        name={account.origin === 'service' ? 'robot' : 'user'}
-                                        sx={{ color: 'text.secondary', fontSize: '0.9375rem' }}
-                                    />
-                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-                                        {account.displayName || '(未設定)'}
-                                    </Typography>
-                                    <Chip
-                                        size="small"
-                                        variant="outlined"
-                                        label={account.origin === 'service' ? 'サービスアカウント' : 'ユーザーアカウント'}
-                                    />
-                                    {account.isAdmin && <Chip size="small" color="primary" label="管理者" />}
-                                    {account.isSuspended && <Chip size="small" color="error" label="停止中" />}
-                                    {account.email && (
-                                        <Chip
-                                            size="small"
-                                            color={account.isEmailVerified ? 'success' : 'default'}
-                                            label={account.isEmailVerified ? '確認済み' : '未確認'}
-                                        />
-                                    )}
-                                </Box>
-
-                                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 0.25 }}>
-                                    {account.email || '(メールアドレス未登録)'}
-                                </Typography>
-
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                                    <Typography component="code" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
-                                        {account.id}
-                                    </Typography>
-
-                                    {account.credentialTypes.length > 0 && (
-                                        <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
-                                            認証: {account.credentialTypes.map((t) => CREDENTIAL_LABELS[t] ?? t).join(', ')}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            </Box>
-
-                            <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                                <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
-                                    {account.createdAt}
-                                </Typography>
-                            </Box>
-                        </Box>
+                            account={account}
+                            isSelf={account.id === selfId}
+                            graceDays={graceDays}
+                        />
                     ))}
                 </Stack>
             </Paper>
