@@ -60,6 +60,40 @@ class AuthorizeTest extends TestCase {
         ], $overrides);
     }
 
+    // redirect_uri 自身がクエリを持つことがある (RFC 6749 3.1.2)。
+    // 無条件に ? を足すと ?do=cb?code=... になり、向こうで code を読めない
+    public function test_appendsToAnExistingQueryInTheRedirectUri(): void {
+        $client = OAuthClientModel::create([
+            'id' => 'client-with-query',
+            'name' => 'クエリ付きのリダイレクト先',
+            'redirect_uris' => ['https://rp.example.com/?do=callback'],
+            'scopes' => 'openid profile email',
+            'is_confidential' => true,
+            'trust' => ServiceTrust::OFFICIAL,
+            'skips_consent' => true,
+        ]);
+
+        $this->loginAccount();
+
+        $response = $this->get('/oauth/authorize?' . http_build_query([
+            'client_id' => $client->id,
+            'redirect_uri' => 'https://rp.example.com/?do=callback',
+            'response_type' => 'code',
+            'scope' => 'openid profile',
+            'state' => 'xyz',
+        ]));
+
+        $location = $response->headers->get('Location');
+        $this->assertIsString($location);
+        $this->assertStringContainsString('?do=callback&code=', $location);
+        $this->assertStringNotContainsString('?do=callback?', $location);
+
+        // 向こうが実際に読む形になっているか
+        parse_str((string)parse_url($location, PHP_URL_QUERY), $query);
+        $this->assertSame('callback', $query['do'] ?? null);
+        $this->assertNotEmpty($query['code'] ?? null);
+    }
+
     public function test_redirectsToLoginWhenNotAuthenticated(): void {
         $client = $this->makeClient();
 

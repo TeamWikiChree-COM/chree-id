@@ -98,7 +98,7 @@ class AuthorizeController {
         $params = ['code' => $code];
         if ($authorize->state !== null) $params['state'] = $authorize->state;
 
-        return redirect()->away($authorize->redirectUri . '?' . http_build_query($params));
+        return redirect()->away($this->withQuery($authorize->redirectUri, $params));
     }
 
     /**
@@ -126,6 +126,23 @@ class AuthorizeController {
     }
 
     /**
+     * redirect_uri にパラメータを足す。
+     *
+     * **redirect_uri は自分でクエリを持っていることがある** (`/?do=callback` など)。
+     * RFC 6749 3.1.2 はそれを認めていて、パラメータはクエリ成分に追加せよとしている。
+     * 無条件に `?` を足すと `?do=callback?code=...` になり、向こうで読めなくなる。
+     *
+     * @param string $redirectUri 検証済みのリダイレクト先
+     * @param array<string, string> $params 付け足すパラメータ
+     * @return string
+     */
+    private function withQuery(string $redirectUri, array $params): string {
+        $separator = str_contains($redirectUri, '?') ? '&' : '?';
+
+        return $redirectUri . $separator . http_build_query($params);
+    }
+
+    /**
      * redirect_uri を確認できていないエラーは RP へ返さない。
      * 未確認のURLへ飛ばすとオープンリダイレクタになる。
      *
@@ -145,6 +162,6 @@ class AuthorizeController {
         $state = $request->string('state')->toString();
         if ($state !== '') $params['state'] = $state;
 
-        return redirect()->away($request->string('redirect_uri')->toString() . '?' . http_build_query($params));
+        return redirect()->away($this->withQuery($request->string('redirect_uri')->toString(), $params));
     }
 }
