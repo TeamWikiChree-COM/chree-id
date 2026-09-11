@@ -5,7 +5,7 @@ use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\DescribeServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
-use App\Modules\Registry\Http\OfficialClientGuard;
+use App\Modules\Registry\Http\ProvisioningClientGuard;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,18 +15,18 @@ use Illuminate\Validation\ValidationException;
  * サービスが自分の利用者ぶんの ChreeID を取りに来る口。
  *
  * ブラウザを介さないサーバ間通信。利用者の同意なしにアカウントが増えるので、
- * 呼べるのは公式サービスだけにしている。承認済みの第三者に開けると、
- * そのサービスの都合で ChreeID の利用者が水増しされてしまう。
+ * 呼べるのは発行を許したクライアントだけにしている (`can_provision`)。
+ * 誰にでも開けると、そのサービスの都合で ChreeID の利用者が水増しされてしまう。
  */
 class ServiceAccountController {
 
-    private readonly OfficialClientGuard $guard;
+    private readonly ProvisioningClientGuard $guard;
     private readonly IssueServiceAccount $issue;
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;
     private readonly DescribeServiceAccount $describe;
 
-    public function __construct(OfficialClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe) {
+    public function __construct(ProvisioningClientGuard $guard, IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe) {
         $this->guard = $guard;
         $this->issue = $issue;
         $this->tickets = $tickets;
@@ -52,12 +52,18 @@ class ServiceAccountController {
             'password_hash' => ['nullable', 'string', 'max:255'],
             // 既に sub を知っている場合。紐付けだけ作り直したいときに使う
             'sub' => ['nullable', 'string', 'max:64'],
+            // 移行元が把握している外部IdPの識別子。"google:123" の形
+            'external' => ['array'],
+            'external.*' => ['string', 'max:190'],
         ]);
 
         $email = $request->string('email')->trim()->toString();
         $displayName = $request->string('display_name')->trim()->toString();
         $passwordHash = $request->string('password_hash')->toString();
         $knownSub = $request->string('sub')->toString();
+
+        /** @var list<string> $external */
+        $external = $request->input('external', []);
 
         $sub = $this->issue->execute(
             $client,
@@ -67,6 +73,7 @@ class ServiceAccountController {
             $displayName === '' ? null : $displayName,
             $passwordHash === '' ? null : $passwordHash,
             $knownSub === '' ? null : $knownSub,
+            $external,
         );
 
         return response()->json(['sub' => $sub]);

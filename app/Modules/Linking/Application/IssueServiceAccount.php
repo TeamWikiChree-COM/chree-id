@@ -2,6 +2,8 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Credential\Application\AdoptPasswordHash;
+use App\Modules\Credential\Domain\CredentialType;
+use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  *
  * 利用者に登録を強いず、サービスを使った時点で裏で発行するための入口。
  * 本人は何も気付かないまま ChreeID を持つことになるので、
- * 発行できるのは公式サービスだけに絞っている (呼び出し側で確認)。
+ * 発行できるのは許可したクライアントだけに絞っている (呼び出し側で確認)。
  *
  * 返す sub は ResolveSubject が決める。OIDC でログインしたときと
  * 同じ値でなければ、サービス側から見て別人になってしまう。
@@ -37,6 +39,7 @@ class IssueServiceAccount {
      * @param string|null $displayName 表示名
      * @param string|null $passwordHash 移行元が持っていた bcrypt ハッシュ
      * @param string|null $knownSub 既に分かっている sub。紐付けだけ作り直したいときに渡す
+     * @param list<string> $externalIdentities 移行元が把握している外部IdPの識別子 ("google:123" 形式)
      * @return string サービスに渡す sub
      */
     public function execute(
@@ -47,6 +50,7 @@ class IssueServiceAccount {
         ?string $displayName = null,
         ?string $passwordHash = null,
         ?string $knownSub = null,
+        array $externalIdentities = [],
     ): string {
         $existing = ServiceAccountModel::query()
             ->where('client_id', $client->id)
@@ -71,7 +75,46 @@ class IssueServiceAccount {
         // これが無いと、認証手段の無いアカウントが出来上がって本人が入れない
         if ($passwordHash !== null) $this->passwords->execute($accountId, $passwordHash);
 
+        // Google だけで使っていた人は、パスワードを持っていない。
+        // 外部IdPも引き継がないと、移行の画面に選べるものが1つも出なくなる
+        foreach ($externalIdentities as $identity) {
+            $this->adoptExternal($accountId, $identity);
+        }
+
         return $this->subjects->execute($client, $accountId);
+    }
+
+    /**
+     * 移行元が把握している外部IdPの連携を引き継ぐ。
+     *
+     * 同じ外部アカウントが複数の認証主体に紐付くのは許す (分離で起きうる)。
+     * ログイン時にどちらとして入るかは選ばせる。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @param string $identity "google:123456" の形
+     * @return void
+     */
+    private function adoptExternal(string $accountId, string $identity): void {
+        // provider と subject が揃っていないものは受け取らない
+        if (!str_contains($identity, ':')) return;
+
+        [$provider] = explode(':', $identity, 2);
+        if ($provider === '') return;
+
+        $already = CredentialModel::query()
+            ->where('auth_identity_id', $accountId)
+            ->where('type', CredentialType::OAUTH)
+            ->where('identifier', $identity)
+            ->exists();
+
+        if ($already) return;
+
+        CredentialModel::create([
+            'auth_identity_id' => $accountId,
+            'type' => CredentialType::OAUTH,
+            'identifier' => $identity,
+            'data' => ['provider' => $provider],
+        ]);
     }
 
     /**
@@ -143,7 +186,7 @@ class IssueServiceAccount {
         // 以前は email が一意だったので2人目以降を null にしていたが、その回避はもう要らない
         $account = $this->accounts->create(AccountOrigin::SERVICE, $email, $displayName);
 
-        // 公式サービスが確認済みと言うなら、こちらでも確認済みとして扱う。
+        // 発行を許したサービスが確認済みと言うなら、こちらでも確認済みとして扱う。
         // 外部 IdP の email_verified を信じているのと同じ判断
         if ($email !== null && $emailVerified) $this->accounts->markEmailVerified($account->id);
 

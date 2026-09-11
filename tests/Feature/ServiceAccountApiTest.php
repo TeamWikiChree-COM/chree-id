@@ -46,6 +46,8 @@ class ServiceAccountApiTest extends TestCase {
             'scopes' => 'openid profile email',
             'is_confidential' => $confidential,
             'trust' => $trust,
+            // 発行権限は信頼状態とは別の設定。公式の既定に合わせる
+            'can_provision' => $trust === ServiceTrust::OFFICIAL,
         ]);
     }
 
@@ -150,6 +152,65 @@ class ServiceAccountApiTest extends TestCase {
         $this->assertTrue($account->isEmailVerified());
         // 統合候補として見せるために、サービスが何と言っていたかも控えておく
         $this->assertSame('user@example.com', $link->service_email);
+    }
+
+    // Google だけで使っていた人は、これが無いと認証手段0件のアカウントになる
+    public function test_carriesExternalIdentities(): void {
+        $client = $this->client();
+        $this->issue($client, ['external' => ['google:123456']]);
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+
+        $this->assertTrue(\App\Modules\Credential\Infrastructure\CredentialModel::query()
+            ->where('auth_identity_id', $link->auth_identity_id)
+            ->where('type', \App\Modules\Credential\Domain\CredentialType::OAUTH)
+            ->where('identifier', 'google:123456')
+            ->exists());
+    }
+
+    // provider と subject が揃っていないものは受け取らない
+    public function test_ignoresMalformedExternalIdentities(): void {
+        $client = $this->client();
+        $this->issue($client, ['external' => ['nonsense']]);
+
+        $link = ServiceAccountModel::query()->firstOrFail();
+
+        $this->assertSame(0, \App\Modules\Credential\Infrastructure\CredentialModel::query()
+            ->where('auth_identity_id', $link->auth_identity_id)
+            ->where('type', \App\Modules\Credential\Domain\CredentialType::OAUTH)
+            ->count());
+    }
+
+    // 発行権限は信頼状態とは別。承認済みでも許可されていれば使える
+    public function test_allowsAnApprovedServiceThatMayProvision(): void {
+        $client = OAuthClientModel::create([
+            'id' => Str::lower(Str::ulid()->toString()),
+            'secret_hash' => hash('sha256', self::SECRET),
+            'name' => 'VPS-Search',
+            'redirect_uris' => ['https://search.example.com/callback'],
+            'scopes' => 'openid profile email',
+            'is_confidential' => true,
+            'trust' => ServiceTrust::APPROVED,
+            'can_provision' => true,
+        ]);
+
+        $this->issue($client)->assertOk();
+    }
+
+    // 公式でも、許可されていなければ使えない
+    public function test_refusesAnOfficialServiceThatMayNotProvision(): void {
+        $client = OAuthClientModel::create([
+            'id' => Str::lower(Str::ulid()->toString()),
+            'secret_hash' => hash('sha256', self::SECRET),
+            'name' => '公式だが発行しない',
+            'redirect_uris' => ['https://rp.example.com/callback'],
+            'scopes' => 'openid',
+            'is_confidential' => true,
+            'trust' => ServiceTrust::OFFICIAL,
+            'can_provision' => false,
+        ]);
+
+        $this->issue($client)->assertStatus(403);
     }
 
     // --- 状態の照会 ---
