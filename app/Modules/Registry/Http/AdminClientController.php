@@ -105,6 +105,7 @@ class AdminClientController {
             $input['trust'],
             $input['skips_consent'],
             $input['can_provision'],
+            $input['icon_url'],
         );
 
         return redirect('/admin/clients');

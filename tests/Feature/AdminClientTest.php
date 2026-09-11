@@ -185,4 +185,53 @@ class AdminClientTest extends TestCase {
         $this->assertFalse($client->is_confidential);
         $this->assertNull($client->secret_hash);
     }
+
+    // --- 保存した設定が往復するか ---
+
+    // 登録も編集も同じ validated() を通るが、渡し忘れると
+    // 片方だけ保存されない。実際 icon_url は編集で渡し忘れていた
+    public function test_keepsTheIconUrlOnCreate(): void {
+        $this->loginAs(self::ADMIN_EMAIL);
+
+        $this->post('/admin/clients', array_merge($this->payload(), [
+            'icon_url' => 'https://doku.example.com/icon.png',
+        ]))->assertRedirect('/admin/clients');
+
+        $this->assertSame(
+            'https://doku.example.com/icon.png',
+            OAuthClientModel::query()->firstOrFail()->icon_url,
+        );
+    }
+
+    public function test_keepsTheIconUrlOnEdit(): void {
+        $this->loginAs(self::ADMIN_EMAIL);
+        $this->post('/admin/clients', $this->payload());
+
+        $client = OAuthClientModel::query()->firstOrFail();
+
+        $this->post('/admin/clients/' . $client->id, array_merge($this->payload(), [
+            'icon_url' => 'https://doku.example.com/icon.png',
+        ]))->assertRedirect('/admin/clients');
+
+        $client->refresh();
+        $this->assertSame('https://doku.example.com/icon.png', $client->icon_url);
+    }
+
+    // 同じ取りこぼしが起きやすいので、他のフラグも往復を見ておく
+    public function test_keepsTheFlagsOnEdit(): void {
+        $this->loginAs(self::ADMIN_EMAIL);
+        $this->post('/admin/clients', $this->payload());
+
+        $client = OAuthClientModel::query()->firstOrFail();
+
+        $this->post('/admin/clients/' . $client->id, array_merge($this->payload(), [
+            'trust' => 'approved',
+            'skips_consent' => true,
+            'can_provision' => true,
+        ]))->assertRedirect('/admin/clients');
+
+        $client->refresh();
+        $this->assertTrue($client->skips_consent);
+        $this->assertTrue($client->can_provision);
+    }
 }

@@ -73,7 +73,7 @@ export default function Index({ accounts }: IndexProps) {
                                     <Chip
                                         size="small"
                                         variant="outlined"
-                                        label={account.origin === 'service' ? 'サービス連携' : 'ユーザー'}
+                                        label={account.origin === 'service' ? 'サービスアカウント' : 'ユーザーアカウント'}
                                     />
                                     {account.isAdmin && <Chip size="small" color="primary" label="管理者" />}
                                     {account.isSuspended && <Chip size="small" color="error" label="停止中" />}
