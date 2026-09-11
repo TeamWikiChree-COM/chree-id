@@ -111,7 +111,13 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
 
             <SectionTitle>2段階認証</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
-                {hasTotp && <Alert severity="success">認証アプリを設定済みです</Alert>}
+                {hasTotp && !flash.recoveryCodes && <Alert severity="success">認証アプリを設定済みです</Alert>}
+
+                {hasTotp && flash.recoveryCodes && (
+                    <Alert severity="success">
+                        認証アプリを設定しました。下に復旧コードを発行しているので控えてください
+                    </Alert>
+                )}
 
                 {!hasTotp && !pendingTotp && (
                     <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
@@ -215,9 +221,9 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
                     </Alert>
                 )}
 
-                {hasTotp && recoveryCodeCount === 0 && (
+                {hasTotp && recoveryCodeCount === 0 && !flash.recoveryCodes && (
                     <Alert severity="warning" sx={{ mb: 1.5 }}>
-                        認証アプリの端末を失うとログインできなくなります。復旧コードを発行してください
+                        復旧コードを使い切っています。認証アプリの端末を失うとログインできなくなります
                     </Alert>
                 )}
 

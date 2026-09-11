@@ -12,6 +12,7 @@ import InertiaLink from '../../Components/InertiaLink';
 import PasswordField from '../../Components/PasswordField';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
+import { useTurnstilePending } from '../../lib/turnstile';
 
 interface LoginProps {
     /** サービスが login_hint で添えてきたアドレス。二度打たせないために埋める */
@@ -25,6 +26,9 @@ export default function Login({ email }: LoginProps) {
         password: '',
         'cf-turnstile-response': '',
     });
+
+    // トークンが届くまで押させない。空のまま送ると必ず弾かれる
+    const turnstilePending = useTurnstilePending(data['cf-turnstile-response']);
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -82,7 +86,7 @@ export default function Login({ email }: LoginProps) {
 
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
-                    <Button type="submit" variant="contained" size="large" fullWidth disabled={processing}>
+                    <Button type="submit" variant="contained" size="large" fullWidth disabled={processing || turnstilePending}>
                         ログイン
                     </Button>
                 </Stack>

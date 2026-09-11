@@ -105,14 +105,16 @@ class SecurityController {
         }
 
         try {
-            $this->enableTotp->execute($accountId, $secret, $request->string('code')->toString());
+            $codes = $this->enableTotp->execute($accountId, $secret, $request->string('code')->toString());
         } catch (RuntimeException) {
             throw ValidationException::withMessages(['code' => 'コードが一致しません']);
         }
 
         $request->session()->forget(self::PENDING_TOTP);
 
-        return redirect('/settings/security');
+        // 有効化と同時に発行している。平文を見せられるのはこの1回だけなので、
+        // 控えずに端末を失うと詰む旨は画面側で伝える
+        return redirect('/settings/security')->with('recoveryCodes', $codes);
     }
 
     /**

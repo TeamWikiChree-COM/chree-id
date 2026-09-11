@@ -2,6 +2,7 @@
 namespace App\Modules\Identity\Application;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Modules\Identity\Mail\EmailChangeNoticeMail;
 use App\Modules\Identity\Mail\VerifyEmailChangeMail;
@@ -28,15 +29,19 @@ class RequestEmailChange {
     /**
      * @param string $accountId アカウントID (ULID)
      * @param string $newEmail 新しいメールアドレス
-     * @return bool 申し込めたら true。既に他のアカウントが使っていれば false
+     * @return EmailChangeResult 送ったか、送らなかったならその理由
      */
-    public function execute(string $accountId, string $newEmail): bool {
+    public function execute(string $accountId, string $newEmail): EmailChangeResult {
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return false;
+        if ($account === null) return EmailChangeResult::UNKNOWN_ACCOUNT;
+
+        // 今と同じアドレスに確認メールを送っても意味がない。
+        // 「送りました」と出しておいて何も変わらないので、ここで止める
+        if ($account->email === $newEmail) return EmailChangeResult::SAME_AS_CURRENT;
 
         // 他人が使っているアドレスには変更できない
         $existing = $this->byEmail->primary($newEmail);
-        if ($existing !== null && $existing->id !== $accountId) return false;
+        if ($existing !== null && $existing->id !== $accountId) return EmailChangeResult::TAKEN;
 
         $token = $this->issue($accountId, $newEmail);
 
@@ -45,11 +50,11 @@ class RequestEmailChange {
         );
 
         // 変更に気付けるよう、今のアドレスにも知らせる
-        if ($account->email !== null && $account->email !== $newEmail) {
+        if ($account->email !== null) {
             Mail::to($account->email)->send(new EmailChangeNoticeMail($newEmail));
         }
 
-        return true;
+        return EmailChangeResult::SENT;
     }
 
     /**

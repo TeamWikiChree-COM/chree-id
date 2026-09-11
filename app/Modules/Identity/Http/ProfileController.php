@@ -6,6 +6,7 @@ use App\Modules\Identity\Application\ConfirmEmailVerification;
 use App\Modules\Identity\Application\RequestEmailChange;
 use App\Modules\Identity\Application\RequestEmailVerification;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -93,13 +94,17 @@ class ProfileController {
             'email' => ['required', 'string', 'email', 'max:255'],
         ]);
 
-        $accepted = $this->requestChange->execute($accountId, $request->string('email')->toString());
+        $result = $this->requestChange->execute($accountId, $request->string('email')->toString());
 
-        if (!$accepted) {
-            throw ValidationException::withMessages([
-                'email' => 'このメールアドレスは使えません',
-            ]);
-        }
+        // 断る理由で直しかたが違うので、同じ文言に潰さない
+        $message = match ($result) {
+            EmailChangeResult::SENT => null,
+            EmailChangeResult::SAME_AS_CURRENT => '現在のメールアドレスです。変更する場合は別のアドレスを入力してください',
+            EmailChangeResult::TAKEN => 'このメールアドレスは使えません',
+            EmailChangeResult::UNKNOWN_ACCOUNT => 'アカウントが見つかりませんでした',
+        };
+
+        if ($message !== null) throw ValidationException::withMessages(['email' => $message]);
 
         return redirect('/settings')->with('emailChangeSent', true);
     }

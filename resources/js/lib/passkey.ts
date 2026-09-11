@@ -37,6 +37,28 @@ function csrfToken(): string {
 }
 
 /**
+ * サーバが返した失敗の理由を取り出す。
+ *
+ * **全部まとめて1つの文言にしない。** どれも同じ表示になると、
+ * rpId のずれなのか応答の壊れなのかが利用者にも開発者にも分からなくなる。
+ *
+ * @param response 失敗したレスポンス
+ * @param fallback 理由を取り出せなかったときの文言
+ * @returns 画面に出すメッセージ
+ */
+async function failureMessage(response: Response, fallback: string): Promise<string> {
+    // 本文が JSON とは限らない (502 や HTML のエラーページもありうる)
+    try {
+        const body = (await response.json()) as { reason?: unknown };
+        if (typeof body.reason === 'string' && body.reason !== '') return body.reason;
+    } catch {
+        // 取り出せないときは status で切り分けられるようにする
+    }
+
+    return `${fallback} (${String(response.status)})`;
+}
+
+/**
  * パスキー登録の一連のやり取りを行う。
  *
  * @param optionsUrl チャレンジ取得先
@@ -64,7 +86,7 @@ async function createPasskey(
         },
         body: new URLSearchParams(extraFields).toString(),
     });
-    if (!optionsResponse.ok) throw new Error('チャレンジを取得できませんでした');
+    if (!optionsResponse.ok) throw new Error(await failureMessage(optionsResponse, 'チャレンジを取得できませんでした'));
 
     const options = (await optionsResponse.json()) as RegistrationOptions;
 
@@ -103,7 +125,7 @@ async function createPasskey(
         body: JSON.stringify({ ...extraFields, credential: JSON.stringify(payload), label }),
     });
 
-    if (!registerResponse.ok) throw new Error('パスキーを登録できませんでした');
+    if (!registerResponse.ok) throw new Error(await failureMessage(registerResponse, 'パスキーを登録できませんでした'));
 }
 
 /**

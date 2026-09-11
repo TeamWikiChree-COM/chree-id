@@ -23,7 +23,9 @@ interface ProfileProps {
 export default function Profile({ displayName, email, emailVerified }: ProfileProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({ display_name: displayName ?? '' });
-    const emailForm = useForm({ email: email ?? '' });
+    // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
+    // 「確認メールを送りました」が出るのに何も変わらない
+    const emailForm = useForm({ email: '' });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -32,7 +34,7 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
 
     const submitEmail = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        emailForm.post('/profile/email/change');
+        emailForm.post('/profile/email/change', { onSuccess: () => emailForm.reset() });
     };
 
     return (
@@ -111,6 +113,7 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
                         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
                             <TextField
                                 label="新しいメールアドレス"
+                                placeholder="変更後のアドレスを入力"
                                 type="email"
                                 value={emailForm.data.email}
                                 onChange={(e) => emailForm.setData('email', e.target.value)}

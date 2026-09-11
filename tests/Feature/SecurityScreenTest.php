@@ -145,4 +145,31 @@ class SecurityScreenTest extends TestCase {
 
         $this->postJson('/security/passkey/register', ['credential' => '{}'])->assertStatus(400);
     }
+
+    // 控えずに端末を失うと詰む。2FA を有効にした時点で必ず発行し、その場で見せる
+    public function test_handsBackRecoveryCodesWhenTotpIsEnabled(): void {
+        $accountId = $this->register();
+        $this->post('/security/totp/start');
+
+        $pending = session('security.pending_totp');
+        $this->assertIsArray($pending);
+        $secret = $pending['secret'];
+        $this->assertIsString($secret);
+
+        $this->post('/security/totp/confirm', ['code' => app(Totp::class)->at($secret, intdiv(time(), 30))])
+            ->assertRedirect('/settings/security')
+            ->assertSessionHas('recoveryCodes');
+
+        $this->assertSame(10, app(GenerateRecoveryCodes::class)->remaining($accountId));
+    }
+
+    // コードが合わなければ、2FA も復旧コードもできていない
+    public function test_leavesNoRecoveryCodesWhenTheTotpCodeIsWrong(): void {
+        $accountId = $this->register();
+        $this->post('/security/totp/start');
+
+        $this->post('/security/totp/confirm', ['code' => '000000'])->assertSessionHasErrors('code');
+
+        $this->assertSame(0, app(GenerateRecoveryCodes::class)->remaining($accountId));
+    }
 }

@@ -86,16 +86,16 @@ interface AuthIdentityRepository {
     public function suspend(string $id): void;
 
     /**
-     * èªè¨¼ä¸»ä½ãç©çåé¤ããã
+     * アカウントを物理削除する。
      *
-     * credentials / service_accounts / user_accounts ãªã©ã¯ FK ã®
-     * cascade ã§ä¸ç·ã«æ¶ããã
+     * credentials / service_accounts / user_accounts などは FK の
+     * cascade で一律消える。
      *
-     * **æ®ãã¹ããã®ãç¡ãã¨ç¢ºããã¦ããå¼ã¶ãã¨ã**
-     * UserAccount ãä»ã® ServiceAccount ãæ®ã£ã¦ããèªè¨¼ä¸»ä½ãæ¶ãã¨ã
-     * ä»ãµã¼ãã¹ã®äººæ ¼ã¾ã§å·»ãæ·»ãã«ããã
+     * **残すべきものがないと確定してから呼ぶこと。** UserAccount や他の
+     * ServiceAccount が残っている認証主体を消すと、他サービスの人格まで
+     * 巻き添えにする。
      *
-     * @param string $id ã¢ã«ã¦ã³ãID (ULID)
+     * @param string $id アカウントID (ULID)
      * @return void
      */
     public function delete(string $id): void;

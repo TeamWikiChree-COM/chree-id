@@ -68,8 +68,13 @@ class PasskeyController {
                 $request->string('credential')->toString(),
                 $label === '' ? null : $label,
             );
-        } catch (RuntimeException) {
-            return response()->json(['error' => 'invalid_credential'], 422);
+        } catch (RuntimeException $e) {
+            // 原因を捨てると「パスキーを登録できませんでした」しか残らず、
+            // rpId のずれなのか応答の壊れなのかが分からなくなる。
+            // 中身 (ライブラリ側の理由) はログにだけ残し、画面には概要を返す
+            report($e);
+
+            return response()->json(['error' => 'invalid_credential', 'reason' => $e->getMessage()], 422);
         }
 
         return response()->json(['ok' => true]);

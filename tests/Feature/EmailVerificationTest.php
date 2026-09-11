@@ -167,4 +167,14 @@ class EmailVerificationTest extends TestCase {
         $this->post('/profile/email/verify')->assertRedirect('/login');
         $this->post('/profile/email/change', ['email' => 'new@example.com'])->assertRedirect('/login');
     }
+
+    // 今と同じアドレスを入れても「送りました」と出て、何も変わらないままだった
+    public function test_rejectsTheAddressTheAccountAlreadyHas(): void {
+        $this->login();
+
+        $this->post('/profile/email/change', ['email' => 'old@example.com'])
+            ->assertSessionHasErrors('email');
+
+        Mail::assertNothingSent();
+    }
 }

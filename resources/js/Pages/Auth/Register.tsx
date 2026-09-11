@@ -10,12 +10,16 @@ import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
+import { useTurnstilePending } from '../../lib/turnstile';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         'cf-turnstile-response': '',
     });
+
+    // トークンが届くまで押させない。空のまま送ると必ず弾かれる
+    const turnstilePending = useTurnstilePending(data['cf-turnstile-response']);
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -55,7 +59,7 @@ export default function Register() {
 
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
-                    <Button type="submit" variant="contained" disabled={processing}>
+                    <Button type="submit" variant="contained" disabled={processing || turnstilePending}>
                         メールを送信する
                     </Button>
 

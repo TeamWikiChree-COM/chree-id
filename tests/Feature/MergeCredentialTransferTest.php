@@ -197,12 +197,10 @@ class MergeCredentialTransferTest extends TestCase {
         $source = $this->source($client);
 
         $secret = app(EnableTotp::class)->generateSecret();
+        // 有効化が復旧コードもまとめて発行する。ここで手を加える必要はない
         app(EnableTotp::class)->execute($source['id'], $secret, app(Totp::class)->at($secret, intdiv(time(), 30)));
-        CredentialModel::create([
-            'auth_identity_id' => $source['id'],
-            'type' => CredentialType::RECOVERY_CODE,
-            'secret' => hash('sha256', 'code'),
-        ]);
+        $issued = $this->credentialCount($source['id'], CredentialType::RECOVERY_CODE);
+        $this->assertGreaterThan(0, $issued);
 
         $targetId = $this->signIn(withPassword: false);
 
@@ -216,7 +214,7 @@ class MergeCredentialTransferTest extends TestCase {
         $this->post('/claim/merge', ['token' => $source['token'], 'credentials' => [$totp->id]])
             ->assertRedirect('/');
 
-        $this->assertSame(1, $this->credentialCount($targetId, CredentialType::RECOVERY_CODE));
+        $this->assertSame($issued, $this->credentialCount($targetId, CredentialType::RECOVERY_CODE));
     }
 
     // マジックリンクも1つしか持てないので、寄せ先にあれば出さない
