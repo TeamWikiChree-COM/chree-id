@@ -1,6 +1,5 @@
 import { router } from "@inertiajs/react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import ButtonBase from "@mui/material/ButtonBase";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AuthLayout from "../../Components/AuthLayout";
@@ -20,29 +19,43 @@ interface ClaimChooseProps {
  *
  * 認証手段の選択と混ぜると何を聞かれているのか分かりにくいので、先にここで分ける。
  */
-export default function ClaimChoose({ token, serviceName, signedInAs }: ClaimChooseProps) {
+export default function ClaimChoose({
+    token,
+    serviceName,
+    signedInAs,
+}: ClaimChooseProps) {
     const go = (path: string): void => router.get(`/claim/${token}/${path}`);
 
+    // ボックスごと押せるようにする。中のボタンだけが的だと的が小さい
     const card = (
         title: string,
         description: string,
-        label: string,
         path: string,
-        primary: boolean,
+        recommended: boolean,
     ) => (
-        <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, p: 2 }}>
-            <Stack spacing={1}>
+        <ButtonBase
+            onClick={() => go(path)}
+            sx={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                border: "1px solid",
+                borderColor: recommended ? "primary.main" : "divider",
+                borderRadius: 2,
+                p: 2,
+                "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                },
+            }}
+        >
+            <Stack spacing={0.5}>
                 <Typography sx={{ fontWeight: 600 }}>{title}</Typography>
                 <Typography variant="body2" color="text.secondary">
                     {description}
                 </Typography>
-                <Box>
-                    <Button variant={primary ? "contained" : "outlined"} color={primary ? "primary" : "inherit"} onClick={() => go(path)}>
-                        {label}
-                    </Button>
-                </Box>
             </Stack>
-        </Box>
+        </ButtonBase>
     );
 
     const hasChreeId = signedInAs !== null;
@@ -51,7 +64,8 @@ export default function ClaimChoose({ token, serviceName, signedInAs }: ClaimCho
         <AuthLayout title="ChreeID を用意する" heading="ChreeID を用意する">
             <Typography variant="body2" color="text.secondary">
                 {serviceName}
-                でお使いのアカウントを、WikiChree.COM 共通の ChreeID として使えるようにします。
+                でお使いのアカウントを、WikiChree.COM 共通の ChreeID
+                として使えるようにします。
                 これまでの利用状況はそのまま引き継がれます。
             </Typography>
 
@@ -61,7 +75,6 @@ export default function ClaimChoose({ token, serviceName, signedInAs }: ClaimCho
                     hasChreeId
                         ? `${signedInAs.displayName ?? signedInAs.email ?? "お使いのアカウント"} に追加します。`
                         : "お使いの ChreeID にログインして、このアカウントをそこに追加します。",
-                    "持っている ChreeID に追加する",
                     "merge",
                     hasChreeId,
                 )}
@@ -69,7 +82,6 @@ export default function ClaimChoose({ token, serviceName, signedInAs }: ClaimCho
                 {card(
                     "はじめて使う",
                     "新しく ChreeID を作ります。ログイン方法をこのあと決めます。",
-                    "新しく作る",
                     "create",
                     !hasChreeId,
                 )}
