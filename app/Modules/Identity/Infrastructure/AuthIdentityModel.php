@@ -5,6 +5,7 @@ use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\IconSource;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * auth_identities テーブルのモデル (認証主体)
@@ -64,5 +65,22 @@ class AuthIdentityModel extends Model {
     // なんとなくかいとく、いらんけどこれあったほうがおちつくやろ知らんけど
     public function __construct(array $attributes = []) {
         parent::__construct($attributes);
+    }
+
+    /**
+     * 行を消したら、アップロードされたアイコンの実体も消す。
+     *
+     * 行だけ消すと、誰のものでもない画像がストレージに残り続ける。
+     * **まとめて delete すると走らない。** 物理削除は1件ずつ消すこと。
+     *
+     * @return void
+     */
+    #[\Override]
+    protected static function booted(): void {
+        static::deleting(function (self $model): void {
+            if ($model->icon_path === null) return;
+
+            Storage::disk('local')->delete($model->icon_path);
+        });
     }
 }

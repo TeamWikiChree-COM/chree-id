@@ -142,6 +142,39 @@ class SecurityScreenTest extends TestCase {
         return $row->id;
     }
 
+    /**
+     * 同じ端末名が並んだときに見分けられないと困る
+     */
+    public function test_renamesPasskey(): void {
+        $accountId = $this->register();
+        $row = CredentialModel::query()->create([
+            'auth_identity_id' => $accountId,
+            'type' => CredentialType::PASSKEY,
+            'identifier' => 'cred-1',
+            'data' => ['label' => 'Chrome (Windows)', 'sign_count' => 3],
+        ]);
+
+        $this->post('/security/credentials/rename', ['id' => $row->id, 'label' => '仕事用ノート'])
+            ->assertRedirect('/settings/security');
+
+        $data = CredentialModel::query()->findOrFail($row->id)->data;
+        $this->assertSame('仕事用ノート', $data['label']);
+        // 検証に使う値を巻き添えにしない
+        $this->assertSame(3, $data['sign_count']);
+    }
+
+    /**
+     * 名前を持たない認証手段には付けさせない
+     */
+    public function test_cannotRenamePassword(): void {
+        $accountId = $this->register();
+
+        $this->post('/security/credentials/rename', [
+            'id' => $this->credentialId($accountId, CredentialType::PASSWORD),
+            'label' => 'なにか',
+        ])->assertSessionHasErrors('credential');
+    }
+
     public function test_passkeyOptionsRequireLogin(): void {
         $this->postJson('/security/passkey/options')->assertStatus(401);
     }

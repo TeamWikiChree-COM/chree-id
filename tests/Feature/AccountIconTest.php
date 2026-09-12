@@ -95,6 +95,23 @@ class AccountIconTest extends TestCase {
         $this->get("/profile/icon/{$accountId}")->assertOk();
     }
 
+    /**
+     * 行だけ消して画像を残すと、誰のものでもないファイルが溜まる
+     */
+    public function test_deletesFileWhenAccountIsPurged(): void {
+        Storage::fake('local');
+        $accountId = $this->login();
+        $this->post('/profile/icon', ['source' => 'upload', 'icon' => UploadedFile::fake()->image('me.png')]);
+
+        $account = app(AuthIdentityRepository::class)->findById($accountId);
+        $this->assertNotNull($account);
+        $this->assertIsString($account->iconPath);
+
+        app(AuthIdentityRepository::class)->delete($accountId);
+
+        Storage::disk('local')->assertMissing($account->iconPath);
+    }
+
     public function test_returnsNotFoundWhenNoUpload(): void {
         $accountId = $this->login();
 

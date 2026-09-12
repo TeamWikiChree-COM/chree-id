@@ -111,7 +111,12 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
     }
 
     public function delete(string $id): void {
-        AuthIdentityModel::query()->whereKey($id)->delete();
+        // 行を取ってから消す。まとめて delete するとモデルのイベントが走らず、
+        // アップロードしたアイコンがストレージに残る
+        $model = AuthIdentityModel::query()->find($id);
+        if ($model === null) return;
+
+        $model->delete();
     }
 
     public function softDelete(string $id): void {
