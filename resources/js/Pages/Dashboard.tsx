@@ -57,6 +57,12 @@ export default function Dashboard({
             lead={t("dashboard.lead")}
             crumbs={[{ label: "ChreeID", href: "/" }, { label: t("dashboard.crumb") }]}
         >
+            {flash.accountMerged && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    {t("dashboard.merged")}
+                </Alert>
+            )}
+
             {flash.serviceRevoked && (
                 <Alert severity="success" sx={{ mb: 2 }}>
                     {t("dashboard.service_revoked")}
@@ -162,7 +168,18 @@ export default function Dashboard({
                             }
                         >
                             {mergeCandidates.map((candidate) => (
-                                <Box key={candidate.id} sx={{ px: 2, py: 1.5 }}>
+                                <Box
+                                    key={candidate.id}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        gap: 2,
+                                        px: 2,
+                                        py: 1.5,
+                                    }}
+                                >
+                                    <Box>
                                     <Typography sx={{ fontSize: "0.9375rem" }}>
                                         {candidate.displayName ??
                                             candidate.email ??
@@ -178,6 +195,16 @@ export default function Dashboard({
                                             ? t("dashboard.merge.has_account")
                                             : t("dashboard.merge.service_created")}
                                     </Typography>
+                                    </Box>
+
+                                    {/* 提示と実行は別処理。ここは相手側を証明する画面へ送るだけ */}
+                                    <RowAction
+                                        onClick={() =>
+                                            router.get(`/settings/merge/${candidate.id}`)
+                                        }
+                                    >
+                                        {t("dashboard.merge.action")}
+                                    </RowAction>
                                 </Box>
                             ))}
                         </Stack>

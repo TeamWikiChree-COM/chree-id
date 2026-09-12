@@ -14,6 +14,7 @@ use App\Modules\ExternalLogin\Http\ConnectionController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\IconController;
+use App\Modules\Identity\Http\MergeController;
 use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
@@ -74,6 +75,11 @@ Route::get('/settings/security', [SecurityController::class, 'show']);
 Route::get('/settings/connections', [ConnectionController::class, 'index']);
 Route::get('/settings/devices', [DeviceController::class, 'index']);
 Route::get('/settings/activity', [ActivityController::class, 'index']);
+
+// 候補として挙がった別アカウントを寄せる。**提示と実行は別処理。**
+// 実行の根拠は候補に挙がっていることではなく、相手側を証明できること
+Route::get('/settings/merge/{candidate}', [MergeController::class, 'show']);
+Route::post('/settings/merge', [MergeController::class, 'store'])->middleware('throttle:login');
 
 // 取り返しがつかないので、設定画面に混ぜず専用の画面に分ける
 Route::get('/settings/withdraw', [WithdrawalController::class, 'show']);

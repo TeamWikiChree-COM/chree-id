@@ -154,6 +154,8 @@ declare module '@inertiajs/core' {
                 emailChanged: boolean | null;
                 /** サービスの連携を切った直後だけ true */
                 serviceRevoked: boolean | null;
+                /** アカウントを統合した直後だけ true */
+                accountMerged: boolean | null;
                 /** マイグレーションを走らせた直後だけ入る artisan の出力 */
                 migrationOutput: string | null;
                 /** 掃除を流した直後だけ入る削除件数 */
