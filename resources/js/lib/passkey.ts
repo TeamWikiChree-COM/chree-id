@@ -61,6 +61,29 @@ async function failureMessage(response: Response, fallback: string): Promise<str
 }
 
 /**
+ * ブラウザが断った理由を、利用者に分かる言葉にする。
+ *
+ * **生の DOMException を出さない。** 「ユーザーが、既に依拠当事者に登録されている
+ * 認証情報のいずれかを含む認証器を登録しようとしました」のような直訳が出てきて、
+ * 何をすればいいのか分からない。
+ *
+ * 知らない種類だけは元の文言を残す。潰すと原因が追えなくなる。
+ *
+ * @param error credentials.create() が投げたもの
+ * @returns 画面に出すメッセージ
+ */
+function ceremonyMessage(error: unknown): string {
+    if (!(error instanceof DOMException)) return error instanceof Error ? error.message : String(error);
+
+    // InvalidStateError は excludeCredentials に当たった場合。二重登録を防いだ正しい動き
+    if (error.name === 'InvalidStateError') return t('passkey.error.already_registered');
+    if (error.name === 'NotAllowedError' || error.name === 'AbortError') return t('passkey.error.not_allowed');
+    if (error.name === 'SecurityError') return t('passkey.error.insecure');
+
+    return error.message;
+}
+
+/**
  * パスキー登録の一連のやり取りを行う。
  *
  * @param optionsUrl チャレンジ取得先
@@ -94,14 +117,19 @@ async function createPasskey(
 
     const options = (await optionsResponse.json()) as RegistrationOptions;
 
-    const credential = await navigator.credentials.create({
-        publicKey: {
-            ...options,
-            challenge: toBuffer(options.challenge),
-            user: { ...options.user, id: toBuffer(options.user.id) },
-            excludeCredentials: (options.excludeCredentials ?? []).map((c) => ({ ...c, id: toBuffer(c.id) })),
-        },
-    });
+    let credential: Credential | null;
+    try {
+        credential = await navigator.credentials.create({
+            publicKey: {
+                ...options,
+                challenge: toBuffer(options.challenge),
+                user: { ...options.user, id: toBuffer(options.user.id) },
+                excludeCredentials: (options.excludeCredentials ?? []).map((c) => ({ ...c, id: toBuffer(c.id) })),
+            },
+        });
+    } catch (error) {
+        throw new Error(ceremonyMessage(error));
+    }
 
     if (credential === null) throw new Error(t('passkey.error.cancelled'));
 
