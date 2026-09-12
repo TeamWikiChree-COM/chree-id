@@ -50,16 +50,22 @@ export function credentialIconFamily(credential: CredentialSummary): 'brands' | 
     return credential.provider === null ? 'solid' : idpIconFamily(credential.provider);
 }
 
+/** 認証手段を持たないログイン経路。PHP の LoginMethod にだけある値 */
+const METHOD_LABELS: Record<string, string> = {
+    registration: '新規登録',
+    claim: 'アカウントの引き取り',
+};
+
 /**
  * ログイン方式の名前。
  *
  * 履歴に出す用。`CredentialSummary` を持たない場面 (記録された文字列だけ) で使う。
  *
- * @param method PHP の CredentialType の value、または 'oauth:google' 形式
+ * @param method PHP の LoginMethod の value、または 'oauth:google' 形式
  */
 export function methodLabel(method: string): string {
     const [type, provider] = method.split(':');
     if (provider !== undefined && provider !== '') return idpLabel(provider);
 
-    return TYPE_LABELS[type as CredentialTypeValue] ?? method;
+    return TYPE_LABELS[type as CredentialTypeValue] ?? METHOD_LABELS[type] ?? method;
 }
