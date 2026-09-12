@@ -19,10 +19,26 @@ class LangBuildTest extends \Tests\TestCase {
 
     #[\Override]
     protected function tearDown(): void {
-        foreach (glob($this->dir . '/*/*') ?: [] as $file) {
-            unlink($file);
-        }
+        $this->removeTree($this->dir);
         parent::tearDown();
+    }
+
+    /**
+     * @param string $path 消す対象
+     * @return void
+     */
+    private function removeTree(string $path): void {
+        if (!is_dir($path)) {
+            unlink($path);
+
+            return;
+        }
+
+        foreach (glob($path . '/*') ?: [] as $child) {
+            $this->removeTree($child);
+        }
+
+        rmdir($path);
     }
 
     /**
