@@ -12,7 +12,6 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialSource;
 
 /**
  * パスキー (WebAuthn) の検証
@@ -87,8 +86,6 @@ class PasskeyVerifier extends AbstractVerifier {
         } catch (Throwable) {
             return $this->failure();
         }
-
-        if (!$updated instanceof PublicKeyCredentialSource) return $this->failure();
 
         $this->store->updateCounter($updated);
 

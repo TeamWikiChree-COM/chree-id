@@ -3,14 +3,14 @@ namespace App\Modules\Credential\Infrastructure\Passkey;
 
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 
 /**
  * パスキーの保存と取り出し。
  *
  * credentials の1行が1つのパスキーに対応する。
  *   identifier … credential_id (base64url)
- *   secret     … PublicKeyCredentialSource の JSON。公開鍵なので秘密ではない
+ *   secret     … CredentialRecord の JSON。公開鍵なので秘密ではない
  *   data       … 端末名など
  */
 class PasskeyStore {
@@ -18,11 +18,11 @@ class PasskeyStore {
 
     /**
      * @param string $accountId アカウントID (ULID)
-     * @param PublicKeyCredentialSource $source
+     * @param CredentialRecord $source 検証を通った資格情報
      * @param string|null $label 利用者が付ける端末名
      * @return void
      */
-    public function save(string $accountId, PublicKeyCredentialSource $source, ?string $label = null): void {
+    public function save(string $accountId, CredentialRecord $source, ?string $label = null): void {
         CredentialModel::query()->updateOrCreate(
             [
                 'type' => CredentialType::PASSKEY,
@@ -38,9 +38,9 @@ class PasskeyStore {
 
     /**
      * @param string $credentialId base64url の credential_id
-     * @return PublicKeyCredentialSource|null
+     * @return CredentialRecord|null
      */
-    public function find(string $credentialId): ?PublicKeyCredentialSource {
+    public function find(string $credentialId): ?CredentialRecord {
         $row = CredentialModel::query()
             ->where('type', CredentialType::PASSKEY)
             ->where('identifier', $credentialId)
@@ -55,10 +55,10 @@ class PasskeyStore {
      * 署名カウンタは増える一方なので、認証のたびに更新する。
      * 巻き戻ったら複製された端末の可能性がある。
      *
-     * @param PublicKeyCredentialSource $source
+     * @param CredentialRecord $source 認証を通った資格情報
      * @return void
      */
-    public function updateCounter(PublicKeyCredentialSource $source): void {
+    public function updateCounter(CredentialRecord $source): void {
         CredentialModel::query()
             ->where('type', CredentialType::PASSKEY)
             ->where('identifier', $this->encodeId($source->publicKeyCredentialId))

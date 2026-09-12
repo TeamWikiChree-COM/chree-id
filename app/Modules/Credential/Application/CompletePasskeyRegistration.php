@@ -10,7 +10,6 @@ use Throwable;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
-use Webauthn\PublicKeyCredentialSource;
 
 /**
  * ブラウザから返ってきた登録応答を検証して保存する
@@ -43,10 +42,6 @@ class CompletePasskeyRegistration {
             $record = $this->ceremony->attestationValidator()->check($response, $options, $this->context->rpId());
         } catch (Throwable $e) {
             throw new RuntimeException(__('credential.passkey.verification_failed'), 0, $e);
-        }
-
-        if (!$record instanceof PublicKeyCredentialSource) {
-            throw new RuntimeException(__('credential.passkey.invalid_result'));
         }
 
         $this->store->save($accountId, $record, $label);

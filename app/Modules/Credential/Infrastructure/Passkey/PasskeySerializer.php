@@ -8,7 +8,7 @@ use Webauthn\Denormalizer\WebauthnSerializerFactory;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialSource;
+use Webauthn\CredentialRecord;
 
 /**
  * WebAuthn のオブジェクトと JSON の相互変換。
@@ -54,19 +54,19 @@ class PasskeySerializer {
     }
 
     /**
-     * @param PublicKeyCredentialSource $source
+     * @param CredentialRecord $source 検証を通った資格情報
      * @return string DBに入れる JSON
      */
-    public function encodeSource(PublicKeyCredentialSource $source): string {
+    public function encodeSource(CredentialRecord $source): string {
         return $this->serializer()->serialize($source, 'json');
     }
 
     /**
      * @param string $json
-     * @return PublicKeyCredentialSource
+     * @return CredentialRecord
      */
-    public function decodeSource(string $json): PublicKeyCredentialSource {
-        $source = $this->serializer()->deserialize($json, PublicKeyCredentialSource::class, 'json');
+    public function decodeSource(string $json): CredentialRecord {
+        $source = $this->serializer()->deserialize($json, CredentialRecord::class, 'json');
 
         return $source;
     }
