@@ -11,6 +11,7 @@ import RowAction from '../../Components/RowAction';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import DeviceRow from '../../Components/Settings/DeviceRow';
+import { formatDateTime, formatRelative } from '../../lib/datetime';
 import type { LoginSessionSummary, TrustedDeviceSummary } from '../../types';
 
 interface DevicesProps {
@@ -48,7 +49,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                         <DeviceRow
                             key={session.id}
                             label={session.label}
-                            detail={[session.ipAddress, session.lastActiveAt && `最終利用 ${session.lastActiveAt}`]}
+                            detail={[session.ipAddress, formatRelative(session.lastActiveAt) && `最終利用 ${String(formatRelative(session.lastActiveAt))}`]}
                             badge={session.isCurrent ? <Chip size="small" label="この端末" /> : null}
                             action={
                                 <RowAction
@@ -90,7 +91,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                         <DeviceRow
                             key={device.id}
                             label={device.label}
-                            detail={[device.ipAddress, `${device.expiresAt} まで`]}
+                            detail={[device.ipAddress, `${String(formatDateTime(device.expiresAt))} まで`]}
                             badge={device.isCurrent ? <Chip size="small" label="この端末" /> : null}
                             action={
                                 <RowAction

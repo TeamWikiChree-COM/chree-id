@@ -1,8 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
-use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Infrastructure\CredentialModel;
+use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -20,6 +19,7 @@ class DashboardController {
         private readonly ChreeSession $session,
         private readonly ListConnectedServices $services,
         private readonly SuggestMergeCandidates $candidates,
+        private readonly ListCredentials $credentials,
     ) {}
 
     /**
@@ -40,38 +40,10 @@ class DashboardController {
                 'origin' => $account->origin->value,
                 'emailVerified' => $account->isEmailVerified(),
             ],
-            'credentials' => $this->credentialsOf($accountId),
+            'credentials' => $this->credentials->execute($accountId),
             'services' => $this->services->execute($accountId),
             // 同じアドレスの別アカウント。挙げるだけで、統合は本人の操作を通す
             'mergeCandidates' => $this->candidates->execute($accountId),
         ]);
-    }
-
-    /**
-     * @param string $accountId アカウントID (ULID)
-     * @return list<array{type: string, label: string|null, lastUsedAt: string|null}>
-     */
-    private function credentialsOf(string $accountId): array {
-        $rows = CredentialModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->orderBy('type')
-            ->get();
-
-        $result = [];
-        foreach ($rows as $row) {
-            // 復旧コードは1本1行なので、一覧にそのまま並べても意味がない
-            if ($row->type === CredentialType::RECOVERY_CODE) continue;
-
-            $data = $row->data;
-            $label = is_array($data) && is_string($data['label'] ?? null) ? $data['label'] : null;
-
-            $result[] = [
-                'type' => $row->type->value,
-                'label' => $label,
-                'lastUsedAt' => $row->last_used_at?->toDateTimeString(),
-            ];
-        }
-
-        return $result;
     }
 }

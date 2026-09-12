@@ -9,6 +9,7 @@ use App\Modules\Identity\Application\RequestEmailVerification;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -48,6 +49,7 @@ class ProfileController {
             'emailVerified' => $account->isEmailVerified(),
             'iconSource' => $account->iconSource->value,
             'iconUrl' => $this->icons->urlFor($account),
+            'pendingEmail' => $this->pendingEmailChange($accountId),
         ]);
     }
 
@@ -68,6 +70,42 @@ class ProfileController {
         $this->accounts->updateDisplayName($accountId, $displayName === '' ? null : $displayName);
 
         return redirect('/settings')->with('profileSaved', true);
+    }
+
+    /**
+     * 確認待ちのメールアドレス変更。
+     *
+     * 出さないと、送ったきり届かなかったときに本人が何も分からない。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @return array{email: string, expiresAt: string}|null 申し込みが無ければ null
+     */
+    private function pendingEmailChange(string $accountId): ?array {
+        $pending = PendingEmailChangeModel::query()
+            ->where('auth_identity_id', $accountId)
+            ->where('expires_at', '>', now())
+            ->latest('expires_at')
+            ->first();
+
+        if ($pending === null) return null;
+
+        return ['email' => $pending->new_email, 'expiresAt' => $pending->expires_at->toDateTimeString()];
+    }
+
+    /**
+     * 確認待ちの変更を取り消す。
+     *
+     * 打ち間違えたまま期限切れを待たせない。届いたリンクもこれで無効になる。
+     *
+     * @return RedirectResponse
+     */
+    public function cancelEmailChange(): RedirectResponse {
+        $accountId = $this->session->accountId();
+        if ($accountId === null) return redirect('/login');
+
+        PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();
+
+        return redirect('/settings')->with('emailChangeCancelled', true);
     }
 
     /**

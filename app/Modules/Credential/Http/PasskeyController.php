@@ -2,6 +2,7 @@
 namespace App\Modules\Credential\Http;
 
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
+use App\Modules\Device\Domain\DeviceLabel;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -66,7 +67,7 @@ class PasskeyController {
                 $accountId,
                 $options,
                 $request->string('credential')->toString(),
-                $label === '' ? null : $label,
+                $label === '' ? DeviceLabel::from($request->userAgent()) : $label,
             );
         } catch (RuntimeException $e) {
             // 原因を捨てると「パスキーを登録できませんでした」しか残らず、

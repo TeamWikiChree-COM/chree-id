@@ -4,6 +4,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
+import { formatDateTime } from '../../lib/datetime';
 import AuthLayout from "../../Components/AuthLayout";
 import ServiceIcon from "../../Components/ServiceIcon";
 
@@ -89,7 +90,7 @@ export default function ChooseAccount({
                                         variant="body2"
                                         color="text.secondary"
                                     >
-                                        {account.connectedAt} から
+                                        {formatDateTime(account.connectedAt)} から
                                     </Typography>
                                 )}
                             </Box>

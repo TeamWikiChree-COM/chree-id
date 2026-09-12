@@ -4,10 +4,11 @@ namespace App\Modules\Credential\Http;
 use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\EnableTotp;
 use App\Modules\Credential\Application\GenerateRecoveryCodes;
+use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Credential\Application\RemoveCredential;
+use App\Modules\Credential\Application\RenameCredential;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +32,9 @@ class SecurityController {
         private readonly GenerateRecoveryCodes $recoveryCodes,
         private readonly RemoveCredential $remove,
         private readonly EnableMagicLink $enableMagicLink,
-        private readonly CredentialRepository $credentials,
+        private readonly ListCredentials $credentials,
+        private readonly CredentialRepository $repository,
+        private readonly RenameCredential $rename,
     ) {}
 
     /**
@@ -43,8 +46,8 @@ class SecurityController {
         if ($accountId === null) return redirect('/login');
 
         return Inertia::render('Settings/Security', [
-            'credentials' => $this->credentialsOf($accountId),
-            'hasPassword' => $this->credentials->has($accountId, CredentialType::PASSWORD),
+            'credentials' => $this->credentials->execute($accountId),
+            'hasPassword' => $this->repository->has($accountId, CredentialType::PASSWORD),
             'recoveryCodeCount' => $this->recoveryCodes->remaining($accountId),
             'pendingTotp' => $request->session()->get(self::PENDING_TOTP . '.uri'),
         ]);
@@ -157,6 +160,37 @@ class SecurityController {
     }
 
     /**
+     * パスキーの名前を変える。
+     *
+     * 同じ種別を複数持てるので、どれがどの端末か分からなくなる。
+     *
+     * @param Request $request
+     * @return RedirectResponse
+     * @throws ValidationException 名前を付けられない認証手段だった場合
+     */
+    public function renameCredential(Request $request): RedirectResponse {
+        $accountId = $this->session->accountId();
+        if ($accountId === null) return redirect('/login');
+
+        $request->validate([
+            'id' => ['required', 'string'],
+            'label' => ['required', 'string', 'max:60'],
+        ]);
+
+        try {
+            $this->rename->execute(
+                $accountId,
+                $request->string('id')->toString(),
+                $request->string('label')->toString(),
+            );
+        } catch (RuntimeException $e) {
+            throw ValidationException::withMessages(['credential' => $e->getMessage()]);
+        }
+
+        return redirect('/settings/security');
+    }
+
+    /**
      * マジックリンクでのログインをやめる。
      *
      * 有効化の行は1つしか無いので、こちらは種別で消す。
@@ -175,34 +209,5 @@ class SecurityController {
         }
 
         return redirect('/settings/security');
-    }
-
-    /**
-     * @param string $accountId アカウントID (ULID)
-     * @return list<array{id: string, type: string, label: string|null, lastUsedAt: string|null, createdAt: string|null}>
-     */
-    private function credentialsOf(string $accountId): array {
-        $rows = CredentialModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('type', '!=', CredentialType::RECOVERY_CODE->value)
-            ->orderBy('type')
-            ->orderBy('created_at')
-            ->get();
-
-        $result = [];
-        foreach ($rows as $row) {
-            $data = $row->data;
-            $label = is_array($data) && is_string($data['label'] ?? null) ? $data['label'] : null;
-
-            $result[] = [
-                'id' => $row->id,
-                'type' => $row->type->value,
-                'label' => $label,
-                'lastUsedAt' => $row->last_used_at?->toDateTimeString(),
-                'createdAt' => $row->created_at?->toDateTimeString(),
-            ];
-        }
-
-        return $result;
     }
 }

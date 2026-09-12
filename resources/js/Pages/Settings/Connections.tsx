@@ -10,13 +10,9 @@ import Icon from '../../Components/Icon';
 import RowAction from '../../Components/RowAction';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
+import { formatDateTime } from '../../lib/datetime';
+import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
 import type { ExternalConnection } from '../../types';
-
-/** 表に出す名前とアイコン。ここに無い IdP は識別子をそのまま出す */
-const IDPS: Record<string, { label: string; icon: string }> = {
-    google: { label: 'Google', icon: 'google' },
-    github: { label: 'GitHub', icon: 'github' },
-};
 
 interface ConnectionsProps {
     connections: ExternalConnection[];
@@ -35,8 +31,6 @@ export default function Connections({ connections, providers }: ConnectionsProps
 
     const connected = new Set(connections.map((c) => c.provider));
     const available = providers.filter((name) => !connected.has(name));
-
-    const nameOf = (provider: string): string => IDPS[provider]?.label ?? provider;
 
     return (
         <AppLayout
@@ -68,15 +62,16 @@ export default function Connections({ connections, providers }: ConnectionsProps
                             <Box>
                                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                                     <Icon
-                                        name={IDPS[connection.provider]?.icon ?? 'right-to-bracket'}
-                                        family={IDPS[connection.provider] === undefined ? 'solid' : 'brands'}
+                                        name={idpIcon(connection.provider)}
+                                        family={idpIconFamily(connection.provider)}
                                         sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
                                     />
-                                    {nameOf(connection.provider)}
+                                    {idpLabel(connection.provider)}
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
                                     {connection.email ?? '連携済み'}
-                                    {connection.connectedAt !== null && ` ・ ${connection.connectedAt}`}
+                                    {formatDateTime(connection.connectedAt) !== null &&
+                                        ` ・ ${String(formatDateTime(connection.connectedAt))} に連携`}
                                 </Typography>
                             </Box>
                             <RowAction
@@ -110,15 +105,10 @@ export default function Connections({ connections, providers }: ConnectionsProps
                                     key={provider}
                                     variant="outlined"
                                     color="inherit"
-                                    startIcon={
-                                        <Icon
-                                            name={IDPS[provider]?.icon ?? 'right-to-bracket'}
-                                            family={IDPS[provider] === undefined ? 'solid' : 'brands'}
-                                        />
-                                    }
+                                    startIcon={<Icon name={idpIcon(provider)} family={idpIconFamily(provider)} />}
                                     onClick={() => router.post(`/settings/connections/${provider}`)}
                                 >
-                                    {nameOf(provider)} と連携する
+                                    {idpLabel(provider)} と連携する
                                 </Button>
                             ))}
                         </Stack>

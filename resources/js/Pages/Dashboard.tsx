@@ -9,30 +9,11 @@ import Typography from "@mui/material/Typography";
 import ServiceIcon from "../Components/ServiceIcon";
 import AppLayout from "../Components/AppLayout";
 import RowAction from "../Components/RowAction";
+import CredentialList from "../Components/CredentialList";
 import Icon from "../Components/Icon";
 import SectionTitle from "../Components/SectionTitle";
-import type {
-    Account,
-    ConnectedService,
-    CredentialSummary,
-    CredentialTypeValue,
-} from "../types";
-
-const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
-    password: "パスワード",
-    magic_link: "マジックリンク",
-    totp: "認証アプリ (TOTP)",
-    passkey: "パスキー",
-    oauth: "外部アカウント",
-};
-
-const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
-    password: "key",
-    magic_link: "envelope",
-    totp: "mobile-screen",
-    passkey: "fingerprint",
-    oauth: "right-to-bracket",
-};
+import { formatDateTime } from "../lib/datetime";
+import type { Account, ConnectedService, CredentialSummary } from "../types";
 
 /** 同じアドレスの別アカウント。挙げるだけで、勝手には統合しない */
 interface MergeCandidate {
@@ -159,71 +140,7 @@ export default function Dashboard({
             <SectionTitle note={`${credentials.length}件`}>
                 ログイン方法
             </SectionTitle>
-            <Paper variant="outlined">
-                <Stack
-                    divider={
-                        <Box
-                            sx={{
-                                borderBottom: "1px solid",
-                                borderColor: "divider",
-                            }}
-                        />
-                    }
-                >
-                    {credentials.length === 0 && (
-                        <Typography
-                            sx={{
-                                px: 2,
-                                py: 1.5,
-                                fontSize: "0.9375rem",
-                                color: "text.disabled",
-                            }}
-                        >
-                            登録されていません
-                        </Typography>
-                    )}
-
-                    {credentials.map((credential, index) => (
-                        <Box
-                            key={`${credential.type}-${index}`}
-                            sx={{ px: 2, py: 1.5 }}
-                        >
-                            <Typography
-                                sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                    fontSize: "0.9375rem",
-                                }}
-                            >
-                                <Icon
-                                    name={
-                                        TYPE_ICONS[credential.type] ??
-                                        "circle-question"
-                                    }
-                                    sx={{
-                                        width: 18,
-                                        textAlign: "center",
-                                        color: "text.disabled",
-                                    }}
-                                />
-                                {TYPE_LABELS[credential.type] ??
-                                    credential.type}
-                            </Typography>
-                            <Typography
-                                sx={{
-                                    fontSize: "0.8125rem",
-                                    color: "text.disabled",
-                                }}
-                            >
-                                {credential.lastUsedAt
-                                    ? `最終利用 ${credential.lastUsedAt}`
-                                    : "未使用"}
-                            </Typography>
-                        </Box>
-                    ))}
-                </Stack>
-            </Paper>
+            <CredentialList credentials={credentials} />
 
             {mergeCandidates.length > 0 && (
                 <>
@@ -348,8 +265,8 @@ export default function Dashboard({
                                         }}
                                     >
                                         {service.serviceUserId ??
-                                            (service.connectedAt
-                                                ? `${service.connectedAt} に連携`
+                                            (formatDateTime(service.connectedAt)
+                                                ? `${String(formatDateTime(service.connectedAt))} に連携`
                                                 : "連携済み")}
                                         {!service.hasActiveToken &&
                                             " ・ 現在ログインしていません"}

@@ -14,6 +14,7 @@ import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import IconSection from '../../Components/Settings/IconSection';
+import { formatDateTime } from '../../lib/datetime';
 import type { IconSourceValue } from '../../types';
 
 interface ProfileProps {
@@ -24,9 +25,11 @@ interface ProfileProps {
     iconSource: IconSourceValue;
     /** いま表示されている絵。未設定なら null */
     iconUrl: string | null;
+    /** 確認待ちのメールアドレス変更。無ければ null */
+    pendingEmail: { email: string; expiresAt: string } | null;
 }
 
-export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl }: ProfileProps) {
+export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl, pendingEmail }: ProfileProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({ display_name: displayName ?? '' });
     // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
@@ -63,6 +66,7 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                 {flash.emailChangeSent && (
                     <Alert severity="info">新しいアドレスに確認メールを送りました。リンクを開くまで変更されません</Alert>
                 )}
+                {flash.emailChangeCancelled && <Alert severity="success">確認待ちの変更を取り消しました</Alert>}
                 {flash.emailChanged === true && <Alert severity="success">メールアドレスを変更しました</Alert>}
                 {flash.emailChanged === false && (
                     <Alert severity="error">このリンクは期限切れか、すでに使用されています</Alert>
@@ -117,6 +121,26 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                                 確認メールを送る
                             </Button>
                         </>
+                    )}
+
+                    {pendingEmail !== null && (
+                        <Alert
+                            severity="info"
+                            sx={{ width: '100%' }}
+                            action={
+                                <Button
+                                    size="small"
+                                    color="inherit"
+                                    onClick={() => router.post('/profile/email/change/cancel')}
+                                >
+                                    取り消す
+                                </Button>
+                            }
+                        >
+                            {pendingEmail.email} への変更を確認待ちです
+                            {formatDateTime(pendingEmail.expiresAt) !== null &&
+                                ` (${String(formatDateTime(pendingEmail.expiresAt))} まで)`}
+                        </Alert>
                     )}
 
                     <Box component="form" onSubmit={submitEmail} noValidate sx={{ width: '100%', pt: 1 }}>

@@ -11,9 +11,10 @@ import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import ToggleSwitch from '../../Components/ToggleSwitch';
-import CredentialList from '../../Components/Settings/CredentialList';
+import CredentialList from '../../Components/CredentialList';
 import PasswordSection from '../../Components/Settings/PasswordSection';
 import TotpSection from '../../Components/Settings/TotpSection';
+import RenameCredentialDialog from '../../Components/Settings/RenameCredentialDialog';
 import { registerPasskey } from '../../lib/passkey';
 import type { CredentialSummary } from '../../types';
 
@@ -30,6 +31,7 @@ interface SecurityProps {
 export default function Security({ credentials, hasPassword, recoveryCodeCount, pendingTotp }: SecurityProps) {
     const { flash, errors } = usePage().props;
     const [passkeyError, setPasskeyError] = useState<string | null>(null);
+    const [renaming, setRenaming] = useState<CredentialSummary | null>(null);
 
     const addPasskey = async (): Promise<void> => {
         setPasskeyError(null);
@@ -55,7 +57,13 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
 
             <SectionTitle note={`${credentials.length}件`}>登録済みのログイン方法</SectionTitle>
             {errors.credential && <Alert severity="error" sx={{ mb: 1 }}>{errors.credential}</Alert>}
-            <CredentialList credentials={credentials} />
+            <CredentialList
+                credentials={credentials}
+                onRemove={(credential) => router.post('/security/credentials/remove', { id: credential.id })}
+                onRename={setRenaming}
+            />
+
+            <RenameCredentialDialog credential={renaming} onClose={() => setRenaming(null)} />
 
             <SectionTitle>パスワード</SectionTitle>
             <PasswordSection hasPassword={hasPassword} />

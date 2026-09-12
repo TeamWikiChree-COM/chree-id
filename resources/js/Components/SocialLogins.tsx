@@ -4,12 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Icon from './Icon';
-
-/** 表に出す名前とアイコン。ここに無い IdP は識別子をそのまま出す */
-const IDPS: Record<string, { label: string; icon: string }> = {
-    google: { label: 'Google', icon: 'google' },
-    github: { label: 'GitHub', icon: 'github' },
-};
+import { idpIcon, idpIconFamily, idpLabel } from '../lib/idps';
 
 interface SocialLoginsProps {
     /** マジックリンクの申し込み先。ログイン画面以外では省く */
@@ -33,8 +28,7 @@ export default function SocialLogins({ magicLinkHref }: SocialLoginsProps) {
             {externalIdps.length > 0 && (
                 <Stack direction="row" spacing={1.75} sx={{ justifyContent: 'center' }}>
                     {externalIdps.map((name) => {
-                        const idp = IDPS[name];
-                        const label = `${idp?.label ?? name} で続行`;
+                        const label = `${idpLabel(name)} で続行`;
 
                         return (
                             <Tooltip key={name} title={label}>
@@ -44,7 +38,7 @@ export default function SocialLogins({ magicLinkHref }: SocialLoginsProps) {
                                     aria-label={label}
                                     sx={{ width: 48, height: 48, border: '1px solid', borderColor: 'divider' }}
                                 >
-                                    <Icon name={idp?.icon ?? 'right-to-bracket'} family={idp === undefined ? 'solid' : 'brands'} sx={{ fontSize: '1.25rem' }} />
+                                    <Icon name={idpIcon(name)} family={idpIconFamily(name)} sx={{ fontSize: '1.25rem' }} />
                                 </IconButton>
                             </Tooltip>
                         );

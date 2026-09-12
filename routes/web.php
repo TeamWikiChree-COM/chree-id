@@ -85,6 +85,7 @@ Route::post('/profile', [ProfileController::class, 'update']);
 Route::post('/profile/email/verify', [ProfileController::class, 'sendEmailVerification'])->middleware('throttle:register');
 Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmEmail'])->middleware('throttle:verify');
 Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])->middleware('throttle:register');
+Route::post('/profile/email/change/cancel', [ProfileController::class, 'cancelEmailChange']);
 Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
 // アイコン。表示はログインを求めない (同意画面や連携先からも引くため)
@@ -115,6 +116,7 @@ Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);
 Route::post('/security/totp/confirm', [SecurityController::class, 'confirmTotp']);
 Route::post('/security/recovery-codes', [SecurityController::class, 'generateRecoveryCodes']);
 Route::post('/security/credentials/remove', [SecurityController::class, 'removeCredential']);
+Route::post('/security/credentials/rename', [SecurityController::class, 'renameCredential']);
 Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
 Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
 Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink']);

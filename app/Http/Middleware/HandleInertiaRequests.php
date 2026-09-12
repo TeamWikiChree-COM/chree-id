@@ -75,6 +75,7 @@ class HandleInertiaRequests extends Middleware {
                 'verificationSent' => $request->session()->get('verificationSent'),
                 'emailVerified' => $request->session()->get('emailVerified'),
                 'emailChangeSent' => $request->session()->get('emailChangeSent'),
+                'emailChangeCancelled' => $request->session()->get('emailChangeCancelled'),
                 'emailChanged' => $request->session()->get('emailChanged'),
                 'serviceRevoked' => $request->session()->get('serviceRevoked'),
                 'migrationOutput' => $request->session()->get('migrationOutput'),

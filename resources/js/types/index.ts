@@ -28,7 +28,12 @@ export interface CredentialSummary {
     /** 認証手段のID。削除はこれを指す (種別ではない) */
     id: string;
     type: CredentialTypeValue;
+    /** パスキーの端末名など。無ければ null */
     label: string | null;
+    /** 外部アカウントの連携先 ('google' など)。それ以外は null */
+    provider: string | null;
+    /** 連携先のメールアドレスなど、どれか見分けるための手がかり */
+    detail: string | null;
     lastUsedAt: string | null;
     createdAt: string | null;
 }
@@ -126,6 +131,8 @@ declare module '@inertiajs/core' {
                 emailVerified: boolean | null;
                 /** 変更の確認メールを送った直後だけ true */
                 emailChangeSent: boolean | null;
+                /** 確認待ちの変更を取り消した直後だけ true */
+                emailChangeCancelled: boolean | null;
                 /** 変更リンクを開いた直後だけ入る。false なら期限切れなど */
                 emailChanged: boolean | null;
                 /** サービスの連携を切った直後だけ true */
