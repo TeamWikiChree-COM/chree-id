@@ -2,6 +2,7 @@
 namespace App\Modules\Credential\Infrastructure\Passkey;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -18,7 +19,16 @@ class PasskeyDiagnostics {
      * 診断の版。**必ず出力に載せる。**
      * 載せないと、古い版が動いているのか本当に情報が無いのかを、ログから区別できない。
      */
-    private const VERSION = '2026-09-12c';
+    private const VERSION = '2026-09-12d';
+
+    /**
+     * 直前の往復のセッション指紋を持ち回るクッキー。
+     *
+     * **2行のログを突き合わせずに済ませるために置く。** 片方の行だけ見て
+     * 判断すると、options が動いていないのか、セッションが入れ替わったのかを
+     * 取り違える。原因が分かったら消す、期間限定のもの。
+     */
+    private const PROBE = 'chreeid_pk_probe';
 
     private readonly PasskeyContext $context;
 
@@ -41,6 +51,11 @@ class PasskeyDiagnostics {
      */
     public function reportStep(string $step, Request $request): void {
         Log::warning("passkey {$step}: 受け付けた " . json_encode($this->facts($request), JSON_THROW_ON_ERROR));
+
+        $id = $request->hasSession() ? $request->session()->getId() : null;
+
+        // 次の往復まで持たせる。ceremony に時間がかかるので少し長めに
+        Cookie::queue(cookie(self::PROBE, (string) $this->fingerprint($id), 10, httpOnly: true));
     }
 
     /**
@@ -68,11 +83,17 @@ class PasskeyDiagnostics {
         $cookie = $request->cookies->get(config()->string('session.cookie'));
         $session = $request->hasSession() ? $request->session() : null;
 
+        // クッキーは配列で来ることもある。文字列以外は持っていないものとして扱う
+        $probe = $request->cookie(self::PROBE);
+
         return [
             'diag' => self::VERSION,
             // **往復のあいだで変われば、ブラウザが別のクッキーを送っている。
             // 変わらなければ、同じセッションの中身が消されている**
             'session' => $this->fingerprint($session?->getId()),
+            // **これと session が違えばクッキーの取り違え、同じなら中身が消されている。
+            // null なら options を通っていない**
+            'options_session' => is_string($probe) ? $probe : null,
             // 届いていなければブラウザ側 (クッキーが落ちている)。届いていればサーバ側
             'session_cookie_sent' => $cookie !== null,
             'session_started' => $session !== null && $session->isStarted(),
