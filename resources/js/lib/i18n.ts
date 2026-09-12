@@ -1,13 +1,16 @@
-import ja from '../../../lang/ja_jp.json';
-import en from '../../../lang/en_us.json';
+import ja from '../../../lang/client/ja_jp.json';
+import en from '../../../lang/client/en_us.json';
 
 /**
  * 画面の文言。
  *
- * **正は lang/*.json で、サーバと同じものを読む** (ARCHITECTURE.md 10章)。
+ * **正は lang/client/*.json** (ARCHITECTURE.md 10章)。Vite がビルド時に
+ * バンドルへ畳み込むので、**辞書のための通信も実行時のパースも発生しない**。
  * サーバ側が PHP へ落としているのは OPcache に載せて毎リクエストの json_decode を
- * 消すためで、フロントにその事情は無い。Vite がビルド時にバンドルへ畳み込むので、
- * **辞書のための通信も実行時のパースも発生しない**。
+ * 消すためで、フロントにその事情は無い。
+ *
+ * **lang/server/ は読まない。** メール本文やサーバ間 API の文言まで載せると、
+ * 画面で使わないものを全利用者のブラウザへ配ることになる。
  *
  * 辞書を Inertia の shared props に載せないのは、ページ遷移のたびに
  * 全文がレスポンスへ乗るため。配るのはロケール名だけにしてある。
@@ -22,7 +25,7 @@ const CATALOGS = { ja, en } as const;
 
 type Locale = keyof typeof CATALOGS;
 
-/** 基準ロケール (lang/ja_jp.json) が持つキー。LangValidator が他ロケールの欠けを落とす */
+/** 基準ロケール (lang/client/ja_jp.json) が持つキー。LangValidator が他ロケールの欠けを落とす */
 export type TranslationKey = keyof typeof ja;
 
 /** `:name` に差し込む値 */

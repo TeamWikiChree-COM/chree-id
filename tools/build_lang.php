@@ -1,6 +1,6 @@
 <?php
 /**
- * 翻訳 JSON から PHP 配列を生成する。CI 用の入口。
+ * 翻訳 JSON を検証し、server 側から PHP 配列を生成する。CI 用の入口。
  *
  * デプロイのワークフローには PHP の依存解決 (composer install) を置いていないので、
  * artisan を通さずにクラスを直接読む。**中身は `php artisan lang:build` と同じ。**
