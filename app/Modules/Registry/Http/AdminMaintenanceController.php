@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Registry\Http;
 
-use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Device\Application\LoginSessions;
 use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
@@ -22,7 +22,7 @@ class AdminMaintenanceController {
         private readonly PurgeDeletedAccounts $purge,
         private readonly LoginSessions $sessions,
         private readonly TrustedDevices $trustedDevices,
-        private readonly LoginHistory $history,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -56,7 +56,7 @@ class AdminMaintenanceController {
         $accounts = $this->purge->execute();
 
         // 端末まわりの残骸。実体の無いセッションの控えと、期限切れの信頼
-        $devices = $this->sessions->prune() + $this->trustedDevices->prune() + $this->history->prune();
+        $devices = $this->sessions->prune() + $this->trustedDevices->prune() + $this->audit->prune();
 
         return redirect('/admin/maintenance')
             ->with('prunedTokens', $pruned->total() + $accounts + $devices);

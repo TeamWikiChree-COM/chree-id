@@ -13,15 +13,12 @@ import SettingsTabs from '../../Components/SettingsTabs';
 import DeviceRow from '../../Components/Settings/DeviceRow';
 import { useConfirm } from '../../lib/confirm';
 import { formatDateTime, formatRelative } from '../../lib/datetime';
-import { methodLabel } from '../../lib/credentials';
 import { t } from '../../lib/i18n';
-import type { LoginEventSummary, LoginSessionSummary, TrustedDeviceSummary } from '../../types';
+import type { LoginSessionSummary, TrustedDeviceSummary } from '../../types';
 
 interface DevicesProps {
     sessions: LoginSessionSummary[];
     trustedDevices: TrustedDeviceSummary[];
-    /** 直近のログイン。切れた分も残る */
-    loginHistory: LoginEventSummary[];
 }
 
 /**
@@ -30,7 +27,7 @@ interface DevicesProps {
  * 「ログイン中」と「信頼済み」は別物。前者は切ればその場でログアウトになり、
  * 後者は切っても入り直せる (次から2段階目を聞かれるだけ)。混ぜて見せない。
  */
-export default function Devices({ sessions, trustedDevices, loginHistory }: DevicesProps) {
+export default function Devices({ sessions, trustedDevices }: DevicesProps) {
     const { flash } = usePage().props;
     const { ask, dialog } = useConfirm();
 
@@ -155,35 +152,6 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
                     </Button>
                 </Box>
             )}
-
-            <SectionTitle note={t('settings.devices.history.count', { count: loginHistory.length })}>{t('settings.devices.history.heading')}</SectionTitle>
-            <Paper variant="outlined">
-                {loginHistory.length === 0 && (
-                    <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-                        {t('settings.devices.history.empty')}
-                    </Typography>
-                )}
-
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
-                    {loginHistory.map((event) => (
-                        <DeviceRow
-                            key={event.id}
-                            label={event.label}
-                            detail={[methodLabel(event.method), event.ipAddress, formatDateTime(event.at)]}
-                            badge={
-                                event.succeeded ? null : (
-                                    <Chip size="small" color="error" variant="outlined" label={t('settings.devices.history.failed')} />
-                                )
-                            }
-                            action={null}
-                        />
-                    ))}
-                </Stack>
-            </Paper>
-
-            <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                {t('settings.devices.footer_hint')}
-            </Typography>
 
             {dialog}
         </AppLayout>

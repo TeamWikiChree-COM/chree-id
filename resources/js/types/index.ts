@@ -61,17 +61,21 @@ export interface LoginSessionSummary {
     isCurrent: boolean;
 }
 
-/** ログイン履歴の1行 */
-export interface LoginEventSummary {
+/** 監査ログの1行 */
+export interface AuditEventSummary {
     id: string;
-    /** 'password' や 'oauth:google' など。PHP の LoginMethod と合わせる */
-    method: string;
+    /** PHP の AuditAction と合わせる。翻訳キーは `audit.action.<action>` */
+    action: string;
     /** 成立したか。false は失敗した試み */
     succeeded: boolean;
     /** 「Chrome (Windows)」のような表示名 */
     label: string;
     ipAddress: string | null;
     at: string | null;
+    /** 行ごとに形の違う付随情報。読めるものだけ拾う */
+    context: Record<string, unknown>;
+    /** 運営が代わりにやった操作か */
+    byOther: boolean;
 }
 
 /** 2段階目を省略してよい端末の1行 */

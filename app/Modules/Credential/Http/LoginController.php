@@ -1,7 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
-use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
@@ -33,7 +34,7 @@ class LoginController {
         private readonly LoginHint $loginHint,
         private readonly TrustedDevices $trustedDevices,
         private readonly LoginSessions $sessions,
-        private readonly LoginHistory $history,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -71,7 +72,12 @@ class LoginController {
 
         if (!$verified->isSuccess()) {
             // 本人が「誰かが試している」と気付ける唯一の手がかりになる
-            $this->history->record($account->id, LoginMethod::PASSWORD->value, succeeded: false);
+            $this->audit->record(
+                AuditAction::LOGIN_FAILED,
+                $account->id,
+                ['method' => LoginMethod::PASSWORD->value],
+                succeeded: false,
+            );
 
             throw $this->invalidCredentials();
         }

@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Device\Domain\DeviceLabel;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
@@ -25,6 +27,7 @@ class PasskeyController {
         private readonly StartPasskeyRegistration $start,
         private readonly CompletePasskeyRegistration $complete,
         private readonly PasskeySerializer $serializer,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -77,6 +80,8 @@ class PasskeyController {
 
             return response()->json(['error' => 'invalid_credential', 'reason' => $e->getMessage()], 422);
         }
+
+        $this->audit->record(AuditAction::CREDENTIAL_ADDED, $accountId, ['type' => 'passkey']);
 
         return response()->json(['ok' => true]);
     }

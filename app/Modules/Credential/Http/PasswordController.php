@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
@@ -23,12 +25,14 @@ class PasswordController {
     private readonly CredentialRepository $credentials;
     private readonly PasswordVerifier $verifier;
     private readonly SetPassword $setPassword;
+    private readonly AuditLog $audit;
 
-    public function __construct(ChreeSession $session, CredentialRepository $credentials, PasswordVerifier $verifier, SetPassword $setPassword) {
+    public function __construct(ChreeSession $session, CredentialRepository $credentials, PasswordVerifier $verifier, SetPassword $setPassword, AuditLog $audit) {
         $this->session = $session;
         $this->credentials = $credentials;
         $this->verifier = $verifier;
         $this->setPassword = $setPassword;
+        $this->audit = $audit;
     }
 
     /**
@@ -54,6 +58,8 @@ class PasswordController {
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages(['password' => $e->getMessage()]);
         }
+
+        $this->audit->record(AuditAction::PASSWORD_CHANGED, $accountId);
 
         return redirect('/settings/security')->with('passwordChanged', true);
     }

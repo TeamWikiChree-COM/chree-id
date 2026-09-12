@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Application\ConfirmEmailChange;
 use App\Modules\Identity\Application\ConfirmEmailVerification;
@@ -31,6 +33,7 @@ class ProfileController {
         private readonly RequestEmailChange $requestChange,
         private readonly ConfirmEmailChange $confirmChange,
         private readonly AccountIcons $icons,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -68,6 +71,7 @@ class ProfileController {
 
         $displayName = $request->string('display_name')->trim()->toString();
         $this->accounts->updateDisplayName($accountId, $displayName === '' ? null : $displayName);
+        $this->audit->record(AuditAction::PROFILE_UPDATED, $accountId);
 
         return redirect('/settings')->with('profileSaved', true);
     }
@@ -104,6 +108,7 @@ class ProfileController {
         if ($accountId === null) return redirect('/login');
 
         PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();
+        $this->audit->record(AuditAction::EMAIL_CHANGE_CANCELLED, $accountId);
 
         return redirect('/settings')->with('emailChangeCancelled', true);
     }
@@ -149,6 +154,10 @@ class ProfileController {
 
         if ($message !== null) throw ValidationException::withMessages(['email' => $message]);
 
+        $this->audit->record(AuditAction::EMAIL_CHANGE_REQUESTED, $accountId, [
+            'email' => $request->string('email')->toString(),
+        ]);
+
         return redirect('/settings')->with('emailChangeSent', true);
     }
 
@@ -159,7 +168,10 @@ class ProfileController {
      * @return RedirectResponse
      */
     public function confirmEmailChange(string $token): RedirectResponse {
-        $changed = $this->confirmChange->execute($token) !== null;
+        $accountId = $this->confirmChange->execute($token);
+        $changed = $accountId !== null;
+
+        if ($accountId !== null) $this->audit->record(AuditAction::EMAIL_CHANGED, $accountId);
 
         return redirect($this->session->isLoggedIn() ? '/settings' : '/login')
             ->with('emailChanged', $changed);
@@ -175,7 +187,10 @@ class ProfileController {
      * @return RedirectResponse
      */
     public function confirmEmail(string $token): RedirectResponse {
-        $verified = $this->confirmVerification->execute($token) !== null;
+        $accountId = $this->confirmVerification->execute($token);
+        $verified = $accountId !== null;
+
+        if ($accountId !== null) $this->audit->record(AuditAction::EMAIL_VERIFIED, $accountId);
 
         return redirect($this->session->isLoggedIn() ? '/settings' : '/login')
             ->with('emailVerified', $verified);

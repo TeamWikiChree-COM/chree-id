@@ -5,8 +5,12 @@ use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Linking\Infrastructure\ServiceAccountModel;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Registry\Application\ManageAccount;
 use App\Modules\Registry\Domain\AdminAccess;
+use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -24,6 +28,7 @@ class AdminAccountController {
         private readonly AdminAccess $adminAccess,
         private readonly ManageAccount $manage,
         private readonly ChreeSession $session,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -37,10 +42,9 @@ class AdminAccountController {
             ->get()
             ->all();
 
-        $types = $this->credentialTypes(array_values(array_map(
-            fn (AuthIdentityModel $m): string => $m->id,
-            $models,
-        )));
+        $ids = array_values(array_map(fn (AuthIdentityModel $m): string => $m->id, $models));
+        $types = $this->credentialTypes($ids);
+        $services = $this->services($ids);
 
         $accounts = array_values(array_map(fn (AuthIdentityModel $m): array => [
             'id' => $m->id,
@@ -54,6 +58,7 @@ class AdminAccountController {
             'isAdmin' => $this->isAdmin($m),
             'createdAt' => $m->created_at?->format('Y/m/d H:i') ?? '',
             'credentialTypes' => $types[$m->id] ?? [],
+            'services' => $services[$m->id] ?? [],
         ], $models));
 
         return Inertia::render('Admin/Accounts/Index', [
@@ -123,7 +128,7 @@ class AdminAccountController {
         $actor = $this->actor();
         $action = $request->string('action')->toString();
 
-        return $this->run(fn () => match ($action) {
+        $result = $this->run(fn () => match ($action) {
             'suspend' => $this->manage->suspend($actor, $account),
             'unsuspend' => $this->manage->unsuspend($actor, $account),
             'withdraw' => $this->manage->withdraw($actor, $account),
@@ -132,6 +137,16 @@ class AdminAccountController {
             // validate が in: で絞っているが、そちらを足してここを忘れると黙って何もしない
             default => throw new RuntimeException(__('admin.account.unknown_action')),
         });
+
+        // 物理削除は行ごと消えるので、対象ではなく管理者の記録として残す
+        $this->audit->record(
+            AuditAction::ADMIN_ACCOUNT_ACTED,
+            $action === 'purge' ? null : $account,
+            ['action' => $action, 'account' => $account],
+            actorId: $actor,
+        );
+
+        return $result;
     }
 
     /**
@@ -184,6 +199,42 @@ class AdminAccountController {
         }
 
         return array_map(fn (array $set): array => array_keys($set), $types);
+    }
+
+    /**
+     * アカウントがどのサービスの人格を持っているか。
+     *
+     * `origin` では分からない。あれは出自の記録で、**いま何に紐付いているかは
+     * ServiceAccount の行を見るしかない**（KAKUTEI.md）。
+     * 1人が同じサービスに複数持てるので、サービス名だけでなく識別子も出す。
+     *
+     * @param list<string> $accountIds 対象のアカウントID
+     * @return array<string, list<array{clientId: string, name: string, serviceUserId: string|null}>>
+     */
+    private function services(array $accountIds): array {
+        if ($accountIds === []) return [];
+
+        $links = ServiceAccountModel::query()
+            ->whereIn('auth_identity_id', $accountIds)
+            ->orderBy('created_at')
+            ->get();
+
+        $names = OAuthClientModel::query()
+            ->whereIn('id', $links->pluck('client_id')->unique()->all())
+            ->pluck('name', 'id');
+
+        $services = [];
+
+        foreach ($links as $link) {
+            $services[$link->auth_identity_id][] = [
+                'clientId' => $link->client_id,
+                // 消されたクライアントの行が残ることがある。IDを出して追えるようにする
+                'name' => is_string($names[$link->client_id] ?? null) ? $names[$link->client_id] : $link->client_id,
+                'serviceUserId' => $link->service_user_id,
+            ];
+        }
+
+        return $services;
     }
 
     /**

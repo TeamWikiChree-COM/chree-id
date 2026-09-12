@@ -24,6 +24,7 @@ export default function SettingsTabs({ current }: SettingsTabsProps) {
         { href: '/settings/security', label: t('settings.security.crumb') },
         { href: '/settings/connections', label: t('settings.connections.crumb') },
         { href: '/settings/devices', label: t('settings.devices.crumb') },
+        { href: '/settings/activity', label: t('settings.activity.crumb') },
     ] as const;
 
     return (

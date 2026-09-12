@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\IconSource;
@@ -24,11 +26,13 @@ class IconController {
     private readonly ChreeSession $session;
     private readonly AuthIdentityRepository $accounts;
     private readonly AccountIcons $icons;
+    private readonly AuditLog $audit;
 
-    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AccountIcons $icons) {
+    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AccountIcons $icons, AuditLog $audit) {
         $this->session = $session;
         $this->accounts = $accounts;
         $this->icons = $icons;
+        $this->audit = $audit;
     }
 
     /**
@@ -80,6 +84,8 @@ class IconController {
             IconSource::GRAVATAR => $this->icons->useGravatar($account),
             IconSource::UPLOAD => $this->icons->upload($account, $this->file($request)),
         };
+
+        $this->audit->record(AuditAction::ICON_CHANGED, $accountId, ['source' => $source->value]);
 
         return redirect('/settings')->with('iconSaved', true);
     }

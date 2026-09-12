@@ -14,6 +14,7 @@ import ToggleSwitch from '../../Components/ToggleSwitch';
 import CredentialList from '../../Components/CredentialList';
 import PasswordSection from '../../Components/Settings/PasswordSection';
 import TotpSection from '../../Components/Settings/TotpSection';
+import RecoveryCodes from '../../Components/Settings/RecoveryCodes';
 import RenameCredentialDialog from '../../Components/Settings/RenameCredentialDialog';
 import { useConfirm } from '../../lib/confirm';
 import { registerPasskey } from '../../lib/passkey';
@@ -144,16 +145,7 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                 {t('settings.security.recovery.heading')}
             </SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
-                {flash.recoveryCodes && (
-                    <Alert severity="warning" sx={{ mb: 1.5 }}>
-                        <Typography sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                            {t('settings.security.recovery.once')}
-                        </Typography>
-                        <Box component="pre" sx={{ m: 0, fontSize: '0.8125rem' }}>
-                            {flash.recoveryCodes.join('\n')}
-                        </Box>
-                    </Alert>
-                )}
+                {flash.recoveryCodes && <RecoveryCodes codes={flash.recoveryCodes} />}
 
                 {hasTotp && recoveryCodeCount === 0 && !flash.recoveryCodes && (
                     <Alert severity="warning" sx={{ mb: 1.5 }}>

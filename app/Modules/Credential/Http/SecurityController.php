@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\EnableTotp;
 use App\Modules\Credential\Application\GenerateRecoveryCodes;
@@ -35,6 +37,7 @@ class SecurityController {
         private readonly ListCredentials $credentials,
         private readonly CredentialRepository $repository,
         private readonly RenameCredential $rename,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -65,6 +68,7 @@ class SecurityController {
         if ($accountId === null) return redirect('/login');
 
         $this->enableMagicLink->execute($accountId);
+        $this->audit->record(AuditAction::CREDENTIAL_ADDED, $accountId, ['type' => 'magic_link']);
 
         return redirect('/settings/security');
     }
@@ -117,6 +121,7 @@ class SecurityController {
         }
 
         $request->session()->forget(self::PENDING_TOTP);
+        $this->audit->record(AuditAction::CREDENTIAL_ADDED, $accountId, ['type' => 'totp']);
 
         // 有効化と同時に発行している。平文を見せられるのはこの1回だけなので、
         // 控えずに端末を失うと詰む旨は画面側で伝える
@@ -131,8 +136,11 @@ class SecurityController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
+        $codes = $this->recoveryCodes->execute($accountId);
+        $this->audit->record(AuditAction::RECOVERY_CODES_GENERATED, $accountId);
+
         // 平文を見せられるのはこの1回だけなので、画面に持っていく
-        return redirect('/settings/security')->with('recoveryCodes', $this->recoveryCodes->execute($accountId));
+        return redirect('/settings/security')->with('recoveryCodes', $codes);
     }
 
     /**
@@ -152,6 +160,9 @@ class SecurityController {
 
         try {
             $this->remove->executeById($accountId, $request->string('id')->toString());
+            $this->audit->record(AuditAction::CREDENTIAL_REMOVED, $accountId, [
+                'credential' => $request->string('id')->toString(),
+            ]);
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages(['credential' => $e->getMessage()]);
         }
@@ -183,6 +194,9 @@ class SecurityController {
                 $request->string('id')->toString(),
                 $request->string('label')->toString(),
             );
+            $this->audit->record(AuditAction::CREDENTIAL_RENAMED, $accountId, [
+                'label' => $request->string('label')->toString(),
+            ]);
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages(['credential' => $e->getMessage()]);
         }
@@ -204,6 +218,7 @@ class SecurityController {
 
         try {
             $this->remove->execute($accountId, CredentialType::MAGIC_LINK);
+            $this->audit->record(AuditAction::CREDENTIAL_REMOVED, $accountId, ['type' => 'magic_link']);
         } catch (RuntimeException $e) {
             throw ValidationException::withMessages(['credential' => $e->getMessage()]);
         }

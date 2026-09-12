@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\ExternalLogin\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\RemoveCredential;
 use App\Modules\ExternalLogin\Application\ConnectedExternalAccounts;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
@@ -28,13 +30,15 @@ class ConnectionController {
     private readonly ExternalLoginFlow $flow;
     private readonly ConnectedExternalAccounts $connected;
     private readonly RemoveCredential $remove;
+    private readonly AuditLog $audit;
 
-    public function __construct(ChreeSession $session, ExternalIdpRegistry $registry, ExternalLoginFlow $flow, ConnectedExternalAccounts $connected, RemoveCredential $remove) {
+    public function __construct(ChreeSession $session, ExternalIdpRegistry $registry, ExternalLoginFlow $flow, ConnectedExternalAccounts $connected, RemoveCredential $remove, AuditLog $audit) {
         $this->session = $session;
         $this->registry = $registry;
         $this->flow = $flow;
         $this->connected = $connected;
         $this->remove = $remove;
+        $this->audit = $audit;
     }
 
     /**
@@ -92,6 +96,8 @@ class ConnectionController {
         } catch (RuntimeException $e) {
             return redirect('/settings/connections')->withErrors(['provider' => $e->getMessage()]);
         }
+
+        $this->audit->record(AuditAction::CONNECTION_REMOVED, $accountId);
 
         return redirect('/settings/connections')->with('connectionRemoved', true);
     }

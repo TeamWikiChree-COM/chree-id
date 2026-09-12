@@ -115,6 +115,24 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                             </Typography>
                         )}
 
+                        {account.services.map((service) => (
+                            <Chip
+                                key={`${service.clientId}:${service.serviceUserId ?? ''}`}
+                                size="small"
+                                variant="outlined"
+                                icon={<Icon name="plug" />}
+                                label={
+                                    service.serviceUserId === null
+                                        ? service.name
+                                        : t('admin.accounts.row.service', {
+                                              name: service.name,
+                                              id: service.serviceUserId,
+                                          })
+                                }
+                                sx={{ fontSize: '0.75rem' }}
+                            />
+                        ))}
+
                         {account.isDeleted && account.deletedAt !== null && (
                             <Typography sx={{ fontSize: '0.75rem', color: 'error.main' }}>
                                 {t('admin.accounts.row.deleted_note', { date: account.deletedAt, days: graceDays })}

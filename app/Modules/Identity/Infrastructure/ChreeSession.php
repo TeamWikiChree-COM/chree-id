@@ -1,7 +1,8 @@
 <?php
 namespace App\Modules\Identity\Infrastructure;
 
-use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use Illuminate\Http\Request;
 
 /**
@@ -14,11 +15,11 @@ class ChreeSession {
     private const KEY = 'chreeid.account_id';
 
     private readonly Request $request;
-    private readonly LoginHistory $history;
+    private readonly AuditLog $audit;
 
-    public function __construct(Request $request, LoginHistory $history) {
+    public function __construct(Request $request, AuditLog $audit) {
         $this->request = $request;
-        $this->history = $history;
+        $this->audit = $audit;
     }
 
     /**
@@ -37,7 +38,7 @@ class ChreeSession {
         $this->request->session()->regenerate();
         $this->request->session()->put(self::KEY, $accountId);
 
-        $this->history->record($accountId, $method);
+        $this->audit->record(AuditAction::LOGIN_SUCCEEDED, $accountId, ['method' => $method]);
     }
 
     /**

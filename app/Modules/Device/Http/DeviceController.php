@@ -1,7 +1,8 @@
 <?php
 namespace App\Modules\Device\Http;
 
-use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Device\Application\LoginSessions;
 use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -20,13 +21,13 @@ class DeviceController {
     private readonly ChreeSession $session;
     private readonly LoginSessions $sessions;
     private readonly TrustedDevices $trustedDevices;
-    private readonly LoginHistory $history;
+    private readonly AuditLog $audit;
 
-    public function __construct(ChreeSession $session, LoginSessions $sessions, TrustedDevices $trustedDevices, LoginHistory $history) {
+    public function __construct(ChreeSession $session, LoginSessions $sessions, TrustedDevices $trustedDevices, AuditLog $audit) {
         $this->session = $session;
         $this->sessions = $sessions;
         $this->trustedDevices = $trustedDevices;
-        $this->history = $history;
+        $this->audit = $audit;
     }
 
     /**
@@ -40,7 +41,6 @@ class DeviceController {
         return Inertia::render('Settings/Devices', [
             'sessions' => $this->sessions->listFor($accountId, $request->session()->getId()),
             'trustedDevices' => $this->trustedDevices->listFor($accountId, $this->trustedDevices->tokenFrom($request)),
-            'loginHistory' => $this->history->listFor($accountId),
         ]);
     }
 
@@ -67,6 +67,7 @@ class DeviceController {
         }
 
         $this->sessions->revoke($accountId, $id);
+        $this->audit->record(AuditAction::SESSION_REVOKED, $accountId, ['count' => 1]);
 
         return redirect('/settings/devices')->with('sessionsRevoked', 1);
     }
@@ -82,6 +83,7 @@ class DeviceController {
         if ($accountId === null) return redirect('/login');
 
         $count = $this->sessions->revokeOthers($accountId, $request->session()->getId());
+        $this->audit->record(AuditAction::SESSION_REVOKED, $accountId, ['count' => $count]);
 
         return redirect('/settings/devices')->with('sessionsRevoked', $count);
     }
@@ -103,6 +105,7 @@ class DeviceController {
 
         $current = $this->isCurrentDevice($accountId, $request, $request->string('id')->toString());
         $this->trustedDevices->revoke($accountId, $request->string('id')->toString());
+        $this->audit->record(AuditAction::DEVICE_TRUST_REVOKED, $accountId, ['count' => 1]);
 
         $response = redirect('/settings/devices')->with('trustRevoked', true);
 
@@ -119,7 +122,8 @@ class DeviceController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        $this->trustedDevices->revokeAll($accountId);
+        $count = $this->trustedDevices->revokeAll($accountId);
+        $this->audit->record(AuditAction::DEVICE_TRUST_REVOKED, $accountId, ['count' => $count]);
 
         return redirect('/settings/devices')
             ->with('trustRevoked', true)

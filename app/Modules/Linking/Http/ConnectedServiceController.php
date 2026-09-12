@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\RevokeServiceAccess;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +17,7 @@ class ConnectedServiceController {
     public function __construct(
         private readonly ChreeSession $session,
         private readonly RevokeServiceAccess $revoke,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -26,6 +29,7 @@ class ConnectedServiceController {
         if ($accountId === null) return redirect('/login');
 
         $this->revoke->execute($accountId, $client);
+        $this->audit->record(AuditAction::SERVICE_REVOKED, $accountId, ['client' => $client]);
 
         return redirect('/')->with('serviceRevoked', true);
     }

@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\ExternalLogin\Http;
 
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
@@ -32,6 +34,7 @@ class ExternalLoginController {
         private readonly ClaimServiceAccount $claim,
         private readonly AuthIdentityRepository $accounts,
         private readonly ExternalLoginFlow $flow,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -135,6 +138,8 @@ class ExternalLoginController {
         } catch (Throwable) {
             return redirect('/settings/connections')->withErrors(['provider' => __('auth.external_login.failed')]);
         }
+
+        $this->audit->record(AuditAction::CONNECTION_ADDED, $linkAccountId, ['provider' => $identity->provider]);
 
         return redirect('/settings/connections')->with('connectionAdded', true);
     }

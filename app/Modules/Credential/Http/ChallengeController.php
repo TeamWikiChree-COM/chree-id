@@ -1,7 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
-use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
@@ -31,7 +32,7 @@ class ChallengeController {
         private readonly CredentialRepository $credentials,
         private readonly ChreeSession $session,
         private readonly TrustedDevices $trustedDevices,
-        private readonly LoginHistory $history,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -67,7 +68,7 @@ class ChallengeController {
         $this->verify->execute($accountId, $type, ['code' => $request->string('code')->toString()], $factors);
 
         if (!$this->complete->execute($accountId, $factors)) {
-            $this->history->record($accountId, $type->value, succeeded: false);
+            $this->audit->record(AuditAction::LOGIN_FAILED, $accountId, ['method' => $type->value], succeeded: false);
 
             throw ValidationException::withMessages(['code' => __('auth.challenge.invalid_code')]);
         }
@@ -94,6 +95,7 @@ class ChallengeController {
      */
     private function trustCookie(Request $request, string $accountId): Cookie {
         $token = $this->trustedDevices->remember($request, $accountId);
+        $this->audit->record(AuditAction::DEVICE_TRUSTED, $accountId);
 
         return cookie(
             TrustedDevices::COOKIE,

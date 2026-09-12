@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Audit\Http\ActivityController;
+use App\Modules\Audit\Http\AdminAuditController;
 use App\Modules\Credential\Http\ChallengeController;
 use App\Modules\Credential\Http\LoginController;
 use App\Modules\Credential\Http\MagicLinkController;
@@ -71,6 +73,7 @@ Route::get('/settings', [ProfileController::class, 'show']);
 Route::get('/settings/security', [SecurityController::class, 'show']);
 Route::get('/settings/connections', [ConnectionController::class, 'index']);
 Route::get('/settings/devices', [DeviceController::class, 'index']);
+Route::get('/settings/activity', [ActivityController::class, 'index']);
 
 // 取り返しがつかないので、設定画面に混ぜず専用の画面に分ける
 Route::get('/settings/withdraw', [WithdrawalController::class, 'show']);
@@ -162,6 +165,9 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     Route::post('/migrations/run', [AdminMigrationController::class, 'run']);
 
     // cron を組めていない間も手で流せるようにしておく
+    // 全アカウントの記録が並ぶ。EnsureAdmin の内側から出さないこと
+    Route::get('/audit', [AdminAuditController::class, 'index']);
+
     Route::get('/maintenance', [AdminMaintenanceController::class, 'index']);
     Route::post('/maintenance/prune', [AdminMaintenanceController::class, 'prune']);
 

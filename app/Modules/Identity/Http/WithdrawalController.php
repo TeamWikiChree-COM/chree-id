@@ -2,6 +2,8 @@
 namespace App\Modules\Identity\Http;
 
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
+use App\Modules\Audit\Application\AuditLog;
+use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\WithdrawAccount;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -24,6 +26,7 @@ class WithdrawalController {
         private readonly ChreeSession $session,
         private readonly WithdrawAccount $withdraw,
         private readonly ListConnectedServices $services,
+        private readonly AuditLog $audit,
     ) {}
 
     /**
@@ -57,6 +60,9 @@ class WithdrawalController {
         $request->validate(['understood' => ['accepted']]);
 
         if (!$this->withdraw->execute($accountId)) return redirect('/settings');
+
+        // 行は猶予のあいだ残るので、記録も一緒に残る
+        $this->audit->record(AuditAction::ACCOUNT_WITHDRAWN, $accountId);
 
         $this->session->logout();
 
