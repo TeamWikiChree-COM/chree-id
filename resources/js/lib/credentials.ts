@@ -64,7 +64,7 @@ const METHOD_LABELS: Record<string, string> = {
  * @param method PHP の LoginMethod の value、または 'oauth:google' 形式
  */
 export function methodLabel(method: string): string {
-    const [type, provider] = method.split(':');
+    const [type = method, provider] = method.split(':');
     if (provider !== undefined && provider !== '') return idpLabel(provider);
 
     return TYPE_LABELS[type as CredentialTypeValue] ?? METHOD_LABELS[type] ?? method;
