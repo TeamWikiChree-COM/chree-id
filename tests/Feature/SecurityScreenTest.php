@@ -104,10 +104,10 @@ class SecurityScreenTest extends TestCase {
      * 最後の1件を消せると本人がログインできなくなる
      */
     public function test_cannotRemoveLastCredential(): void {
-        $this->register();
+        $accountId = $this->register();
 
-        $this->post('/security/credentials/remove', ['type' => 'password'])
-            ->assertSessionHasErrors('type');
+        $this->post('/security/credentials/remove', ['id' => $this->credentialId($accountId, CredentialType::PASSWORD)])
+            ->assertSessionHasErrors('credential');
     }
 
     public function test_removesCredentialWhenAnotherRemains(): void {
@@ -119,12 +119,27 @@ class SecurityScreenTest extends TestCase {
         $this->assertIsString($secret);
         $this->post('/security/totp/confirm', ['code' => app(Totp::class)->at($secret, intdiv(time(), 30))]);
 
-        $this->post('/security/credentials/remove', ['type' => 'totp'])->assertRedirect('/settings/security');
+        $this->post('/security/credentials/remove', ['id' => $this->credentialId($accountId, CredentialType::TOTP)])
+            ->assertRedirect('/settings/security');
 
         $this->assertSame(0, CredentialModel::query()
             ->where('auth_identity_id', $accountId)
             ->where('type', CredentialType::TOTP)
             ->count());
+    }
+
+    /**
+     * @param string $accountId アカウントID (ULID)
+     * @param CredentialType $type 探す認証方式
+     * @return string 認証手段のID (ULID)
+     */
+    private function credentialId(string $accountId, CredentialType $type): string {
+        $row = CredentialModel::query()
+            ->where('auth_identity_id', $accountId)
+            ->where('type', $type)
+            ->firstOrFail();
+
+        return $row->id;
     }
 
     public function test_passkeyOptionsRequireLogin(): void {

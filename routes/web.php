@@ -4,10 +4,14 @@ use App\Modules\Credential\Http\ChallengeController;
 use App\Modules\Credential\Http\LoginController;
 use App\Modules\Credential\Http\MagicLinkController;
 use App\Modules\Credential\Http\PasskeyController;
+use App\Modules\Credential\Http\PasswordController;
 use App\Modules\Credential\Http\PasswordResetController;
 use App\Modules\Credential\Http\SecurityController;
+use App\Modules\Device\Http\DeviceController;
+use App\Modules\ExternalLogin\Http\ConnectionController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
 use App\Modules\Identity\Http\DashboardController;
+use App\Modules\Identity\Http\IconController;
 use App\Modules\Identity\Http\ProfileController;
 use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
@@ -64,6 +68,8 @@ Route::post('/password/reset', [PasswordResetController::class, 'update'])->midd
 // 設定。プロフィールとセキュリティを1か所にまとめ、画面はタブで切り替える
 Route::get('/settings', [ProfileController::class, 'show']);
 Route::get('/settings/security', [SecurityController::class, 'show']);
+Route::get('/settings/connections', [ConnectionController::class, 'index']);
+Route::get('/settings/devices', [DeviceController::class, 'index']);
 
 // 取り返しがつかないので、設定画面に混ぜず専用の画面に分ける
 Route::get('/settings/withdraw', [WithdrawalController::class, 'show']);
@@ -81,6 +87,22 @@ Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmE
 Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])->middleware('throttle:register');
 Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
+// アイコン。表示はログインを求めない (同意画面や連携先からも引くため)
+Route::get('/profile/icon/{account}', [IconController::class, 'show']);
+Route::post('/profile/icon', [IconController::class, 'update']);
+
+// 外部アカウントの後付け連携。**始めるのは POST だけ。**
+// GET で始められると、細工したリンクを踏ませて第三者のアカウントを繋がせられる
+// /remove を先に置く。後ろだと {provider} が "remove" を飲み込む
+Route::post('/settings/connections/remove', [ConnectionController::class, 'destroy']);
+Route::post('/settings/connections/{provider}', [ConnectionController::class, 'store']);
+
+// ログイン中の端末と、2段階目を省略してよい端末。似ているが別物
+Route::post('/settings/devices/sessions/revoke', [DeviceController::class, 'revokeSession']);
+Route::post('/settings/devices/sessions/revoke-others', [DeviceController::class, 'revokeOtherSessions']);
+Route::post('/settings/devices/trusted/revoke', [DeviceController::class, 'revokeTrusted']);
+Route::post('/settings/devices/trusted/revoke-all', [DeviceController::class, 'revokeAllTrusted']);
+
 // 連携しているサービスを利用者自身が切る。管理画面の接続サービスとは別物
 Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'destroy']);
 
@@ -96,6 +118,10 @@ Route::post('/security/credentials/remove', [SecurityController::class, 'removeC
 Route::post('/security/passkey/options', [PasskeyController::class, 'options']);
 Route::post('/security/passkey/register', [PasskeyController::class, 'register']);
 Route::post('/security/magic-link', [SecurityController::class, 'enableMagicLink']);
+Route::post('/security/magic-link/disable', [SecurityController::class, 'disableMagicLink']);
+
+// 設定画面からのパスワード変更。再設定 (/password/reset) とは裏付けが違う
+Route::post('/settings/password', [PasswordController::class, 'update']);
 
 // 裏で発行したアカウントの引き取り。サービスが渡した一度きりの URL から入る
 Route::get('/claim/{token}', [ClaimController::class, 'show'])->middleware('throttle:verify');

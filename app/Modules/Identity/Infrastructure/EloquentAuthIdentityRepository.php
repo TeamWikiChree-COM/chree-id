@@ -166,7 +166,8 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
             $model->origin,
             $model->suspended_at,
             $model->deleted_at,
-            $model->icon_source,
+            // 作った直後のモデルは DB の既定値を持たない。null は「未設定」と同じ
+            $model->icon_source ?? IconSource::NONE,
             $model->icon_path,
         );
     }

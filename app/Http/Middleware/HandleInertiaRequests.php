@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
@@ -33,6 +34,20 @@ class HandleInertiaRequests extends Middleware {
     /**
      * @return bool ログイン中のアカウントが管理者か
      */
+    /**
+     * ログイン中の本人のアイコン。
+     *
+     * @return string|null 未設定、または未ログインなら null
+     */
+    private function iconUrl(): ?string {
+        $accountId = app(ChreeSession::class)->accountId();
+        if ($accountId === null) return null;
+
+        $account = app(AuthIdentityRepository::class)->findById($accountId);
+
+        return $account === null ? null : app(AccountIcons::class)->urlFor($account);
+    }
+
     private function isAdmin(): bool {
         $accountId = app(ChreeSession::class)->accountId();
         if ($accountId === null) return false;
@@ -65,6 +80,12 @@ class HandleInertiaRequests extends Middleware {
                 'migrationOutput' => $request->session()->get('migrationOutput'),
                 'prunedTokens' => $request->session()->get('prunedTokens'),
                 'accountCreated' => $request->session()->get('accountCreated'),
+                'passwordChanged' => $request->session()->get('passwordChanged'),
+                'iconSaved' => $request->session()->get('iconSaved'),
+                'connectionAdded' => $request->session()->get('connectionAdded'),
+                'connectionRemoved' => $request->session()->get('connectionRemoved'),
+                'sessionsRevoked' => $request->session()->get('sessionsRevoked'),
+                'trustRevoked' => $request->session()->get('trustRevoked'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める
@@ -78,6 +99,9 @@ class HandleInertiaRequests extends Middleware {
 
             // ヘッダーの中身を切り替えるためだけの値。認可には使わない
             'isLoggedIn' => app(ChreeSession::class)->isLoggedIn(),
+
+            // ヘッダーに出すアイコン。未設定なら null
+            'iconUrl' => $this->iconUrl(),
         ];
     }
 }

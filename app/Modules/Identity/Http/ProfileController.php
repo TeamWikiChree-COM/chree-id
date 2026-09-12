@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Application\ConfirmEmailChange;
 use App\Modules\Identity\Application\ConfirmEmailVerification;
 use App\Modules\Identity\Application\RequestEmailChange;
@@ -17,7 +18,8 @@ use Inertia\Response;
 /**
  * プロフィールの編集。
  *
- * 今は表示名だけ。メールアドレスの変更は再検証が要るので、ここには入れていない。
+ * 表示名・メールアドレス・アイコンを扱う。アイコンの中身そのものは AccountIcons、
+ * 画像の出し入れは IconController が持つ。
  */
 class ProfileController {
     public function __construct(
@@ -27,6 +29,7 @@ class ProfileController {
         private readonly ConfirmEmailVerification $confirmVerification,
         private readonly RequestEmailChange $requestChange,
         private readonly ConfirmEmailChange $confirmChange,
+        private readonly AccountIcons $icons,
     ) {}
 
     /**
@@ -43,6 +46,8 @@ class ProfileController {
             'displayName' => $account->displayName,
             'email' => $account->email,
             'emailVerified' => $account->isEmailVerified(),
+            'iconSource' => $account->iconSource->value,
+            'iconUrl' => $this->icons->urlFor($account),
         ]);
     }
 

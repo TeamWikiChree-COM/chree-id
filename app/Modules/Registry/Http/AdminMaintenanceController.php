@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Registry\Http;
 
+use App\Modules\Device\Application\LoginSessions;
+use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Registry\Application\PruneTokens;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +19,8 @@ class AdminMaintenanceController {
     public function __construct(
         private readonly PruneTokens $prune,
         private readonly PurgeDeletedAccounts $purge,
+        private readonly LoginSessions $sessions,
+        private readonly TrustedDevices $trustedDevices,
     ) {}
 
     /**
@@ -49,6 +53,10 @@ class AdminMaintenanceController {
         // 退会は印を付けるだけなので、実際に消えるのはここ
         $accounts = $this->purge->execute();
 
-        return redirect('/admin/maintenance')->with('prunedTokens', $pruned->total() + $accounts);
+        // 端末まわりの残骸。実体の無いセッションの控えと、期限切れの信頼
+        $devices = $this->sessions->prune() + $this->trustedDevices->prune();
+
+        return redirect('/admin/maintenance')
+            ->with('prunedTokens', $pruned->total() + $accounts + $devices);
     }
 }
