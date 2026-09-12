@@ -39,7 +39,7 @@ class ChreeSession {
      */
     public function login(string $accountId, string $method): void {
         $this->request->session()->regenerate();
-        $this->request->session()->put(self::KEY, $accountId);
+        // $this->request->session()->put(self::KEY, $accountId);
 
         $this->audit->record(AuditAction::LOGIN_SUCCEEDED, $accountId, ['method' => $method]);
     }
@@ -49,7 +49,7 @@ class ChreeSession {
      */
     public function logout(): void {
         $this->request->session()->forget(self::KEY);
-        $this->request->session()->regenerate();
+        // $this->request->session()->regenerate();
 
         // 意図したログアウトなので、勝手に消えた扱いにしない (DetectSessionLoss)
         $this->marker->forget();
