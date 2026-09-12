@@ -29,6 +29,7 @@ use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Registry\Http\AdminAccountController;
 use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Registry\Http\AdminController;
+use App\Modules\Registry\Http\AdminLogController;
 use App\Modules\Registry\Http\AdminMaintenanceController;
 use App\Modules\Registry\Http\AdminMigrationController;
 use App\Modules\Provider\Http\DiscoveryController;
@@ -173,6 +174,10 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     // cron を組めていない間も手で流せるようにしておく
     // 全アカウントの記録が並ぶ。EnsureAdmin の内側から出さないこと
     Route::get('/audit', [AdminAuditController::class, 'index']);
+
+    // 本番はシェルに入れない。例外の中身をここから読む
+    Route::get('/logs', [AdminLogController::class, 'index']);
+    Route::post('/logs/clear', [AdminLogController::class, 'clear']);
 
     Route::get('/maintenance', [AdminMaintenanceController::class, 'index']);
     Route::post('/maintenance/prune', [AdminMaintenanceController::class, 'prune']);

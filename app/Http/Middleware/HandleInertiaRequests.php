@@ -82,6 +82,7 @@ class HandleInertiaRequests extends Middleware {
                 'accountMerged' => $request->session()->get('accountMerged'),
                 'migrationOutput' => $request->session()->get('migrationOutput'),
                 'prunedTokens' => $request->session()->get('prunedTokens'),
+                'logCleared' => $request->session()->get('logCleared'),
                 'accountCreated' => $request->session()->get('accountCreated'),
                 'passwordChanged' => $request->session()->get('passwordChanged'),
                 'iconSaved' => $request->session()->get('iconSaved'),
