@@ -1,0 +1,9 @@
+{
+  "api.magic_link.invalid": "This link cannot be used",
+  "api.magic_link.not_applicable": "No link can be issued for this address",
+  "api.password.invalid_grant": "The email address or password is incorrect",
+  "api.password.managed": "The owner manages this account's password in ChreeID",
+  "api.password.not_found": "No link exists for this user",
+  "api.password.unsupported_hash": "This hash format cannot be accepted",
+  "api.service_user.unknown": "No ChreeID has been issued for this user yet"
+}
