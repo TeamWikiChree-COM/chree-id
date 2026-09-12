@@ -106,31 +106,31 @@ async function createPasskey(
     if (credential === null) throw new Error(t('passkey.error.cancelled'));
 
     // credentials.create() の戻りは Credential 止まりなので、WebAuthn の形まで絞る
-    const publicKeyCredential = credential as PublicKeyCredential;
-    const response = publicKeyCredential.response as AuthenticatorAttestationResponse;
+    // const publicKeyCredential = credential as PublicKeyCredential;
+    // const response = publicKeyCredential.response as AuthenticatorAttestationResponse;
 
-    const payload = {
-        id: publicKeyCredential.id,
-        rawId: toBase64Url(publicKeyCredential.rawId),
-        type: publicKeyCredential.type,
-        response: {
-            clientDataJSON: toBase64Url(response.clientDataJSON),
-            attestationObject: toBase64Url(response.attestationObject),
-        },
-    };
+    // const payload = {
+    //     id: publicKeyCredential.id,
+    //     rawId: toBase64Url(publicKeyCredential.rawId),
+    //     type: publicKeyCredential.type,
+    //     response: {
+    //         clientDataJSON: toBase64Url(response.clientDataJSON),
+    //         attestationObject: toBase64Url(response.attestationObject),
+    //     },
+    // };
 
-    const registerResponse = await fetch(registerUrl, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-XSRF-TOKEN': csrfToken(),
-            Accept: 'application/json',
-        },
-        body: JSON.stringify({ ...extraFields, credential: JSON.stringify(payload), label }),
-    });
+    // const registerResponse = await fetch(registerUrl, {
+    //     method: 'POST',
+    //     credentials: 'same-origin',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //         'X-XSRF-TOKEN': csrfToken(),
+    //         Accept: 'application/json',
+    //     },
+    //     body: JSON.stringify({ ...extraFields, credential: JSON.stringify(payload), label }),
+    // });
 
-    if (!registerResponse.ok) throw new Error(await failureMessage(registerResponse, t('passkey.error.register')));
+    // if (!registerResponse.ok) throw new Error(await failureMessage(registerResponse, t('passkey.error.register')));
 }
 
 /**

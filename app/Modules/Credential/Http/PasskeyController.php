@@ -58,7 +58,7 @@ class PasskeyController {
         }
 
         $options = $this->start->execute($account);
-        $request->session()->put(self::PENDING_OPTIONS, serialize($options));
+        // $request->session()->put(self::PENDING_OPTIONS, serialize($options));
 
         // 次の往復と突き合わせるために、成功した側も残す
         $this->diagnostics->reportStep('options', $request);
@@ -91,7 +91,7 @@ class PasskeyController {
      */
     public function register(Request $request): JsonResponse {
         $accountId = $this->session->accountId();
-        // if ($accountId === null) return $this->signedOut('register', $request);
+        if ($accountId === null) return $this->signedOut('register', $request);
 
         $stored = $request->session()->pull(self::PENDING_OPTIONS);
         if (!is_string($stored)) return response()->json(['error' => 'no_challenge'], 400);
