@@ -13,7 +13,8 @@ use App\Modules\Registry\Infrastructure\OAuthClientModel;
 class UpdateClient {
     /**
      * @param OAuthClientModel $client 対象
-     * @param string $name サービス名
+     * @param string $name
+     * @param array<string, string> $names 言語ごとの表示名。無い言語は $name を出す サービス名
      * @param list<string> $redirectUris 許可するリダイレクト先
      * @param string $scopes 空白区切りのスコープ
      * @param ServiceTrust $trust 信頼状態
@@ -25,6 +26,7 @@ class UpdateClient {
     public function execute(
         OAuthClientModel $client,
         string $name,
+        array $names,
         array $redirectUris,
         string $scopes,
         ServiceTrust $trust,
@@ -34,6 +36,7 @@ class UpdateClient {
     ): void {
         $client->forceFill([
             'name' => $name,
+            'names' => $names,
             'redirect_uris' => $redirectUris,
             'scopes' => $scopes,
             'trust' => $trust,

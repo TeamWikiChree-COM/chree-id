@@ -13,7 +13,8 @@ use Illuminate\Support\Str;
  */
 class RegisterClient {
     /**
-     * @param string $name サービス名
+     * @param string $name
+     * @param array<string, string> $names 言語ごとの表示名。無い言語は $name を出す サービス名
      * @param list<string> $redirectUris 許可するリダイレクト先
      * @param string $scopes 空白区切りのスコープ
      * @param ServiceTrust $trust 信頼状態
@@ -25,6 +26,7 @@ class RegisterClient {
      */
     public function execute(
         string $name,
+        array $names,
         array $redirectUris,
         string $scopes,
         ServiceTrust $trust,
@@ -39,6 +41,7 @@ class RegisterClient {
             'id' => Str::lower(Str::ulid()->toString()),
             'secret_hash' => $secret === null ? null : hash('sha256', $secret),
             'name' => $name,
+            'names' => $names,
             'redirect_uris' => $redirectUris,
             'scopes' => $scopes,
             'is_confidential' => $isConfidential,

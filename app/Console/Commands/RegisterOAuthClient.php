@@ -43,6 +43,8 @@ class RegisterOAuthClient extends Command {
 
         $registered = $this->register->execute(
             (string) $this->argument('name'),
+            // CLI からは言語ごとの名前を付けない。必要なら管理画面で足す
+            [],
             $redirectUris,
             (string) $this->option('scopes'),
             $trust,

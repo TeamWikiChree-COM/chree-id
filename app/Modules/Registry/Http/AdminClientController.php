@@ -59,6 +59,7 @@ class AdminClientController {
 
         $registered = $this->register->execute(
             $input['name'],
+            $input['names'],
             $input['redirect_uris'],
             $input['scopes'],
             $input['trust'],
@@ -100,6 +101,7 @@ class AdminClientController {
         $this->update->execute(
             $model,
             $input['name'],
+            $input['names'],
             $input['redirect_uris'],
             $input['scopes'],
             $input['trust'],
@@ -138,12 +140,15 @@ class AdminClientController {
 
     /**
      * @param Request $request
-     * @return array{name: string, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null}
+     * @return array{name: string, names: array<string, string>, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
         $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            // 言語ごとの表示名。空欄なら name を出すので、埋めさせない
+            'names' => ['array'],
+            'names.*' => ['nullable', 'string', 'max:100'],
             'redirect_uris' => ['required', 'array', 'min:1'],
             // 完全一致で照合するので、末尾スラッシュ違いも別物になる
             'redirect_uris.*' => ['required', 'string', 'url', 'max:500'],
@@ -170,6 +175,7 @@ class AdminClientController {
 
         return [
             'name' => $request->string('name')->toString(),
+            'names' => $this->localeNames($request),
             'redirect_uris' => $uris,
             'scopes' => $request->string('scopes')->toString(),
             'trust' => $trust,
@@ -194,12 +200,13 @@ class AdminClientController {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
+     * @return array{id: string, name: string, names: array<string, string>, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
      */
     private function toArray(OAuthClientModel $client): array {
         return [
             'id' => $client->id,
             'name' => $client->name,
+            'names' => $client->names ?? [],
             'redirectUris' => $client->redirect_uris,
             'scopes' => $client->scopes,
             'isConfidential' => $client->is_confidential,
@@ -255,5 +262,31 @@ class AdminClientController {
             ['value' => ServiceTrust::UNAPPROVED->value, 'label' => __('admin.client.trust.unapproved')],
             ['value' => ServiceTrust::DISABLED->value, 'label' => __('admin.client.trust.disabled')],
         ];
+    }
+
+    /**
+     * 言語ごとの表示名を整える。
+     *
+     * 空欄は持たない。**「空文字が入っている」と「入れていない」を区別しない**ため。
+     * 区別すると、消したつもりの欄が空の名前として出てしまう。
+     *
+     * @param Request $request 送られてきた入力
+     * @return array<string, string>
+     */
+    private function localeNames(Request $request): array {
+        /** @var array<string, string> $input */
+        $input = $request->array('names');
+        $names = [];
+
+        /** @var list<string> $locales */
+        $locales = config('chreeid.locales');
+
+        foreach ($locales as $locale) {
+            $name = trim((string) ($input[$locale] ?? ''));
+
+            if ($name !== '') $names[$locale] = $name;
+        }
+
+        return $names;
     }
 }
