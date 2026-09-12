@@ -58,7 +58,9 @@ class PasskeyController {
         }
 
         $options = $this->start->execute($account);
-        $request->session()->put(self::PENDING_OPTIONS, serialize($options));
+        
+        // わかったことはこのL63の行を消すとログアウトされなくなる
+        // $request->session()->put(self::PENDING_OPTIONS, serialize($options));
 
         // 次の往復と突き合わせるために、成功した側も残す
         $this->diagnostics->reportStep('options', $request);
