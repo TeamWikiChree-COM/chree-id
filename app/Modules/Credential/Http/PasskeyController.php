@@ -65,20 +65,20 @@ logger()->debug('options inspect', [
     'serialized_size' => strlen(serialize($options)),
 ]);
         
-        // わかったことはこのL63の行を消すとログアウトされなくなる
 
         logger()->warning('BEFORE PUT', [
     'id' => $request->session()->getId(),
 ]);
 
-$request->session()->put(self::PENDING_OPTIONS, $options);
+// わかったことはこの行を消すとログアウトされなくなる
+$request->session()->put(self::PENDING_OPTIONS, serialize($options)); // こいつがログアウトの原因、serializeはあってもなくても同じ
 
 logger()->warning('AFTER PUT', [
     'id' => $request->session()->getId(),
 ]);
 
         // これはいける、だからserialize(..)
-        $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']);
+        $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']); // なおここで上書きしていると問題ない
 
         // 次の往復と突き合わせるために、成功した側も残す
         $this->diagnostics->reportStep('options', $request);
