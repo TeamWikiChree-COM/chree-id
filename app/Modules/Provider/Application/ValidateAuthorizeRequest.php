@@ -23,7 +23,7 @@ class ValidateAuthorizeRequest {
         $redirectUri = $this->checkRedirectUri($client, $request->string('redirect_uri')->toString());
 
         if ($request->string('response_type')->toString() !== 'code') {
-            throw AuthorizeError::redirectable('unsupported_response_type', 'response_type は code のみ対応しています');
+            throw AuthorizeError::redirectable('unsupported_response_type', __('oauth.error.response_type_unsupported'));
         }
 
         $scopes = $this->checkScopes($client, $request->string('scope')->toString());
@@ -48,8 +48,8 @@ class ValidateAuthorizeRequest {
     private function findClient(string $clientId): OAuthClientModel {
         $client = OAuthClientModel::query()->find($clientId);
 
-        if ($client === null) throw AuthorizeError::fatal('invalid_client', 'client_id が登録されていません');
-        if (!$client->trust->isUsable()) throw AuthorizeError::fatal('unauthorized_client', 'このサービスは利用を停止しています');
+        if ($client === null) throw AuthorizeError::fatal('invalid_client', __('oauth.error.client_id_unregistered'));
+        if (!$client->trust->isUsable()) throw AuthorizeError::fatal('unauthorized_client', __('oauth.error.service_suspended'));
 
         return $client;
     }
@@ -61,9 +61,9 @@ class ValidateAuthorizeRequest {
      * @throws AuthorizeError
      */
     private function checkRedirectUri(OAuthClientModel $client, string $redirectUri): string {
-        if ($redirectUri === '') throw AuthorizeError::fatal('invalid_request', 'redirect_uri が指定されていません');
+        if ($redirectUri === '') throw AuthorizeError::fatal('invalid_request', __('oauth.error.redirect_uri_missing'));
         if (!$client->allowsRedirectUri($redirectUri)) {
-            throw AuthorizeError::fatal('invalid_request', 'redirect_uri が登録されていません');
+            throw AuthorizeError::fatal('invalid_request', __('oauth.error.redirect_uri_unregistered'));
         }
 
         return $redirectUri;
@@ -79,10 +79,10 @@ class ValidateAuthorizeRequest {
         $scopes = array_values(array_filter(explode(' ', $scope), static fn (string $s): bool => $s !== ''));
 
         if (!in_array('openid', $scopes, true)) {
-            throw AuthorizeError::redirectable('invalid_scope', 'scope に openid が必要です');
+            throw AuthorizeError::redirectable('invalid_scope', __('oauth.error.scope_openid_required'));
         }
         if (!$client->allowsScopes($scopes)) {
-            throw AuthorizeError::redirectable('invalid_scope', '許可されていない scope が含まれています');
+            throw AuthorizeError::redirectable('invalid_scope', __('oauth.error.scope_not_allowed'));
         }
 
         return $scopes;
@@ -101,7 +101,7 @@ class ValidateAuthorizeRequest {
         if ($challenge === null) {
             // public クライアントは秘密を持てないので PKCE を省略させない
             if ($client->requiresPkce()) {
-                throw AuthorizeError::redirectable('invalid_request', 'このクライアントは code_challenge が必須です');
+                throw AuthorizeError::redirectable('invalid_request', __('oauth.error.code_challenge_required'));
             }
 
             return ['challenge' => null, 'method' => null];
@@ -109,7 +109,7 @@ class ValidateAuthorizeRequest {
 
         // plain は攻撃者が challenge をそのまま送れるので受け付けない
         if ($method !== 'S256') {
-            throw AuthorizeError::redirectable('invalid_request', 'code_challenge_method は S256 のみ対応しています');
+            throw AuthorizeError::redirectable('invalid_request', __('oauth.error.code_challenge_method_unsupported'));
         }
 
         return ['challenge' => $challenge, 'method' => $method];

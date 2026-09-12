@@ -21,12 +21,18 @@ use Inertia\Response;
  * store() の応答はアドレスの登録有無で変わらず、存在確認には使えない。
  */
 class RegisterController {
-    /** 理由ごとの画面表示。内部の理由コードをそのまま出さないための対応表 */
-    private const FAILURE_MESSAGES = [
-        RegistrationTokenException::NOT_FOUND => 'このリンクは使えません。お手数ですが、もう一度登録をやり直してください',
-        RegistrationTokenException::EXPIRED => 'このリンクは期限切れです。お手数ですが、もう一度登録をやり直してください',
-        RegistrationTokenException::EMAIL_TAKEN => 'このメールアドレスは既に使われています。ログインをお試しください',
-    ];
+    /**
+     * 理由ごとの画面表示。内部の理由コードをそのまま出さないための対応表
+     *
+     * @return array<string, string>
+     */
+    private function failureMessages(): array {
+        return [
+            RegistrationTokenException::NOT_FOUND => __('auth.register.link_invalid'),
+            RegistrationTokenException::EXPIRED => __('auth.register.link_expired'),
+            RegistrationTokenException::EMAIL_TAKEN => __('auth.register.email_taken'),
+        ];
+    }
 
     public function __construct(
         private readonly StartRegistration $startRegistration,
@@ -82,7 +88,7 @@ class RegisterController {
     public function verify(string $token): Response {
         if (!$this->completeRegistration->isUsable($token)) {
             return Inertia::render('Auth/RegisterFailed', [
-                'message' => self::FAILURE_MESSAGES[RegistrationTokenException::EXPIRED],
+                'message' => $this->failureMessages()[RegistrationTokenException::EXPIRED],
             ]);
         }
 
@@ -113,7 +119,7 @@ class RegisterController {
             );
         } catch (RegistrationTokenException $e) {
             return Inertia::render('Auth/RegisterFailed', [
-                'message' => self::FAILURE_MESSAGES[$e->reason],
+                'message' => $this->failureMessages()[$e->reason],
             ]);
         }
 

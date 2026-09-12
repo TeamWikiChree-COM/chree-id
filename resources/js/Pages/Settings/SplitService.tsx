@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
 import AuthLayout from "../../Components/AuthLayout";
+import { t } from "../../lib/i18n";
 
 /** 分離先へ複製できる認証方法 */
 interface SplitOption {
@@ -18,10 +19,10 @@ interface SplitOption {
 
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
 const CREDENTIAL_LABELS: Record<string, string> = {
-    password: "パスワード",
-    totp: "認証アプリ (TOTP)",
-    magic_link: "マジックリンク",
-    oauth: "Google 連携",
+    password: t("settings.split.credential.password"),
+    totp: t("settings.split.credential.totp"),
+    magic_link: t("settings.split.credential.magic_link"),
+    oauth: t("settings.split.credential.oauth"),
 };
 
 interface SplitServiceProps {
@@ -74,12 +75,13 @@ export default function SplitService({
     };
 
     return (
-        <AuthLayout title="サービスを外す" heading="サービスを外す">
+        <AuthLayout title={t("settings.split.title")} heading={t("settings.split.title")}>
             <Typography variant="body2" color="text.secondary">
                 {serviceName}
                 {serviceUserId !== null && `（${serviceUserId}）`}
-                を、この ChreeID のまとめから外して単独のアカウントに戻します。
-                {serviceName} 側のアカウントや利用状況はそのまま残ります。
+                {t("settings.split.description_line1")}
+                {serviceName}
+                {t("settings.split.description_line2")}
             </Typography>
 
             <Box component="form" onSubmit={submit} noValidate>
@@ -93,7 +95,7 @@ export default function SplitService({
                         }}
                     >
                         <Typography variant="body2" sx={{ mb: 1 }}>
-                            外したあとのログイン方法を選んでください
+                            {t("settings.split.credentials.instruction")}
                         </Typography>
                         {options.map((option) => (
                             <FormControlLabel
@@ -109,8 +111,7 @@ export default function SplitService({
                             />
                         ))}
                         <Typography variant="body2" color="text.secondary">
-                            選んだものは複製され、この ChreeID からは無くなりません。
-                            パスキーは持っていけないので、必要なら外したあとに登録し直してください。
+                            {t("settings.split.credentials.note")}
                         </Typography>
                         {errors.credentials && (
                             <Alert severity="error" sx={{ mt: 1 }}>
@@ -120,26 +121,26 @@ export default function SplitService({
                     </Box>
 
                     <TextField
-                        label="メールアドレス"
+                        label={t("settings.split.email.label")}
                         type="email"
                         value={data.email}
                         onChange={(e) => setData("email", e.target.value)}
                         error={Boolean(errors.email)}
-                        helperText={errors.email ?? "空のままなら、いまのアドレスを引き継ぎます"}
+                        helperText={errors.email ?? t("settings.split.email.hint")}
                         autoComplete="email"
                     />
 
                     <TextField
-                        label="表示名"
+                        label={t("settings.split.display_name.label")}
                         value={data.display_name}
                         onChange={(e) => setData("display_name", e.target.value)}
                         error={Boolean(errors.display_name)}
-                        helperText={errors.display_name ?? "空のままなら、いまの表示名を引き継ぎます"}
+                        helperText={errors.display_name ?? t("settings.split.display_name.hint")}
                         autoComplete="nickname"
                     />
 
                     <Button type="submit" variant="contained" color="error" disabled={processing}>
-                        まとめから外す
+                        {t("settings.split.submit")}
                     </Button>
                 </Stack>
             </Box>

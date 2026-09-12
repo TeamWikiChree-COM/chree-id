@@ -1,13 +1,13 @@
 @extends('mail.layout')
 
 @section('body')
-    <p>ChreeID のメールアドレスを、このアドレスに変更する申し込みを受け付けました。</p>
+    <p>{{ __('mail.verify_email_change.intro') }}</p>
 
-    <p>変更を確定するには、以下のボタンをクリックしてください：</p>
+    <p>{{ __('mail.verify_email_change.cta_html') }}</p>
 
-    @include('mail.button', ['url' => $verifyUrl, 'label' => 'メールアドレスを変更する'])
+    @include('mail.button', ['url' => $verifyUrl, 'label' => __('mail.verify_email_change.button_label')])
 
-    <p>このリンクを開くまで、アドレスは変更されません。</p>
+    <p>{{ __('mail.verify_email_change.not_changed_yet') }}</p>
 
-    <p>このリンクは{{ $ttlMinutes }}分間有効です。</p>
+    <p>{{ __('mail.verify_email_change.ttl', ['minutes' => $ttlMinutes]) }}</p>
 @endsection

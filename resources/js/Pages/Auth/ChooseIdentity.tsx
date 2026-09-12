@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import AuthLayout from "../../Components/AuthLayout";
+import { t } from "../../lib/i18n";
 
 /** 同じ外部アカウントに紐付いている認証主体 */
 interface ChoosableIdentity {
@@ -32,9 +33,9 @@ export default function ChooseIdentity({ accounts }: ChooseIdentityProps) {
     };
 
     return (
-        <AuthLayout title="アカウントを選択" heading="アカウントを選択">
+        <AuthLayout title={t('auth.choose_identity.title')} heading={t('auth.choose_identity.title')}>
             <Typography variant="body2" color="text.secondary">
-                この連携には複数のアカウントがあります。どれで続けますか？
+                {t('auth.choose_identity.description')}
             </Typography>
 
             <Stack spacing={1}>
@@ -57,7 +58,7 @@ export default function ChooseIdentity({ accounts }: ChooseIdentityProps) {
                                 )}
                             </Box>
                             <Button variant="contained" disabled={sending} onClick={() => choose(account.id)}>
-                                これで続ける
+                                {t('auth.choose_identity.continue')}
                             </Button>
                         </Stack>
                     </Box>

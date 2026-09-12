@@ -107,13 +107,13 @@ class SecurityController {
         $pending = $request->session()->get(self::PENDING_TOTP);
         $secret = is_array($pending) ? ($pending['secret'] ?? null) : null;
         if (!is_string($secret)) {
-            throw ValidationException::withMessages(['code' => '先に設定を開始してください']);
+            throw ValidationException::withMessages(['code' => __('settings.totp.not_started')]);
         }
 
         try {
             $codes = $this->enableTotp->execute($accountId, $secret, $request->string('code')->toString());
         } catch (RuntimeException) {
-            throw ValidationException::withMessages(['code' => 'コードが一致しません']);
+            throw ValidationException::withMessages(['code' => __('settings.totp.invalid_code')]);
         }
 
         $request->session()->forget(self::PENDING_TOTP);

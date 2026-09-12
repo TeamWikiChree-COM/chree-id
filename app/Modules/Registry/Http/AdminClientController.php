@@ -157,7 +157,7 @@ class AdminClientController {
 
         $trust = ServiceTrust::tryFrom($request->string('trust')->toString());
         if ($trust === null) {
-            throw ValidationException::withMessages(['trust' => '信頼状態の指定が不正です']);
+            throw ValidationException::withMessages(['trust' => __('admin.client.invalid_trust')]);
         }
 
         $uris = [];
@@ -250,10 +250,10 @@ class AdminClientController {
      */
     private function trustOptions(): array {
         return [
-            ['value' => ServiceTrust::OFFICIAL->value, 'label' => '公式'],
-            ['value' => ServiceTrust::APPROVED->value, 'label' => '承認済み'],
-            ['value' => ServiceTrust::UNAPPROVED->value, 'label' => '未承認'],
-            ['value' => ServiceTrust::DISABLED->value, 'label' => '停止中 (ログインさせない)'],
+            ['value' => ServiceTrust::OFFICIAL->value, 'label' => __('admin.client.trust.official')],
+            ['value' => ServiceTrust::APPROVED->value, 'label' => __('admin.client.trust.approved')],
+            ['value' => ServiceTrust::UNAPPROVED->value, 'label' => __('admin.client.trust.unapproved')],
+            ['value' => ServiceTrust::DISABLED->value, 'label' => __('admin.client.trust.disabled')],
         ];
     }
 }

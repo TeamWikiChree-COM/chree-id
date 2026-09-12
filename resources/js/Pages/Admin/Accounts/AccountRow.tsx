@@ -9,15 +9,16 @@ import { useState } from 'react';
 import Icon from '../../../Components/Icon';
 import RowAction from '../../../Components/RowAction';
 import { useConfirm } from '../../../lib/confirm';
+import { t } from '../../../lib/i18n';
 import type { ConfirmRequest } from '../../../Components/ConfirmDialog';
 import type { AdminAccount } from './types';
 
 /** 認証方式の表示ラベル */
 const CREDENTIAL_LABELS: Record<string, string> = {
-    password: 'パスワード',
-    passkey: 'パスキー',
-    totp: '2FA',
-    magic_link: 'マジックリンク',
+    password: t('admin.accounts.row.credential.password'),
+    passkey: t('admin.accounts.row.credential.passkey'),
+    totp: t('admin.accounts.row.credential.totp'),
+    magic_link: t('admin.accounts.row.credential.magic_link'),
 };
 
 /** act() に渡す確認内容。実行そのものは act() が組み立てる */
@@ -77,28 +78,28 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                             sx={{ color: 'text.secondary', fontSize: '0.9375rem' }}
                         />
                         <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-                            {account.displayName || '(未設定)'}
+                            {account.displayName || t('admin.accounts.row.unset')}
                         </Typography>
                         <Chip
                             size="small"
                             variant="outlined"
-                            label={account.origin === 'service' ? 'サービスアカウント' : 'ユーザーアカウント'}
+                            label={account.origin === 'service' ? t('admin.accounts.row.origin.service') : t('admin.accounts.row.origin.user')}
                         />
-                        {isSelf && <Chip size="small" variant="outlined" label="自分" />}
-                        {account.isAdmin && <Chip size="small" color="primary" label="管理者" />}
-                        {account.isDeleted && <Chip size="small" color="error" label="退会済み" />}
-                        {account.isSuspended && !account.isDeleted && <Chip size="small" color="error" label="停止中" />}
+                        {isSelf && <Chip size="small" variant="outlined" label={t('admin.accounts.row.self')} />}
+                        {account.isAdmin && <Chip size="small" color="primary" label={t('admin.accounts.row.admin')} />}
+                        {account.isDeleted && <Chip size="small" color="error" label={t('admin.accounts.row.withdrawn')} />}
+                        {account.isSuspended && !account.isDeleted && <Chip size="small" color="error" label={t('admin.accounts.row.suspended')} />}
                         {account.email && (
                             <Chip
                                 size="small"
                                 color={account.isEmailVerified ? 'success' : 'default'}
-                                label={account.isEmailVerified ? '確認済み' : '未確認'}
+                                label={account.isEmailVerified ? t('admin.accounts.row.email.verified') : t('admin.accounts.row.email.unverified')}
                             />
                         )}
                     </Box>
 
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 0.25 }}>
-                        {account.email || '(メールアドレス未登録)'}
+                        {account.email || t('admin.accounts.row.no_email')}
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
@@ -108,13 +109,15 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
 
                         {account.credentialTypes.length > 0 && (
                             <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
-                                認証: {account.credentialTypes.map((t) => CREDENTIAL_LABELS[t] ?? t).join(', ')}
+                                {t('admin.accounts.row.credentials', {
+                                    list: account.credentialTypes.map((c) => CREDENTIAL_LABELS[c] ?? c).join(', '),
+                                })}
                             </Typography>
                         )}
 
                         {account.isDeleted && account.deletedAt !== null && (
                             <Typography sx={{ fontSize: '0.75rem', color: 'error.main' }}>
-                                {account.deletedAt} に退会。{graceDays} 日後に削除されます
+                                {t('admin.accounts.row.deleted_note', { date: account.deletedAt, days: graceDays })}
                             </Typography>
                         )}
                     </Box>
@@ -127,25 +130,25 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
 
                     {!isSelf && (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                            <RowAction onClick={() => setEditing(!editing)}>{editing ? '閉じる' : '編集'}</RowAction>
+                            <RowAction onClick={() => setEditing(!editing)}>{editing ? t('admin.accounts.row.action.close') : t('admin.accounts.row.action.edit')}</RowAction>
 
-                            {account.isDeleted && <RowAction onClick={() => act('restore')}>退会を取り消す</RowAction>}
+                            {account.isDeleted && <RowAction onClick={() => act('restore')}>{t('admin.accounts.row.action.restore')}</RowAction>}
 
                             {!account.isDeleted && account.isSuspended && (
-                                <RowAction onClick={() => act('unsuspend')}>停止を解除</RowAction>
+                                <RowAction onClick={() => act('unsuspend')}>{t('admin.accounts.row.action.unsuspend')}</RowAction>
                             )}
 
                             {!account.isDeleted && !account.isSuspended && (
                                 <RowAction
                                     onClick={() =>
                                         act('suspend', {
-                                            title: 'このアカウントを停止しますか',
-                                            description: 'ログインできなくなります。停止はあとから解除できます',
-                                            confirmText: '停止する',
+                                            title: t('admin.accounts.row.suspend.title'),
+                                            description: t('admin.accounts.row.suspend.description'),
+                                            confirmText: t('admin.accounts.row.suspend.confirm'),
                                         })
                                     }
                                 >
-                                    停止
+                                    {t('admin.accounts.row.action.suspend')}
                                 </RowAction>
                             )}
 
@@ -154,13 +157,13 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                                     destructive
                                     onClick={() =>
                                         act('withdraw', {
-                                            title: 'このアカウントを退会させますか',
-                                            description: `${String(graceDays)} 日以内なら取り消せます。過ぎると行ごと消えます`,
-                                            confirmText: '退会させる',
+                                            title: t('admin.accounts.row.withdraw.title'),
+                                            description: t('admin.accounts.row.withdraw.description', { days: graceDays }),
+                                            confirmText: t('admin.accounts.row.withdraw.confirm'),
                                         })
                                     }
                                 >
-                                    退会させる
+                                    {t('admin.accounts.row.withdraw.confirm')}
                                 </RowAction>
                             )}
 
@@ -168,15 +171,14 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                                 destructive
                                 onClick={() =>
                                     act('purge', {
-                                        title: 'このアカウントを完全に削除しますか',
-                                        description:
-                                            '猶予を待たずに消します。連携先のサービスのアカウントも道連れになり、元に戻せません',
-                                        confirmText: '完全に削除する',
+                                        title: t('admin.accounts.row.purge.title'),
+                                        description: t('admin.accounts.row.purge.description'),
+                                        confirmText: t('admin.accounts.row.purge.confirm'),
                                         expected: account.email ?? account.id,
                                     })
                                 }
                             >
-                                完全に削除
+                                {t('admin.accounts.row.action.purge')}
                             </RowAction>
                         </Box>
                     )}
@@ -187,7 +189,7 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                 <Stack direction="row" spacing={1.5} sx={{ mt: 1.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                     <TextField
                         size="small"
-                        label="表示名"
+                        label={t('admin.accounts.fields.display_name')}
                         value={form.data.display_name}
                         onChange={(e) => form.setData('display_name', e.target.value)}
                         error={Boolean(form.errors.display_name)}
@@ -195,15 +197,15 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                     />
                     <TextField
                         size="small"
-                        label="メールアドレス"
+                        label={t('admin.accounts.fields.email')}
                         type="email"
                         value={form.data.email}
                         onChange={(e) => form.setData('email', e.target.value)}
                         error={Boolean(form.errors.email)}
-                        helperText={form.errors.email ?? '変更すると確認は取り直しになります'}
+                        helperText={form.errors.email ?? t('admin.accounts.row.email_helper')}
                     />
                     <Button variant="contained" size="small" onClick={save} disabled={form.processing}>
-                        保存
+                        {t('admin.accounts.row.save')}
                     </Button>
                 </Stack>
             )}

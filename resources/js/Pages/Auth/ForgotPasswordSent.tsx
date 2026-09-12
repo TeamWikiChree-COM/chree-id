@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AuthLayout from '../../Components/AuthLayout';
+import { t } from '../../lib/i18n';
 
 interface ForgotPasswordSentProps {
     /** 送信先。登録されていないアドレスでもここには出す（応答を変えないため） */
@@ -11,21 +12,21 @@ interface ForgotPasswordSentProps {
 export default function ForgotPasswordSent({ email }: ForgotPasswordSentProps) {
     return (
         <AuthLayout
-            title="再設定メールを送りました"
-            heading="再設定メールを送りました"
+            title={t('auth.forgot_password_sent.title')}
+            heading={t('auth.forgot_password_sent.title')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">ログイン画面に戻る</Link>
+                    <Link href="/login">{t('auth.forgot_password.back_to_login')}</Link>
                 </Typography>
             }
         >
             <Stack spacing={2}>
-                <Typography variant="body2">{email} 宛にメールを送りました。</Typography>
+                <Typography variant="body2">{t('auth.common.sent_to', { email })}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    本文のリンクを開くと、新しいパスワードを設定できます。
+                    {t('auth.forgot_password_sent.instructions')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    届かない場合は、迷惑メールに振り分けられていないかご確認ください。
+                    {t('auth.common.check_spam')}
                 </Typography>
             </Stack>
         </AuthLayout>

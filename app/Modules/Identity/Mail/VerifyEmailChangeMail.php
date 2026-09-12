@@ -22,7 +22,7 @@ class VerifyEmailChangeMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID のメールアドレス変更を確認する');
+        return new Envelope(subject: __('mail.verify_email_change.subject'));
     }
 
     /**

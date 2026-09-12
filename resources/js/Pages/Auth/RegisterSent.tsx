@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AuthLayout from '../../Components/AuthLayout';
+import { t } from '../../lib/i18n';
 
 interface RegisterSentProps {
     /** 送信先。既に登録済みのアドレスでもここには出す（応答を変えないため） */
@@ -11,21 +12,21 @@ interface RegisterSentProps {
 export default function RegisterSent({ email }: RegisterSentProps) {
     return (
         <AuthLayout
-            title="確認メールを送りました"
-            heading="確認メールを送りました"
+            title={t('auth.register_sent.title')}
+            heading={t('auth.register_sent.title')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">ログイン画面に戻る</Link>
+                    <Link href="/login">{t('auth.forgot_password.back_to_login')}</Link>
                 </Typography>
             }
         >
             <Stack spacing={2}>
-                <Typography variant="body2">{email} 宛にメールを送りました。</Typography>
+                <Typography variant="body2">{t('auth.common.sent_to', { email })}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                    メール内のリンクを開くとアカウントが作られ、そのままセットアップに進みます。
+                    {t('auth.register_sent.instructions')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    届かない場合は、迷惑メールに振り分けられていないかご確認ください。
+                    {t('auth.common.check_spam')}
                 </Typography>
             </Stack>
         </AuthLayout>

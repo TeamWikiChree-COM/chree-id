@@ -20,7 +20,7 @@ class EmailChangeNoticeMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID のメールアドレス変更が申し込まれました');
+        return new Envelope(subject: __('mail.email_change_notice.subject'));
     }
 
     /**

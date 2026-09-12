@@ -1,13 +1,14 @@
 @extends('mail.layout')
 
 @section('body')
-    <p>ChreeID のメールアドレスを <strong>{{ $newEmail }}</strong> に変更する申し込みがありました。</p>
+    {{-- 強調のために {!! !!} を使う。差し込む値は e() で escape 済みで、
+         文面そのものは lang/server/*.json（こちらが書いたもの）しか来ない --}}
+    <p>{!! __('mail.email_change_notice.intro', ['email' => '<strong>' . e($newEmail) . '</strong>']) !!}</p>
 
-    <p>変更は、新しいアドレス宛のリンクが開かれた時点で確定します。
-    この時点ではまだ変更されていません。</p>
+    <p>{{ __('mail.email_change_notice.confirm_note') }}</p>
 @endsection
 
 @section('note')
-    <strong>心当たりがない場合は、パスワードを変更してください。</strong><br>
-    第三者がアカウントに入っている可能性があります。
+    <strong>{{ __('mail.email_change_notice.note_line1') }}</strong><br>
+    {{ __('mail.email_change_notice.note_line2') }}
 @endsection

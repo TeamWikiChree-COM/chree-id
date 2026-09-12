@@ -22,7 +22,7 @@ class PasswordResetMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID のパスワードを再設定する');
+        return new Envelope(subject: __('mail.password_reset.subject'));
     }
 
     /**

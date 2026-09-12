@@ -142,9 +142,9 @@ class ProfileController {
         // 断る理由で直しかたが違うので、同じ文言に潰さない
         $message = match ($result) {
             EmailChangeResult::SENT => null,
-            EmailChangeResult::SAME_AS_CURRENT => '現在のメールアドレスです。変更する場合は別のアドレスを入力してください',
-            EmailChangeResult::TAKEN => 'このメールアドレスは使えません',
-            EmailChangeResult::UNKNOWN_ACCOUNT => 'アカウントが見つかりませんでした',
+            EmailChangeResult::SAME_AS_CURRENT => __('settings.profile.email_same_as_current'),
+            EmailChangeResult::TAKEN => __('settings.profile.email_unavailable'),
+            EmailChangeResult::UNKNOWN_ACCOUNT => __('settings.profile.account_not_found'),
         };
 
         if ($message !== null) throw ValidationException::withMessages(['email' => $message]);

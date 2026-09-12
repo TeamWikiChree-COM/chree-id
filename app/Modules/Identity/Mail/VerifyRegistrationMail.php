@@ -22,7 +22,7 @@ class VerifyRegistrationMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID のアカウント作成を続ける');
+        return new Envelope(subject: __('mail.verify_registration.subject'));
     }
 
     /**

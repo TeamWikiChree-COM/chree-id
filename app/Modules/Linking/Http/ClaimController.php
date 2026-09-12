@@ -28,15 +28,21 @@ use Inertia\Response;
  * 自分のものにする操作。サービス側で使ってきた分がそのまま残る。
  */
 class ClaimController {
-    /** 理由ごとの表示。内部の理由コードはそのまま出さない */
-    private const FAILURE_MESSAGES = [
-        ClaimException::INVALID_TICKET => 'このリンクは使えません。お手数ですが、サービスの設定画面からやり直してください',
-        ClaimException::ALREADY_CLAIMED => 'このアカウントは既に ChreeID として使えます。ログインをお試しください',
-        ClaimException::EMAIL_TAKEN => 'このメールアドレスは既に使われています',
-        ClaimException::NO_CREDENTIAL => 'ログインする方法を用意できませんでした。もう一度お試しください',
-        MergeException::SAME_ACCOUNT => 'このアカウントは既にお使いの ChreeID です',
-        MergeException::SAME_SERVICE => 'このサービスの別のアカウントが、既にお使いの ChreeID に紐付いています。お手数ですが問い合わせてください',
-    ];
+    /**
+     * 理由ごとの表示。内部の理由コードはそのまま出さない
+     *
+     * @return array<string, string>
+     */
+    private function failureMessages(): array {
+        return [
+            ClaimException::INVALID_TICKET => __('claim.error.invalid_ticket'),
+            ClaimException::ALREADY_CLAIMED => __('claim.error.already_claimed'),
+            ClaimException::EMAIL_TAKEN => __('claim.error.email_taken'),
+            ClaimException::NO_CREDENTIAL => __('claim.error.no_credential'),
+            MergeException::SAME_ACCOUNT => __('claim.error.same_account'),
+            MergeException::SAME_SERVICE => __('claim.error.same_service'),
+        ];
+    }
 
     public function __construct(
         private readonly ClaimTickets $tickets,
@@ -154,7 +160,7 @@ class ClaimController {
         } catch (ClaimException $e) {
             if ($e->reason === ClaimException::EMAIL_TAKEN || $e->reason === ClaimException::NO_CREDENTIAL) {
                 $field = $e->reason === ClaimException::EMAIL_TAKEN ? 'email' : 'method';
-                throw ValidationException::withMessages([$field => self::FAILURE_MESSAGES[$e->reason]]);
+                throw ValidationException::withMessages([$field => $this->failureMessages()[$e->reason]]);
             }
 
             return $this->failed($e->reason);
@@ -195,7 +201,7 @@ class ClaimController {
 
             $this->merge->execute($link, $targetId, $chosen);
         } catch (MergeException $e) {
-            throw ValidationException::withMessages(['token' => self::FAILURE_MESSAGES[$e->reason]]);
+            throw ValidationException::withMessages(['token' => $this->failureMessages()[$e->reason]]);
         } catch (ClaimException $e) {
             return $this->failed($e->reason);
         }
@@ -266,6 +272,6 @@ class ClaimController {
      * @return Response
      */
     private function failed(string $reason): Response {
-        return Inertia::render('Claim/Failed', ['message' => self::FAILURE_MESSAGES[$reason]]);
+        return Inertia::render('Claim/Failed', ['message' => $this->failureMessages()[$reason]]);
     }
 }

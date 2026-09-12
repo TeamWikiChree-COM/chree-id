@@ -4,6 +4,7 @@ import { router } from "@inertiajs/react";
 import AuthLayout from "../../Components/AuthLayout";
 import MergePanel from "./MergePanel";
 import type { SignedInAccount, TransferableCredential } from "./MergePanel";
+import { t } from "../../lib/i18n";
 
 interface ClaimMergeProps {
     /** サービスから渡された平文トークン */
@@ -21,7 +22,7 @@ interface ClaimMergeProps {
  */
 export default function ClaimMerge({ token, serviceName, signedInAs, transferable }: ClaimMergeProps) {
     return (
-        <AuthLayout title="お持ちの ChreeID に追加" heading="お持ちの ChreeID に追加">
+        <AuthLayout title={t('claim.merge.title')} heading={t('claim.merge.title')}>
             <MergePanel
                 token={token}
                 serviceName={serviceName}
@@ -31,7 +32,7 @@ export default function ClaimMerge({ token, serviceName, signedInAs, transferabl
 
             <Stack direction="row">
                 <Button color="inherit" size="small" onClick={() => router.get(`/claim/${token}`)}>
-                    戻る
+                    {t('claim.merge.back')}
                 </Button>
             </Stack>
         </AuthLayout>

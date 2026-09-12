@@ -32,6 +32,7 @@ use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
 use App\Modules\Provider\Http\UserinfoController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', DashboardController::class);
@@ -81,6 +82,9 @@ Route::get('/profile', fn () => redirect('/settings'));
 Route::get('/security', fn () => redirect('/settings/security'));
 
 // プロフィール
+// 表示言語。ログインしていなくても切り替えられる (ログイン画面で要る)
+Route::post('/locale', [LocaleController::class, 'update']);
+
 Route::post('/profile', [ProfileController::class, 'update']);
 Route::post('/profile/email/verify', [ProfileController::class, 'sendEmailVerification'])->middleware('throttle:register');
 Route::get('/profile/email/verify/{token}', [ProfileController::class, 'confirmEmail'])->middleware('throttle:verify');

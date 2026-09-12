@@ -7,6 +7,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
+import { t } from "../../lib/i18n";
 
 /** ログイン中のアカウント。していなければ null */
 export interface SignedInAccount {
@@ -23,10 +24,10 @@ export interface TransferableCredential {
 
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
 const CREDENTIAL_LABELS: Record<string, string> = {
-    password: "パスワード",
-    totp: "認証アプリ (2段階認証)",
-    magic_link: "メールでログイン",
-    oauth: "Google 連携",
+    password: t('claim.credential.password'),
+    totp: t('claim.credential.totp'),
+    magic_link: t('claim.credential.magic_link'),
+    oauth: t('claim.credential.oauth'),
 };
 
 interface MergePanelProps {
@@ -78,11 +79,10 @@ export default function MergePanel({
         return (
             <Stack spacing={2}>
                 <Typography variant="body2" color="text.secondary">
-                    お使いの ChreeID にログインすると、{serviceName}
-                    のアカウントをそこに追加できます。ログインが済むとこの画面に戻ります。
+                    {t('claim.merge_panel.login_prompt', { serviceName })}
                 </Typography>
                 <Button component="a" href="/login" variant="contained">
-                    ChreeID にログインする
+                    {t('claim.merge_panel.login_button')}
                 </Button>
             </Stack>
         );
@@ -100,7 +100,7 @@ export default function MergePanel({
                     }}
                 >
                     <Typography variant="body2" color="text.secondary">
-                        ログイン中
+                        {t('claim.merge_panel.signed_in_as')}
                     </Typography>
                     <Typography>
                         {signedInAs.displayName ??
@@ -116,9 +116,7 @@ export default function MergePanel({
                 </Box>
 
                 <Typography variant="body2" color="text.secondary">
-                    {serviceName}
-                    でお使いのアカウントを、この ChreeID
-                    に追加します。これまでの利用状況はそのまま引き継がれます。
+                    {t('claim.merge_panel.description', { serviceName })}
                 </Typography>
 
                 {transferable.length > 0 && (
@@ -131,7 +129,7 @@ export default function MergePanel({
                         }}
                     >
                         <Typography variant="body2" sx={{ mb: 1 }}>
-                            引き継ぐ認証方法を選んでください
+                            {t('claim.merge_panel.select_credentials')}
                         </Typography>
                         {transferable.map((credential) => (
                             <FormControlLabel
@@ -152,8 +150,7 @@ export default function MergePanel({
                             />
                         ))}
                         <Typography variant="body2" color="text.secondary">
-                            外したものは使えなくなります。パスキーは引き継げないので、必要ならこの
-                            ChreeID で登録し直してください。
+                            {t('claim.merge_panel.passkey_note')}
                         </Typography>
                     </Box>
                 )}
@@ -161,7 +158,7 @@ export default function MergePanel({
                 {errors.token && <Alert severity="error">{errors.token}</Alert>}
 
                 <Button type="submit" variant="contained" disabled={processing}>
-                    この ChreeID に追加する
+                    {t('claim.merge_panel.submit')}
                 </Button>
             </Stack>
         </Box>

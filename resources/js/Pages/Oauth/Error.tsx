@@ -4,6 +4,7 @@ import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { t } from '../../lib/i18n';
 
 interface OauthErrorProps {
     /** OAuth のエラーコード (invalid_request など) */
@@ -15,16 +16,16 @@ interface OauthErrorProps {
 export default function OauthError({ error, reason }: OauthErrorProps) {
     return (
         <>
-            <Head title="連携できません" />
+            <Head title={t('oauth.error.title')} />
 
             <Container maxWidth="sm" sx={{ py: 8 }}>
                 <Stack spacing={3}>
                     <Box>
                         <Typography variant="h6" component="h1">
-                            連携できません
+                            {t('oauth.error.title')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            サービス側の設定に問題があります。接続元のサービスにお問い合わせください。
+                            {t('oauth.error.description')}
                         </Typography>
                     </Box>
 

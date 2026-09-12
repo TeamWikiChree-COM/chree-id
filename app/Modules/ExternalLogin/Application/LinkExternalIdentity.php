@@ -87,7 +87,7 @@ class LinkExternalIdentity {
         if ($account === null) return null;
 
         if (!$identity->emailVerified) {
-            throw new ExternalIdentityConflict('このメールアドレスのアカウントが既にあります');
+            throw new ExternalIdentityConflict(__('settings.connections.email_already_registered'));
         }
 
         return $account->id;
@@ -133,7 +133,7 @@ class LinkExternalIdentity {
             ->where('identifier', $identity->credentialIdentifier())
             ->exists();
 
-        if ($exists) throw new ExternalIdentityConflict('この外部アカウントは既に連携しています');
+        if ($exists) throw new ExternalIdentityConflict(__('settings.connections.already_linked'));
 
         $this->link($accountId, $identity);
     }

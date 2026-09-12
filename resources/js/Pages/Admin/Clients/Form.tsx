@@ -14,6 +14,7 @@ import AppLayout from "../../../Components/AppLayout";
 import { useConfirm } from "../../../lib/confirm";
 import Icon from "../../../Components/Icon";
 import SectionTitle from "../../../Components/SectionTitle";
+import { t } from "../../../lib/i18n";
 import type { OAuthClient } from "../../../types";
 
 interface TrustOption {
@@ -72,9 +73,9 @@ export default function Form({ client, trustOptions }: FormProps) {
         if (client === null) return;
 
         ask({
-            title: `${client.name} を削除しますか`,
-            description: "このサービスからはログインできなくなります",
-            confirmText: "削除する",
+            title: t('admin.clients.form.remove.title', { name: client.name }),
+            description: t('admin.clients.form.remove.description'),
+            confirmText: t('admin.clients.form.remove.confirm'),
             expected: client.name,
             onConfirm: () => router.post(`/admin/clients/${client.id}/delete`),
         });
@@ -84,21 +85,21 @@ export default function Form({ client, trustOptions }: FormProps) {
         if (client === null) return;
 
         ask({
-            title: "client_secret を作り直しますか",
-            description: "RP 側の設定を書き換えるまで、このサービスのログインは止まります",
-            confirmText: "作り直す",
+            title: t('admin.clients.form.rotate.title'),
+            description: t('admin.clients.form.rotate.description'),
+            confirmText: t('admin.clients.form.rotate.confirm'),
             onConfirm: () => router.post(`/admin/clients/${client.id}/secret`),
         });
     };
 
     return (
         <AppLayout
-            title={isNew ? "サービスを登録" : client.name}
+            title={isNew ? t('admin.clients.form.new_title') : client.name}
             crumbs={[
                 { label: "ChreeID", href: "/" },
-                { label: "システム管理", href: "/admin" },
-                { label: "接続サービス", href: "/admin/clients" },
-                { label: isNew ? "登録" : "設定" },
+                { label: t('admin.crumb'), href: "/admin" },
+                { label: t('admin.clients.crumb'), href: "/admin/clients" },
+                { label: isNew ? t('admin.clients.form.crumb.create') : t('admin.clients.form.crumb.edit') },
             ]}
         >
             {!isNew && (
@@ -113,17 +114,17 @@ export default function Form({ client, trustOptions }: FormProps) {
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
                         <TextField
-                            label="サービス名"
+                            label={t('admin.clients.form.fields.name')}
                             value={data.name}
                             onChange={(e) => setData("name", e.target.value)}
                             error={Boolean(errors.name)}
-                            helperText={errors.name ?? "同意画面に出ます"}
+                            helperText={errors.name ?? t('admin.clients.form.fields.name_helper')}
                             autoFocus
                             required
                         />
 
                         <TextField
-                            label="リダイレクト先"
+                            label={t('admin.clients.form.fields.redirect_uris')}
                             value={data.redirect_uris}
                             onChange={(e) =>
                                 setData("redirect_uris", e.target.value)
@@ -131,7 +132,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                             error={Boolean(errors.redirect_uris)}
                             helperText={
                                 errors.redirect_uris ??
-                                "1行に1つ。完全一致で照合します"
+                                t('admin.clients.form.fields.redirect_uris_helper')
                             }
                             multiline
                             minRows={3}
@@ -139,16 +140,16 @@ export default function Form({ client, trustOptions }: FormProps) {
                         />
 
                         <TextField
-                            label="スコープ"
+                            label={t('admin.clients.form.fields.scopes')}
                             value={data.scopes}
                             onChange={(e) => setData("scopes", e.target.value)}
                             error={Boolean(errors.scopes)}
-                            helperText={errors.scopes ?? "空白区切り"}
+                            helperText={errors.scopes ?? t('admin.clients.form.fields.scopes_helper')}
                             required
                         />
 
                         <TextField
-                            label="アイコンの URL"
+                            label={t('admin.clients.form.fields.icon_url')}
                             value={data.icon_url}
                             onChange={(e) =>
                                 setData("icon_url", e.target.value)
@@ -156,12 +157,12 @@ export default function Form({ client, trustOptions }: FormProps) {
                             error={Boolean(errors.icon_url)}
                             helperText={
                                 errors.icon_url ??
-                                "任意。同意画面や連携一覧に出ます"
+                                t('admin.clients.form.fields.icon_url_helper')
                             }
                         />
 
                         <TextField
-                            label="信頼状態"
+                            label={t('admin.clients.form.fields.trust')}
                             value={data.trust}
                             onChange={(e) => setData("trust", e.target.value)}
                             error={Boolean(errors.trust)}
@@ -190,7 +191,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                     }
                                 />
                             }
-                            label="同意画面を省略する"
+                            label={t('admin.clients.form.fields.skips_consent')}
                         />
 
                         <FormControlLabel
@@ -205,7 +206,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                     }
                                 />
                             }
-                            label="サービスアカウントを扱える (遅延登録・移行)"
+                            label={t('admin.clients.form.fields.can_provision')}
                         />
 
                         {isNew && (
@@ -221,7 +222,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                         }
                                     />
                                 }
-                                label="client_secret を発行する"
+                                label={t('admin.clients.form.fields.is_confidential')}
                             />
                         )}
 
@@ -231,7 +232,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                 variant="contained"
                                 disabled={processing}
                             >
-                                {isNew ? "登録する" : "保存する"}
+                                {isNew ? t('admin.clients.form.submit.create') : t('admin.clients.form.submit.edit')}
                             </Button>
                         </Box>
                     </Stack>
@@ -240,7 +241,7 @@ export default function Form({ client, trustOptions }: FormProps) {
 
             {!isNew && (
                 <>
-                    <SectionTitle>このサービスの操作</SectionTitle>
+                    <SectionTitle>{t('admin.clients.form.actions.heading')}</SectionTitle>
                     <Paper variant="outlined" sx={{ p: 2 }}>
                         <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
                             {client.isConfidential && (
@@ -250,7 +251,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                     startIcon={<Icon name="rotate" />}
                                     onClick={rotate}
                                 >
-                                    client_secret を作り直す
+                                    {t('admin.clients.form.actions.rotate')}
                                 </Button>
                             )}
                             <Button
@@ -259,7 +260,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                                 startIcon={<Icon name="trash" />}
                                 onClick={remove}
                             >
-                                削除する
+                                {t('admin.clients.form.actions.remove')}
                             </Button>
                         </Stack>
                     </Paper>

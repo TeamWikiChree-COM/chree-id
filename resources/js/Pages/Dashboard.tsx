@@ -14,6 +14,7 @@ import Icon from "../Components/Icon";
 import SectionTitle from "../Components/SectionTitle";
 import { useConfirm } from "../lib/confirm";
 import { formatDateTime } from "../lib/datetime";
+import { t } from "../lib/i18n";
 import type { Account, ConnectedService, CredentialSummary } from "../types";
 
 /** 同じアドレスの別アカウント。挙げるだけで、勝手には統合しない */
@@ -43,23 +44,22 @@ export default function Dashboard({
 
     const revoke = (service: ConnectedService): void => {
         ask({
-            title: `${service.name} との連携を解除しますか`,
-            description:
-                "発行済みのアクセストークンが無効になり、次に使うときは改めてログインが必要です",
-            confirmText: "解除する",
+            title: t("dashboard.services.revoke_confirm.title", { name: service.name }),
+            description: t("dashboard.services.revoke_confirm.description"),
+            confirmText: t("dashboard.services.revoke_confirm.confirm"),
             onConfirm: () => router.post(`/services/${service.clientId}/revoke`),
         });
     };
 
     return (
         <AppLayout
-            title="アカウント"
-            lead="連携先のサービスに渡される情報と、ログインに使える手段です"
-            crumbs={[{ label: "ChreeID", href: "/" }, { label: "アカウント" }]}
+            title={t("dashboard.title")}
+            lead={t("dashboard.lead")}
+            crumbs={[{ label: "ChreeID", href: "/" }, { label: t("dashboard.crumb") }]}
         >
             {flash.serviceRevoked && (
                 <Alert severity="success" sx={{ mb: 2 }}>
-                    連携を解除しました
+                    {t("dashboard.service_revoked")}
                 </Alert>
             )}
 
@@ -81,13 +81,13 @@ export default function Dashboard({
                                 fontSize: "0.9375rem",
                             }}
                         >
-                            {account.displayName ?? "表示名を設定していません"}
+                            {account.displayName ?? t("dashboard.profile.no_display_name")}
                             <Chip
                                 size="small"
                                 label={
                                     account.origin === "user"
-                                        ? "ユーザー"
-                                        : "サービス"
+                                        ? t("dashboard.profile.origin_user")
+                                        : t("dashboard.profile.origin_service")
                                 }
                             />
                         </Typography>
@@ -101,14 +101,14 @@ export default function Dashboard({
                                 color: "text.disabled",
                             }}
                         >
-                            {account.email ?? "メールアドレス未設定"}
+                            {account.email ?? t("dashboard.profile.no_email")}
                             {account.email !== null && (
                                 <Chip
                                     size="small"
                                     label={
                                         account.emailVerified
-                                            ? "確認済み"
-                                            : "未確認"
+                                            ? t("dashboard.profile.email_verified")
+                                            : t("dashboard.profile.email_unverified")
                                     }
                                     color={
                                         account.emailVerified
@@ -135,20 +135,20 @@ export default function Dashboard({
                         color="inherit"
                         onClick={() => router.get("/settings")}
                     >
-                        編集
+                        {t("common.action.edit")}
                     </Button>
                 </Box>
             </Paper>
 
-            <SectionTitle note={`${credentials.length}件`}>
-                ログイン方法
+            <SectionTitle note={t("settings.security.credentials.count", { count: credentials.length })}>
+                {t("credential.heading")}
             </SectionTitle>
             <CredentialList credentials={credentials} />
 
             {mergeCandidates.length > 0 && (
                 <>
-                    <SectionTitle note={`${mergeCandidates.length}件`}>
-                        同じメールアドレスの別アカウント
+                    <SectionTitle note={t("common.count", { count: mergeCandidates.length })}>
+                        {t("dashboard.merge.heading")}
                     </SectionTitle>
                     <Paper variant="outlined">
                         <Stack
@@ -175,8 +175,8 @@ export default function Dashboard({
                                         }}
                                     >
                                         {candidate.hasUserAccount
-                                            ? "まとめる人格を持っています"
-                                            : "サービスから作られたアカウントです"}
+                                            ? t("dashboard.merge.has_account")
+                                            : t("dashboard.merge.service_created")}
                                     </Typography>
                                 </Box>
                             ))}
@@ -189,15 +189,13 @@ export default function Dashboard({
                             color: "text.disabled",
                         }}
                     >
-                        同じアドレスを使っているだけの別のアカウントかもしれません。
-                        まとめるかどうかはご自身で決められます。アドレスが同じというだけで、
-                        こちらが勝手にまとめることはありません。
+                        {t("dashboard.merge.note")}
                     </Typography>
                 </>
             )}
 
-            <SectionTitle note={`${services.length}件`}>
-                連携しているサービス
+            <SectionTitle note={t("common.count", { count: services.length })}>
+                {t("dashboard.services.heading")}
             </SectionTitle>
             <Paper variant="outlined">
                 <Stack
@@ -219,7 +217,7 @@ export default function Dashboard({
                                 color: "text.disabled",
                             }}
                         >
-                            まだどのサービスとも連携していません
+                            {t("dashboard.services.empty")}
                         </Typography>
                     )}
 
@@ -258,7 +256,7 @@ export default function Dashboard({
                                     >
                                         {service.name}
                                         {service.trust === "official" && (
-                                            <Chip size="small" label="公式" />
+                                            <Chip size="small" label={t("dashboard.services.official")} />
                                         )}
                                     </Typography>
                                     <Typography
@@ -269,10 +267,10 @@ export default function Dashboard({
                                     >
                                         {service.serviceUserId ??
                                             (formatDateTime(service.connectedAt)
-                                                ? `${String(formatDateTime(service.connectedAt))} に連携`
-                                                : "連携済み")}
+                                                ? t("dashboard.services.connected_at", { time: String(formatDateTime(service.connectedAt)) })
+                                                : t("dashboard.services.connected"))}
                                         {!service.hasActiveToken &&
-                                            " ・ 現在ログインしていません"}
+                                            ` ・ ${t("dashboard.services.inactive")}`}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -284,13 +282,13 @@ export default function Dashboard({
                                         )
                                     }
                                 >
-                                    外す
+                                    {t("dashboard.services.split")}
                                 </RowAction>
                                 <RowAction
                                     destructive
                                     onClick={() => revoke(service)}
                                 >
-                                    解除
+                                    {t("dashboard.services.revoke")}
                                 </RowAction>
                             </Stack>
                         </Box>
@@ -305,14 +303,14 @@ export default function Dashboard({
                     startIcon={<Icon name="gear" />}
                     onClick={() => router.get("/settings")}
                 >
-                    設定
+                    {t("common.nav.settings")}
                 </Button>
                 <Button
                     color="inherit"
                     startIcon={<Icon name="arrow-right-from-bracket" />}
                     onClick={() => router.post("/logout")}
                 >
-                    ログアウト
+                    {t("common.nav.logout")}
                 </Button>
             </Stack>
 

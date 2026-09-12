@@ -49,7 +49,7 @@ class RemoveCredential {
             ->where('id', $credentialId)
             ->first();
 
-        if ($row === null) throw new RuntimeException('その認証手段は見つかりません');
+        if ($row === null) throw new RuntimeException(__('settings.credential.not_found'));
 
         $this->assertNotLast([$row->id], $accountId);
 
@@ -76,6 +76,6 @@ class RemoveCredential {
             ->whereNotIn('id', $removing)
             ->exists();
 
-        if (!$remaining) throw new RuntimeException('最後の認証手段は削除できません');
+        if (!$remaining) throw new RuntimeException(__('settings.credential.cannot_remove_last'));
     }
 }

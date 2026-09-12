@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import PasswordField from '../../Components/PasswordField';
+import { t } from '../../lib/i18n';
 
 interface ResetPasswordProps {
     /** メールに載せた平文トークン。そのまま送り返す */
@@ -26,11 +27,11 @@ export default function ResetPassword({ token }: ResetPasswordProps) {
 
     return (
         <AuthLayout
-            title="新しいパスワード"
-            heading="新しいパスワードを決める"
+            title={t('auth.reset_password.title')}
+            heading={t('auth.reset_password.heading')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">ログイン画面に戻る</Link>
+                    <Link href="/login">{t('auth.forgot_password.back_to_login')}</Link>
                 </Typography>
             }
         >
@@ -39,18 +40,18 @@ export default function ResetPassword({ token }: ResetPasswordProps) {
                     {errors.token && <Alert severity="error">{errors.token}</Alert>}
 
                     <PasswordField
-                        label="新しいパスワード"
+                        label={t('auth.reset_password.new_password_label')}
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={Boolean(errors.password)}
-                        helperText={errors.password ?? '8文字以上'}
+                        helperText={errors.password ?? t('auth.common.password_min_length')}
                         autoComplete="new-password"
                         autoFocus
                         required
                     />
 
                     <Button type="submit" variant="contained" disabled={processing}>
-                        設定する
+                        {t('auth.reset_password.submit')}
                     </Button>
                 </Stack>
             </Box>

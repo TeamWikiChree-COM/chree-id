@@ -66,7 +66,7 @@ class ConnectionController {
 
         $idp = $this->registry->get($provider);
         if ($idp === null || !$idp->isConfigured()) {
-            return redirect('/settings/connections')->withErrors(['provider' => '対応していない連携先です']);
+            return redirect('/settings/connections')->withErrors(['provider' => __('settings.connections.provider_unsupported')]);
         }
 
         return Inertia::location($this->flow->start($idp, linkAccountId: $accountId));

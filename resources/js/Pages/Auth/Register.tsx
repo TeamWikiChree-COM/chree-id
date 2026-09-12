@@ -11,6 +11,7 @@ import AuthLayout from '../../Components/AuthLayout';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 import { useTurnstilePending } from '../../lib/turnstile';
+import { t } from '../../lib/i18n';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
@@ -28,11 +29,11 @@ export default function Register() {
 
     return (
         <AuthLayout
-            title="アカウント登録"
-            heading="ChreeID を新規作成"
+            title={t('auth.register.title')}
+            heading={t('auth.register.heading')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">アカウントをお持ちの方はこちら</Link>
+                    <Link href="/login">{t('auth.register.have_account')}</Link>
                 </Typography>
             }
         >
@@ -44,11 +45,11 @@ export default function Register() {
                     )}
 
                     <Typography variant="body2" color="text.secondary">
-                        アカウント作成の確認メールを送信します
+                        {t('auth.register.description')}
                     </Typography>
 
                     <TextField
-                        label="メールアドレス"
+                        label={t('auth.common.email_label')}
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
@@ -60,14 +61,14 @@ export default function Register() {
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" disabled={processing || turnstilePending}>
-                        メールを送信する
+                        {t('auth.register.submit')}
                     </Button>
 
                 </Stack>
             </Box>
 
             <Divider sx={{ my: 1 }}>
-                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>または</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{t('auth.common.or')}</Typography>
             </Divider>
 
             <SocialLogins />

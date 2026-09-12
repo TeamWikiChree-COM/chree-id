@@ -4,6 +4,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AuthLayout from "../../Components/AuthLayout";
 import type { SignedInAccount } from "./MergePanel";
+import { t } from "../../lib/i18n";
 
 interface ClaimChooseProps {
     /** サービスから渡された平文トークン */
@@ -60,25 +61,23 @@ export default function ClaimChoose({
     const hasChreeId = signedInAs !== null;
 
     return (
-        <AuthLayout title="ChreeID を用意する" heading="ChreeID を用意する">
+        <AuthLayout title={t('claim.choose.title')} heading={t('claim.choose.title')}>
             <Typography variant="body2" color="text.secondary">
-                {serviceName}
-                でお使いのアカウントを ChreeID として使えるようにします。
-                これまでの利用状況はそのまま引き継がれます。
+                {t('claim.choose.description', { serviceName })}
             </Typography>
 
             <Stack spacing={2}>
                 {card(
-                    "既に ChreeID を持っている",
+                    t('claim.choose.has_account.title'),
                     hasChreeId
-                        ? `${signedInAs.displayName ?? signedInAs.email ?? "お使いのアカウント"} に追加します。`
-                        : "お使いの ChreeID にログインし、このアカウントをそこに統合します。",
+                        ? t('claim.choose.has_account.description_named', { name: signedInAs.displayName ?? signedInAs.email ?? t('claim.choose.has_account.your_account') })
+                        : t('claim.choose.has_account.description'),
                     "merge",
                 )}
 
                 {card(
-                    "はじめて利用する",
-                    "新しく ChreeID を作ります。ログイン方法をこのあと決めます。",
+                    t('claim.choose.first_time.title'),
+                    t('claim.choose.first_time.description'),
                     "create",
                 )}
             </Stack>

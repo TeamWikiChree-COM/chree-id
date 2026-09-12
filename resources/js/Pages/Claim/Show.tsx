@@ -15,6 +15,7 @@ import AuthLayout from "../../Components/AuthLayout";
 import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
 import { registerClaimPasskey } from "../../lib/passkey";
+import { t } from "../../lib/i18n";
 
 interface ClaimShowProps {
     /** サービスから渡された平文トークン。そのまま送り返す */
@@ -41,11 +42,11 @@ interface CarriedCredential {
 
 /** 画面に出す名前 */
 const CREDENTIAL_LABELS: Record<string, string> = {
-    password: "パスワード",
-    passkey: "パスキー",
-    totp: "認証アプリ (2段階認証)",
-    magic_link: "メールでログイン",
-    oauth: "Google 連携",
+    password: t('claim.credential.password'),
+    passkey: t('claim.credential.passkey'),
+    totp: t('claim.credential.totp'),
+    magic_link: t('claim.credential.magic_link'),
+    oauth: t('claim.credential.oauth'),
 };
 
 /** ログイン方法が1つも無いときだけ、ここから決めてもらう */
@@ -126,7 +127,7 @@ export default function ClaimShow({
             setPasskeyError(
                 e instanceof Error
                     ? e.message
-                    : "パスキーを登録できませんでした",
+                    : t('claim.show.passkey.register_failed'),
             );
         } finally {
             setPasskeyBusy(false);
@@ -136,18 +137,18 @@ export default function ClaimShow({
     const emailField =
         email !== null && emailVerified ? (
             <TextField
-                label="メールアドレス"
+                label={t('auth.common.email_label')}
                 value={email}
                 slotProps={{ input: { readOnly: true } }}
             />
         ) : (
             <TextField
-                label="メールアドレス"
+                label={t('auth.common.email_label')}
                 type="email"
                 value={data.email}
                 onChange={(e) => setData("email", e.target.value)}
                 error={Boolean(errors.email)}
-                helperText={errors.email ?? "確認のメールをお送りします"}
+                helperText={errors.email ?? t('claim.show.email_hint')}
                 autoComplete="email"
                 required
             />
@@ -155,20 +156,18 @@ export default function ClaimShow({
 
     const displayNameField = (
         <TextField
-            label="表示名"
+            label={t('auth.common.display_name_label')}
             value={data.display_name}
             onChange={(e) => setData("display_name", e.target.value)}
             error={Boolean(errors.display_name)}
-            helperText={errors.display_name ?? "任意。あとから変更できます"}
+            helperText={errors.display_name ?? t('auth.common.display_name_hint')}
             autoComplete="nickname"
         />
     );
 
     const intro = (
         <Typography variant="body2" color="text.secondary">
-            {serviceName}
-            でお使いのアカウントを、ChreeID として使えるようにします。
-            これまでの利用状況はそのまま引き継がれます。
+            {t('claim.choose.description', { serviceName })}
         </Typography>
     );
 
@@ -181,7 +180,7 @@ export default function ClaimShow({
         const keepsNothing = data.credentials.length === 0;
 
         return (
-            <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
+            <AuthLayout title={t('claim.show.title')} heading={t('claim.show.title')}>
                 {intro}
 
                 <Box component="form" onSubmit={submit} noValidate>
@@ -195,7 +194,7 @@ export default function ClaimShow({
                             }}
                         >
                             <Typography variant="body2" sx={{ mb: 1 }}>
-                                引き継ぐログイン方法を選んでください
+                                {t('claim.merge_panel.select_credentials')}
                             </Typography>
                             {carried.map((credential) => (
                                 <FormControlLabel
@@ -218,9 +217,7 @@ export default function ClaimShow({
                                 />
                             ))}
                             <Typography variant="body2" color="text.secondary">
-                                外したものは、この ChreeID
-                                では使えなくなります。
-                                {serviceName} 側の利用状況には影響しません。
+                                {t('claim.show.carried.unchecked_note', { serviceName })}
                             </Typography>
                             {errors.method && (
                                 <Alert severity="error" sx={{ mt: 1 }}>
@@ -231,7 +228,7 @@ export default function ClaimShow({
 
                         {keepsNothing && (
                             <Alert severity="warning">
-                                すべて外すとログインできなくなります。1つ以上残してください
+                                {t('claim.show.carried.keeps_nothing_warning')}
                             </Alert>
                         )}
 
@@ -243,7 +240,7 @@ export default function ClaimShow({
                             variant="contained"
                             disabled={processing || keepsNothing}
                         >
-                            ChreeID を作成する
+                            {t('claim.show.submit')}
                         </Button>
                     </Stack>
                 </Box>
@@ -252,11 +249,11 @@ export default function ClaimShow({
     }
 
     return (
-        <AuthLayout title="ChreeID を作成" heading="ChreeID を作成">
+        <AuthLayout title={t('claim.show.title')} heading={t('claim.show.title')}>
             {intro}
 
             <Alert severity="info">
-                このアカウントにはログイン方法がまだありません。1つ決めてください
+                {t('claim.show.no_method_warning')}
             </Alert>
 
             <Tabs
@@ -264,8 +261,8 @@ export default function ClaimShow({
                 onChange={(_, next: Method) => changeMethod(next)}
                 variant="fullWidth"
             >
-                <Tab value="password" label="パスワード" />
-                <Tab value="passkey" label="パスキー" />
+                <Tab value="password" label={t('claim.credential.password')} />
+                <Tab value="passkey" label={t('claim.credential.passkey')} />
                 {googleAvailable && <Tab value="google" label="Google" />}
             </Tabs>
 
@@ -273,8 +270,7 @@ export default function ClaimShow({
                 <Stack spacing={2}>
                     {emailField}
                     <Typography variant="body2" color="text.secondary">
-                        このアカウントのメールアドレスと同じ Google
-                        アカウントで連携すると、そのまま引き取れます
+                        {t('claim.show.google.description')}
                     </Typography>
                     <Button
                         component="a"
@@ -282,7 +278,7 @@ export default function ClaimShow({
                         variant="contained"
                         startIcon={<Icon name="google" family="brands" />}
                     >
-                        Google で続ける
+                        {t('claim.show.google.continue')}
                     </Button>
                 </Stack>
             ) : (
@@ -292,13 +288,13 @@ export default function ClaimShow({
 
                         {method === "password" && (
                             <PasswordField
-                                label="パスワード"
+                                label={t('claim.credential.password')}
                                 value={data.password}
                                 onChange={(e) =>
                                     setData("password", e.target.value)
                                 }
                                 error={Boolean(errors.password)}
-                                helperText={errors.password ?? "8文字以上"}
+                                helperText={errors.password ?? t('auth.common.password_min_length')}
                                 autoComplete="new-password"
                                 required
                             />
@@ -318,7 +314,7 @@ export default function ClaimShow({
                                 )}
                                 {passkeyRegistered ? (
                                     <Alert severity="success">
-                                        この端末にパスキーを登録しました
+                                        {t('claim.show.passkey.registered')}
                                     </Alert>
                                 ) : (
                                     <Button
@@ -328,7 +324,7 @@ export default function ClaimShow({
                                         disabled={passkeyBusy}
                                         onClick={() => void addPasskey()}
                                     >
-                                        この端末にパスキーを登録する
+                                        {t('claim.show.passkey.register')}
                                     </Button>
                                 )}
                             </Stack>
@@ -345,7 +341,7 @@ export default function ClaimShow({
                                 (method === "passkey" && !passkeyRegistered)
                             }
                         >
-                            ChreeID を作成する
+                            {t('claim.show.submit')}
                         </Button>
                     </Stack>
                 </Box>

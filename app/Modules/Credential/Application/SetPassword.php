@@ -47,7 +47,7 @@ class SetPassword {
      */
     public function hash(string $password): string {
         if (mb_strlen($password) < self::MIN_LENGTH) {
-            throw new InvalidArgumentException('パスワードは' . self::MIN_LENGTH . '文字以上にしてください');
+            throw new InvalidArgumentException(__('credential.password.min_length', ['min' => self::MIN_LENGTH]));
         }
 
         return password_hash($password, PASSWORD_BCRYPT);

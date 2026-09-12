@@ -4,9 +4,10 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { formatDateTime } from '../../lib/datetime';
+import { formatDateTime } from "../../lib/datetime";
 import AuthLayout from "../../Components/AuthLayout";
 import ServiceIcon from "../../Components/ServiceIcon";
+import { t } from "../../lib/i18n";
 
 interface ChoosableAccount {
     /** サービスアカウントのID */
@@ -52,58 +53,68 @@ export default function ChooseAccount({
     };
 
     return (
-        <AuthLayout title="アカウントを選択" heading="アカウントを選択">
+        <AuthLayout
+            title={t("oauth.choose_account.title")}
+            heading={t("oauth.choose_account.title")}
+        >
             <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                 <ServiceIcon name={clientName} iconUrl={clientIconUrl} />
                 <Typography variant="body2" color="text.secondary">
-                    {clientName}
-                    には、お使いのアカウントが複数あります。どれで続けますか？
+                    {t("oauth.choose_account.description", { clientName })}
                 </Typography>
             </Stack>
 
             <Stack spacing={1}>
-                {accounts.map((account) => (
-                    <Box
-                        key={account.id}
-                        sx={{
-                            border: "1px solid",
-                            borderColor: "divider",
-                            borderRadius: 2,
-                            p: 2,
-                        }}
-                    >
-                        <Stack
-                            direction="row"
-                            spacing={2}
+                {accounts.map((account) => {
+                    // 日付として読めなければ行ごと出さない。「連携日: (空)」を出さないため
+                    const connectedAt = formatDateTime(account.connectedAt);
+
+                    return (
+                        <Box
+                            key={account.id}
                             sx={{
-                                alignItems: "center",
-                                justifyContent: "space-between",
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 2,
+                                p: 2,
                             }}
                         >
-                            <Box>
-                                <Typography>
-                                    {account.serviceUserId ??
-                                        "名称未設定のアカウント"}
-                                </Typography>
-                                {account.connectedAt !== null && (
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        {formatDateTime(account.connectedAt)} から
-                                    </Typography>
-                                )}
-                            </Box>
-                            <Button
-                                variant="contained"
-                                disabled={sending}
-                                onClick={() => choose(account.id)}
+                            <Stack
+                                direction="row"
+                                spacing={2}
+                                sx={{
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                }}
                             >
-                                これで続ける
-                            </Button>
-                        </Stack>
-                    </Box>
-                ))}
+                                <Box>
+                                    <Typography>
+                                        {account.serviceUserId ??
+                                            t("oauth.choose_account.unnamed")}
+                                    </Typography>
+                                    {connectedAt !== null && (
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {t(
+                                                "oauth.choose_account.connected_since",
+                                                { date: connectedAt },
+                                            )}
+                                        </Typography>
+                                    )}
+                                </Box>
+                                <Button
+                                    variant="contained"
+                                    disabled={sending}
+                                    onClick={() => choose(account.id)}
+                                >
+                                    {t("auth.choose_identity.continue")}
+                                </Button>
+                            </Stack>
+                        </Box>
+                    );
+                })}
             </Stack>
         </AuthLayout>
     );

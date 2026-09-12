@@ -1,12 +1,12 @@
 @extends('mail.layout')
 
 @section('body')
-    <p>ChreeID へのログインリンクをお届けします。</p>
+    <p>{{ __('mail.magic_link.intro') }}</p>
 
-    <p>以下のボタンをクリックすると、パスワードなしでログインできます：</p>
+    <p>{{ __('mail.magic_link.cta_html') }}</p>
 
-    @include('mail.button', ['url' => $loginUrl, 'label' => 'ログインする'])
+    @include('mail.button', ['url' => $loginUrl, 'label' => __('mail.magic_link.button_label')])
 
-    <p>このリンクは{{ $ttlMinutes }}分間有効で、一度だけ使用できます。<br>
-    2段階認証を設定している場合は、リンクを開いたあとにコードの入力が必要です。</p>
+    <p>{{ __('mail.magic_link.ttl', ['minutes' => $ttlMinutes]) }}<br>
+    {{ __('mail.magic_link.two_factor_note') }}</p>
 @endsection

@@ -36,17 +36,17 @@ class CompletePasskeyRegistration {
         $response = $credential->response;
 
         if (!$response instanceof AuthenticatorAttestationResponse) {
-            throw new RuntimeException('登録の応答ではありません');
+            throw new RuntimeException(__('credential.passkey.invalid_response'));
         }
 
         try {
             $record = $this->ceremony->attestationValidator()->check($response, $options, $this->context->rpId());
         } catch (Throwable $e) {
-            throw new RuntimeException('パスキーの登録を検証できませんでした', 0, $e);
+            throw new RuntimeException(__('credential.passkey.verification_failed'), 0, $e);
         }
 
         if (!$record instanceof PublicKeyCredentialSource) {
-            throw new RuntimeException('検証結果を保存できる形で受け取れませんでした');
+            throw new RuntimeException(__('credential.passkey.invalid_result'));
         }
 
         $this->store->save($accountId, $record, $label);

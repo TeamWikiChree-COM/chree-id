@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FormEvent } from 'react';
 import Icon from '../Icon';
+import { t } from '../../lib/i18n';
 import type { IconSourceValue } from '../../types';
 
 interface IconSectionProps {
@@ -51,19 +52,19 @@ export default function IconSection({ iconSource, iconUrl, hasEmail }: IconSecti
                         value={form.data.source}
                         onChange={(e) => form.setData('source', e.target.value as IconSourceValue)}
                     >
-                        <FormControlLabel value="none" control={<Radio />} label="設定しない" />
+                        <FormControlLabel value="none" control={<Radio />} label={t('settings.profile.icon.none')} />
                         <FormControlLabel
                             value="gravatar"
                             control={<Radio />}
                             disabled={!hasEmail}
-                            label={hasEmail ? 'Gravatar を使う' : 'Gravatar を使う (メールアドレスが必要)'}
+                            label={hasEmail ? t('settings.profile.icon.gravatar') : t('settings.profile.icon.gravatar_disabled')}
                         />
-                        <FormControlLabel value="upload" control={<Radio />} label="画像をアップロードする" />
+                        <FormControlLabel value="upload" control={<Radio />} label={t('settings.profile.icon.upload')} />
                     </RadioGroup>
 
                     {form.data.source === 'upload' && (
                         <Button component="label" variant="outlined" color="inherit">
-                            {form.data.icon?.name ?? '画像を選ぶ'}
+                            {form.data.icon?.name ?? t('settings.profile.icon.choose_file')}
                             <input type="file" accept="image/*" hidden onChange={pick} />
                         </Button>
                     )}
@@ -78,7 +79,7 @@ export default function IconSection({ iconSource, iconUrl, hasEmail }: IconSecti
                     )}
 
                     <Button type="submit" variant="contained" disabled={form.processing}>
-                        保存する
+                        {t('settings.common.save')}
                     </Button>
                 </Stack>
             </Box>

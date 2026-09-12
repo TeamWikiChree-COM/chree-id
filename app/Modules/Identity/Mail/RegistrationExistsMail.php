@@ -21,7 +21,8 @@ class RegistrationExistsMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID のアカウント作成を続ける');
+        // 新規登録を試みたときと文面を完全に一致させ、既登録の事実を件名から漏らさない
+        return new Envelope(subject: __('mail.verify_registration.subject'));
     }
 
     /**

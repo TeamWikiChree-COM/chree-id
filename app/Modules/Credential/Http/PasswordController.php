@@ -67,6 +67,6 @@ class PasswordController {
     private function assertCurrentPassword(string $accountId, string $current): void {
         if ($this->verifier->verifyPassword($accountId, $current)->isSuccess()) return;
 
-        throw ValidationException::withMessages(['current_password' => '現在のパスワードが違います']);
+        throw ValidationException::withMessages(['current_password' => __('settings.password.current_mismatch')]);
     }
 }

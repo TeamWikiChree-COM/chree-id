@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import { usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
+import { t } from '../lib/i18n';
 
 /** Cloudflare が読み込むスクリプト。同じ URL を二重に差し込まないよう id で判別する */
 const SCRIPT_ID = 'cf-turnstile-script';
@@ -46,7 +47,7 @@ function loadScript(): Promise<void> {
         script.src = SCRIPT_SRC;
         script.async = true;
         script.addEventListener('load', () => resolve(), { once: true });
-        script.addEventListener('error', () => reject(new Error('Turnstile を読み込めませんでした')), { once: true });
+        script.addEventListener('error', () => reject(new Error(t('common.turnstile.load_error'))), { once: true });
         document.head.appendChild(script);
     });
 }

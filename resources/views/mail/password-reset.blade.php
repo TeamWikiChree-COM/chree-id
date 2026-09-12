@@ -1,16 +1,16 @@
 @extends('mail.layout')
 
 @section('body')
-    <p>ChreeID のパスワード再設定のご依頼を受け付けました。</p>
+    <p>{{ __('mail.password_reset.intro') }}</p>
 
-    <p>新しいパスワードを設定するには、以下のボタンをクリックしてください：</p>
+    <p>{{ __('mail.password_reset.cta_html') }}</p>
 
-    @include('mail.button', ['url' => $resetUrl, 'label' => 'パスワードを再設定する'])
+    @include('mail.button', ['url' => $resetUrl, 'label' => __('mail.password_reset.button_label')])
 
-    <p>このリンクは{{ $ttlMinutes }}分間有効で、一度だけ使用できます。</p>
+    <p>{{ __('mail.password_reset.ttl', ['minutes' => $ttlMinutes]) }}</p>
 @endsection
 
 @section('note')
-    心当たりがない場合は、このメールを無視してください。<br>
-    パスワードは変更されていません。
+    {{ __('mail.common.default_note') }}<br>
+    {{ __('mail.password_reset.note_extra') }}
 @endsection

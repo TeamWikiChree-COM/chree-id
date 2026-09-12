@@ -9,6 +9,7 @@ import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 import { useTurnstilePending } from '../../lib/turnstile';
+import { t } from '../../lib/i18n';
 
 export default function ForgotPassword() {
     const { data, setData, post, processing, errors } = useForm({
@@ -26,11 +27,11 @@ export default function ForgotPassword() {
 
     return (
         <AuthLayout
-            title="パスワードの再設定"
-            heading="パスワードの再設定"
+            title={t('auth.forgot_password.title')}
+            heading={t('auth.forgot_password.title')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">ログイン画面に戻る</Link>
+                    <Link href="/login">{t('auth.forgot_password.back_to_login')}</Link>
                 </Typography>
             }
         >
@@ -42,11 +43,11 @@ export default function ForgotPassword() {
                     )}
 
                     <Typography variant="body2" color="text.secondary">
-                        登録したメールアドレスに、再設定リンクを送信します
+                        {t('auth.forgot_password.description')}
                     </Typography>
 
                     <TextField
-                        label="メールアドレス"
+                        label={t('auth.common.email_label')}
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
@@ -58,7 +59,7 @@ export default function ForgotPassword() {
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" disabled={processing || turnstilePending}>
-                        再設定メールを送る
+                        {t('auth.forgot_password.submit')}
                     </Button>
                 </Stack>
             </Box>

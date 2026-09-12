@@ -10,14 +10,15 @@ import ServiceIcon from "../../../Components/ServiceIcon";
 import AppLayout from "../../../Components/AppLayout";
 import Icon from "../../../Components/Icon";
 import SectionTitle from "../../../Components/SectionTitle";
+import { t } from "../../../lib/i18n";
 import type { OAuthClient, TrustValue } from "../../../types";
 
 /** 信頼状態の表示。値そのものを出すと何が起きるか分からないので言い換える */
 const TRUST_LABELS: Record<TrustValue, string> = {
-    official: "公式",
-    approved: "承認済み",
-    unapproved: "未承認",
-    disabled: "停止中",
+    official: t('admin.clients.trust.official'),
+    approved: t('admin.clients.trust.approved'),
+    unapproved: t('admin.clients.trust.unapproved'),
+    disabled: t('admin.clients.trust.disabled'),
 };
 
 interface IssuedSecret {
@@ -35,18 +36,18 @@ interface IndexProps {
 export default function Index({ clients, issued }: IndexProps) {
     return (
         <AppLayout
-            title="接続サービス"
-            lead="ChreeID でログインできるサービスを管理します"
+            title={t('admin.clients.title')}
+            lead={t('admin.clients.lead')}
             crumbs={[
                 { label: "ChreeID", href: "/" },
-                { label: "システム管理", href: "/admin" },
-                { label: "接続サービス" },
+                { label: t('admin.crumb'), href: "/admin" },
+                { label: t('admin.clients.crumb') },
             ]}
         >
             {issued?.secret && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
                     <Typography sx={{ fontSize: "0.875rem", mb: 0.5 }}>
-                        この画面を離れると client_secret は二度と表示されません
+                        {t('admin.clients.issued.warning')}
                     </Typography>
                     <Box
                         component="pre"
@@ -68,10 +69,10 @@ client_secret : ${issued.secret}`}
                 startIcon={<Icon name="plus" />}
                 onClick={() => router.get("/admin/clients/create")}
             >
-                サービスを登録
+                {t('admin.clients.register')}
             </Button>
 
-            <SectionTitle note={`${clients.length}件`}>登録済み</SectionTitle>
+            <SectionTitle note={t('admin.clients.count', { count: clients.length })}>{t('admin.clients.list.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack
                     divider={
@@ -92,7 +93,7 @@ client_secret : ${issued.secret}`}
                                 color: "text.disabled",
                             }}
                         >
-                            登録されていません
+                            {t('admin.clients.list.empty')}
                         </Typography>
                     )}
 
@@ -135,7 +136,7 @@ client_secret : ${issued.secret}`}
                                             label={TRUST_LABELS[client.trust]}
                                         />
                                         {!client.isConfidential && (
-                                            <Chip size="small" label="public" />
+                                            <Chip size="small" label={t('admin.clients.list.public')} />
                                         )}
                                     </Typography>
                                     <Typography
@@ -164,9 +165,10 @@ client_secret : ${issued.secret}`}
                                                 color: "text.disabled",
                                             }}
                                         >
-                                            アカウント {client.serviceAccounts}
-                                            件 ・ うち移行済み{" "}
-                                            {client.migratedAccounts}件
+                                            {t('admin.clients.list.accounts_note', {
+                                                total: client.serviceAccounts,
+                                                migrated: client.migratedAccounts,
+                                            })}
                                         </Typography>
                                     )}
                                 </Box>
@@ -180,7 +182,7 @@ client_secret : ${issued.secret}`}
                                     )
                                 }
                             >
-                                編集
+                                {t('admin.clients.list.edit')}
                             </Button>
                         </Box>
                     ))}

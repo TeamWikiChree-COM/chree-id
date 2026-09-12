@@ -13,6 +13,7 @@ import SettingsTabs from '../../Components/SettingsTabs';
 import { useConfirm } from '../../lib/confirm';
 import { formatDateTime } from '../../lib/datetime';
 import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
+import { t } from '../../lib/i18n';
 import type { ExternalConnection } from '../../types';
 
 interface ConnectionsProps {
@@ -37,22 +38,22 @@ export default function Connections({ connections, providers }: ConnectionsProps
 
     return (
         <AppLayout
-            title="設定"
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: '設定', href: '/settings' }, { label: '外部アカウント' }]}
+            title={t('settings.title')}
+            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title'), href: '/settings' }, { label: t('settings.connections.crumb') }]}
         >
             <SettingsTabs current="/settings/connections" />
 
             <Stack spacing={1.5}>
-                {flash.connectionAdded && <Alert severity="success">外部アカウントを連携しました</Alert>}
-                {flash.connectionRemoved && <Alert severity="success">連携を解除しました</Alert>}
+                {flash.connectionAdded && <Alert severity="success">{t('settings.connections.added')}</Alert>}
+                {flash.connectionRemoved && <Alert severity="success">{t('settings.connections.removed')}</Alert>}
                 {errors.provider && <Alert severity="error">{errors.provider}</Alert>}
             </Stack>
 
-            <SectionTitle note={`${connections.length}件`}>連携中のアカウント</SectionTitle>
+            <SectionTitle note={t('settings.connections.count', { count: connections.length })}>{t('settings.connections.heading')}</SectionTitle>
             <Paper variant="outlined">
                 {connections.length === 0 && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-                        連携しているアカウントはありません
+                        {t('settings.connections.empty')}
                     </Typography>
                 )}
 
@@ -72,40 +73,40 @@ export default function Connections({ connections, providers }: ConnectionsProps
                                     {idpLabel(connection.provider)}
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
-                                    {connection.email ?? '連携済み'}
+                                    {connection.email ?? t('settings.connections.connected_label')}
                                     {formatDateTime(connection.connectedAt) !== null &&
-                                        ` ・ ${String(formatDateTime(connection.connectedAt))} に連携`}
+                                        t('settings.connections.connected_at', { date: String(formatDateTime(connection.connectedAt)) })}
                                 </Typography>
                             </Box>
                             <RowAction
                                 destructive
                                 onClick={() =>
                                     ask({
-                                        title: `${idpLabel(connection.provider)} との連携を解除しますか`,
-                                        description: `${idpLabel(connection.provider)} ではログインできなくなります。連携し直せば元に戻せます`,
-                                        confirmText: '解除する',
+                                        title: t('settings.connections.remove.title', { provider: idpLabel(connection.provider) }),
+                                        description: t('settings.connections.remove.description', { provider: idpLabel(connection.provider) }),
+                                        confirmText: t('settings.connections.remove.confirm'),
                                         onConfirm: () =>
                                             router.post('/settings/connections/remove', { id: connection.id }),
                                     })
                                 }
                             >
-                                解除
+                                {t('settings.connections.remove.action')}
                             </RowAction>
                         </Box>
                     ))}
                 </Stack>
             </Paper>
 
-            <SectionTitle>連携できるアカウント</SectionTitle>
+            <SectionTitle>{t('settings.connections.available.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 {available.length === 0 ? (
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                        追加で連携できるサービスはありません
+                        {t('settings.connections.available.empty')}
                     </Typography>
                 ) : (
                     <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                         <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                            連携すると、そのアカウントでも ChreeID にログインできるようになります
+                            {t('settings.connections.available.description')}
                         </Typography>
 
                         <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
@@ -117,7 +118,7 @@ export default function Connections({ connections, providers }: ConnectionsProps
                                     startIcon={<Icon name={idpIcon(provider)} family={idpIconFamily(provider)} />}
                                     onClick={() => router.post(`/settings/connections/${provider}`)}
                                 >
-                                    {idpLabel(provider)} と連携する
+                                    {t('settings.connections.available.connect', { provider: idpLabel(provider) })}
                                 </Button>
                             ))}
                         </Stack>

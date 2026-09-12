@@ -1,13 +1,13 @@
-ChreeID のパスワード再設定のご依頼を受け付けました。
+{{ __('mail.password_reset.intro') }}
 
-新しいパスワードを設定するには、以下のリンクをクリックしてください：
+{{ __('mail.password_reset.cta_text') }}
 
 {{ $resetUrl }}
 
-このリンクは{{ $ttlMinutes }}分間有効で、一度だけ使用できます。
+{{ __('mail.password_reset.ttl', ['minutes' => $ttlMinutes]) }}
 
-心当たりがない場合は、このメールを無視してください。
-パスワードは変更されていません。
+{{ __('mail.common.default_note') }}
+{{ __('mail.password_reset.note_extra') }}
 
 --
 ChreeID by Team WikiChree.COM

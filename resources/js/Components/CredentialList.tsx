@@ -6,6 +6,7 @@ import Icon from './Icon';
 import RowAction from './RowAction';
 import { formatDateTime, formatRelative } from '../lib/datetime';
 import { credentialIcon, credentialIconFamily, credentialLabel } from '../lib/credentials';
+import { t } from '../lib/i18n';
 import type { CredentialSummary } from '../types';
 
 /**
@@ -23,10 +24,10 @@ function detailOf(credential: CredentialSummary): string {
     const lastUsed = formatRelative(credential.lastUsedAt);
     const added = formatDateTime(credential.createdAt);
 
-    if (lastUsed !== null) parts.push(`最終利用 ${lastUsed}`);
-    else if (added !== null) parts.push(`${added} に登録 (未使用)`);
+    if (lastUsed !== null) parts.push(t('credential.list.last_used', { time: lastUsed }));
+    else if (added !== null) parts.push(t('credential.list.added_unused', { time: added }));
 
-    if (lastUsed !== null && added !== null) parts.push(`${added} に登録`);
+    if (lastUsed !== null && added !== null) parts.push(t('credential.list.added', { time: added }));
 
     return parts.join(' ・ ');
 }
@@ -50,7 +51,7 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
             <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                 {credentials.length === 0 && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
-                        登録されていません
+                        {t('credential.list.empty')}
                     </Typography>
                 )}
 
@@ -75,12 +76,12 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
 
                         <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
                             {onRename !== undefined && credential.type === 'passkey' && (
-                                <RowAction onClick={() => onRename(credential)}>名前を変更</RowAction>
+                                <RowAction onClick={() => onRename(credential)}>{t('credential.action.rename')}</RowAction>
                             )}
 
                             {onRemove !== undefined && (
                                 <RowAction destructive onClick={() => onRemove(credential)}>
-                                    削除
+                                    {t('credential.action.remove')}
                                 </RowAction>
                             )}
                         </Stack>

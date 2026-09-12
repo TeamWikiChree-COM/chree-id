@@ -1,13 +1,13 @@
-このメールアドレスでは、すでに ChreeID のアカウントが作成されています。
+{{ __('mail.registration_exists.intro') }}
 
-ログインは以下のリンクから行えます：
+{{ __('mail.registration_exists.cta_text') }}
 
 {{ $loginUrl }}
 
-パスワードが分からない場合は、ログイン画面から再設定できます。
+{{ __('mail.registration_exists.forgot_password') }}
 
-心当たりがない場合は、このメールを無視してください。
-アカウントの情報は変更されていません。
+{{ __('mail.common.default_note') }}
+{{ __('mail.registration_exists.note_extra') }}
 
 --
 ChreeID by Team WikiChree.COM

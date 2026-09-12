@@ -12,7 +12,7 @@
     @yield('body')
 
     <p style="color: #999; font-size: 0.85em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
-        @yield('note', '心当たりがない場合は、このメールを無視してください。')<br>
+        @yield('note', __('mail.common.default_note'))<br>
         --<br>
         ChreeID by Team WikiChree.COM
     </p>

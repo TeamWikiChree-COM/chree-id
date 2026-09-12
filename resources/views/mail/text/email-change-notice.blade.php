@@ -1,10 +1,9 @@
-ChreeID のメールアドレスを {{ $newEmail }} に変更する申し込みがありました。
+{{ __('mail.email_change_notice.intro', ['email' => $newEmail]) }}
 
-変更は、新しいアドレス宛のリンクが開かれた時点で確定します。
-この時点ではまだ変更されていません。
+{{ __('mail.email_change_notice.confirm_note') }}
 
-心当たりがない場合は、パスワードを変更してください。
-第三者がアカウントに入っている可能性があります。
+{{ __('mail.email_change_notice.note_line1') }}
+{{ __('mail.email_change_notice.note_line2') }}
 
 --
 ChreeID by Team WikiChree.COM

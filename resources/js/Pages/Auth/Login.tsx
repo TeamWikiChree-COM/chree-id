@@ -13,6 +13,7 @@ import PasswordField from '../../Components/PasswordField';
 import SocialLogins from '../../Components/SocialLogins';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 import { useTurnstilePending } from '../../lib/turnstile';
+import { t } from '../../lib/i18n';
 
 interface LoginProps {
     /** サービスが login_hint で添えてきたアドレス。二度打たせないために埋める */
@@ -37,18 +38,18 @@ export default function Login({ email }: LoginProps) {
 
     return (
         <AuthLayout
-            title="ログイン"
-            heading="ChreeID にログイン"
+            title={t('auth.login.title')}
+            heading={t('auth.login.heading')}
             footer={
                 <Stack spacing={0.5}>
                     <Box component={InertiaLink} href="/register" sx={{ color: 'primary.main' }}>
-                        アカウントを作成する
+                        {t('auth.login.create_account')}
                     </Box>
                 </Stack>
             }
         >
             {flash.passwordReset && (
-                <Alert severity="success">パスワードを変更しました。新しいパスワードでログインしてください</Alert>
+                <Alert severity="success">{t('auth.login.password_reset_success')}</Alert>
             )}
             {errors.email && <Alert severity="error">{errors.email}</Alert>}
             {errors['cf-turnstile-response'] && <Alert severity="error">{errors['cf-turnstile-response']}</Alert>}
@@ -56,7 +57,7 @@ export default function Login({ email }: LoginProps) {
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
                     <TextField
-                        label="メールアドレス"
+                        label={t('auth.common.email_label')}
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
@@ -67,7 +68,7 @@ export default function Login({ email }: LoginProps) {
 
                     <Box>
                         <PasswordField
-                            label="パスワード"
+                            label={t('auth.common.password_label')}
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             autoComplete="current-password"
@@ -79,7 +80,7 @@ export default function Login({ email }: LoginProps) {
                                 href="/password/forgot"
                                 sx={{ fontSize: '0.8125rem', color: 'primary.main', textDecoration: 'none' }}
                             >
-                                パスワードをお忘れですか？
+                                {t('auth.login.forgot_password')}
                             </Typography>
                         </Box>
                     </Box>
@@ -87,13 +88,13 @@ export default function Login({ email }: LoginProps) {
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" size="large" fullWidth disabled={processing || turnstilePending}>
-                        ログイン
+                        {t('auth.login.submit')}
                     </Button>
                 </Stack>
             </Box>
 
             <Divider sx={{ my: 1 }}>
-                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>または</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{t('auth.common.or')}</Typography>
             </Divider>
 
             <SocialLogins magicLinkHref="/login/magic" />

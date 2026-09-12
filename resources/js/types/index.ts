@@ -181,6 +181,8 @@ declare module '@inertiajs/core' {
             iconUrl: string | null;
             /** 画面の言語。辞書そのものはバンドルに入っているので名前だけ渡す */
             locale: string;
+            /** 切り替えメニューに並べる言語。config/chreeid.php の locales */
+            locales: string[];
         };
     }
 }

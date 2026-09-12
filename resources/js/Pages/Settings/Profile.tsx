@@ -15,6 +15,7 @@ import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import IconSection from '../../Components/Settings/IconSection';
 import { formatDateTime } from '../../lib/datetime';
+import { t } from '../../lib/i18n';
 import type { IconSourceValue } from '../../types';
 
 interface ProfileProps {
@@ -48,61 +49,61 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
 
     return (
         <AppLayout
-            title="設定"
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: '設定' }]}
+            title={t('settings.title')}
+            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title') }]}
         >
             <SettingsTabs current="/settings" />
 
             <Stack spacing={1.5}>
-                {flash.profileSaved && <Alert severity="success">保存しました</Alert>}
-                {flash.iconSaved && <Alert severity="success">アイコンを保存しました</Alert>}
+                {flash.profileSaved && <Alert severity="success">{t('settings.profile.saved')}</Alert>}
+                {flash.iconSaved && <Alert severity="success">{t('settings.profile.icon_saved')}</Alert>}
                 {flash.verificationSent && (
-                    <Alert severity="info">確認メールを送りました。本文のリンクを開いてください</Alert>
+                    <Alert severity="info">{t('settings.profile.verification_sent')}</Alert>
                 )}
-                {flash.emailVerified === true && <Alert severity="success">メールアドレスを確認しました</Alert>}
+                {flash.emailVerified === true && <Alert severity="success">{t('settings.profile.email_verified')}</Alert>}
                 {flash.emailVerified === false && (
-                    <Alert severity="error">このリンクは期限切れか、すでに使用されています</Alert>
+                    <Alert severity="error">{t('settings.profile.email_verify_failed')}</Alert>
                 )}
                 {flash.emailChangeSent && (
-                    <Alert severity="info">新しいアドレスに確認メールを送りました。リンクを開くまで変更されません</Alert>
+                    <Alert severity="info">{t('settings.profile.email_change_sent')}</Alert>
                 )}
-                {flash.emailChangeCancelled && <Alert severity="success">確認待ちの変更を取り消しました</Alert>}
-                {flash.emailChanged === true && <Alert severity="success">メールアドレスを変更しました</Alert>}
+                {flash.emailChangeCancelled && <Alert severity="success">{t('settings.profile.email_change_cancelled')}</Alert>}
+                {flash.emailChanged === true && <Alert severity="success">{t('settings.profile.email_changed')}</Alert>}
                 {flash.emailChanged === false && (
-                    <Alert severity="error">このリンクは期限切れか、すでに使用されています</Alert>
+                    <Alert severity="error">{t('settings.profile.email_verify_failed')}</Alert>
                 )}
             </Stack>
 
-            <SectionTitle>アイコン</SectionTitle>
+            <SectionTitle>{t('settings.profile.icon.heading')}</SectionTitle>
             <IconSection iconSource={iconSource} iconUrl={iconUrl} hasEmail={email !== null} />
 
-            <SectionTitle>表示名</SectionTitle>
+            <SectionTitle>{t('settings.profile.display_name.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
                         <TextField
-                            label="表示名"
+                            label={t('settings.profile.display_name.label')}
                             value={data.display_name}
                             onChange={(e) => setData('display_name', e.target.value)}
                             error={Boolean(errors.display_name)}
-                            helperText={errors.display_name ?? '任意。空にすると未設定に戻ります'}
+                            helperText={errors.display_name ?? t('settings.profile.display_name.hint')}
                             autoComplete="nickname"
                         />
                         <Button type="submit" variant="contained" disabled={processing}>
-                            保存する
+                            {t('settings.common.save')}
                         </Button>
                     </Stack>
                 </Box>
             </Paper>
 
-            <SectionTitle>メールアドレス</SectionTitle>
+            <SectionTitle>{t('settings.profile.email.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
                     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                        <Typography sx={{ fontSize: '0.9375rem' }}>{email ?? '未設定'}</Typography>
+                        <Typography sx={{ fontSize: '0.9375rem' }}>{email ?? t('settings.profile.email.unset')}</Typography>
                         <Chip
                             size="small"
-                            label={emailVerified ? '確認済み' : '未確認'}
+                            label={emailVerified ? t('settings.profile.email.verified') : t('settings.profile.email.unverified')}
                             color={emailVerified ? 'success' : 'default'}
                         />
                     </Stack>
@@ -110,7 +111,7 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                     {email !== null && !emailVerified && (
                         <>
                             <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                                確認が済んでいないと、連携先のサービスへアカウントを引き継げません
+                                {t('settings.profile.email.unverified_notice')}
                             </Typography>
                             <Button
                                 variant="outlined"
@@ -118,7 +119,7 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                                 startIcon={<Icon name="envelope" />}
                                 onClick={() => router.post('/profile/email/verify')}
                             >
-                                確認メールを送る
+                                {t('settings.profile.email.send_verification')}
                             </Button>
                         </>
                     )}
@@ -133,46 +134,46 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                                     color="inherit"
                                     onClick={() => router.post('/profile/email/change/cancel')}
                                 >
-                                    取り消す
+                                    {t('settings.profile.email.pending_cancel')}
                                 </Button>
                             }
                         >
-                            {pendingEmail.email} への変更を確認待ちです
+                            {t('settings.profile.email.pending_notice', { email: pendingEmail.email })}
                             {formatDateTime(pendingEmail.expiresAt) !== null &&
-                                ` (${String(formatDateTime(pendingEmail.expiresAt))} まで)`}
+                                t('settings.profile.email.pending_until', { date: String(formatDateTime(pendingEmail.expiresAt)) })}
                         </Alert>
                     )}
 
                     <Box component="form" onSubmit={submitEmail} noValidate sx={{ width: '100%', pt: 1 }}>
                         <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
                             <TextField
-                                label="新しいメールアドレス"
-                                placeholder="変更後のアドレスを入力"
+                                label={t('settings.profile.email.new_label')}
+                                placeholder={t('settings.profile.email.new_placeholder')}
                                 type="email"
                                 value={emailForm.data.email}
                                 onChange={(e) => emailForm.setData('email', e.target.value)}
                                 error={Boolean(emailForm.errors.email)}
                                 helperText={
                                     emailForm.errors.email ??
-                                    '新しいアドレスに確認メールを送ります。リンクを開くまで変更されません'
+                                    t('settings.profile.email.new_hint')
                                 }
                             />
                             <Button type="submit" variant="outlined" color="inherit" disabled={emailForm.processing}>
-                                確認メールを送信する
+                                {t('settings.profile.email.submit')}
                             </Button>
                         </Stack>
                     </Box>
                 </Stack>
             </Paper>
 
-            <SectionTitle>退会</SectionTitle>
+            <SectionTitle>{t('settings.profile.withdraw.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                        連携しているサービスのアカウントも使えなくなります
+                        {t('settings.profile.withdraw.notice')}
                     </Typography>
                     <Button component={InertiaLink} href="/settings/withdraw" variant="outlined" color="error">
-                        退会の手続きへ
+                        {t('settings.profile.withdraw.link')}
                     </Button>
                 </Stack>
             </Paper>

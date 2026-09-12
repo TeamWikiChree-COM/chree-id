@@ -19,12 +19,18 @@ use Inertia\Response;
  * サービスから見た識別子 (`sub`) は変わらないので、向こうは何も気付かない。
  */
 class SplitServiceController {
-    /** 理由ごとの表示。内部の理由コードはそのまま出さない */
-    private const FAILURE_MESSAGES = [
-        SplitException::NO_CREDENTIAL => 'ログインする方法を1つ以上選んでください。何も持っていかないと入れなくなります',
-        SplitException::EMAIL_TAKEN => 'このメールアドレスは使えません',
-        SplitException::NOT_FOUND => 'このサービスは見つかりませんでした',
-    ];
+    /**
+     * 理由ごとの表示。内部の理由コードはそのまま出さない
+     *
+     * @return array<string, string>
+     */
+    private function failureMessages(): array {
+        return [
+            SplitException::NO_CREDENTIAL => __('linking.split.no_credential'),
+            SplitException::EMAIL_TAKEN => __('linking.split.email_taken'),
+            SplitException::NOT_FOUND => __('linking.split.not_found'),
+        ];
+    }
 
     public function __construct(
         private readonly ChreeSession $session,
@@ -40,7 +46,7 @@ class SplitServiceController {
         if ($identityId === null) return redirect('/login');
 
         $target = $this->find($serviceAccount, $identityId);
-        if ($target === null) return redirect('/')->withErrors(['split' => self::FAILURE_MESSAGES[SplitException::NOT_FOUND]]);
+        if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
 
         $options = [];
         foreach ($this->split->options($identityId) as $credential) {
@@ -74,7 +80,7 @@ class SplitServiceController {
 
         // 本人が持っているサービスアカウントに限る。画面から来たIDは信用しない
         $target = $this->find($request->string('service_account_id')->toString(), $identityId);
-        if ($target === null) return redirect('/')->withErrors(['split' => self::FAILURE_MESSAGES[SplitException::NOT_FOUND]]);
+        if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
 
         /** @var list<string> $chosen */
         $chosen = $request->input('credentials', []);
@@ -86,7 +92,7 @@ class SplitServiceController {
             $this->split->execute($target, $email, $displayName === '' ? null : $displayName, $chosen);
         } catch (SplitException $e) {
             throw ValidationException::withMessages([
-                $e->reason === SplitException::EMAIL_TAKEN ? 'email' : 'credentials' => self::FAILURE_MESSAGES[$e->reason],
+                $e->reason === SplitException::EMAIL_TAKEN ? 'email' : 'credentials' => $this->failureMessages()[$e->reason],
             ]);
         }
 

@@ -5,6 +5,8 @@
  * その変換をここに閉じ込める。
  */
 
+import { t } from './i18n';
+
 /** サーバが返す登録オプション。base64url の項目だけ string になっている */
 interface RegistrationOptions extends Omit<PublicKeyCredentialCreationOptions, 'challenge' | 'user' | 'excludeCredentials'> {
     challenge: string;
@@ -74,7 +76,7 @@ async function createPasskey(
     extraFields: Record<string, string> = {},
 ): Promise<void> {
     if (!window.PublicKeyCredential) {
-        throw new Error('このブラウザはパスキーに対応していません');
+        throw new Error(t('passkey.error.unsupported'));
     }
 
     const optionsResponse = await fetch(optionsUrl, {
@@ -86,7 +88,7 @@ async function createPasskey(
         },
         body: new URLSearchParams(extraFields).toString(),
     });
-    if (!optionsResponse.ok) throw new Error(await failureMessage(optionsResponse, 'チャレンジを取得できませんでした'));
+    if (!optionsResponse.ok) throw new Error(await failureMessage(optionsResponse, t('passkey.error.challenge')));
 
     const options = (await optionsResponse.json()) as RegistrationOptions;
 
@@ -99,7 +101,7 @@ async function createPasskey(
         },
     });
 
-    if (credential === null) throw new Error('登録がキャンセルされました');
+    if (credential === null) throw new Error(t('passkey.error.cancelled'));
 
     // credentials.create() の戻りは Credential 止まりなので、WebAuthn の形まで絞る
     const publicKeyCredential = credential as PublicKeyCredential;
@@ -125,7 +127,7 @@ async function createPasskey(
         body: JSON.stringify({ ...extraFields, credential: JSON.stringify(payload), label }),
     });
 
-    if (!registerResponse.ok) throw new Error(await failureMessage(registerResponse, 'パスキーを登録できませんでした'));
+    if (!registerResponse.ok) throw new Error(await failureMessage(registerResponse, t('passkey.error.register')));
 }
 
 /**

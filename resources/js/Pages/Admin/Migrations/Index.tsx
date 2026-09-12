@@ -10,6 +10,7 @@ import AppLayout from '../../../Components/AppLayout';
 import { useConfirm } from '../../../lib/confirm';
 import Icon from '../../../Components/Icon';
 import SectionTitle from '../../../Components/SectionTitle';
+import { t } from '../../../lib/i18n';
 
 interface IndexProps {
     /** まだ適用されていないもの。古い順 */
@@ -32,9 +33,9 @@ export default function Index({ pending, applied }: IndexProps) {
 
     const run = (): void => {
         ask({
-            title: '未適用のマイグレーションを流しますか',
-            description: `${String(pending.length)} 件を適用します。データベースの構造が変わり、戻すには手当てが要ります`,
-            confirmText: '適用する',
+            title: t('admin.migrations.confirm.title'),
+            description: t('admin.migrations.confirm.description', { count: pending.length }),
+            confirmText: t('admin.migrations.confirm.confirm'),
             onConfirm: () =>
                 router.post('/admin/migrations/run', {}, {
                     onStart: () => setRunning(true),
@@ -45,12 +46,12 @@ export default function Index({ pending, applied }: IndexProps) {
 
     return (
         <AppLayout
-            title="データベース構造"
-            lead="デプロイで置かれたマイグレーションを適用します"
+            title={t('admin.migrations.title')}
+            lead={t('admin.migrations.lead')}
             crumbs={[
                 { label: 'ChreeID', href: '/' },
-                { label: 'システム管理', href: '/admin' },
-                { label: 'データベース構造' },
+                { label: t('admin.crumb'), href: '/admin' },
+                { label: t('admin.migrations.crumb') },
             ]}
         >
             {migrationOutput && (
@@ -59,11 +60,13 @@ export default function Index({ pending, applied }: IndexProps) {
                 </Alert>
             )}
 
-            <SectionTitle note={pending.length === 0 ? undefined : `${pending.length}件`}>未適用</SectionTitle>
+            <SectionTitle note={pending.length === 0 ? undefined : t('admin.migrations.count', { count: pending.length })}>
+                {t('admin.migrations.pending.heading')}
+            </SectionTitle>
             <Paper variant="outlined">
                 {pending.length === 0 ? (
                     <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
-                        未適用のものはありません。構造は最新です
+                        {t('admin.migrations.pending.empty')}
                     </Typography>
                 ) : (
                     <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
@@ -82,20 +85,20 @@ export default function Index({ pending, applied }: IndexProps) {
             {pending.length > 0 && (
                 <Box>
                     <Button variant="contained" onClick={run} disabled={running}>
-                        {running ? '適用中…' : '適用する'}
+                        {running ? t('admin.migrations.running') : t('admin.migrations.confirm.confirm')}
                     </Button>
                     <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                        前に進めるだけで、巻き戻しはできません。
+                        {t('admin.migrations.footer')}
                     </Typography>
                 </Box>
             )}
 
-            <SectionTitle note={`${applied.length}件`}>適用済み</SectionTitle>
+            <SectionTitle note={t('admin.migrations.count', { count: applied.length })}>{t('admin.migrations.applied.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {applied.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
-                            まだ何も適用されていません
+                            {t('admin.migrations.applied.empty')}
                         </Typography>
                     )}
 

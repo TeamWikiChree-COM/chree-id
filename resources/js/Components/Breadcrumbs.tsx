@@ -3,6 +3,7 @@ import MuiBreadcrumbs from '@mui/material/Breadcrumbs';
 import Typography from '@mui/material/Typography';
 import Icon from './Icon';
 import InertiaLink from './InertiaLink';
+import { t } from '../lib/i18n';
 
 export interface Crumb {
     label: string;
@@ -24,7 +25,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
 
     return (
         <MuiBreadcrumbs
-            aria-label="パンくず"
+            aria-label={t('common.breadcrumbs.aria')}
             separator={<Icon name="chevron-right" sx={{ fontSize: '0.6875rem' }} />}
             sx={{ pt: 0, pb: 1, fontSize: '0.875rem', color: 'text.secondary' }}
         >

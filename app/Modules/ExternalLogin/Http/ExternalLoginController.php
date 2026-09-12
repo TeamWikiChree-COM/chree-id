@@ -41,7 +41,7 @@ class ExternalLoginController {
      */
     public function redirect(Request $request, string $provider): RedirectResponse {
         $idp = $this->registry->get($provider);
-        if ($idp === null) return redirect('/login')->withErrors(['email' => '対応していない連携先です']);
+        if ($idp === null) return redirect('/login')->withErrors(['email' => __('auth.external_login.provider_unsupported')]);
 
         return redirect()->away($this->flow->start($idp, $request->string('claim_token')->toString()));
     }
@@ -53,23 +53,23 @@ class ExternalLoginController {
      */
     public function callback(Request $request, string $provider): RedirectResponse {
         $idp = $this->registry->get($provider);
-        if ($idp === null) return $this->fail('対応していない連携先です');
+        if ($idp === null) return $this->fail(__('auth.external_login.provider_unsupported'));
 
         $linkAccountId = $this->flow->pullLinkAccountId();
         $nonce = $this->flow->pullNonce();
         $claimToken = $this->flow->pullClaimToken();
 
         if (!$this->flow->matchesState($request->string('state')->toString()) || $nonce === null) {
-            return $this->fail('連携を確認できませんでした', $linkAccountId);
+            return $this->fail(__('auth.external_login.link_failed'), $linkAccountId);
         }
 
         $code = $request->string('code')->toString();
-        if ($code === '') return $this->fail('連携がキャンセルされました', $linkAccountId);
+        if ($code === '') return $this->fail(__('auth.external_login.canceled'), $linkAccountId);
 
         try {
             $identity = $idp->exchange($code, $nonce);
         } catch (Throwable) {
-            return $this->fail('連携に失敗しました', $linkAccountId);
+            return $this->fail(__('auth.external_login.failed'), $linkAccountId);
         }
 
         // 設定画面から始めた連携は、ログインではなく本人のアカウントへ足すだけ
@@ -98,13 +98,13 @@ class ExternalLoginController {
 
             $accountId = $this->link->execute($identity);
         } catch (ExternalIdentityConflict) {
-            return $this->fail('既存のアカウントでログインしてから連携してください');
+            return $this->fail(__('auth.external_login.link_existing_account_first'));
         } catch (Throwable) {
-            return $this->fail('連携に失敗しました');
+            return $this->fail(__('auth.external_login.failed'));
         }
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null || $account->isSuspended()) return $this->fail('このアカウントは使用できません');
+        if ($account === null || $account->isSuspended()) return $this->fail(__('auth.external_login.account_unusable'));
 
         if ($claimToken !== null) $this->finalizeClaim($claimToken, $accountId);
 
@@ -125,7 +125,7 @@ class ExternalLoginController {
      */
     private function addToAccount(string $linkAccountId, ExternalIdentity $identity): RedirectResponse {
         if ($this->session->accountId() !== $linkAccountId) {
-            return $this->fail('連携を確認できませんでした');
+            return $this->fail(__('auth.external_login.link_failed'));
         }
 
         try {
@@ -133,7 +133,7 @@ class ExternalLoginController {
         } catch (ExternalIdentityConflict $e) {
             return redirect('/settings/connections')->withErrors(['provider' => $e->getMessage()]);
         } catch (Throwable) {
-            return redirect('/settings/connections')->withErrors(['provider' => '連携に失敗しました']);
+            return redirect('/settings/connections')->withErrors(['provider' => __('auth.external_login.failed')]);
         }
 
         return redirect('/settings/connections')->with('connectionAdded', true);
@@ -149,13 +149,13 @@ class ExternalLoginController {
      */
     public function choose(Request $request): RedirectResponse {
         $candidates = $this->flow->candidates();
-        if ($candidates === []) return $this->fail('連携を確認できませんでした');
+        if ($candidates === []) return $this->fail(__('auth.external_login.link_failed'));
 
         $chosen = $request->string('account_id')->toString();
-        if (!\in_array($chosen, $candidates, true)) return $this->fail('連携を確認できませんでした');
+        if (!\in_array($chosen, $candidates, true)) return $this->fail(__('auth.external_login.link_failed'));
 
         $account = $this->accounts->findById($chosen);
-        if ($account === null || $account->isSuspended()) return $this->fail('このアカウントは使用できません');
+        if ($account === null || $account->isSuspended()) return $this->fail(__('auth.external_login.account_unusable'));
 
         $this->flow->forgetCandidates();
         $claimToken = $this->flow->pullClaimToken();

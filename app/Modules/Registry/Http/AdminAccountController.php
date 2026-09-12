@@ -130,7 +130,7 @@ class AdminAccountController {
             'restore' => $this->manage->restore($actor, $account),
             'purge' => $this->manage->purge($actor, $account),
             // validate が in: で絞っているが、そちらを足してここを忘れると黙って何もしない
-            default => throw new RuntimeException('不明な操作です'),
+            default => throw new RuntimeException(__('admin.account.unknown_action')),
         });
     }
 

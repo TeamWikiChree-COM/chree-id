@@ -108,7 +108,7 @@ class ServiceAccountController {
         }
 
         if ($ticket->link->isClaimed()) {
-            return ApiError::make('already_claimed', 'このアカウントは既に引き取られています', 409);
+            return ApiError::make('already_claimed', __('api.claim.already_claimed'), 409);
         }
 
         return response()->json([
@@ -200,7 +200,7 @@ class ServiceAccountController {
         $found = $this->deactivate->execute($client, $request->string('service_user_id')->toString());
 
         if (!$found) {
-            return ApiError::make('unknown_service_user', 'この利用者の ChreeID は見つかりませんでした', 404);
+            return ApiError::make('unknown_service_user', __('api.service_user.not_found'), 404);
         }
 
         return response()->json(['ok' => true]);

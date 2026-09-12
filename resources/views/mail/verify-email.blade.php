@@ -1,13 +1,13 @@
 @extends('mail.layout')
 
 @section('body')
-    <p>ChreeID に登録されているメールアドレスの確認をお願いします。</p>
+    <p>{{ __('mail.verify_email.intro') }}</p>
 
-    <p>以下のボタンをクリックすると、このアドレスが確認済みになります：</p>
+    <p>{{ __('mail.verify_email.cta_html') }}</p>
 
-    @include('mail.button', ['url' => $verifyUrl, 'label' => 'メールアドレスを確認する'])
+    @include('mail.button', ['url' => $verifyUrl, 'label' => __('mail.verify_email.button_label')])
 
-    <p>確認済みになると、連携先のサービスへアカウントを引き継げるようになります。</p>
+    <p>{{ __('mail.verify_email.after_confirm') }}</p>
 
-    <p>このリンクは{{ $ttlMinutes }}分間有効です。</p>
+    <p>{{ __('mail.verify_email.ttl', ['minutes' => $ttlMinutes]) }}</p>
 @endsection

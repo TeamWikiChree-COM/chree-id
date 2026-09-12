@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { useMemo } from 'react';
 import { buildTheme } from './theme';
 import { ThemeModeContext, useThemeMode } from './lib/theme-mode';
-import { initTranslations } from './lib/i18n';
+import { t } from './lib/i18n';
 
 /**
  * テーマの供給。
@@ -35,16 +35,12 @@ createInertiaApp({
         const pages = import.meta.glob<{ default: ComponentType }>('./Pages/**/*.tsx', { eager: true });
         const page = pages[`./Pages/${name}.tsx`];
 
-        if (page === undefined) throw new Error(`ページが見つかりません: ${name}`);
+        if (page === undefined) throw new Error(t('common.error.page_not_found', { name }));
 
         return page;
     },
 
     setup({ el, App, props }) {
-        // 辞書はバンドルに入っているので、サーバから貰うのはロケール名だけ。
-        // 切り替えはサーバ側で起きて全体が読み直されるため、ここで一度決めれば足りる
-        initTranslations(props.initialPage.props.locale);
-
         createRoot(el).render(
             <Root>
                 <App {...props} />

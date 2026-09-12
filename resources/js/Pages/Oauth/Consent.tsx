@@ -9,12 +9,13 @@ import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import ServiceIcon from "../../Components/ServiceIcon";
+import { t } from "../../lib/i18n";
 
-/** OIDC のスコープ名を画面表示用の日本語にする */
+/** OIDC のスコープ名を画面表示用の文言にする */
 const SCOPE_LABELS: Record<string, string> = {
-    openid: "アカウントの識別子",
-    profile: "表示名",
-    email: "メールアドレス",
+    openid: t('oauth.consent.scope.openid'),
+    profile: t('oauth.consent.scope.profile'),
+    email: t('oauth.consent.scope.email'),
 };
 
 interface ConsentProps {
@@ -36,7 +37,7 @@ export default function Consent({
 }: ConsentProps) {
     return (
         <>
-            <Head title="連携の確認" />
+            <Head title={t('oauth.consent.head_title')} />
 
             <Container maxWidth="xs" sx={{ py: 8 }}>
                 <Stack spacing={3}>
@@ -50,10 +51,10 @@ export default function Consent({
                         />
                         <Box>
                             <Typography variant="h6" component="h1">
-                                {clientName} との連携
+                                {t('oauth.consent.heading', { clientName })}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                このサービスに以下の情報を渡します
+                                {t('oauth.consent.description')}
                             </Typography>
                         </Box>
                     </Box>
@@ -85,10 +86,10 @@ export default function Consent({
                         ))}
                         <Stack spacing={1}>
                             <Button type="submit" variant="contained">
-                                許可する
+                                {t('oauth.consent.allow')}
                             </Button>
                             <Button href="/" color="inherit">
-                                やめる
+                                {t('oauth.consent.cancel')}
                             </Button>
                         </Stack>
                     </Box>

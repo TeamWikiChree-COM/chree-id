@@ -69,7 +69,7 @@ class ChallengeController {
         if (!$this->complete->execute($accountId, $factors)) {
             $this->history->record($accountId, $type->value, succeeded: false);
 
-            throw ValidationException::withMessages(['code' => 'コードが正しくありません']);
+            throw ValidationException::withMessages(['code' => __('auth.challenge.invalid_code')]);
         }
 
         $this->pending->forget();

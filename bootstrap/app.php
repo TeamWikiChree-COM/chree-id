@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackLoginSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,12 @@ $app = Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            // 表示言語を最初に決める。あとにすると共有 props もバリデーションの文言も、
+            // 決まる前の言語で組み立ってしまう。
+            // **prepend にはしない。** StartSession より前に出てしまい、
+            // ログイン中の選択 (認証主体の行) を読むためのセッションがまだ無い
+            SetLocale::class,
+
             HandleInertiaRequests::class,
             TrackLoginSession::class,
         ]);

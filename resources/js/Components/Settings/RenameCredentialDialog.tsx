@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import { useEffect } from 'react';
+import { t } from '../../lib/i18n';
 import type { CredentialSummary } from '../../types';
 
 interface RenameCredentialDialogProps {
@@ -36,25 +37,25 @@ export default function RenameCredentialDialog({ credential, onClose }: RenameCr
 
     return (
         <Dialog open={credential !== null} onClose={onClose} fullWidth maxWidth="xs">
-            <DialogTitle sx={{ fontSize: '1rem' }}>パスキーの名前</DialogTitle>
+            <DialogTitle sx={{ fontSize: '1rem' }}>{t('settings.security.rename.title')}</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
                     fullWidth
-                    label="名前"
+                    label={t('settings.security.rename.label')}
                     value={form.data.label}
                     onChange={(e) => form.setData('label', e.target.value)}
                     error={Boolean(form.errors.label)}
-                    helperText={form.errors.label ?? 'どの端末の鍵か分かる名前にしてください'}
+                    helperText={form.errors.label ?? t('settings.security.rename.hint')}
                     sx={{ mt: 1 }}
                 />
             </DialogContent>
             <DialogActions>
                 <Button color="inherit" onClick={onClose}>
-                    やめる
+                    {t('settings.common.cancel')}
                 </Button>
                 <Button variant="contained" onClick={submit} disabled={form.processing}>
-                    保存する
+                    {t('settings.common.save')}
                 </Button>
             </DialogActions>
         </Dialog>

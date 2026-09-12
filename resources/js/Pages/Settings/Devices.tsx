@@ -14,6 +14,7 @@ import DeviceRow from '../../Components/Settings/DeviceRow';
 import { useConfirm } from '../../lib/confirm';
 import { formatDateTime, formatRelative } from '../../lib/datetime';
 import { methodLabel } from '../../lib/credentials';
+import { t } from '../../lib/i18n';
 import type { LoginEventSummary, LoginSessionSummary, TrustedDeviceSummary } from '../../types';
 
 interface DevicesProps {
@@ -35,44 +36,44 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
 
     const endSession = (session: LoginSessionSummary): void => {
         ask({
-            title: session.isCurrent ? 'ログアウトしますか' : 'この端末のログインを終了しますか',
+            title: session.isCurrent ? t('settings.devices.sessions.logout_title') : t('settings.devices.sessions.end_title'),
             description: session.isCurrent
-                ? 'この端末からログアウトします'
-                : `${session.label} は次から入り直しが必要になります`,
-            confirmText: session.isCurrent ? 'ログアウトする' : '終了する',
+                ? t('settings.devices.sessions.logout_description')
+                : t('settings.devices.sessions.end_description', { label: session.label }),
+            confirmText: session.isCurrent ? t('settings.devices.sessions.logout_confirm') : t('settings.devices.sessions.end_confirm'),
             onConfirm: () => router.post('/settings/devices/sessions/revoke', { id: session.id }),
         });
     };
 
     return (
         <AppLayout
-            title="設定"
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: '設定', href: '/settings' }, { label: '端末' }]}
+            title={t('settings.title')}
+            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title'), href: '/settings' }, { label: t('settings.devices.crumb') }]}
         >
             <SettingsTabs current="/settings/devices" />
 
             <Stack spacing={1.5}>
                 {flash.sessionsRevoked !== null && flash.sessionsRevoked > 0 && (
-                    <Alert severity="success">{flash.sessionsRevoked} 台のログインを終了しました</Alert>
+                    <Alert severity="success">{t('settings.devices.sessions_revoked', { count: flash.sessionsRevoked })}</Alert>
                 )}
-                {flash.trustRevoked && <Alert severity="success">端末の信頼を取り消しました</Alert>}
+                {flash.trustRevoked && <Alert severity="success">{t('settings.devices.trust_revoked')}</Alert>}
             </Stack>
 
-            <SectionTitle note={`${sessions.length}台`}>ログイン中の端末</SectionTitle>
+            <SectionTitle note={t('settings.devices.sessions.count', { count: sessions.length })}>{t('settings.devices.sessions.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {sessions.map((session) => (
                         <DeviceRow
                             key={session.id}
                             label={session.label}
-                            detail={[session.ipAddress, formatRelative(session.lastActiveAt) && `最終利用 ${String(formatRelative(session.lastActiveAt))}`]}
-                            badge={session.isCurrent ? <Chip size="small" label="この端末" /> : null}
+                            detail={[session.ipAddress, formatRelative(session.lastActiveAt) && t('settings.devices.sessions.last_active', { time: String(formatRelative(session.lastActiveAt)) })]}
+                            badge={session.isCurrent ? <Chip size="small" label={t('settings.devices.current_badge')} /> : null}
                             action={
                                 <RowAction
                                     destructive
                                     onClick={() => endSession(session)}
                                 >
-                                    {session.isCurrent ? 'ログアウト' : '終了'}
+                                    {session.isCurrent ? t('settings.devices.sessions.logout') : t('settings.devices.sessions.end')}
                                 </RowAction>
                             }
                         />
@@ -87,24 +88,24 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
                         color="error"
                         onClick={() =>
                             ask({
-                                title: 'この端末以外をすべてログアウトしますか',
-                                description: `${String(sessions.length - 1)} 台のログインを終了します。心当たりのない端末があるときは、あわせてパスワードも変えてください`,
-                                confirmText: 'すべて終了する',
-                                expected: 'ログアウト',
+                                title: t('settings.devices.sessions.revoke_others_title'),
+                                description: t('settings.devices.sessions.revoke_others_description', { count: sessions.length - 1 }),
+                                confirmText: t('settings.devices.sessions.revoke_others_confirm'),
+                                expected: t('settings.devices.sessions.revoke_others_expected'),
                                 onConfirm: () => router.post('/settings/devices/sessions/revoke-others'),
                             })
                         }
                     >
-                        この端末以外をすべてログアウト
+                        {t('settings.devices.sessions.revoke_others')}
                     </Button>
                 </Box>
             )}
 
-            <SectionTitle note={`${trustedDevices.length}台`}>2段階認証を省略する端末</SectionTitle>
+            <SectionTitle note={t('settings.devices.trusted.count', { count: trustedDevices.length })}>{t('settings.devices.trusted.heading')}</SectionTitle>
             <Paper variant="outlined">
                 {trustedDevices.length === 0 && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-                        登録された端末はありません。2段階目の入力画面で「この端末を記憶する」を選ぶと追加されます
+                        {t('settings.devices.trusted.empty')}
                     </Typography>
                 )}
 
@@ -113,22 +114,22 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
                         <DeviceRow
                             key={device.id}
                             label={device.label}
-                            detail={[device.ipAddress, `${String(formatDateTime(device.expiresAt))} まで`]}
-                            badge={device.isCurrent ? <Chip size="small" label="この端末" /> : null}
+                            detail={[device.ipAddress, t('settings.devices.trusted.expires', { date: String(formatDateTime(device.expiresAt)) })]}
+                            badge={device.isCurrent ? <Chip size="small" label={t('settings.devices.current_badge')} /> : null}
                             action={
                                 <RowAction
                                     destructive
                                     onClick={() =>
                                         ask({
-                                            title: '端末の信頼を取り消しますか',
-                                            description: `${device.label} では次のログインから2段階目を求めます`,
-                                            confirmText: '取り消す',
+                                            title: t('settings.devices.trusted.revoke_title'),
+                                            description: t('settings.devices.trusted.revoke_description', { label: device.label }),
+                                            confirmText: t('settings.devices.trusted.revoke'),
                                             onConfirm: () =>
                                                 router.post('/settings/devices/trusted/revoke', { id: device.id }),
                                         })
                                     }
                                 >
-                                    取り消す
+                                    {t('settings.devices.trusted.revoke')}
                                 </RowAction>
                             }
                         />
@@ -143,23 +144,23 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
                         color="error"
                         onClick={() =>
                             ask({
-                                title: 'すべての端末の信頼を取り消しますか',
-                                description: 'どの端末でも、次のログインから2段階目を求めます',
-                                confirmText: 'すべて取り消す',
+                                title: t('settings.devices.trusted.revoke_all_title'),
+                                description: t('settings.devices.trusted.revoke_all_description'),
+                                confirmText: t('settings.devices.trusted.revoke_all'),
                                 onConfirm: () => router.post('/settings/devices/trusted/revoke-all'),
                             })
                         }
                     >
-                        すべての端末の信頼を取り消す
+                        {t('settings.devices.trusted.revoke_all')}
                     </Button>
                 </Box>
             )}
 
-            <SectionTitle note={`直近 ${loginHistory.length} 件`}>最近のログイン</SectionTitle>
+            <SectionTitle note={t('settings.devices.history.count', { count: loginHistory.length })}>{t('settings.devices.history.heading')}</SectionTitle>
             <Paper variant="outlined">
                 {loginHistory.length === 0 && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-                        記録がありません
+                        {t('settings.devices.history.empty')}
                     </Typography>
                 )}
 
@@ -171,7 +172,7 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
                             detail={[methodLabel(event.method), event.ipAddress, formatDateTime(event.at)]}
                             badge={
                                 event.succeeded ? null : (
-                                    <Chip size="small" color="error" variant="outlined" label="失敗" />
+                                    <Chip size="small" color="error" variant="outlined" label={t('settings.devices.history.failed')} />
                                 )
                             }
                             action={null}
@@ -181,7 +182,7 @@ export default function Devices({ sessions, trustedDevices, loginHistory }: Devi
             </Paper>
 
             <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                身に覚えのないログインがあるときは、パスワードを変えて他の端末をログアウトしてください
+                {t('settings.devices.footer_hint')}
             </Typography>
 
             {dialog}

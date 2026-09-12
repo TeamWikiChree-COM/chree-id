@@ -1,14 +1,14 @@
-ChreeID に登録されているメールアドレスの確認をお願いします。
+{{ __('mail.verify_email.intro') }}
 
-以下のリンクをクリックすると、このアドレスが確認済みになります：
+{{ __('mail.verify_email.cta_text') }}
 
 {{ $verifyUrl }}
 
-確認済みになると、連携先のサービスへアカウントを引き継げるようになります。
+{{ __('mail.verify_email.after_confirm') }}
 
-このリンクは{{ $ttlMinutes }}分間有効です。
+{{ __('mail.verify_email.ttl', ['minutes' => $ttlMinutes]) }}
 
-心当たりがない場合は、このメールを無視してください。
+{{ __('mail.common.default_note') }}
 
 --
 ChreeID by Team WikiChree.COM

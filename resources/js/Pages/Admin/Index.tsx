@@ -5,6 +5,7 @@ import AppLayout from '../../Components/AppLayout';
 import NavRow from '../../Components/NavRow';
 import SectionTitle from '../../Components/SectionTitle';
 import StatCard from '../../Components/StatCard';
+import { t } from '../../lib/i18n';
 
 interface AdminIndexProps {
     stats: {
@@ -19,45 +20,45 @@ interface AdminIndexProps {
 export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps) {
     return (
         <AppLayout
-            title="システム管理"
-            lead="運営としての操作です。自分のアカウントの設定は「設定」にあります"
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: 'システム管理' }]}
+            title={t('admin.index.title')}
+            lead={t('admin.index.lead')}
+            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('admin.crumb') }]}
         >
             <Stack direction="row" spacing={1.5}>
-                <StatCard label="接続サービス" value={stats.clients} />
-                <StatCard label="アカウント" value={stats.accounts} />
-                <StatCard label="停止中" value={stats.suspended} />
+                <StatCard label={t('admin.index.stats.clients')} value={stats.clients} />
+                <StatCard label={t('admin.index.stats.accounts')} value={stats.accounts} />
+                <StatCard label={t('admin.index.stats.suspended')} value={stats.suspended} />
             </Stack>
 
-            <SectionTitle>管理する</SectionTitle>
+            <SectionTitle>{t('admin.index.manage')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     <NavRow
                         icon="users"
-                        title="アカウント"
-                        description="登録済みアカウントの一覧・状態の確認"
+                        title={t('admin.index.nav.accounts.title')}
+                        description={t('admin.index.nav.accounts.description')}
                         href="/admin/accounts"
                     />
                     <NavRow
                         icon="plug"
-                        title="接続サービス"
-                        description="ChreeID でログインできるサービスの登録・編集"
+                        title={t('admin.index.nav.clients.title')}
+                        description={t('admin.index.nav.clients.description')}
                         href="/admin/clients"
                     />
                     <NavRow
                         icon="database"
-                        title="データベース構造"
+                        title={t('admin.index.nav.migrations.title')}
                         description={
                             pendingMigrations === 0
-                                ? '構造は最新です'
-                                : `未適用が ${pendingMigrations} 件あります`
+                                ? t('admin.index.nav.migrations.up_to_date')
+                                : t('admin.index.nav.migrations.pending', { count: pendingMigrations })
                         }
                         href="/admin/migrations"
                     />
                     <NavRow
                         icon="broom"
-                        title="掃除"
-                        description="期限切れの申し込みと使い捨てトークンの削除"
+                        title={t('admin.index.nav.maintenance.title')}
+                        description={t('admin.index.nav.maintenance.description')}
                         href="/admin/maintenance"
                     />
                 </Stack>

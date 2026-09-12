@@ -9,6 +9,7 @@ import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
 import TurnstileWidget from '../../Components/TurnstileWidget';
 import { useTurnstilePending } from '../../lib/turnstile';
+import { t } from '../../lib/i18n';
 
 interface MagicLinkProps {
     /** サービスが login_hint で添えてきたアドレス */
@@ -31,11 +32,11 @@ export default function MagicLink({ email }: MagicLinkProps) {
 
     return (
         <AuthLayout
-            title="メールでログイン"
-            heading="マジックリンクでログイン"
+            title={t('auth.magic_link.title')}
+            heading={t('auth.magic_link.heading')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/login">パスワードでログインする</Link>
+                    <Link href="/login">{t('auth.magic_link.use_password')}</Link>
                 </Typography>
             }
         >
@@ -47,11 +48,11 @@ export default function MagicLink({ email }: MagicLinkProps) {
                     )}
 
                     <Typography variant="body2" color="text.secondary">
-                        ログイン用のリンクをメールで送ります。パスワードは要りません。
+                        {t('auth.magic_link.description')}
                     </Typography>
 
                     <TextField
-                        label="メールアドレス"
+                        label={t('auth.common.email_label')}
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
@@ -63,7 +64,7 @@ export default function MagicLink({ email }: MagicLinkProps) {
                     <TurnstileWidget onVerify={(token) => setData('cf-turnstile-response', token)} />
 
                     <Button type="submit" variant="contained" disabled={processing || turnstilePending}>
-                        リンクを送る
+                        {t('auth.magic_link.submit')}
                     </Button>
                 </Stack>
             </Box>

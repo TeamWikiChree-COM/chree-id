@@ -28,14 +28,14 @@ class UserinfoController {
      */
     public function __invoke(Request $request): JsonResponse {
         $bearer = $request->bearerToken();
-        if ($bearer === null) return $this->unauthorized('トークンがありません');
+        if ($bearer === null) return $this->unauthorized(__('oauth.error.token_missing'));
 
         $token = AccessTokenModel::query()->where('token_hash', hash('sha256', $bearer))->first();
-        if ($token === null || !$token->isUsable()) return $this->unauthorized('トークンが不正です');
+        if ($token === null || !$token->isUsable()) return $this->unauthorized(__('oauth.error.token_invalid'));
 
         $account = $this->accounts->findById($token->auth_identity_id);
         $client = OAuthClientModel::query()->find($token->client_id);
-        if ($account === null || $client === null) return $this->unauthorized('トークンが不正です');
+        if ($account === null || $client === null) return $this->unauthorized(__('oauth.error.token_invalid'));
 
         // sub は発行時と同じ値でなければ RP 側で突き合わせできない。
         // トークンに控えたサービスアカウントを使う

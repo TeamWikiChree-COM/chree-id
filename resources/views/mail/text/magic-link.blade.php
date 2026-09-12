@@ -1,13 +1,13 @@
-ChreeID へのログインリンクをお届けします。
+{{ __('mail.magic_link.intro') }}
 
-以下のリンクをクリックすると、パスワードなしでログインできます：
+{{ __('mail.magic_link.cta_text') }}
 
 {{ $loginUrl }}
 
-このリンクは{{ $ttlMinutes }}分間有効で、一度だけ使用できます。
-2段階認証を設定している場合は、リンクを開いたあとにコードの入力が必要です。
+{{ __('mail.magic_link.ttl', ['minutes' => $ttlMinutes]) }}
+{{ __('mail.magic_link.two_factor_note') }}
 
-心当たりがない場合は、このメールを無視してください。
+{{ __('mail.common.default_note') }}
 
 --
 ChreeID by Team WikiChree.COM

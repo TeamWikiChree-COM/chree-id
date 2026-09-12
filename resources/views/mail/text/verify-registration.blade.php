@@ -1,15 +1,15 @@
-ChreeID をご利用いただきありがとうございます。
+{{ __('mail.verify_registration.intro') }}
 
-アカウントの作成を続けるには、以下のリンクをクリックしてください：
+{{ __('mail.verify_registration.cta_text') }}
 
 {{ $verifyUrl }}
 
-リンクを開いたあと、セットアップに進みます。
-リンクを開くまでアカウントは作成されません。
+{{ __('mail.verify_registration.after_click') }}
+{{ __('mail.verify_registration.not_created_yet') }}
 
-このリンクは{{ $ttlMinutes }}分間有効です。
+{{ __('mail.verify_registration.ttl', ['minutes' => $ttlMinutes]) }}
 
-心当たりがない場合は、このメールを無視してください。
+{{ __('mail.common.default_note') }}
 
 --
 ChreeID by Team WikiChree.COM

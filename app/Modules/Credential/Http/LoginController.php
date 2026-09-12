@@ -98,7 +98,7 @@ class LoginController {
      */
     private function invalidCredentials(): ValidationException {
         return ValidationException::withMessages([
-            'email' => 'メールアドレスまたはパスワードが違います',
+            'email' => __('api.password.invalid_grant'),
         ]);
     }
 

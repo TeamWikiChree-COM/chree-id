@@ -9,6 +9,7 @@ import { useState } from 'react';
 import AppLayout from '../../../Components/AppLayout';
 import { useConfirm } from '../../../lib/confirm';
 import SectionTitle from '../../../Components/SectionTitle';
+import { t } from '../../../lib/i18n';
 
 interface Pending {
     /** 確認されないまま期限が切れた登録申し込み */
@@ -36,16 +37,16 @@ interface IndexProps {
 const ROWS: { key: keyof Omit<Pending, 'total'>; label: string; note: string }[] = [
     {
         key: 'registrations',
-        label: '期限切れの登録申し込み',
-        note: 'パスワードハッシュを持つので、期限が切れたら残す理由がない',
+        label: t('admin.maintenance.rows.registrations.label'),
+        note: t('admin.maintenance.rows.registrations.note'),
     },
-    { key: 'emailChanges', label: '期限切れのアドレス変更', note: 'リンクは既に使えない' },
-    { key: 'expiredTokens', label: '未使用のまま期限切れ', note: '使い捨てトークン' },
-    { key: 'usedTokens', label: '使用済みトークン', note: '二重投入の検知に使うので少し残してある' },
+    { key: 'emailChanges', label: t('admin.maintenance.rows.email_changes.label'), note: t('admin.maintenance.rows.email_changes.note') },
+    { key: 'expiredTokens', label: t('admin.maintenance.rows.expired_tokens.label'), note: t('admin.maintenance.rows.expired_tokens.note') },
+    { key: 'usedTokens', label: t('admin.maintenance.rows.used_tokens.label'), note: t('admin.maintenance.rows.used_tokens.note') },
     {
         key: 'withdrawnAccounts',
-        label: '猶予を過ぎた退会アカウント',
-        note: '認証情報ごと消える。ここを通ると元に戻せない',
+        label: t('admin.maintenance.rows.withdrawn_accounts.label'),
+        note: t('admin.maintenance.rows.withdrawn_accounts.note'),
     },
 ];
 
@@ -63,9 +64,9 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
 
     const prune = (): void => {
         ask({
-            title: '溜まったものを消しますか',
-            description: `${String(pending.total)} 件を削除します。退会済みのアカウントは行ごと消え、元に戻せません`,
-            confirmText: '削除する',
+            title: t('admin.maintenance.confirm.title'),
+            description: t('admin.maintenance.confirm.description', { count: pending.total }),
+            confirmText: t('admin.maintenance.confirm.confirm'),
             onConfirm: () =>
                 router.post('/admin/maintenance/prune', {}, {
                     onStart: () => setRunning(true),
@@ -76,17 +77,17 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
 
     return (
         <AppLayout
-            title="掃除"
-            lead="期限切れの申し込みと使い捨てトークンを削除します"
+            title={t('admin.maintenance.title')}
+            lead={t('admin.maintenance.lead')}
             crumbs={[
                 { label: 'ChreeID', href: '/' },
-                { label: 'システム管理', href: '/admin' },
-                { label: '掃除' },
+                { label: t('admin.crumb'), href: '/admin' },
+                { label: t('admin.maintenance.crumb') },
             ]}
         >
-            {prunedTokens !== null && <Alert severity="success">{prunedTokens} 件を削除しました</Alert>}
+            {prunedTokens !== null && <Alert severity="success">{t('admin.maintenance.pruned', { count: prunedTokens })}</Alert>}
 
-            <SectionTitle note={`${pending.total}件`}>削除される対象</SectionTitle>
+            <SectionTitle note={t('admin.maintenance.pending_count', { count: pending.total })}>{t('admin.maintenance.list.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {ROWS.map((row) => (
@@ -108,11 +109,10 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
 
             <Box>
                 <Button variant="contained" onClick={prune} disabled={running || pending.total === 0}>
-                    {running ? '削除中…' : '削除する'}
+                    {running ? t('admin.maintenance.running') : t('admin.maintenance.confirm.confirm')}
                 </Button>
                 <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                    使用済みトークンは {keepDays} 日ぶん、退会したアカウントは {graceDays} 日ぶん残します。
-                    日次の chreeid:prune-tokens と同じ処理です
+                    {t('admin.maintenance.footer', { keep: keepDays, grace: graceDays })}
                 </Typography>
             </Box>
 

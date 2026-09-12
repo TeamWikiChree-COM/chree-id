@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { t } from '../../lib/i18n';
 
 interface TotpSectionProps {
     /** 設定済みか */
@@ -38,21 +39,21 @@ export default function TotpSection({ hasTotp, pendingTotp }: TotpSectionProps) 
 
     return (
         <Paper variant="outlined" sx={{ p: 2 }}>
-            {hasTotp && !flash.recoveryCodes && <Alert severity="success">認証アプリを設定済みです</Alert>}
+            {hasTotp && !flash.recoveryCodes && <Alert severity="success">{t('settings.totp.configured')}</Alert>}
 
             {hasTotp && flash.recoveryCodes && (
                 <Alert severity="success">
-                    認証アプリを設定しました。下に復旧コードを発行しているので控えてください
+                    {t('settings.totp.configured_with_recovery')}
                 </Alert>
             )}
 
             {!hasTotp && !pendingTotp && (
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                        ログイン時に、認証アプリの6桁のコードを求めます
+                        {t('settings.totp.intro')}
                     </Typography>
                     <Button variant="outlined" color="inherit" onClick={() => router.post('/security/totp/start')}>
-                        設定をはじめる
+                        {t('settings.totp.start')}
                     </Button>
                 </Stack>
             )}
@@ -60,7 +61,7 @@ export default function TotpSection({ hasTotp, pendingTotp }: TotpSectionProps) 
             {!hasTotp && pendingTotp && (
                 <Stack spacing={2}>
                     <Typography sx={{ fontSize: '0.875rem' }}>
-                        認証アプリで読み取り、表示された6桁を入力してください
+                        {t('settings.totp.scan_instruction')}
                     </Typography>
 
                     {qr && <Box component="img" src={qr} alt="" sx={{ width: 200, alignSelf: 'center' }} />}
@@ -74,7 +75,7 @@ export default function TotpSection({ hasTotp, pendingTotp }: TotpSectionProps) 
                     >
                         <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                             <TextField
-                                label="6桁のコード"
+                                label={t('settings.totp.code_label')}
                                 value={form.data.code}
                                 onChange={(e) => form.setData('code', e.target.value)}
                                 error={Boolean(errors.code)}
@@ -82,7 +83,7 @@ export default function TotpSection({ hasTotp, pendingTotp }: TotpSectionProps) 
                                 slotProps={{ htmlInput: { inputMode: 'numeric' } }}
                             />
                             <Button type="submit" variant="contained" disabled={form.processing}>
-                                有効にする
+                                {t('settings.totp.enable')}
                             </Button>
                         </Stack>
                     </Box>

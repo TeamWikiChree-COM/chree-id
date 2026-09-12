@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import type { TextFieldProps } from '@mui/material/TextField';
 import { useState } from 'react';
 import Icon from './Icon';
+import { t } from '../lib/i18n';
 
 /**
  * 表示/非表示を切り替えられるパスワード入力欄。
@@ -22,7 +23,7 @@ export default function PasswordField(props: Omit<TextFieldProps, 'type'>) {
                     ...props.slotProps?.input,
                     endAdornment: (
                         <IconButton
-                            aria-label={visible ? 'パスワードを隠す' : 'パスワードを表示'}
+                            aria-label={visible ? t('common.password.hide') : t('common.password.show')}
                             onClick={() => setVisible((v) => !v)}
                             edge="end"
                             size="small"

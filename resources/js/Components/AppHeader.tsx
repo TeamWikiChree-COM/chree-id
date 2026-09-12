@@ -12,11 +12,13 @@ import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Icon from './Icon';
 import InertiaLink from './InertiaLink';
+import LocalePicker from './LocalePicker';
 import MenuLink from './MenuLink';
 import NavLink from './NavLink';
 import ToggleSwitch from './ToggleSwitch';
 import { headerBackground } from '../theme';
 import { useThemeModeContext } from '../lib/theme-mode';
+import { t } from '../lib/i18n';
 
 /**
  * 全ページ共通のヘッダー。
@@ -65,13 +67,13 @@ export default function AppHeader() {
 
                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                     {isLoggedIn ? (
-                        <NavLink href="/">アカウント</NavLink>
+                        <NavLink href="/">{t('common.nav.account')}</NavLink>
                     ) : (
-                        <NavLink href="/login">ログイン</NavLink>
+                        <NavLink href="/login">{t('common.nav.login')}</NavLink>
                     )}
 
                     <IconButton
-                        aria-label="メニュー"
+                        aria-label={t('common.nav.menu')}
                         onClick={(event) => setAnchor(event.currentTarget)}
                         sx={{ color: 'text.secondary' }}
                     >
@@ -92,11 +94,11 @@ export default function AppHeader() {
                         slotProps={{ paper: { variant: 'outlined', sx: { minWidth: 230, mt: 0.5 } } }}
                     >
                         {isLoggedIn && (
-                            <MenuLink label="設定" onClick={() => go('/settings')} />
+                            <MenuLink label={t('common.nav.settings')} onClick={() => go('/settings')} />
                         )}
 
                         {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
-                        {isAdmin && <MenuLink label="システム管理" onClick={() => go('/admin')} />}
+                        {isAdmin && <MenuLink label={t('common.nav.admin')} onClick={() => go('/admin')} />}
 
                         {isLoggedIn && <Divider sx={{ my: 1 }} />}
 
@@ -112,19 +114,33 @@ export default function AppHeader() {
                                 '&:hover': { bgcolor: 'transparent' },
                             }}
                         >
-                            <Typography sx={{ fontSize: '1rem' }}>ダークテーマ</Typography>
-                            <ToggleSwitch checked={mode === 'dark'} onChange={toggle} label="ダークテーマ" />
+                            <Typography sx={{ fontSize: '1rem' }}>{t('common.nav.dark_theme')}</Typography>
+                            <ToggleSwitch checked={mode === 'dark'} onChange={toggle} label={t('common.nav.dark_theme')} />
+                        </MenuItem>
+
+                        <MenuItem
+                            component="div"
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 2,
+                                cursor: 'default',
+                                '&:hover': { bgcolor: 'transparent' },
+                            }}
+                        >
+                            <LocalePicker />
                         </MenuItem>
 
                         <Divider sx={{ my: 1 }} />
 
                         {isLoggedIn ? (
                             <MenuLink
-                                label="ログアウト"
+                                label={t('common.nav.logout')}
                                 onClick={() => { setAnchor(null); router.post('/logout'); }}
                             />
                         ) : (
-                            <MenuLink label="ログイン" onClick={() => go('/login')} />
+                            <MenuLink label={t('common.nav.login')} onClick={() => go('/login')} />
                         )}
                     </Menu>
                 </Stack>

@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+import { t } from '../../lib/i18n';
 
 /** 信頼を保つ日数。PHP の TrustedDevices::LIFETIME_DAYS と合わせる */
 const TRUST_DAYS = 30;
@@ -40,12 +41,12 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
 
     return (
         <AuthLayout
-            title="2段階認証"
-            heading="2段階認証"
+            title={t('auth.challenge.title')}
+            heading={t('auth.challenge.title')}
             footer={
                 <Typography variant="body2">
                     <Link component="button" type="button" onClick={() => router.post('/login/challenge/cancel')}>
-                        ログインをやめる
+                        {t('auth.challenge.cancel')}
                     </Link>
                 </Typography>
             }
@@ -56,12 +57,12 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
 
                     <Typography variant="body2" color="text.secondary">
                         {useRecoveryCode
-                            ? '控えておいた復旧コードを1つ入力してください'
-                            : '認証アプリに表示されている6桁を入力してください'}
+                            ? t('auth.challenge.recovery_prompt')
+                            : t('auth.challenge.totp_prompt')}
                     </Typography>
 
                     <TextField
-                        label={useRecoveryCode ? '復旧コード' : '6桁のコード'}
+                        label={useRecoveryCode ? t('auth.challenge.recovery_label') : t('auth.challenge.code_label')}
                         value={data.code}
                         onChange={(e) => setData('code', e.target.value)}
                         inputMode={useRecoveryCode ? 'text' : 'numeric'}
@@ -80,19 +81,19 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
                         }
                         label={
                             <Typography variant="body2">
-                                この端末を記憶する (次回から{String(TRUST_DAYS)}日間は省略)
+                                {t('auth.challenge.trust_device', { days: TRUST_DAYS })}
                             </Typography>
                         }
                     />
 
                     <Button type="submit" variant="contained" disabled={processing}>
-                        確認する
+                        {t('auth.challenge.submit')}
                     </Button>
 
                     {hasRecoveryCodes && (
                         <Typography variant="body2">
                             <Link component="button" type="button" onClick={() => switchMode(!useRecoveryCode)}>
-                                {useRecoveryCode ? '認証アプリのコードを使う' : '認証アプリを使えない場合'}
+                                {useRecoveryCode ? t('auth.challenge.use_totp') : t('auth.challenge.use_recovery')}
                             </Link>
                         </Typography>
                     )}

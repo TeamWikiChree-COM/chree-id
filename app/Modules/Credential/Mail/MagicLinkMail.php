@@ -22,7 +22,7 @@ class MagicLinkMail extends Mailable {
      * @return Envelope
      */
     public function envelope(): Envelope {
-        return new Envelope(subject: 'ChreeID にログインする');
+        return new Envelope(subject: __('mail.magic_link.subject'));
     }
 
     /**

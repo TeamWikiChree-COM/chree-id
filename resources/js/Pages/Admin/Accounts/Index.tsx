@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AppLayout from '../../../Components/AppLayout';
 import SectionTitle from '../../../Components/SectionTitle';
+import { t } from '../../../lib/i18n';
 import AccountRow from './AccountRow';
 import type { AdminAccount } from './types';
 
@@ -38,29 +39,29 @@ export default function Index({ accounts, selfId, graceDays }: IndexProps) {
 
     return (
         <AppLayout
-            title="アカウント"
-            lead="登録されている ChreeID アカウントを管理します"
+            title={t('admin.accounts.title')}
+            lead={t('admin.accounts.lead')}
             crumbs={[
                 { label: 'ChreeID', href: '/' },
-                { label: 'システム管理', href: '/admin' },
-                { label: 'アカウント' },
+                { label: t('admin.crumb'), href: '/admin' },
+                { label: t('admin.accounts.crumb') },
             ]}
         >
             {accountCreated && (
                 <Alert severity="success">
-                    アカウントを作りました。ログイン手段は付いていないので、本人にパスワード再設定から入ってもらってください
+                    {t('admin.accounts.created')}
                 </Alert>
             )}
 
             {errors.account && <Alert severity="error">{errors.account}</Alert>}
 
-            <SectionTitle>アカウントを作る</SectionTitle>
+            <SectionTitle>{t('admin.accounts.create.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
                         <TextField
                             size="small"
-                            label="メールアドレス"
+                            label={t('admin.accounts.fields.email')}
                             type="email"
                             value={form.data.email}
                             onChange={(e) => form.setData('email', e.target.value)}
@@ -69,30 +70,31 @@ export default function Index({ accounts, selfId, graceDays }: IndexProps) {
                         />
                         <TextField
                             size="small"
-                            label="表示名"
+                            label={t('admin.accounts.fields.display_name')}
                             value={form.data.display_name}
                             onChange={(e) => form.setData('display_name', e.target.value)}
                             error={Boolean(form.errors.display_name)}
                             helperText={form.errors.display_name}
                         />
                         <Button type="submit" variant="contained" size="small" disabled={form.processing}>
-                            作成
+                            {t('admin.accounts.create.submit')}
                         </Button>
                     </Stack>
                 </Box>
 
                 <Typography sx={{ mt: 1.5, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                    ログイン手段は付けません。管理者が決めたパスワードは本人以外が知っている状態になるので、
-                    本人にパスワード再設定かマジックリンクで入ってもらいます
+                    {t('admin.accounts.create.note')}
                 </Typography>
             </Paper>
 
-            <SectionTitle note={`${accounts.length}件`}>アカウント一覧</SectionTitle>
+            <SectionTitle note={t('admin.accounts.count', { count: accounts.length })}>
+                {t('admin.accounts.list.heading')}
+            </SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {accounts.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
-                            アカウントが登録されていません
+                            {t('admin.accounts.list.empty')}
                         </Typography>
                     )}
 

@@ -24,15 +24,15 @@ class RenameCredential {
      */
     public function execute(string $accountId, string $credentialId, string $label): void {
         $name = mb_substr(trim($label), 0, self::MAX_LENGTH);
-        if ($name === '') throw new RuntimeException('名前を入力してください');
+        if ($name === '') throw new RuntimeException(__('settings.credential.name_required'));
 
         $row = CredentialModel::query()
             ->where('auth_identity_id', $accountId)
             ->where('id', $credentialId)
             ->first();
 
-        if ($row === null) throw new RuntimeException('その認証手段は見つかりません');
-        if ($row->type !== CredentialType::PASSKEY) throw new RuntimeException('この認証手段には名前を付けられません');
+        if ($row === null) throw new RuntimeException(__('settings.credential.not_found'));
+        if ($row->type !== CredentialType::PASSKEY) throw new RuntimeException(__('settings.credential.cannot_rename'));
 
         // data には sign_count など検証に使う値も入っている。label だけ差し替える
         $data = is_array($row->data) ? $row->data : [];

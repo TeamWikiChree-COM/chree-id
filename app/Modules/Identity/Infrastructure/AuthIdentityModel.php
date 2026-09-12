@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Storage;
  * @property \Illuminate\Support\Carbon|null $suspended_at
  * @property IconSource $icon_source
  * @property string|null $icon_path
+ * @property string|null $locale 本人が選んだ表示言語。null は「選んでいない」
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -48,6 +49,7 @@ class AuthIdentityModel extends Model {
         'origin',
         'icon_source',
         'icon_path',
+        'locale',
     ];
 
     // PHPではただの文字列だけどDBでは日付なのでDBに入れる時のメモ的なやつ

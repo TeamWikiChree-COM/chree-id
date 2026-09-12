@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Icon from './Icon';
 import { idpIcon, idpIconFamily, idpLabel } from '../lib/idps';
+import { t } from '../lib/i18n';
 
 interface SocialLoginsProps {
     /** マジックリンクの申し込み先。ログイン画面以外では省く */
@@ -28,7 +29,7 @@ export default function SocialLogins({ magicLinkHref }: SocialLoginsProps) {
             {externalIdps.length > 0 && (
                 <Stack direction="row" spacing={1.75} sx={{ justifyContent: 'center' }}>
                     {externalIdps.map((name) => {
-                        const label = `${idpLabel(name)} で続行`;
+                        const label = t('common.social.continue_with', { name: idpLabel(name) });
 
                         return (
                             <Tooltip key={name} title={label}>
@@ -54,7 +55,7 @@ export default function SocialLogins({ magicLinkHref }: SocialLoginsProps) {
                     color="inherit"
                     startIcon={<Icon name="envelope" />}
                 >
-                    マジックリンクを送る
+                    {t('common.social.magic_link')}
                 </Button>
             )}
         </>

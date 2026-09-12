@@ -7,6 +7,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Registry\Domain\AdminAccess;
+use App\Support\Locale\Locales;
 use App\Support\Turnstile\TurnstileVerifier;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -107,6 +108,9 @@ class HandleInertiaRequests extends Middleware {
             // 辞書は Vite がバンドルへ畳み込んでいるので、渡すのは名前だけ。
             // 辞書ごと載せると、ページ遷移のたびに全文がレスポンスに乗る
             'locale' => app()->getLocale(),
+
+            // 切り替えメニューに並べる分。config/chreeid.php の locales がそのまま来る
+            'locales' => app(Locales::class)->available(),
         ];
     }
 }

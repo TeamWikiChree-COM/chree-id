@@ -1,13 +1,26 @@
 import { idpIcon, idpIconFamily, idpLabel } from './idps';
+import { t } from './i18n';
 import type { CredentialSummary, CredentialTypeValue } from '../types';
 
-const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
-    password: 'パスワード',
-    magic_link: 'メールのリンク',
-    totp: '認証アプリ (TOTP)',
-    passkey: 'パスキー',
-    oauth: '外部アカウント',
-};
+/**
+ * 種別のラベル。
+ *
+ * `t()` の結果を呼ぶたびに引く。モジュール読み込み時の定数にすると、
+ * ロケール確定 (`initTranslations`) より前に評価されてしまう。
+ *
+ * @param type 認証手段の種別
+ */
+function typeLabel(type: CredentialTypeValue): string | undefined {
+    const labels: Partial<Record<CredentialTypeValue, string>> = {
+        password: t('credential.type.password'),
+        magic_link: t('credential.type.magic_link'),
+        totp: t('credential.type.totp'),
+        passkey: t('credential.type.passkey'),
+        oauth: t('credential.type.oauth'),
+    };
+
+    return labels[type];
+}
 
 const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
     password: 'key',
@@ -29,7 +42,7 @@ export function credentialLabel(credential: CredentialSummary): string {
     if (credential.provider !== null) return idpLabel(credential.provider);
     if (credential.label !== null) return credential.label;
 
-    return TYPE_LABELS[credential.type] ?? credential.type;
+    return typeLabel(credential.type) ?? credential.type;
 }
 
 /**
@@ -50,11 +63,21 @@ export function credentialIconFamily(credential: CredentialSummary): 'brands' | 
     return credential.provider === null ? 'solid' : idpIconFamily(credential.provider);
 }
 
-/** 認証手段を持たないログイン経路。PHP の LoginMethod にだけある値 */
-const METHOD_LABELS: Record<string, string> = {
-    registration: '新規登録',
-    claim: 'アカウントの引き取り',
-};
+/**
+ * 認証手段を持たないログイン経路のラベル。PHP の LoginMethod にだけある値。
+ *
+ * `typeLabel` と同じ理由で、呼ぶたびに引く。
+ *
+ * @param type LoginMethod の value
+ */
+function methodOnlyLabel(type: string): string | undefined {
+    const labels: Record<string, string> = {
+        registration: t('credential.method.registration'),
+        claim: t('credential.method.claim'),
+    };
+
+    return labels[type];
+}
 
 /**
  * ログイン方式の名前。
@@ -67,5 +90,5 @@ export function methodLabel(method: string): string {
     const [type = method, provider] = method.split(':');
     if (provider !== undefined && provider !== '') return idpLabel(provider);
 
-    return TYPE_LABELS[type as CredentialTypeValue] ?? METHOD_LABELS[type] ?? method;
+    return typeLabel(type as CredentialTypeValue) ?? methodOnlyLabel(type) ?? method;
 }

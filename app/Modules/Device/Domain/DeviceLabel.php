@@ -32,12 +32,12 @@ class DeviceLabel {
      * @return string 「Chrome (Windows)」のような表示名
      */
     public static function from(?string $userAgent): string {
-        if ($userAgent === null || trim($userAgent) === '') return '不明な端末';
+        if ($userAgent === null || trim($userAgent) === '') return __('device.unknown');
 
         $browser = self::match($userAgent, self::BROWSERS);
         $platform = self::match($userAgent, self::PLATFORMS);
 
-        if ($browser === null && $platform === null) return '不明な端末';
+        if ($browser === null && $platform === null) return __('device.unknown');
         if ($browser === null) return (string) $platform;
         if ($platform === null) return $browser;
 

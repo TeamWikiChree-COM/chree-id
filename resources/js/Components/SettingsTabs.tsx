@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import { t } from '../lib/i18n';
 
 /**
  * 設定画面の切り替え。
@@ -12,26 +13,26 @@ import Tabs from '@mui/material/Tabs';
  * /admin に置く。同じ画面に混ぜると、自分の設定を触っているつもりで
  * システム全体を変えてしまう。
  */
-const ITEMS = [
-    { href: '/settings', label: 'プロフィール' },
-    { href: '/settings/security', label: 'セキュリティ' },
-    { href: '/settings/connections', label: '外部アカウント' },
-    { href: '/settings/devices', label: '端末' },
-] as const;
-
 interface SettingsTabsProps {
     /** 今いるページの href */
     current: string;
 }
 
 export default function SettingsTabs({ current }: SettingsTabsProps) {
+    const items = [
+        { href: '/settings', label: t('settings.profile.crumb') },
+        { href: '/settings/security', label: t('settings.security.crumb') },
+        { href: '/settings/connections', label: t('settings.connections.crumb') },
+        { href: '/settings/devices', label: t('settings.devices.crumb') },
+    ] as const;
+
     return (
         <Tabs
             value={current}
             onChange={(_, href: string) => router.get(href)}
             sx={{ mb: 1, borderBottom: '1px solid', borderColor: 'divider' }}
         >
-            {ITEMS.map((item) => (
+            {items.map((item) => (
                 <Tab key={item.href} value={item.href} label={item.label} />
             ))}
         </Tabs>

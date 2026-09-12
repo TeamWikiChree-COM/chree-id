@@ -12,6 +12,7 @@ import AppLayout from '../../Components/AppLayout';
 import InertiaLink from '../../Components/InertiaLink';
 import SectionTitle from '../../Components/SectionTitle';
 import ServiceIcon from '../../Components/ServiceIcon';
+import { t } from '../../lib/i18n';
 import type { ConnectedService } from '../../types';
 
 interface WithdrawProps {
@@ -38,30 +39,29 @@ export default function Withdraw({ email, services, graceDays }: WithdrawProps) 
 
     return (
         <AppLayout
-            title="退会"
-            lead="ChreeID アカウントを削除します"
+            title={t('settings.withdraw.crumb')}
+            lead={t('settings.withdraw.lead')}
             crumbs={[
                 { label: 'ChreeID', href: '/' },
-                { label: '設定', href: '/settings' },
-                { label: '退会' },
+                { label: t('settings.title'), href: '/settings' },
+                { label: t('settings.withdraw.crumb') },
             ]}
         >
             <Alert severity="warning">
-                退会すると、すぐにログインできなくなります。{graceDays} 日以内であれば元に戻せますが、
-                それを過ぎるとアカウントと認証情報は完全に削除され、元に戻せません
+                {t('settings.withdraw.warning', { days: graceDays })}
             </Alert>
 
-            <SectionTitle>退会するアカウント</SectionTitle>
+            <SectionTitle>{t('settings.withdraw.account.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ px: 2, py: 1.5 }}>
-                <Typography sx={{ fontSize: '0.9375rem' }}>{email ?? 'メールアドレス未設定'}</Typography>
+                <Typography sx={{ fontSize: '0.9375rem' }}>{email ?? t('settings.withdraw.account.email_unset')}</Typography>
             </Paper>
 
-            <SectionTitle note={`${services.length}件`}>一緒に使えなくなるサービス</SectionTitle>
+            <SectionTitle note={t('settings.withdraw.services.count', { count: services.length })}>{t('settings.withdraw.services.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {services.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
-                            連携しているサービスはありません
+                            {t('settings.withdraw.services.empty')}
                         </Typography>
                     )}
 
@@ -83,17 +83,17 @@ export default function Withdraw({ email, services, graceDays }: WithdrawProps) 
                                 onChange={(e) => setData('understood', e.target.checked)}
                             />
                         }
-                        label={`${String(graceDays)} 日を過ぎると元に戻せないことを理解しました`}
+                        label={t('settings.withdraw.understood', { days: graceDays })}
                     />
 
                     {errors.understood && <Alert severity="error">{errors.understood}</Alert>}
 
                     <Stack direction="row" spacing={1.5}>
                         <Button type="submit" variant="contained" color="error" disabled={processing || !data.understood}>
-                            退会する
+                            {t('settings.withdraw.submit')}
                         </Button>
                         <Button component={InertiaLink} href="/settings" variant="outlined" color="inherit">
-                            やめる
+                            {t('settings.common.cancel')}
                         </Button>
                     </Stack>
                 </Stack>

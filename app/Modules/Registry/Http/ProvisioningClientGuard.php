@@ -30,11 +30,11 @@ class ProvisioningClientGuard {
         $client = $this->clients->execute($request);
 
         if ($client === null || !$client->is_confidential) {
-            return ApiError::make('invalid_client', 'クライアント認証に失敗しました', 401);
+            return ApiError::make('invalid_client', __('api.client.authentication_failed'), 401);
         }
 
         if (!$client->can_provision) {
-            return ApiError::make('access_denied', 'このサービスはこの操作を行えません', 403);
+            return ApiError::make('access_denied', __('api.client.provision_denied'), 403);
         }
 
         return $client;

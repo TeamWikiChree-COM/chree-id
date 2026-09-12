@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { t } from '../lib/i18n';
 
 export interface ConfirmRequest {
     title: string;
@@ -71,7 +72,7 @@ export default function ConfirmDialog({ request, onClose }: ConfirmDialogProps) 
                 {request.expected !== undefined && (
                     <Box sx={{ mt: 2 }}>
                         <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary', mb: 0.5 }}>
-                            続けるには <Box component="span" sx={{ fontWeight: 700 }}>{request.expected}</Box> と入力してください
+                            {t('common.confirm.type_to_continue.prefix')} <Box component="span" sx={{ fontWeight: 700 }}>{request.expected}</Box> {t('common.confirm.type_to_continue.suffix')}
                         </Typography>
                         <TextField
                             autoFocus
@@ -85,7 +86,7 @@ export default function ConfirmDialog({ request, onClose }: ConfirmDialogProps) 
             </DialogContent>
             <DialogActions>
                 <Button color="inherit" onClick={onClose}>
-                    やめる
+                    {t('common.confirm.cancel')}
                 </Button>
                 <Button
                     variant="contained"
@@ -93,7 +94,7 @@ export default function ConfirmDialog({ request, onClose }: ConfirmDialogProps) 
                     disabled={!matched}
                     onClick={confirm}
                 >
-                    {request.confirmText ?? '削除する'}
+                    {request.confirmText ?? t('common.confirm.remove')}
                 </Button>
             </DialogActions>
         </Dialog>

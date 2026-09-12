@@ -25,34 +25,62 @@ const CATALOGS = { ja, en } as const;
 
 type Locale = keyof typeof CATALOGS;
 
-/** 基準ロケール (lang/client/ja_jp.json) が持つキー。LangValidator が他ロケールの欠けを落とす */
+/**
+ * 基準ロケール (lang/client/ja_jp.json) が持つキー。
+ *
+ * 他ロケールに欠けがあれば `lang:build` が落とし、**tsc も同時に落ちる**
+ * (CATALOGS が共通のキーを持たなくなるため)。二重に守られている。
+ */
 export type TranslationKey = keyof typeof ja;
 
 /** `:name` に差し込む値 */
 export type Replacements = Readonly<Record<string, string | number>>;
 
-let current: Locale = 'ja';
+/**
+ * 使うロケール。
+ *
+ * **app.tsx から渡してもらう形にはしない。** `import.meta.glob(eager: true)` が
+ * 全ページを app.tsx の setup() より先に評価するので、モジュールスコープで `t()` を
+ * 呼んでいる箇所（種別のラベル表など）が既定のロケールで固まってしまう。
+ * サーバが埋めた data-page はその時点で既に DOM にあるため、ここで自分で読む。
+ */
+const current: Locale = detectLocale();
 
 /**
- * 使うロケールを決める。app.tsx が起動時に一度だけ呼ぶ。
- *
- * @param locale サーバが渡したロケール名。知らないものは基準ロケールに落とす
+ * @returns Inertia がページに埋めたロケール。読めなければ基準ロケール
  */
-export function initTranslations(locale: string): void {
-    current = locale in CATALOGS ? (locale as Locale) : 'ja';
+function detectLocale(): Locale {
+    // DOM の無いところ (テストなど) から読まれることがある
+    if (typeof document === 'undefined') return 'ja';
+
+    const raw = document.getElementById('app')?.dataset.page;
+    if (raw === undefined) return 'ja';
+
+    try {
+        const page = JSON.parse(raw) as { props?: { locale?: unknown } };
+        const locale = page.props?.locale;
+
+        return typeof locale === 'string' && locale in CATALOGS ? (locale as Locale) : 'ja';
+    } catch {
+        // 壊れていても画面は出す。文言が基準ロケールになるだけ
+        return 'ja';
+    }
 }
 
 /**
  * 文言を引く。
  *
- * @param key lang/ja_jp.json のキー
+ * **基準ロケールへ落とさない** (AGENTS.md 6章)。キーの過不足は lang:build が
+ * 落とすので、片方にだけ在るキーはそもそも存在しない。落とし先を書くと、
+ * 翻訳漏れが英語混じりの画面として黙って出てしまう。
+ *
+ * @param key lang/client/ja_jp.json のキー
  * @param replacements `:name` 形式の差し込み
- * @returns 引けた文言。無ければキーをそのまま返す (画面を壊さず、直す場所が分かる)
+ * @returns その言語の文言
  */
 export function t(key: TranslationKey, replacements?: Replacements): string {
-    const text: string | undefined = CATALOGS[current][key] ?? ja[key];
+    const text = CATALOGS[current][key];
 
-    if (text === undefined) return key;
     if (replacements === undefined) return text;
 
     return interpolate(text, replacements);
@@ -74,4 +102,21 @@ function interpolate(text: string, replacements: Replacements): string {
         (carried, name) => carried.replaceAll(`:${name}`, String(replacements[name])),
         text,
     );
+}
+
+/**
+ * 言語の名前は、**その言語自身の表記で出す**。
+ *
+ * いま読めない言語に切り替えたい人が探せるようにするため
+ * (日本語の画面で "英語" と出すと、英語しか読めない人には見つけられない)。
+ * 辞書には入れない。ロケールを足したらここに1行足す。
+ */
+const LABELS: Record<Locale, string> = { ja: '日本語', en: 'English' };
+
+/**
+ * @param locale 言語の名前
+ * @returns その言語自身の表記。知らないものはそのまま返す
+ */
+export function localeLabel(locale: string): string {
+    return locale in LABELS ? LABELS[locale as Locale] : locale;
 }

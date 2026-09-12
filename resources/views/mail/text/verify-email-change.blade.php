@@ -1,14 +1,14 @@
-ChreeID のメールアドレスを、このアドレスに変更する申し込みを受け付けました。
+{{ __('mail.verify_email_change.intro') }}
 
-変更を確定するには、以下のリンクをクリックしてください：
+{{ __('mail.verify_email_change.cta_text') }}
 
 {{ $verifyUrl }}
 
-このリンクを開くまで、アドレスは変更されません。
+{{ __('mail.verify_email_change.not_changed_yet') }}
 
-このリンクは{{ $ttlMinutes }}分間有効です。
+{{ __('mail.verify_email_change.ttl', ['minutes' => $ttlMinutes]) }}
 
-心当たりがない場合は、このメールを無視してください。
+{{ __('mail.common.default_note') }}
 
 --
 ChreeID by Team WikiChree.COM

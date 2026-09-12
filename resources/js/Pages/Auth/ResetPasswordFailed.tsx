@@ -1,20 +1,21 @@
 import { Link } from '@inertiajs/react';
 import Typography from '@mui/material/Typography';
 import AuthLayout from '../../Components/AuthLayout';
+import { t } from '../../lib/i18n';
 
 export default function ResetPasswordFailed() {
     return (
         <AuthLayout
-            title="このリンクは使えません"
-            heading="このリンクは使えません"
+            title={t('auth.common.link_unusable')}
+            heading={t('auth.common.link_unusable')}
             footer={
                 <Typography variant="body2">
-                    <Link href="/password/forgot">もう一度メールを送る</Link>
+                    <Link href="/password/forgot">{t('auth.reset_password_failed.retry')}</Link>
                 </Typography>
             }
         >
             <Typography variant="body2">
-                リンクの期限が切れているか、すでに使用されています。お手数ですが、もう一度お試しください。
+                {t('auth.common.link_expired')}
             </Typography>
         </AuthLayout>
     );

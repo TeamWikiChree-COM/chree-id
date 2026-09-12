@@ -37,16 +37,16 @@ class TokenController {
      */
     public function __invoke(Request $request): JsonResponse {
         if ($request->string('grant_type')->toString() !== 'authorization_code') {
-            return $this->error('unsupported_grant_type', 'grant_type は authorization_code のみ対応しています');
+            return $this->error('unsupported_grant_type', __('oauth.error.grant_type_unsupported'));
         }
 
         $client = $this->clients->execute($request);
-        if ($client === null) return $this->error('invalid_client', 'クライアント認証に失敗しました', 401);
+        if ($client === null) return $this->error('invalid_client', __('oauth.error.client_authentication_failed'), 401);
 
         $code = $request->string('code')->toString();
         $row = AuthCodeModel::query()->find(hash('sha256', $code));
         if ($row === null || $row->client_id !== $client->id) {
-            return $this->error('invalid_grant', '認可コードが不正です');
+            return $this->error('invalid_grant', __('oauth.error.auth_code_invalid'));
         }
 
         // 一度使ったコードが再び来たら、そのコードから出たトークンをまとめて失効させる (RFC 6749 4.1.2)
@@ -56,12 +56,12 @@ class TokenController {
                 ->whereNull('revoked_at')
                 ->update(['revoked_at' => now()]);
 
-            return $this->error('invalid_grant', '認可コードが再利用されました');
+            return $this->error('invalid_grant', __('oauth.error.auth_code_reused'));
         }
 
-        if (!$row->isUsable()) return $this->error('invalid_grant', '認可コードの期限が切れています');
+        if (!$row->isUsable()) return $this->error('invalid_grant', __('oauth.error.auth_code_expired'));
         if ($row->redirect_uri !== $request->string('redirect_uri')->toString()) {
-            return $this->error('invalid_grant', 'redirect_uri が発行時と一致しません');
+            return $this->error('invalid_grant', __('oauth.error.redirect_uri_mismatch'));
         }
 
         $pkceError = $this->verifyPkce($row, $request->string('code_verifier')->toString());
@@ -80,13 +80,13 @@ class TokenController {
     private function verifyPkce(AuthCodeModel $row, string $verifier): ?JsonResponse {
         if ($row->code_challenge === null) return null;
 
-        if ($verifier === '') return $this->error('invalid_grant', 'code_verifier が必要です');
+        if ($verifier === '') return $this->error('invalid_grant', __('oauth.error.code_verifier_required'));
 
         $expected = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
 
         return hash_equals($row->code_challenge, $expected)
             ? null
-            : $this->error('invalid_grant', 'code_verifier が一致しません');
+            : $this->error('invalid_grant', __('oauth.error.code_verifier_mismatch'));
     }
 
     /**
@@ -96,7 +96,7 @@ class TokenController {
      */
     private function issueTokens(OAuthClientModel $client, AuthCodeModel $row): JsonResponse {
         $account = $this->accounts->findById($row->auth_identity_id);
-        if ($account === null) return $this->error('invalid_grant', 'アカウントが見つかりません');
+        if ($account === null) return $this->error('invalid_grant', __('oauth.error.account_not_found'));
 
         // 認可のときに決めたサービスアカウントで sub を出す。
         // 入れ替え前に出したコードには載っていないので、その場合だけ認証主体から引く

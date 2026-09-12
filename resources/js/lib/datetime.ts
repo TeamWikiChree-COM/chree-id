@@ -5,6 +5,7 @@
  * `new Date(文字列)` はこの形の扱いがブラウザ任せで、Safari では NaN になることがあるので
  * 自前で分解する。
  */
+import { t } from './i18n';
 
 /** "YYYY-MM-DD HH:MM:SS" を分解する */
 const PATTERN = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/;
@@ -47,12 +48,12 @@ export function formatDateTime(value: string | null): string | null {
         + `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-/** しきい値 (秒) と、その範囲での言い方 */
-const UNITS: { limit: number; per: number; suffix: string }[] = [
-    { limit: 60, per: 1, suffix: '秒前' },
-    { limit: 60 * 60, per: 60, suffix: '分前' },
-    { limit: 60 * 60 * 24, per: 60 * 60, suffix: '時間前' },
-    { limit: 60 * 60 * 24 * 30, per: 60 * 60 * 24, suffix: '日前' },
+/** しきい値 (秒) と、その範囲でのキー。英語で複数形を作らずに済むよう、単位は :count に添えるだけの形にしてある */
+const UNITS: { limit: number; per: number; key: 'common.datetime.seconds_ago' | 'common.datetime.minutes_ago' | 'common.datetime.hours_ago' | 'common.datetime.days_ago' }[] = [
+    { limit: 60, per: 1, key: 'common.datetime.seconds_ago' },
+    { limit: 60 * 60, per: 60, key: 'common.datetime.minutes_ago' },
+    { limit: 60 * 60 * 24, per: 60 * 60, key: 'common.datetime.hours_ago' },
+    { limit: 60 * 60 * 24 * 30, per: 60 * 60 * 24, key: 'common.datetime.days_ago' },
 ];
 
 /**
@@ -70,10 +71,10 @@ export function formatRelative(value: string | null): string | null {
 
     const seconds = (Date.now() - date.getTime()) / 1000;
     if (seconds < 0) return formatDateTime(value);
-    if (seconds < 10) return 'たった今';
+    if (seconds < 10) return t('common.datetime.just_now');
 
     for (const unit of UNITS) {
-        if (seconds < unit.limit) return `${String(Math.floor(seconds / unit.per))}${unit.suffix}`;
+        if (seconds < unit.limit) return t(unit.key, { count: Math.floor(seconds / unit.per) });
     }
 
     return formatDateTime(value);

@@ -101,7 +101,7 @@ class ManageAccount {
 
         // 解除しても deleted_at が残るので、中途半端な状態になる
         if ($target->isDeleted()) {
-            throw new RuntimeException('退会済みです。先に退会を取り消してください');
+            throw new RuntimeException(__('admin.account.already_withdrawn'));
         }
 
         $this->accounts->unsuspend($targetId);
@@ -145,11 +145,11 @@ class ManageAccount {
      */
     private function require(string $actorId, string $targetId): AuthIdentity {
         if ($actorId === $targetId) {
-            throw new RuntimeException('自分のアカウントはここから操作できません');
+            throw new RuntimeException(__('admin.account.cannot_operate_self'));
         }
 
         $target = $this->accounts->findById($targetId);
-        if ($target === null) throw new RuntimeException('アカウントが見つかりません');
+        if ($target === null) throw new RuntimeException(__('admin.account.not_found'));
 
         return $target;
     }

@@ -72,7 +72,7 @@ class IconController {
         $source = IconSource::from($request->string('source')->toString());
 
         if ($source === IconSource::GRAVATAR && $account->email === null) {
-            throw ValidationException::withMessages(['source' => 'Gravatar を使うにはメールアドレスが必要です']);
+            throw ValidationException::withMessages(['source' => __('settings.profile.gravatar_email_required')]);
         }
 
         match ($source) {
@@ -93,6 +93,6 @@ class IconController {
         $file = $request->file('icon');
         if ($file instanceof UploadedFile) return $file;
 
-        throw ValidationException::withMessages(['icon' => '画像を選んでください']);
+        throw ValidationException::withMessages(['icon' => __('settings.profile.icon_required')]);
     }
 }

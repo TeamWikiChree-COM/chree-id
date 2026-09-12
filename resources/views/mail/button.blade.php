@@ -13,6 +13,6 @@
 </p>
 
 <p style="font-size: 0.9em; color: #666;">
-    ボタンが機能しない場合は、以下のURLをブラウザにコピーしてください：<br>
+    {{ __('mail.button.fallback_note') }}<br>
     <a href="{{ $url }}" style="color: #1976d2;">{{ $url }}</a>
 </p>
