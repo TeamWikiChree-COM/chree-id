@@ -30,6 +30,10 @@ class ChreeSession {
      *
      * セッション固定攻撃を避けるため、ここで必ずIDを再生成する。
      *
+     * **古いほうは破棄する (destroy: true)。** 残すと、同じブラウザでログインし直すたびに
+     * 生きたセッションが積み上がり、端末の一覧に同じ端末が何度も並ぶ。
+     * 見た目の問題にとどまらず、使われていないセッションが有効なまま残り続ける。
+     *
      * **履歴もここで残す。** ログインの成立点は全経路がここを通るので、
      * 呼び出し側に記録を任せると、経路を足したときに取りこぼす。
      *
@@ -38,7 +42,7 @@ class ChreeSession {
      * @return void
      */
     public function login(string $accountId, string $method): void {
-        $this->request->session()->regenerate();
+        $this->request->session()->regenerate(destroy: true);
         $this->request->session()->put(self::KEY, $accountId);
 
         $this->audit->record(AuditAction::LOGIN_SUCCEEDED, $accountId, ['method' => $method]);
@@ -49,7 +53,9 @@ class ChreeSession {
      */
     public function logout(): void {
         $this->request->session()->forget(self::KEY);
-        $this->request->session()->regenerate();
+
+        // こちらも破棄する。切ったつもりのセッションが生き残らないように
+        $this->request->session()->regenerate(destroy: true);
 
         // 意図したログアウトなので、勝手に消えた扱いにしない (DetectSessionLoss)
         $this->marker->forget();
