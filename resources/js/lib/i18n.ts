@@ -42,29 +42,28 @@ export type Replacements = Readonly<Record<string, string | number>>;
  * **app.tsx から渡してもらう形にはしない。** `import.meta.glob(eager: true)` が
  * 全ページを app.tsx の setup() より先に評価するので、モジュールスコープで `t()` を
  * 呼んでいる箇所（種別のラベル表など）が既定のロケールで固まってしまう。
- * サーバが埋めた data-page はその時点で既に DOM にあるため、ここで自分で読む。
+ * サーバが決めた言語はその時点で既に DOM にあるため、ここで自分で読む。
  */
 const current: Locale = detectLocale();
 
 /**
- * @returns Inertia がページに埋めたロケール。読めなければ基準ロケール
+ * サーバが決めた言語を DOM から読む。
+ *
+ * **`<html lang>` を見る。** Inertia の props にも locale は載っているが、
+ * どこにどう埋まるかは Inertia の版で変わる (v3 で `<div id="app" data-page>` から
+ * `<script data-page type="application/json">` の中身へ移り、それに気づかず
+ * 既定のロケールに落ち続けていた)。lang 属性は HTML の仕様で、埋め方が変わらない。
+ *
+ * @returns 読めなければ基準ロケール
  */
 function detectLocale(): Locale {
     // DOM の無いところ (テストなど) から読まれることがある
     if (typeof document === 'undefined') return 'ja';
 
-    const raw = document.getElementById('app')?.dataset.page;
-    if (raw === undefined) return 'ja';
+    // "ja-JP" のような地域付きで来ても頭だけ見る
+    const tag = document.documentElement.lang.split('-')[0]?.toLowerCase() ?? '';
 
-    try {
-        const page = JSON.parse(raw) as { props?: { locale?: unknown } };
-        const locale = page.props?.locale;
-
-        return typeof locale === 'string' && locale in CATALOGS ? (locale as Locale) : 'ja';
-    } catch {
-        // 壊れていても画面は出す。文言が基準ロケールになるだけ
-        return 'ja';
-    }
+    return tag in CATALOGS ? (tag as Locale) : 'ja';
 }
 
 /**

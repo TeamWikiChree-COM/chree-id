@@ -28,6 +28,35 @@ class PasskeyTest extends TestCase {
         return app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
     }
 
+    /**
+     * 別のホストで開いていると、ブラウザは options を受け取った時点で必ず断る。
+     * 渡す前に弾いて、設定のずれだと分かる文言を返す
+     */
+    public function test_refusesWhenHostDoesNotMatchTheRpId(): void {
+        $account = $this->makeAccount();
+        $this->withSession(['chreeid.account_id' => $account->id]);
+
+        // Host ヘッダだけでは getHost() が変わらないので、絶対 URL で叩く
+        $response = $this->postJson('http://somewhere-else.test/security/passkey/options');
+
+        $response->assertStatus(422)->assertJsonPath('error', 'rp_id_mismatch');
+        $this->assertIsString($response->json('reason'));
+    }
+
+    /**
+     * 素の 401 だけでは、クッキーが届いていないのかセッションが消えたのかが分からない
+     */
+    public function test_explainsWhenSignedOut(): void {
+        $this->postJson('/security/passkey/options')
+            ->assertStatus(401)
+            ->assertJsonPath('error', 'unauthenticated')
+            ->assertJsonStructure(['reason']);
+
+        $this->postJson('/security/passkey/register', ['credential' => '{}'])
+            ->assertStatus(401)
+            ->assertJsonStructure(['reason']);
+    }
+
     public function test_buildsRegistrationChallenge(): void {
         $account = $this->makeAccount();
 

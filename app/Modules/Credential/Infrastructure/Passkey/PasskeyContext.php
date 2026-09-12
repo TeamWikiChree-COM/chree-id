@@ -30,6 +30,25 @@ class PasskeyContext {
     }
 
     /**
+     * そのホストから見て、この RP ID が使えるか。
+     *
+     * WebAuthn は RP ID が origin のドメインと一致するか、その親ドメインであることを求める。
+     * ずれていると `navigator.credentials.create()` がブラウザ側で必ず失敗するので、
+     * options を渡す前に弾ける。
+     *
+     * @param string|null $host いま見られているホスト
+     * @return bool
+     */
+    public function matchesHost(?string $host): bool {
+        if ($host === null || $host === '') return false;
+
+        $rpId = strtolower($this->rpId());
+        $host = strtolower($host);
+
+        return $host === $rpId || str_ends_with($host, ".{$rpId}");
+    }
+
+    /**
      * @return PublicKeyCredentialRpEntity
      */
     public function entity(): PublicKeyCredentialRpEntity {

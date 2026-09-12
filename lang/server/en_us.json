@@ -112,6 +112,8 @@
     "oauth.error.service_suspended": "This service has been suspended",
     "oauth.error.token_invalid": "The token is invalid",
     "oauth.error.token_missing": "No token was provided",
+    "passkey.rp_id_mismatch": "Passkeys cannot be registered on this address (:host). Open :rp instead.",
+    "passkey.signed_out": "Your session has ended. Reload the page and try again.",
     "settings.connections.already_linked": "This external account is already connected.",
     "settings.connections.email_already_registered": "An account with this email address already exists.",
     "settings.connections.provider_unsupported": "This connection isn't supported.",

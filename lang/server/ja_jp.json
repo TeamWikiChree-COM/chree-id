@@ -112,6 +112,8 @@
     "oauth.error.service_suspended": "このサービスは利用を停止しています",
     "oauth.error.token_invalid": "トークンが不正です",
     "oauth.error.token_missing": "トークンがありません",
+    "passkey.rp_id_mismatch": "このアドレス (:host) ではパスキーを登録できません。:rp で開いてください",
+    "passkey.signed_out": "ログインが切れています。ページを読み込み直してから、もう一度お試しください",
     "settings.connections.already_linked": "この外部アカウントは既に連携しています",
     "settings.connections.email_already_registered": "このメールアドレスのアカウントが既にあります",
     "settings.connections.provider_unsupported": "対応していない連携先です",

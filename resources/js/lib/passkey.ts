@@ -81,6 +81,8 @@ async function createPasskey(
 
     const optionsResponse = await fetch(optionsUrl, {
         method: 'POST',
+        // 既定でも同一オリジンには付くが、セッションが要ることを読んで分かるようにしておく
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-XSRF-TOKEN': csrfToken(),
@@ -119,6 +121,7 @@ async function createPasskey(
 
     const registerResponse = await fetch(registerUrl, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
             'Content-Type': 'application/json',
             'X-XSRF-TOKEN': csrfToken(),

@@ -6,6 +6,8 @@ use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Device\Domain\DeviceLabel;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
+use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
+use App\Modules\Credential\Infrastructure\Passkey\PasskeyDiagnostics;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -28,6 +30,8 @@ class PasskeyController {
         private readonly CompletePasskeyRegistration $complete,
         private readonly PasskeySerializer $serializer,
         private readonly AuditLog $audit,
+        private readonly PasskeyContext $context,
+        private readonly PasskeyDiagnostics $diagnostics,
     ) {}
 
     /**
@@ -36,10 +40,22 @@ class PasskeyController {
      */
     public function options(Request $request): JsonResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return response()->json(['error' => 'unauthenticated'], 401);
+        if ($accountId === null) return $this->signedOut('options', $request);
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return response()->json(['error' => 'unauthenticated'], 401);
+        if ($account === null) return $this->signedOut('options', $request);
+
+        // RP ID がホストとずれていると、ブラウザは options を受け取った時点で必ず断る。
+        // 何も言わずに渡すと「登録できませんでした」としか出ず、原因が設定だと分からない
+        if (!$this->context->matchesHost($request->getHost())) {
+            return response()->json([
+                'error' => 'rp_id_mismatch',
+                'reason' => __('passkey.rp_id_mismatch', [
+                    'host' => $request->getHost(),
+                    'rp' => $this->context->rpId(),
+                ]),
+            ], 422);
+        }
 
         $options = $this->start->execute($account);
         $request->session()->put(self::PENDING_OPTIONS, serialize($options));
@@ -48,12 +64,31 @@ class PasskeyController {
     }
 
     /**
+     * セッションが見つからないときの応答。
+     *
+     * **ここを素の 401 にしない。** 画面には「登録できませんでした (401)」としか出ず、
+     * クッキーが届いていないのかセッションが消えたのかを区別できない。
+     *
+     * @param string $step どの往復で起きたか
+     * @param Request $request 来ている要求
+     * @return JsonResponse
+     */
+    private function signedOut(string $step, Request $request): JsonResponse {
+        $this->diagnostics->reportMissingSession($step, $request);
+
+        return response()->json([
+            'error' => 'unauthenticated',
+            'reason' => __('passkey.signed_out'),
+        ], 401);
+    }
+
+    /**
      * @param Request $request
      * @return JsonResponse
      */
     public function register(Request $request): JsonResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return response()->json(['error' => 'unauthenticated'], 401);
+        if ($accountId === null) return $this->signedOut('register', $request);
 
         $stored = $request->session()->pull(self::PENDING_OPTIONS);
         if (!is_string($stored)) return response()->json(['error' => 'no_challenge'], 400);
