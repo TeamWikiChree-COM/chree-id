@@ -21,7 +21,7 @@ use Webauthn\PublicKeyCredentialCreationOptions;
  */
 class PasskeyController {
     /** 応答の検証に、発行時と同じ options を使う。使い回すとリプレイを許す */
-    private const PENDING_OPTIONS = 'passkey.creation_options_';
+    private const PENDING_OPTIONS = 'passkey.creation_options';
 
     public function __construct(
         private readonly ChreeSession $session,
@@ -60,7 +60,7 @@ class PasskeyController {
         $options = $this->start->execute($account);
         
         // わかったことはこのL63の行を消すとログアウトされなくなる
-        $request->session()->put(self::PENDING_OPTIONS, serialize($options));
+        $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']);
 
         // 次の往復と突き合わせるために、成功した側も残す
         $this->diagnostics->reportStep('options', $request);
