@@ -19,12 +19,17 @@ use InvalidArgumentException;
  * まだ持っていないアカウントは、ログイン中であること自体を裏付けとして新規設定する。
  */
 class PasswordController {
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly CredentialRepository $credentials,
-        private readonly PasswordVerifier $verifier,
-        private readonly SetPassword $setPassword,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly CredentialRepository $credentials;
+    private readonly PasswordVerifier $verifier;
+    private readonly SetPassword $setPassword;
+
+    public function __construct(ChreeSession $session, CredentialRepository $credentials, PasswordVerifier $verifier, SetPassword $setPassword) {
+        $this->session = $session;
+        $this->credentials = $credentials;
+        $this->verifier = $verifier;
+        $this->setPassword = $setPassword;
+    }
 
     /**
      * @param Request $request

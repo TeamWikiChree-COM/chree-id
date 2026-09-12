@@ -13,15 +13,20 @@ import InertiaLink from '../../Components/InertiaLink';
 import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
+import IconSection from '../../Components/Settings/IconSection';
+import type { IconSourceValue } from '../../types';
 
 interface ProfileProps {
     /** 未設定なら null */
     displayName: string | null;
     email: string | null;
     emailVerified: boolean;
+    iconSource: IconSourceValue;
+    /** いま表示されている絵。未設定なら null */
+    iconUrl: string | null;
 }
 
-export default function Profile({ displayName, email, emailVerified }: ProfileProps) {
+export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl }: ProfileProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({ display_name: displayName ?? '' });
     // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
@@ -47,6 +52,7 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
 
             <Stack spacing={1.5}>
                 {flash.profileSaved && <Alert severity="success">保存しました</Alert>}
+                {flash.iconSaved && <Alert severity="success">アイコンを保存しました</Alert>}
                 {flash.verificationSent && (
                     <Alert severity="info">確認メールを送りました。本文のリンクを開いてください</Alert>
                 )}
@@ -62,6 +68,9 @@ export default function Profile({ displayName, email, emailVerified }: ProfilePr
                     <Alert severity="error">このリンクは期限切れか、すでに使用されています</Alert>
                 )}
             </Stack>
+
+            <SectionTitle>アイコン</SectionTitle>
+            <IconSection iconSource={iconSource} iconUrl={iconUrl} hasEmail={email !== null} />
 
             <SectionTitle>表示名</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>

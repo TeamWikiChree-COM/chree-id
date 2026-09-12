@@ -105,11 +105,12 @@ class LoginSessions {
             ->pluck('id')
             ->all();
 
-        foreach ($ids as $id) {
+        $sessionIds = array_values(array_filter($ids, is_string(...)));
+        foreach ($sessionIds as $id) {
             $this->forget($id);
         }
 
-        return count($ids);
+        return count($sessionIds);
     }
 
     /**
@@ -130,7 +131,8 @@ class LoginSessions {
      */
     public function prune(): int {
         $alive = DB::table('sessions')->pluck('id')->all();
+        $deleted = LoginSessionModel::query()->whereNotIn('id', $alive)->delete();
 
-        return LoginSessionModel::query()->whereNotIn('id', $alive)->delete();
+        return is_int($deleted) ? $deleted : 0;
     }
 }

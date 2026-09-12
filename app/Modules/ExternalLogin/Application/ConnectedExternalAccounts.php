@@ -28,7 +28,7 @@ class ConnectedExternalAccounts {
             $result[] = [
                 'id' => $row->id,
                 // 古い行は data を持たないことがある。identifier の頭がプロバイダ名
-                'provider' => is_string($provider) ? $provider : strtok((string) $row->identifier, ':'),
+                'provider' => is_string($provider) ? $provider : explode(':', (string) $row->identifier)[0],
                 'email' => is_string($email) ? $email : null,
                 'connectedAt' => $row->created_at?->toDateTimeString(),
                 'lastUsedAt' => $row->last_used_at?->toDateTimeString(),

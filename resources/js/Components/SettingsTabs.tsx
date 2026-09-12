@@ -15,6 +15,8 @@ import Tabs from '@mui/material/Tabs';
 const ITEMS = [
     { href: '/settings', label: 'プロフィール' },
     { href: '/settings/security', label: 'セキュリティ' },
+    { href: '/settings/connections', label: '外部アカウント' },
+    { href: '/settings/devices', label: '端末' },
 ] as const;
 
 interface SettingsTabsProps {

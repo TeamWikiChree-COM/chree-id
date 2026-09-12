@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * 設定画面からの外部アカウント連携。
@@ -20,13 +21,21 @@ use RuntimeException;
  * 本人のものとして繋がせられる。
  */
 class ConnectionController {
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly ExternalIdpRegistry $registry,
-        private readonly ExternalLoginFlow $flow,
-        private readonly ConnectedExternalAccounts $connected,
-        private readonly RemoveCredential $remove,
-    ) {}
+
+
+    private readonly ChreeSession $session;
+    private readonly ExternalIdpRegistry $registry;
+    private readonly ExternalLoginFlow $flow;
+    private readonly ConnectedExternalAccounts $connected;
+    private readonly RemoveCredential $remove;
+
+    public function __construct(ChreeSession $session, ExternalIdpRegistry $registry, ExternalLoginFlow $flow, ConnectedExternalAccounts $connected, RemoveCredential $remove) {
+        $this->session = $session;
+        $this->registry = $registry;
+        $this->flow = $flow;
+        $this->connected = $connected;
+        $this->remove = $remove;
+    }
 
     /**
      * @return Response|RedirectResponse
@@ -44,11 +53,14 @@ class ConnectionController {
     /**
      * 連携を始める。IdP から戻ってきた先の処理は ExternalLoginController。
      *
+     * **外部へ送り出すのは Inertia::location。** 素の 302 だと XHR がそのまま追いかけ、
+     * IdP の HTML を Inertia の応答として受け取ってしまう。
+     *
      * @param Request $request
      * @param string $provider プロバイダ名
-     * @return RedirectResponse
+     * @return SymfonyResponse
      */
-    public function store(Request $request, string $provider): RedirectResponse {
+    public function store(Request $request, string $provider): SymfonyResponse {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
@@ -57,7 +69,7 @@ class ConnectionController {
             return redirect('/settings/connections')->withErrors(['provider' => '対応していない連携先です']);
         }
 
-        return redirect()->away($this->flow->start($idp, linkAccountId: $accountId));
+        return Inertia::location($this->flow->start($idp, linkAccountId: $accountId));
     }
 
     /**

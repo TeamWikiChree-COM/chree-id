@@ -70,7 +70,7 @@ class LoginController {
 
         // 2FA を有効にしているアカウントは、パスワードだけでは成立しない。
         // ただし本人が2段階目を通したうえで信頼した端末なら、そこは省く
-        $trusted = $this->trustedDevices->isTrusted($account->id, $request->cookie(TrustedDevices::COOKIE));
+        $trusted = $this->trustedDevices->isTrusted($account->id, $this->trustedDevices->tokenFrom($request));
 
         if (!$trusted && !$this->complete->execute($account->id, $factors)) {
             $this->pending->start($account->id, $factors);

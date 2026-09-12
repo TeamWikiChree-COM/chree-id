@@ -1,61 +1,35 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
-import QRCode from 'qrcode';
+import { useState } from 'react';
 import AppLayout from '../../Components/AppLayout';
 import Icon from '../../Components/Icon';
-import RowAction from '../../Components/RowAction';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import ToggleSwitch from '../../Components/ToggleSwitch';
+import CredentialList from '../../Components/Settings/CredentialList';
+import PasswordSection from '../../Components/Settings/PasswordSection';
+import TotpSection from '../../Components/Settings/TotpSection';
 import { registerPasskey } from '../../lib/passkey';
-import type { CredentialSummary, CredentialTypeValue } from '../../types';
-
-const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
-    password: 'パスワード',
-    magic_link: 'マジックリンク',
-    totp: '認証アプリ (TOTP)',
-    passkey: 'パスキー',
-    oauth: '外部アカウント',
-};
-
-const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
-    password: 'key',
-    magic_link: 'envelope',
-    totp: 'mobile-screen',
-    passkey: 'fingerprint',
-    oauth: 'right-to-bracket',
-};
+import type { CredentialSummary } from '../../types';
 
 interface SecurityProps {
     credentials: CredentialSummary[];
+    /** パスワードを設定済みか。未設定なら現在のパスワードを聞かない */
+    hasPassword: boolean;
     /** 未使用の復旧コードの残り本数 */
     recoveryCodeCount: number;
     /** TOTP 設定の途中なら otpauth:// の URI。そうでなければ null */
     pendingTotp: string | null;
 }
 
-export default function Security({ credentials, recoveryCodeCount, pendingTotp }: SecurityProps) {
+export default function Security({ credentials, hasPassword, recoveryCodeCount, pendingTotp }: SecurityProps) {
     const { flash, errors } = usePage().props;
-    const [qr, setQr] = useState<string | null>(null);
     const [passkeyError, setPasskeyError] = useState<string | null>(null);
-    const totpForm = useForm({ code: '' });
-
-    useEffect(() => {
-        if (!pendingTotp) {
-            setQr(null);
-
-            return;
-        }
-
-        void QRCode.toDataURL(pendingTotp, { margin: 1, width: 200 }).then(setQr);
-    }, [pendingTotp]);
 
     const addPasskey = async (): Promise<void> => {
         setPasskeyError(null);
@@ -77,96 +51,17 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
         >
             <SettingsTabs current="/settings/security" />
 
+            {flash.passwordChanged && <Alert severity="success">パスワードを変更しました</Alert>}
+
             <SectionTitle note={`${credentials.length}件`}>登録済みのログイン方法</SectionTitle>
-            {errors.type && <Alert severity="error" sx={{ mb: 1 }}>{errors.type}</Alert>}
-            <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
-                    {credentials.map((credential, index) => (
-                        <Box
-                            key={`${credential.type}-${index}`}
-                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
-                        >
-                            <Box>
-                                <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
-                                    <Icon
-                                        name={TYPE_ICONS[credential.type] ?? 'circle-question'}
-                                        sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
-                                    />
-                                    {credential.label ?? TYPE_LABELS[credential.type] ?? credential.type}
-                                </Typography>
-                                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
-                                    {credential.lastUsedAt ? `最終利用 ${credential.lastUsedAt}` : '未使用'}
-                                </Typography>
-                            </Box>
-                            <RowAction
-                                destructive
-                                onClick={() => router.post('/security/credentials/remove', { type: credential.type })}
-                            >
-                                削除
-                            </RowAction>
-                        </Box>
-                    ))}
-                </Stack>
-            </Paper>
+            {errors.credential && <Alert severity="error" sx={{ mb: 1 }}>{errors.credential}</Alert>}
+            <CredentialList credentials={credentials} />
+
+            <SectionTitle>パスワード</SectionTitle>
+            <PasswordSection hasPassword={hasPassword} />
 
             <SectionTitle>2段階認証</SectionTitle>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-                {hasTotp && !flash.recoveryCodes && <Alert severity="success">認証アプリを設定済みです</Alert>}
-
-                {hasTotp && flash.recoveryCodes && (
-                    <Alert severity="success">
-                        認証アプリを設定しました。下に復旧コードを発行しているので控えてください
-                    </Alert>
-                )}
-
-                {!hasTotp && !pendingTotp && (
-                    <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                            ログイン時に、認証アプリの6桁のコードを求めます
-                        </Typography>
-                        <Button
-                            variant="outlined"
-                            color="inherit"
-                            // startIcon={<Icon name="mobile-screen" />}
-                            onClick={() => router.post('/security/totp/start')}
-                        >
-                            設定をはじめる
-                        </Button>
-                    </Stack>
-                )}
-
-                {!hasTotp && pendingTotp && (
-                    <Stack spacing={2}>
-                        <Typography sx={{ fontSize: '0.875rem' }}>
-                            認証アプリで読み取り、表示された6桁を入力してください
-                        </Typography>
-
-                        {qr && <Box component="img" src={qr} alt="" sx={{ width: 200, alignSelf: 'center' }} />}
-
-                        <Box
-                            component="form"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                totpForm.post('/security/totp/confirm');
-                            }}
-                        >
-                            <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-                                <TextField
-                                    label="6桁のコード"
-                                    value={totpForm.data.code}
-                                    onChange={(e) => totpForm.setData('code', e.target.value)}
-                                    error={Boolean(errors.code)}
-                                    helperText={errors.code}
-                                    slotProps={{ htmlInput: { inputMode: 'numeric' } }}
-                                />
-                                <Button type="submit" variant="contained" disabled={totpForm.processing}>
-                                    有効にする
-                                </Button>
-                            </Stack>
-                        </Box>
-                    </Stack>
-                )}
-            </Paper>
+            <TotpSection hasTotp={hasTotp} pendingTotp={pendingTotp} />
 
             <SectionTitle>マジックリンク</SectionTitle>
             <Paper variant="outlined">
@@ -181,9 +76,7 @@ export default function Security({ credentials, recoveryCodeCount, pendingTotp }
                         checked={hasMagicLink}
                         label="マジックリンク"
                         onChange={(next) =>
-                            next
-                                ? router.post('/security/magic-link')
-                                : router.post('/security/credentials/remove', { type: 'magic_link' })
+                            router.post(next ? '/security/magic-link' : '/security/magic-link/disable')
                         }
                     />
                 </Box>

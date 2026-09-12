@@ -24,7 +24,11 @@ class ExternalLoginFlow {
     /** 設定画面から始めた連携。戻ってきたらこのアカウントに足す */
     private const LINK_ACCOUNT = 'external_login.link_account';
 
-    public function __construct(private readonly Request $request) {}
+    private readonly Request $request;
+
+    public function __construct(Request $request) {
+        $this->request = $request;
+    }
 
     /**
      * 認可リクエストを組み立て、照合に使う値を預ける。

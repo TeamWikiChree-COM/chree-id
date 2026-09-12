@@ -20,11 +20,50 @@ export interface Account {
     emailVerified: boolean;
 }
 
+/** アイコンの出どころ。PHP の IconSource と合わせる */
+export type IconSourceValue = 'none' | 'gravatar' | 'upload';
+
 /** 一覧に並べる認証手段の1行 */
 export interface CredentialSummary {
+    /** 認証手段のID。削除はこれを指す (種別ではない) */
+    id: string;
     type: CredentialTypeValue;
     label: string | null;
     lastUsedAt: string | null;
+    createdAt: string | null;
+}
+
+/** 設定画面に並べる、連携済みの外部アカウント */
+export interface ExternalConnection {
+    /** 認証手段のID。解除はこれを指す */
+    id: string;
+    /** 'google' など */
+    provider: string;
+    /** IdP 側のメールアドレス。分からなければ null */
+    email: string | null;
+    connectedAt: string | null;
+    lastUsedAt: string | null;
+}
+
+/** ログイン中の端末の1行 */
+export interface LoginSessionSummary {
+    id: string;
+    /** 「Chrome (Windows)」のような表示名 */
+    label: string;
+    ipAddress: string | null;
+    lastActiveAt: string | null;
+    /** いま見ている端末か */
+    isCurrent: boolean;
+}
+
+/** 2段階目を省略してよい端末の1行 */
+export interface TrustedDeviceSummary {
+    id: string;
+    label: string;
+    ipAddress: string | null;
+    lastUsedAt: string | null;
+    expiresAt: string;
+    isCurrent: boolean;
 }
 
 /** サービスの信頼状態。PHP の ServiceTrust と合わせる */
@@ -97,6 +136,18 @@ declare module '@inertiajs/core' {
                 prunedTokens: number | null;
                 /** 管理画面でアカウントを作った直後だけ true */
                 accountCreated: boolean | null;
+                /** パスワードを変更した直後だけ true */
+                passwordChanged: boolean | null;
+                /** アイコンを保存した直後だけ true */
+                iconSaved: boolean | null;
+                /** 外部アカウントを連携した直後だけ true */
+                connectionAdded: boolean | null;
+                /** 外部アカウントの連携を切った直後だけ true */
+                connectionRemoved: boolean | null;
+                /** 端末を切った直後だけ入る台数 */
+                sessionsRevoked: number | null;
+                /** 端末の信頼を取り消した直後だけ true */
+                trustRevoked: boolean | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;
@@ -106,6 +157,8 @@ declare module '@inertiajs/core' {
             externalIdps: string[];
             /** ヘッダーの中身を切り替えるためだけの値 */
             isLoggedIn: boolean;
+            /** ログイン中の本人のアイコン。未設定なら null */
+            iconUrl: string | null;
         };
     }
 }

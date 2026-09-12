@@ -16,11 +16,15 @@ use Inertia\Response;
  * 似ているが別物で、ログアウトしても信頼は残る。混ぜないこと。
  */
 class DeviceController {
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly LoginSessions $sessions,
-        private readonly TrustedDevices $trustedDevices,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly LoginSessions $sessions;
+    private readonly TrustedDevices $trustedDevices;
+
+    public function __construct(ChreeSession $session, LoginSessions $sessions, TrustedDevices $trustedDevices) {
+        $this->session = $session;
+        $this->sessions = $sessions;
+        $this->trustedDevices = $trustedDevices;
+    }
 
     /**
      * @param Request $request
@@ -32,7 +36,7 @@ class DeviceController {
 
         return Inertia::render('Settings/Devices', [
             'sessions' => $this->sessions->listFor($accountId, $request->session()->getId()),
-            'trustedDevices' => $this->trustedDevices->listFor($accountId, $this->trustToken($request)),
+            'trustedDevices' => $this->trustedDevices->listFor($accountId, $this->trustedDevices->tokenFrom($request)),
         ]);
     }
 
@@ -119,23 +123,13 @@ class DeviceController {
     }
 
     /**
-     * @param Request $request
-     * @return string|null クッキーが無ければ null
-     */
-    private function trustToken(Request $request): ?string {
-        $token = $request->cookie(TrustedDevices::COOKIE);
-
-        return is_string($token) ? $token : null;
-    }
-
-    /**
      * @param string $accountId アカウントID (ULID)
      * @param Request $request
      * @param string $deviceId 取り消そうとしている端末のID
      * @return bool いま使っている端末か
      */
     private function isCurrentDevice(string $accountId, Request $request, string $deviceId): bool {
-        foreach ($this->trustedDevices->listFor($accountId, $this->trustToken($request)) as $device) {
+        foreach ($this->trustedDevices->listFor($accountId, $this->trustedDevices->tokenFrom($request)) as $device) {
             if ($device['id'] === $deviceId) return $device['isCurrent'];
         }
 

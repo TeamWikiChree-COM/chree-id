@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
@@ -26,7 +27,7 @@ import { useThemeModeContext } from '../lib/theme-mode';
  * ログインしていないときは、行き先の無いリンクを出さずロゴと表示設定だけにする。
  */
 export default function AppHeader() {
-    const { isAdmin, isLoggedIn } = usePage().props;
+    const { isAdmin, isLoggedIn, iconUrl } = usePage().props;
     const { mode, toggle } = useThemeModeContext();
     const theme = useTheme();
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -74,8 +75,12 @@ export default function AppHeader() {
                         onClick={(event) => setAnchor(event.currentTarget)}
                         sx={{ color: 'text.secondary' }}
                     >
-                        {/* ログイン前後で絵を変えない。DokuFarm も同じ1つで通している */}
-                        <Icon name="circle-user" />
+                        {/* アイコンを設定していれば本人の絵。無ければログイン前後で変えない */}
+                        {iconUrl === null ? (
+                            <Icon name="circle-user" />
+                        ) : (
+                            <Avatar src={iconUrl} sx={{ width: 24, height: 24 }} />
+                        )}
                     </IconButton>
 
                     <Menu

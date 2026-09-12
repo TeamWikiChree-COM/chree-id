@@ -21,11 +21,15 @@ class IconController {
     /** 受け取る画像の上限 (KB) */
     private const MAX_KILOBYTES = 2048;
 
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly AuthIdentityRepository $accounts,
-        private readonly AccountIcons $icons,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly AuthIdentityRepository $accounts;
+    private readonly AccountIcons $icons;
+
+    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AccountIcons $icons) {
+        $this->session = $session;
+        $this->accounts = $accounts;
+        $this->icons = $icons;
+    }
 
     /**
      * アップロードした画像を返す。

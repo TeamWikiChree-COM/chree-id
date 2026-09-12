@@ -17,10 +17,13 @@ use Symfony\Component\HttpFoundation\Response;
  * 一覧に出ないことは認証の正しさに影響しない。
  */
 class TrackLoginSession {
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly LoginSessions $sessions,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly LoginSessions $sessions;
+
+    public function __construct(ChreeSession $session, LoginSessions $sessions) {
+        $this->session = $session;
+        $this->sessions = $sessions;
+    }
 
     /**
      * @param Request $request

@@ -81,7 +81,7 @@ class MagicLinkController {
 
         // メールを開けただけでは2要素にならないので、2FA があれば足りない。
         // 本人が2段階目を通して信頼した端末でだけ、そこを省く
-        $trusted = $this->trustedDevices->isTrusted($accountId, $request->cookie(TrustedDevices::COOKIE));
+        $trusted = $this->trustedDevices->isTrusted($accountId, $this->trustedDevices->tokenFrom($request));
 
         if (!$trusted && !$this->complete->execute($accountId, $factors)) {
             $this->pending->start($accountId, $factors);

@@ -2,6 +2,8 @@ import { router, useForm } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -9,6 +11,9 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import AuthLayout from '../../Components/AuthLayout';
+
+/** 信頼を保つ日数。PHP の TrustedDevices::LIFETIME_DAYS と合わせる */
+const TRUST_DAYS = 30;
 
 interface ChallengeProps {
     /** 復旧コードを発行済みか。未発行なら切り替えの導線を出さない */
@@ -20,6 +25,7 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
     const { data, setData, post, processing, errors } = useForm({
         code: '',
         useRecoveryCode: false,
+        trustDevice: false,
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -29,7 +35,7 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
 
     const switchMode = (toRecovery: boolean): void => {
         setUseRecoveryCode(toRecovery);
-        setData({ code: '', useRecoveryCode: toRecovery });
+        setData({ code: '', useRecoveryCode: toRecovery, trustDevice: data.trustDevice });
     };
 
     return (
@@ -62,6 +68,21 @@ export default function Challenge({ hasRecoveryCodes }: ChallengeProps) {
                         autoComplete="one-time-code"
                         autoFocus
                         required
+                    />
+
+                    {/* 記憶するのはこの画面を通したときだけ。ここ以外で聞いてはいけない */}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={data.trustDevice}
+                                onChange={(e) => setData('trustDevice', e.target.checked)}
+                            />
+                        }
+                        label={
+                            <Typography variant="body2">
+                                この端末を記憶する (次回から{String(TRUST_DAYS)}日間は省略)
+                            </Typography>
+                        }
                     />
 
                     <Button type="submit" variant="contained" disabled={processing}>

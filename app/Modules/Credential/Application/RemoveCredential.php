@@ -21,14 +21,13 @@ class RemoveCredential {
      * @throws RuntimeException 最後の1件を消そうとした場合
      */
     public function execute(string $accountId, CredentialType $type): void {
-        $this->assertNotLast(
-            CredentialModel::query()
-                ->where('auth_identity_id', $accountId)
-                ->where('type', $type)
-                ->pluck('id')
-                ->all(),
-            $accountId,
-        );
+        $removing = CredentialModel::query()
+            ->where('auth_identity_id', $accountId)
+            ->where('type', $type)
+            ->pluck('id')
+            ->all();
+
+        $this->assertNotLast(array_values(array_filter($removing, is_string(...))), $accountId);
 
         CredentialModel::query()
             ->where('auth_identity_id', $accountId)

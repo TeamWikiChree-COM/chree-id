@@ -18,7 +18,11 @@ class AccountIcons {
     /** アップロードの置き場 (非公開ディスクの中) */
     private const DIRECTORY = 'account-icons';
 
-    public function __construct(private readonly AuthIdentityRepository $accounts) {}
+    private readonly AuthIdentityRepository $accounts;
+
+    public function __construct(AuthIdentityRepository $accounts) {
+        $this->accounts = $accounts;
+    }
 
     /**
      * 画面に出す URL。

@@ -100,10 +100,12 @@ class TrustedDevices {
      * @return bool 実際に取り消したか
      */
     public function revoke(string $accountId, string $deviceId): bool {
-        return TrustedDeviceModel::query()
+        $deleted = TrustedDeviceModel::query()
             ->where('auth_identity_id', $accountId)
             ->where('id', $deviceId)
-            ->delete() > 0;
+            ->delete();
+
+        return is_int($deleted) && $deleted > 0;
     }
 
     /**
@@ -113,7 +115,9 @@ class TrustedDevices {
      * @return int 取り消した台数
      */
     public function revokeAll(string $accountId): int {
-        return TrustedDeviceModel::query()->where('auth_identity_id', $accountId)->delete();
+        $deleted = TrustedDeviceModel::query()->where('auth_identity_id', $accountId)->delete();
+
+        return is_int($deleted) ? $deleted : 0;
     }
 
     /**
@@ -122,7 +126,23 @@ class TrustedDevices {
      * @return int 消した件数
      */
     public function prune(): int {
-        return TrustedDeviceModel::query()->where('expires_at', '<=', now())->delete();
+        $deleted = TrustedDeviceModel::query()->where('expires_at', '<=', now())->delete();
+
+        return is_int($deleted) ? $deleted : 0;
+    }
+
+    /**
+     * リクエストが持ってきた信頼トークンを取り出す。
+     *
+     * クッキーは配列で来ることもあるので、文字列以外は持っていないものとして扱う。
+     *
+     * @param Request $request
+     * @return string|null 持っていなければ null
+     */
+    public function tokenFrom(Request $request): ?string {
+        $token = $request->cookie(self::COOKIE);
+
+        return is_string($token) ? $token : null;
     }
 
     /**
