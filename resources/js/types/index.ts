@@ -179,6 +179,8 @@ declare module '@inertiajs/core' {
             isLoggedIn: boolean;
             /** ログイン中の本人のアイコン。未設定なら null */
             iconUrl: string | null;
+            /** 画面の言語。辞書そのものはバンドルに入っているので名前だけ渡す */
+            locale: string;
         };
     }
 }

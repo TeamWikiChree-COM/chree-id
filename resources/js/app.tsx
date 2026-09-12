@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { useMemo } from 'react';
 import { buildTheme } from './theme';
 import { ThemeModeContext, useThemeMode } from './lib/theme-mode';
+import { initTranslations } from './lib/i18n';
 
 /**
  * テーマの供給。
@@ -40,6 +41,10 @@ createInertiaApp({
     },
 
     setup({ el, App, props }) {
+        // 辞書はバンドルに入っているので、サーバから貰うのはロケール名だけ。
+        // 切り替えはサーバ側で起きて全体が読み直されるため、ここで一度決めれば足りる
+        initTranslations(props.initialPage.props.locale);
+
         createRoot(el).render(
             <Root>
                 <App {...props} />

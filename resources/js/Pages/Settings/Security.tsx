@@ -18,6 +18,7 @@ import RenameCredentialDialog from '../../Components/Settings/RenameCredentialDi
 import { useConfirm } from '../../lib/confirm';
 import { registerPasskey } from '../../lib/passkey';
 import { credentialLabel } from '../../lib/credentials';
+import { t } from '../../lib/i18n';
 import type { CredentialSummary } from '../../types';
 
 interface SecurityProps {
@@ -39,8 +40,8 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
     // 消せる = 他に入る手段が残っている、ということ。残り1件はサーバ側が弾く
     const confirmRemove = (credential: CredentialSummary): void => {
         ask({
-            title: 'ログイン方法を削除しますか',
-            description: `${credentialLabel(credential)}ではログインできなくなります。元に戻すには登録し直してください`,
+            title: t('settings.security.credentials.remove.title'),
+            description: t('settings.security.credentials.remove.description', { label: credentialLabel(credential) }),
             onConfirm: () => router.post('/security/credentials/remove', { id: credential.id }),
         });
     };
@@ -60,14 +61,20 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
 
     return (
         <AppLayout
-            title="設定"
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: '設定', href: '/settings' }, { label: 'セキュリティ' }]}
+            title={t('settings.title')}
+            crumbs={[
+                { label: 'ChreeID', href: '/' },
+                { label: t('settings.title'), href: '/settings' },
+                { label: t('settings.security.crumb') },
+            ]}
         >
             <SettingsTabs current="/settings/security" />
 
-            {flash.passwordChanged && <Alert severity="success">パスワードを変更しました</Alert>}
+            {flash.passwordChanged && <Alert severity="success">{t('settings.security.password.changed')}</Alert>}
 
-            <SectionTitle note={`${credentials.length}件`}>登録済みのログイン方法</SectionTitle>
+            <SectionTitle note={t('settings.security.credentials.count', { count: credentials.length })}>
+                {t('settings.security.credentials.heading')}
+            </SectionTitle>
             {errors.credential && <Alert severity="error" sx={{ mb: 1 }}>{errors.credential}</Alert>}
             <CredentialList
                 credentials={credentials}
@@ -78,24 +85,24 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
             <RenameCredentialDialog credential={renaming} onClose={() => setRenaming(null)} />
             {dialog}
 
-            <SectionTitle>パスワード</SectionTitle>
+            <SectionTitle>{t('settings.security.password.heading')}</SectionTitle>
             <PasswordSection hasPassword={hasPassword} />
 
-            <SectionTitle>2段階認証</SectionTitle>
+            <SectionTitle>{t('settings.security.totp.heading')}</SectionTitle>
             <TotpSection hasTotp={hasTotp} pendingTotp={pendingTotp} />
 
-            <SectionTitle>マジックリンク</SectionTitle>
+            <SectionTitle>{t('settings.security.magic_link.heading')}</SectionTitle>
             <Paper variant="outlined">
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}>
                     <Box>
-                        <Typography sx={{ fontSize: '0.9375rem' }}>メールのリンクでログインする</Typography>
+                        <Typography sx={{ fontSize: '0.9375rem' }}>{t('settings.security.magic_link.label')}</Typography>
                         <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
-                            パスワードを使わず、届いたリンクからログインできるようにします
+                            {t('settings.security.magic_link.description')}
                         </Typography>
                     </Box>
                     <ToggleSwitch
                         checked={hasMagicLink}
-                        label="マジックリンク"
+                        label={t('settings.security.magic_link.heading')}
                         onChange={(next) => {
                             if (next) {
                                 router.post('/security/magic-link');
@@ -104,9 +111,9 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                             }
 
                             ask({
-                                title: 'マジックリンクをやめますか',
-                                description: 'メールのリンクからはログインできなくなります',
-                                confirmText: '無効にする',
+                                title: t('settings.security.magic_link.disable.title'),
+                                description: t('settings.security.magic_link.disable.description'),
+                                confirmText: t('settings.security.magic_link.disable.confirm'),
                                 onConfirm: () => router.post('/security/magic-link/disable'),
                             });
                         }}
@@ -114,13 +121,13 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                 </Box>
             </Paper>
 
-            <SectionTitle>パスキー</SectionTitle>
+            <SectionTitle>{t('settings.security.passkey.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 {passkeyError && <Alert severity="error" sx={{ mb: 1.5 }}>{passkeyError}</Alert>}
 
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                        端末の生体認証だけでログインできます。単独で2段階認証を満たします
+                        {t('settings.security.passkey.description')}
                     </Typography>
                     <Button
                         variant="outlined"
@@ -128,17 +135,19 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                         startIcon={<Icon name="fingerprint" />}
                         onClick={() => void addPasskey()}
                     >
-                        この端末に登録する
+                        {t('settings.security.passkey.register')}
                     </Button>
                 </Stack>
             </Paper>
 
-            <SectionTitle note={`残り ${recoveryCodeCount} 本`}>復旧コード</SectionTitle>
+            <SectionTitle note={t('settings.security.recovery.remaining', { count: recoveryCodeCount })}>
+                {t('settings.security.recovery.heading')}
+            </SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 {flash.recoveryCodes && (
                     <Alert severity="warning" sx={{ mb: 1.5 }}>
                         <Typography sx={{ fontSize: '0.875rem', mb: 0.5 }}>
-                            この画面を閉じると二度と表示されません
+                            {t('settings.security.recovery.once')}
                         </Typography>
                         <Box component="pre" sx={{ m: 0, fontSize: '0.8125rem' }}>
                             {flash.recoveryCodes.join('\n')}
@@ -148,7 +157,7 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
 
                 {hasTotp && recoveryCodeCount === 0 && !flash.recoveryCodes && (
                     <Alert severity="warning" sx={{ mb: 1.5 }}>
-                        復旧コードを使い切っています。認証アプリの端末を失うとログインできなくなります
+                        {t('settings.security.recovery.exhausted')}
                     </Alert>
                 )}
 
@@ -158,15 +167,14 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                     startIcon={<Icon name="rotate" />}
                     onClick={() =>
                         ask({
-                            title: '復旧コードを作り直しますか',
-                            description:
-                                'いま控えてあるコードはすべて使えなくなります。作り直したあとは、新しいものを控え直してください',
-                            confirmText: '作り直す',
+                            title: t('settings.security.recovery.regenerate.title'),
+                            description: t('settings.security.recovery.regenerate.description'),
+                            confirmText: t('settings.security.recovery.regenerate.confirm'),
                             onConfirm: () => router.post('/security/recovery-codes'),
                         })
                     }
                 >
-                    作り直す
+                    {t('settings.security.recovery.regenerate.confirm')}
                 </Button>
             </Paper>
         </AppLayout>
