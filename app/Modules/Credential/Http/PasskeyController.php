@@ -6,6 +6,7 @@ use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Device\Domain\DeviceLabel;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
+use App\Modules\Credential\Infrastructure\Passkey\PasskeyChallenges;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyDiagnostics;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
@@ -14,14 +15,13 @@ use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
-use Webauthn\PublicKeyCredentialCreationOptions;
 
 /**
  * パスキーの登録 (ブラウザとやり取りするので JSON で返す)
  */
 class PasskeyController {
-    /** 応答の検証に、発行時と同じ options を使う。使い回すとリプレイを許す */
-    private const PENDING_OPTIONS = 'passkey.creation_options';
+    /** 発行したチャレンジの引換券。応答の検証には発行時と同じ options が要る */
+    private const PENDING_OPTIONS = 'passkey.challenge_handle';
 
     public function __construct(
         private readonly ChreeSession $session,
@@ -32,6 +32,7 @@ class PasskeyController {
         private readonly AuditLog $audit,
         private readonly PasskeyContext $context,
         private readonly PasskeyDiagnostics $diagnostics,
+        private readonly PasskeyChallenges $challenges,
     ) {}
 
     /**
@@ -59,29 +60,9 @@ class PasskeyController {
 
         $options = $this->start->execute($account);
 
-
-logger()->debug('options inspect', [
-    'json' => $this->serializer->encodeOptions($options),
-    'serialized_size' => strlen(serialize($options)),
-]);
-        
-
-        logger()->warning('BEFORE PUT', [
-    'id' => $request->session()->getId(),
-]);
-
-// わかったことはこの行を消すとログアウトされなくなる
-$request->session()->put(self::PENDING_OPTIONS, serialize($options)); // こいつがログアウトの原因、serializeはあってもなくても同じ
-
-logger()->warning('AFTER PUT', [
-    'id' => $request->session()->getId(),
-]);
-
-        // これはいける、だからserialize(..)
-        // $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']); // なおここで上書きしていると問題ない
-
-        // 次の往復と突き合わせるために、成功した側も残す
-        $this->diagnostics->reportStep('options', $request);
+        // **セッションには引換券だけ。** options をそのまま入れるとセッションの保存が
+        // 壊れて中身ごと失われる (本番で「登録するとログアウトされる」形で踏んだ)
+        $request->session()->put(self::PENDING_OPTIONS, $this->challenges->remember($options));
 
         return response()->json(json_decode($this->serializer->encodeOptions($options), true));
     }
@@ -113,13 +94,8 @@ logger()->warning('AFTER PUT', [
         $accountId = $this->session->accountId();
         if ($accountId === null) return $this->signedOut('register', $request);
 
-        $stored = $request->session()->pull(self::PENDING_OPTIONS);
-        if (!is_string($stored)) return response()->json(['error' => 'no_challenge'], 400);
-
-        $options = unserialize($stored, ['allowed_classes' => true]);
-        if (!$options instanceof PublicKeyCredentialCreationOptions) {
-            return response()->json(['error' => 'no_challenge'], 400);
-        }
+        $options = $this->challenges->pull($request->session()->pull(self::PENDING_OPTIONS));
+        if ($options === null) return response()->json(['error' => 'no_challenge'], 400);
 
         $label = $request->string('label')->toString();
 

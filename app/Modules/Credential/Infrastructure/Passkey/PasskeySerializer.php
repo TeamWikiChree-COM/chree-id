@@ -42,6 +42,18 @@ class PasskeySerializer {
     }
 
     /**
+     * 預けておいたチャレンジを読み戻す。
+     *
+     * @param string $json encodeOptions() が返した JSON
+     * @return PublicKeyCredentialCreationOptions
+     */
+    public function decodeCreationOptions(string $json): PublicKeyCredentialCreationOptions {
+        $options = $this->serializer()->deserialize($json, PublicKeyCredentialCreationOptions::class, 'json');
+
+        return $options;
+    }
+
+    /**
      * @param PublicKeyCredentialSource $source
      * @return string DBに入れる JSON
      */
