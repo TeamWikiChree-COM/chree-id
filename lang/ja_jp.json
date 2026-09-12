@@ -1,0 +1,9 @@
+{
+  "api.magic_link.invalid": "このリンクは使えません",
+  "api.magic_link.not_applicable": "このアドレスには出せません",
+  "api.password.invalid_grant": "メールアドレスまたはパスワードが違います",
+  "api.password.managed": "このアカウントのパスワードは本人が ChreeID で管理しています",
+  "api.password.not_found": "この利用者の紐付けがありません",
+  "api.password.unsupported_hash": "受け取れない形式のハッシュです",
+  "api.service_user.unknown": "この利用者の ChreeID はまだ発行されていません"
+}

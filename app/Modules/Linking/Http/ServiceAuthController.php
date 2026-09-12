@@ -48,7 +48,7 @@ class ServiceAuthController {
 
         // アカウントの有無を出し分けると総当たりで登録済みかを調べられるので、文言を揃える
         if ($result->outcome === ServiceAuthOutcome::INVALID) {
-            return ApiError::make('invalid_grant', 'メールアドレスまたはパスワードが違います', 401);
+            return ApiError::make('invalid_grant', __('api.password.invalid_grant'), 401);
         }
 
         if ($result->outcome === ServiceAuthOutcome::SECOND_FACTOR_REQUIRED) {
@@ -83,7 +83,7 @@ class ServiceAuthController {
         $token = $this->magicLinks->issue($client, $request->string('email')->trim()->toString());
 
         if ($token === null) {
-            return ApiError::make('not_applicable', 'このアドレスには出せません', 404);
+            return ApiError::make('not_applicable', __('api.magic_link.not_applicable'), 404);
         }
 
         return response()->json(['token' => $token]);
@@ -105,7 +105,7 @@ class ServiceAuthController {
         $serviceUserId = $this->magicLinks->consume($client, $request->string('token')->toString());
 
         if ($serviceUserId === null) {
-            return ApiError::make('invalid_grant', 'このリンクは使えません', 401);
+            return ApiError::make('invalid_grant', __('api.magic_link.invalid'), 401);
         }
 
         return response()->json(['service_user_id' => $serviceUserId]);

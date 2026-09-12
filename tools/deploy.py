@@ -343,16 +343,32 @@ def matches_any(path: str, patterns: tuple[str, ...]) -> bool:
 
 
 def collect_forced(includes: tuple[str, ...]) -> list[str]:
-    """.deploy-include に挙げたパスを、実在するファイルへ展開する。"""
+    """.deploy-include に挙げたパスを、実在するファイルへ展開する。
+
+    1 件も無いパターンがあればビルドし忘れなので中断する。
+    警告だけで続けると、アセットや翻訳が欠けたまま本番へ送られ、
+    次に誰かが気付くまで壊れたページが出続ける。
+    """
     found: set[str] = set()
+    empty: list[str] = []
     for pattern in includes:
         target = REPO_ROOT / pattern.rstrip("/")
+        before = len(found)
         if target.is_dir():
             for path in target.rglob("*"):
                 if path.is_file():
                     found.add(path.relative_to(REPO_ROOT).as_posix())
         elif target.is_file():
             found.add(target.relative_to(REPO_ROOT).as_posix())
+
+        if len(found) == before:
+            empty.append(pattern)
+
+    if empty:
+        raise SystemExit(
+            "エラー: .deploy-include に挙げた " + ", ".join(empty) + " に送るファイルがありません。"
+            " ビルドを実行し忘れていないか確認してください。"
+        )
 
     return sorted(found)
 
@@ -462,10 +478,6 @@ def main() -> int:
     # 追跡を外した直後は「削除された」ように見えるが、送り続ける対象なので消さない。
     # ここを塞がないと --delete 付きの回に本番のアセットが消える
     delete = [p for p in delete if not matches_any(p, includes)]
-
-    if includes and not forced:
-        print("警告: .deploy-include に挙げたパスに送るファイルがありません。"
-              "ビルドを実行し忘れていないか確認してください。\n")
 
     print(f"\n対象: {reason}")
     print(f"アップロード {len(upload)} 件 / 削除候補 {len(delete)} 件\n")

@@ -15,9 +15,9 @@ _diag.php
 /.zed
 /auth.json
 /node_modules
-# ビルド成果物はコミットする。deploy.py は git 追跡ファイルしか送らないため
 # ビルド成果物は履歴に入れない。
 # サーバへは .deploy-include 経由で、CI がビルドしたものを直接送る
+/generated
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot

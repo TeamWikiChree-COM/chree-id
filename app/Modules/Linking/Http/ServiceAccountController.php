@@ -104,7 +104,7 @@ class ServiceAccountController {
         $ticket = $this->tickets->issue($client, $request->string('service_user_id')->toString());
 
         if ($ticket === null) {
-            return ApiError::make('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
+            return ApiError::make('unknown_service_user', __('api.service_user.unknown'), 404);
         }
 
         if ($ticket->link->isClaimed()) {
@@ -136,7 +136,7 @@ class ServiceAccountController {
         $status = $this->describe->execute($client, $request->string('service_user_id')->toString());
 
         if ($status === null) {
-            return ApiError::make('unknown_service_user', 'この利用者の ChreeID はまだ発行されていません', 404);
+            return ApiError::make('unknown_service_user', __('api.service_user.unknown'), 404);
         }
 
         return response()->json($status);
@@ -172,9 +172,9 @@ class ServiceAccountController {
         // 断る理由ごとに分ける。潰すと移行元が利用者に何を案内すればよいか分からない
         return match ($result) {
             ChangeServiceAccountPassword::OK => response()->json(['ok' => true]),
-            ChangeServiceAccountPassword::MANAGED => ApiError::make('managed', 'このアカウントのパスワードは本人が ChreeID で管理しています', 409),
-            ChangeServiceAccountPassword::NOT_FOUND => ApiError::make('not_found', 'この利用者の紐付けがありません', 404),
-            default => ApiError::make('unsupported_hash', '受け取れない形式のハッシュです', 422),
+            ChangeServiceAccountPassword::MANAGED => ApiError::make('managed', __('api.password.managed'), 409),
+            ChangeServiceAccountPassword::NOT_FOUND => ApiError::make('not_found', __('api.password.not_found'), 404),
+            default => ApiError::make('unsupported_hash', __('api.password.unsupported_hash'), 422),
         };
     }
 

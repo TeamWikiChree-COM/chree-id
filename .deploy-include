@@ -7,3 +7,6 @@
 # 差分計算は git の履歴を見るので追跡外のファイルは差分に現れない。
 # ここに挙げたものは毎回まるごと送られる。
 public/build/
+
+# 翻訳。正は lang/*.json で、読むのは CI が生成した PHP (ARCHITECTURE.md 10章)
+generated/lang/

@@ -141,6 +141,12 @@ jobs:
       - name: Build frontend assets (Vite)
         run: npm run build
 
+      # 翻訳も履歴に入れず、ここで生成したものを .deploy-include から送る。
+      # artisan ではなく素の PHP で叩くのは、このワークフローに composer install を
+      # 置いていないため (中身は php artisan lang:build と同じ)
+      - name: Build translations
+        run: php tools/build_lang.php
+
       - name: Run deploy script
         run: |
           ARGS=""

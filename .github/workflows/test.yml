@@ -42,6 +42,10 @@ jobs:
           php artisan key:generate
           php artisan chreeid:generate-key
 
+      # 画面もテストも生成後の PHP を読むので、解析・テストの前に作る
+      - name: Build translations
+        run: php artisan lang:build
+
       - name: Run Larastan (Static Analysis)
         run: ./vendor/bin/phpstan analyse --error-format=github
 
