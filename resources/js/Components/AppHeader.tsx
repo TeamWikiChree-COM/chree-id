@@ -98,6 +98,10 @@ export default function AppHeader() {
                         )}
 
                         {/* 運営としての操作。利用者自身の設定とは別物なので名前で区別する */}
+                        {isLoggedIn && (
+                            <MenuLink label={t('services.title')} onClick={() => go('/services')} />
+                        )}
+
                         {isAdmin && <MenuLink label={t('common.nav.admin')} onClick={() => go('/admin')} />}
 
                         {isLoggedIn && <Divider sx={{ my: 1 }} />}

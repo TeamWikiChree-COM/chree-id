@@ -11,15 +11,8 @@ import AppLayout from "../../../Components/AppLayout";
 import Icon from "../../../Components/Icon";
 import SectionTitle from "../../../Components/SectionTitle";
 import { t } from "../../../lib/i18n";
-import type { OAuthClient, TrustValue } from "../../../types";
-
-/** 信頼状態の表示。値そのものを出すと何が起きるか分からないので言い換える */
-const TRUST_LABELS: Record<TrustValue, string> = {
-    official: t('admin.clients.trust.official'),
-    approved: t('admin.clients.trust.approved'),
-    unapproved: t('admin.clients.trust.unapproved'),
-    disabled: t('admin.clients.trust.disabled'),
-};
+import { trustLabel } from "../../../lib/services";
+import type { OAuthClient } from "../../../types";
 
 interface IssuedSecret {
     clientId: string;
@@ -133,10 +126,21 @@ client_secret : ${issued.secret}`}
                                         {client.name}
                                         <Chip
                                             size="small"
-                                            label={TRUST_LABELS[client.trust]}
+                                            label={trustLabel(client.trust)}
                                         />
                                         {!client.isConfidential && (
                                             <Chip size="small" label={t('admin.clients.list.public')} />
+                                        )}
+                                        {client.hasOwner && (
+                                            <Chip size="small" variant="outlined" label={t('admin.clients.owned')} />
+                                        )}
+                                        {client.reviewRequestedAt !== null && (
+                                            <Chip
+                                                size="small"
+                                                color="info"
+                                                variant="outlined"
+                                                label={t('admin.clients.pending')}
+                                            />
                                         )}
                                     </Typography>
                                     <Typography
@@ -173,17 +177,30 @@ client_secret : ${issued.secret}`}
                                     )}
                                 </Box>
                             </Box>
-                            <Button
-                                size="small"
-                                color="inherit"
-                                onClick={() =>
-                                    router.get(
-                                        `/admin/clients/${client.id}/edit`,
-                                    )
-                                }
-                            >
-                                {t('admin.clients.list.edit')}
-                            </Button>
+                            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                                {/* 申請が来ているものだけ。信頼状態を動かせるのは運営だけ */}
+                                {client.reviewRequestedAt !== null && (
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color="inherit"
+                                        onClick={() => router.post(`/admin/clients/${client.id}/approve`)}
+                                    >
+                                        {t('admin.clients.approve')}
+                                    </Button>
+                                )}
+                                <Button
+                                    size="small"
+                                    color="inherit"
+                                    onClick={() =>
+                                        router.get(
+                                            `/admin/clients/${client.id}/edit`,
+                                        )
+                                    }
+                                >
+                                    {t('admin.clients.list.edit')}
+                                </Button>
+                            </Stack>
                         </Box>
                     ))}
                 </Stack>

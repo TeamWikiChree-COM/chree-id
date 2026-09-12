@@ -15,7 +15,7 @@ use App\Modules\Registry\Infrastructure\OAuthClientModel;
 class ListConnectedServices {
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, serviceUserId: string|null, connectedAt: string|null, hasActiveToken: bool}>
+     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, connectedAt: string|null, hasActiveToken: bool}>
      */
     public function execute(string $accountId): array {
         $subjects = ServiceAccountModel::query()
@@ -43,6 +43,8 @@ class ListConnectedServices {
                 'serviceUserId' => $subject->service_user_id,
                 'name' => $client->displayName(),
                 'iconUrl' => $client->icon_url,
+                // サービス側の設定画面。指定が無ければ導線を出さない
+                'settingsUrl' => $client->settings_url,
                 'trust' => $client->trust->value,
                 'connectedAt' => $subject->created_at?->toDateTimeString(),
                 'hasActiveToken' => $this->hasActiveToken($accountId, $client->id),

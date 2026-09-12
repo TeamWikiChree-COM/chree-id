@@ -32,6 +32,7 @@ use App\Modules\Registry\Http\AdminController;
 use App\Modules\Registry\Http\AdminLogController;
 use App\Modules\Registry\Http\AdminMaintenanceController;
 use App\Modules\Registry\Http\AdminMigrationController;
+use App\Modules\Registry\Http\ServiceConsoleController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
@@ -119,6 +120,15 @@ Route::post('/settings/devices/sessions/revoke-others', [DeviceController::class
 Route::post('/settings/devices/trusted/revoke', [DeviceController::class, 'revokeTrusted']);
 Route::post('/settings/devices/trusted/revoke-all', [DeviceController::class, 'revokeAllTrusted']);
 
+// 第三者が自分のサービスを登録する。**ここで作れるのは未承認のものだけ。**
+// 信頼状態・同意省略・発行権限は運営しか動かせない (ServiceConsoleController 参照)
+Route::get('/services', [ServiceConsoleController::class, 'index']);
+Route::get('/services/register', [ServiceConsoleController::class, 'form']);
+Route::post('/services/register', [ServiceConsoleController::class, 'store']);
+Route::get('/services/{client}/edit', [ServiceConsoleController::class, 'form']);
+Route::post('/services/{client}/edit', [ServiceConsoleController::class, 'update']);
+Route::post('/services/{client}/review', [ServiceConsoleController::class, 'requestReview']);
+
 // 連携しているサービスを利用者自身が切る。管理画面の接続サービスとは別物
 Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'destroy']);
 
@@ -193,6 +203,7 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     Route::get('/clients/{client}/edit', [AdminClientController::class, 'edit']);
     Route::post('/clients/{client}', [AdminClientController::class, 'updateClient']);
     Route::post('/clients/{client}/secret', [AdminClientController::class, 'rotateSecret']);
+    Route::post('/clients/{client}/approve', [AdminClientController::class, 'approve']);
     Route::post('/clients/{client}/delete', [AdminClientController::class, 'destroy']);
 });
 

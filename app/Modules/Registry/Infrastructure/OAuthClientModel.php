@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, string>|null $names 言語ごとの表示名。無い言語は $name を出す
  * @property string|null $homepage_url
  * @property string|null $icon_url
+ * @property string|null $settings_url 利用者に案内する「このサービスの設定」の場所
+ * @property string|null $owner_id 登録した本人。運営が登録したものは null
+ * @property \Illuminate\Support\Carbon|null $review_requested_at 承認を申請した日時
  * @property list<string> $redirect_uris
  * @property string $scopes
  * @property bool $is_confidential
@@ -35,6 +38,9 @@ class OAuthClientModel extends Model {
         'names',
         'homepage_url',
         'icon_url',
+        'settings_url',
+        'owner_id',
+        'review_requested_at',
         'redirect_uris',
         'scopes',
         'is_confidential',
@@ -50,6 +56,7 @@ class OAuthClientModel extends Model {
         'skips_consent' => 'boolean',
         'can_provision' => 'boolean',
         'trust' => ServiceTrust::class,
+        'review_requested_at' => 'datetime',
     ];
 
     /**

@@ -41,6 +41,7 @@ export default function Form({ client, trustOptions }: FormProps) {
         scopes: string;
         trust: string;
         icon_url: string;
+        settings_url: string;
         skips_consent: boolean;
         can_provision: boolean;
         is_confidential: boolean;
@@ -52,6 +53,7 @@ export default function Form({ client, trustOptions }: FormProps) {
         scopes: client?.scopes ?? "openid profile email",
         trust: client?.trust ?? "unapproved",
         icon_url: client?.iconUrl ?? "",
+        settings_url: client?.settingsUrl ?? "",
         skips_consent: client?.skipsConsent ?? false,
         can_provision: client?.canProvision ?? false,
         is_confidential: client?.isConfidential ?? true,
@@ -172,6 +174,19 @@ export default function Form({ client, trustOptions }: FormProps) {
                             helperText={
                                 errors.icon_url ??
                                 t('admin.clients.form.fields.icon_url_helper')
+                            }
+                        />
+
+                        <TextField
+                            label={t('admin.clients.form.settings_url')}
+                            value={data.settings_url}
+                            onChange={(e) =>
+                                setData("settings_url", e.target.value)
+                            }
+                            error={Boolean(errors.settings_url)}
+                            helperText={
+                                errors.settings_url ??
+                                t('services.form.settings_url_hint')
                             }
                         />
 

@@ -20,7 +20,8 @@ class UpdateClient {
      * @param ServiceTrust $trust 信頼状態
      * @param bool $skipsConsent 同意画面を省略するか。信頼状態とは別の設定
      * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定
-     * @param string|null $iconUrl アイコンの URL 信頼状態
+     * @param string|null $iconUrl アイコンの URL
+     * @param string|null $settingsUrl 利用者に案内する設定画面の場所
      * @return void
      */
     public function execute(
@@ -33,6 +34,7 @@ class UpdateClient {
         bool $skipsConsent = false,
         bool $canProvision = false,
         ?string $iconUrl = null,
+        ?string $settingsUrl = null,
     ): void {
         $client->forceFill([
             'name' => $name,
@@ -43,6 +45,7 @@ class UpdateClient {
             'skips_consent' => $skipsConsent,
             'can_provision' => $canProvision,
             'icon_url' => $iconUrl,
+            'settings_url' => $settingsUrl,
         ])->save();
     }
 }

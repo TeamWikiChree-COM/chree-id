@@ -302,6 +302,14 @@ export default function Dashboard({
                                 </Box>
                             </Box>
                             <Stack direction="row" spacing={1}>
+                                {/* サービス側が設定画面を指定していれば案内する */}
+                                {service.settingsUrl !== null && (
+                                    <RowAction
+                                        onClick={() => window.open(service.settingsUrl ?? '', '_blank', 'noopener')}
+                                    >
+                                        {t("dashboard.service.settings")}
+                                    </RowAction>
+                                )}
                                 <RowAction
                                     onClick={() =>
                                         router.get(

@@ -115,6 +115,12 @@ export interface OAuthClient {
     trust: TrustValue;
     /** アイコンの URL。未設定なら null */
     iconUrl: string | null;
+    /** 利用者を案内する設定画面。未設定なら null */
+    settingsUrl: string | null;
+    /** 第三者が登録したものか */
+    hasOwner: boolean;
+    /** 審査を申し込んだ日時。未申請なら null */
+    reviewRequestedAt: string | null;
     /** このサービスのサービスアカウント数 */
     serviceAccounts: number;
     /** そのうち、束ねる人格を持つに至った数 */
@@ -126,6 +132,21 @@ export interface OAuthClient {
     createdAt: string | null;
 }
 
+/** 第三者が自分で登録したサービス */
+export interface OwnedService {
+    /** client_id */
+    id: string;
+    name: string;
+    trust: TrustValue;
+    iconUrl: string | null;
+    /** 利用者を案内する設定画面。未設定なら null */
+    settingsUrl: string | null;
+    redirectUris: string[];
+    scopes: string;
+    /** 審査を申し込んだ日時。未申請なら null */
+    reviewRequestedAt: string | null;
+}
+
 /** 利用者から見た、連携しているサービス */
 export interface ConnectedService {
     /** サービスアカウントのID。分離はこれを指す */
@@ -133,6 +154,8 @@ export interface ConnectedService {
     clientId: string;
     /** アイコンの URL。未設定なら null */
     iconUrl: string | null;
+    /** サービス側の設定画面。指定が無ければ導線を出さない */
+    settingsUrl: string | null;
     /** サービス側での識別子。OIDC 経由でできたものは分からない */
     serviceUserId: string | null;
     name: string;
@@ -170,6 +193,14 @@ declare module '@inertiajs/core' {
                 serviceRevoked: boolean | null;
                 /** アカウントを統合した直後だけ true */
                 accountMerged: boolean | null;
+                /** 自分のサービスを保存した直後だけ true */
+                serviceSaved: boolean | null;
+                /** 審査を申し込んだ直後だけ true */
+                reviewRequested: boolean | null;
+                /** サービスを登録した直後だけ入る。平文 secret はこの1回だけ */
+                issuedSecret: { clientId: string; secret: string | null } | null;
+                /** 管理画面でサービスを承認した直後だけ true */
+                clientApproved: boolean | null;
                 /** マイグレーションを走らせた直後だけ入る artisan の出力 */
                 migrationOutput: string | null;
                 /** 掃除を流した直後だけ入る削除件数 */

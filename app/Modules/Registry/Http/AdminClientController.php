@@ -67,6 +67,7 @@ class AdminClientController {
             $input['skips_consent'],
             $input['can_provision'],
             $input['icon_url'],
+            $input['settings_url'],
         );
 
         return redirect('/admin/clients')->with('issuedSecret', [
@@ -108,6 +109,7 @@ class AdminClientController {
             $input['skips_consent'],
             $input['can_provision'],
             $input['icon_url'],
+            $input['settings_url'],
         );
 
         return redirect('/admin/clients');
@@ -139,8 +141,29 @@ class AdminClientController {
     }
 
     /**
+     * 申請を承認する。
+     *
+     * **信頼状態を動かせるのは運営だけ。** 申請はサービス側の意思表示にすぎない。
+     *
+     * @param string $client client_id
+     * @return RedirectResponse
+     */
+    public function approve(string $client): RedirectResponse {
+        $model = OAuthClientModel::query()->find($client);
+        if ($model === null) return redirect('/admin/clients');
+
+        $model->forceFill([
+            'trust' => ServiceTrust::APPROVED,
+            // 承認したら申請は片付ける。残すと一覧にいつまでも「承認待ち」が出る
+            'review_requested_at' => null,
+        ])->save();
+
+        return redirect('/admin/clients')->with('clientApproved', true);
+    }
+
+    /**
      * @param Request $request
-     * @return array{name: string, names: array<string, string>, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null}
+     * @return array{name: string, names: array<string, string>, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null, settings_url: string|null}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
@@ -158,6 +181,8 @@ class AdminClientController {
             'can_provision' => ['boolean'],
             // 画像そのものは持たない。置き場所はサービス側に任せる
             'icon_url' => ['nullable', 'string', 'url', 'max:500'],
+            // 利用者を案内する先。サービス側が持つ画面なので、こちらは場所を預かるだけ
+            'settings_url' => ['nullable', 'string', 'url', 'max:500'],
         ]);
 
         $trust = ServiceTrust::tryFrom($request->string('trust')->toString());
@@ -183,6 +208,7 @@ class AdminClientController {
             'skips_consent' => $request->boolean('skips_consent'),
             'can_provision' => $request->boolean('can_provision'),
             'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
+            'settings_url' => $this->trimmedOrNull($request->string('settings_url')->toString()),
         ];
     }
 
@@ -214,6 +240,9 @@ class AdminClientController {
             'skipsConsent' => $client->skips_consent,
             'canProvision' => $client->can_provision,
             'iconUrl' => $client->icon_url,
+            'settingsUrl' => $client->settings_url,
+            'reviewRequestedAt' => $client->review_requested_at?->format('Y/m/d H:i'),
+            'hasOwner' => $client->owner_id !== null,
             // 移行元へ落とす経路をいつ消せるかの目安になる
             'serviceAccounts' => $this->countServiceAccounts($client->id),
             'migratedAccounts' => $this->countMigrated($client->id),

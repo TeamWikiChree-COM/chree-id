@@ -30,6 +30,8 @@ enum AuditAction: string {
     case CONNECTION_REMOVED = 'connection.removed';
     case SERVICE_REVOKED = 'service.revoked';
     case SERVICE_SPLIT = 'service.split';
+    case SERVICE_REGISTERED = 'service.registered';
+    case SERVICE_REVIEW_REQUESTED = 'service.review_requested';
 
     case ACCOUNT_MERGED = 'account.merged';
     case ACCOUNT_WITHDRAWN = 'account.withdrawn';
