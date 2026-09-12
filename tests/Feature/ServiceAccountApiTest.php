@@ -306,7 +306,9 @@ class ServiceAccountApiTest extends TestCase {
         $link = ServiceAccountModel::query()->firstOrFail();
         app(\App\Modules\Identity\Application\UserAccounts::class)->ensure($link->auth_identity_id);
 
-        $this->sendPassword($client, password_hash('taken-over', PASSWORD_BCRYPT))->assertStatus(409);
+        $this->sendPassword($client, password_hash('taken-over', PASSWORD_BCRYPT))
+            ->assertStatus(409)
+            ->assertJsonPath('error', 'managed');
     }
 
     // bcrypt 以外を書くと、パスワードはあるのに絶対に通らないアカウントになる
@@ -314,7 +316,18 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client);
 
-        $this->sendPassword($client, 'not-a-bcrypt-hash')->assertStatus(409);
+        $this->sendPassword($client, 'not-a-bcrypt-hash')
+            ->assertStatus(422)
+            ->assertJsonPath('error', 'unsupported_hash');
+    }
+
+    // 紐付けが無いのを「変えられない」と一緒にすると、移行元が案内を分けられない
+    public function test_reportsAMissingLinkSeparately(): void {
+        $client = $this->client();
+
+        $this->sendPassword($client, password_hash('x', PASSWORD_BCRYPT))
+            ->assertStatus(404)
+            ->assertJsonPath('error', 'not_found');
     }
 
     // --- 状態の照会 ---

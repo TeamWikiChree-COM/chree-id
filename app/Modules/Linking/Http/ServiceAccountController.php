@@ -163,17 +163,19 @@ class ServiceAccountController {
             'password_hash' => ['required', 'string', 'max:255'],
         ]);
 
-        $changed = $this->changePassword->execute(
+        $result = $this->changePassword->execute(
             $client,
             $request->string('service_user_id')->toString(),
             $request->string('password_hash')->toString(),
         );
 
-        if (!$changed) {
-            return ApiError::make('not_applicable', 'このアカウントのパスワードは変更できません', 409);
-        }
-
-        return response()->json(['ok' => true]);
+        // 断る理由ごとに分ける。潰すと移行元が利用者に何を案内すればよいか分からない
+        return match ($result) {
+            ChangeServiceAccountPassword::OK => response()->json(['ok' => true]),
+            ChangeServiceAccountPassword::MANAGED => ApiError::make('managed', 'このアカウントのパスワードは本人が ChreeID で管理しています', 409),
+            ChangeServiceAccountPassword::NOT_FOUND => ApiError::make('not_found', 'この利用者の紐付けがありません', 404),
+            default => ApiError::make('unsupported_hash', '受け取れない形式のハッシュです', 422),
+        };
     }
 
     /**

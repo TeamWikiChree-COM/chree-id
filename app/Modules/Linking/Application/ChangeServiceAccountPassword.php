@@ -18,6 +18,14 @@ use App\Modules\Registry\Infrastructure\OAuthClientModel;
  * 許すとサービス経由で他人のパスワードを差し替えられる。
  */
 class ChangeServiceAccountPassword {
+    /**
+     * 断る理由は潰さない。呼び出し元が利用者への案内を分けられるようにする
+     */
+    public const OK = 'ok';
+    public const NOT_FOUND = 'not_found';
+    public const MANAGED = 'managed';
+    public const UNSUPPORTED_HASH = 'unsupported_hash';
+
     public function __construct(
         private readonly SetPassword $passwords,
         private readonly AdoptPasswordHash $hashes,
@@ -28,24 +36,24 @@ class ChangeServiceAccountPassword {
      * @param OAuthClientModel $client 呼び出したサービス
      * @param string $serviceUserId サービス側での利用者の識別子
      * @param string $passwordHash 移行元が保存している bcrypt ハッシュ
-     * @return bool 反映できたか。対象が無い・触れない場合は false
+     * @return string self::OK か、断った理由
      */
-    public function execute(OAuthClientModel $client, string $serviceUserId, string $passwordHash): bool {
+    public function execute(OAuthClientModel $client, string $serviceUserId, string $passwordHash): string {
         $serviceAccount = ServiceAccountModel::query()
             ->where('client_id', $client->id)
             ->where('service_user_id', $serviceUserId)
             ->first();
 
-        if ($serviceAccount === null) return false;
+        if ($serviceAccount === null) return self::NOT_FOUND;
 
         // 本人のものになっているアカウントは、サービス経由では触らせない
-        if ($this->userAccounts->exists($serviceAccount->auth_identity_id)) return false;
+        if ($this->userAccounts->exists($serviceAccount->auth_identity_id)) return self::MANAGED;
 
         // bcrypt 以外を書き込むと、パスワードはあるのに絶対に通らないアカウントになる
-        if (!$this->hashes->accepts($passwordHash)) return false;
+        if (!$this->hashes->accepts($passwordHash)) return self::UNSUPPORTED_HASH;
 
         $this->passwords->executeHashed($serviceAccount->auth_identity_id, $passwordHash);
 
-        return true;
+        return self::OK;
     }
 }
