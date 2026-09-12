@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class DetectSessionLoss {
     /** 診断の版。古い版が動いているのかを、ログから見分けられるようにする */
-    private const VERSION = '2026-09-12b';
+    private const VERSION = '2026-09-12c';
 
     private readonly ChreeSession $session;
     private readonly SignedInMarker $marker;
@@ -68,6 +68,8 @@ class DetectSessionLoss {
 
         return [
             'diag' => self::VERSION,
+            // パスキーの診断と突き合わせる。変わっていればクッキーが別のものになっている
+            'session' => substr(hash('sha256', $session->getId()), 0, 8),
             // どの要求で消えたか。ここが犯人のいる場所
             'path' => $request->path(),
             'method' => $request->method(),

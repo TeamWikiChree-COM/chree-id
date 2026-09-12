@@ -25,12 +25,16 @@ class LogFile {
      * @return list<string> ファイル名だけ (パスは外に出さない)
      */
     public function available(): array {
-        $files = File::glob(storage_path('logs/*.log'));
-        if ($files === false) return [];
+        $paths = array_values(array_filter(File::glob(storage_path('logs/*.log')), is_string(...)));
 
-        usort($files, fn (string $a, string $b): int => File::lastModified($b) <=> File::lastModified($a));
+        usort($paths, fn (string $a, string $b): int => File::lastModified($b) <=> File::lastModified($a));
 
-        return array_values(array_map(fn (string $path): string => basename($path), $files));
+        $names = [];
+        foreach ($paths as $path) {
+            $names[] = basename($path);
+        }
+
+        return $names;
     }
 
     /**
@@ -103,19 +107,20 @@ class LogFile {
      */
     private function parse(string $contents): array {
         $entries = [];
+        $current = null;
         $trace = [];
 
         foreach (explode("\n", $contents) as $line) {
             if (preg_match(self::HEAD, $line, $found) !== 1) {
                 // 見出しより前に落ちている行は、切れた件の残骸なので捨てる
-                if ($entries !== []) $trace[] = $line;
+                if ($current !== null) $trace[] = $line;
 
                 continue;
             }
 
-            $this->attach($entries, $trace);
+            if ($current !== null) $entries[] = $this->close($current, $trace);
 
-            $entries[] = [
+            $current = [
                 'at' => $found[1],
                 'channel' => $found[2],
                 'level' => $found[3],
@@ -125,21 +130,21 @@ class LogFile {
             $trace = [];
         }
 
-        $this->attach($entries, $trace);
+        if ($current !== null) $entries[] = $this->close($current, $trace);
 
         return $entries;
     }
 
     /**
-     * 溜めておいた続きの行を、直前の件にくっつける。
+     * 溜めておいた続きの行を、その件にくっつけて閉じる。
      *
-     * @param list<array{at: string, channel: string, level: string, message: string, trace: string}> $entries
+     * @param array{at: string, channel: string, level: string, message: string, trace: string} $entry
      * @param list<string> $trace
-     * @return void
+     * @return array{at: string, channel: string, level: string, message: string, trace: string}
      */
-    private function attach(array &$entries, array $trace): void {
-        if ($entries === [] || $trace === []) return;
+    private function close(array $entry, array $trace): array {
+        $entry['trace'] = trim(implode("\n", $trace));
 
-        $entries[count($entries) - 1]['trace'] = trim(implode("\n", $trace));
+        return $entry;
     }
 }

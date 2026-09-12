@@ -6,6 +6,7 @@ use App\Support\Locale\LocaleNegotiator;
 use App\Support\Locale\Locales;
 use App\Support\Locale\StoredLocale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -42,8 +43,10 @@ class LocaleController {
 
         $this->stored->remember($locale);
 
-        // Cookie も必ず置く。ログアウトしたあとも選んだ言語で出すため
-        return Inertia::location(url()->previous())
-            ->withCookie(cookie()->forever(LocaleNegotiator::COOKIE, $locale));
+        // Cookie も必ず置く。ログアウトしたあとも選んだ言語で出すため。
+        // queue で積むのは、Inertia::location が返す応答の型に依らず付けられるから
+        Cookie::queue(cookie()->forever(LocaleNegotiator::COOKIE, $locale));
+
+        return Inertia::location(url()->previous());
     }
 }
