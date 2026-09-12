@@ -58,9 +58,16 @@ class MailRenderingTest extends \Tests\TestCase {
         $this->assertNotSame('', trim(strip_tags($html)));
         $this->assertNotSame('', trim($text));
 
-        // 引けなかったキーは Laravel がキー名をそのまま返すので、本文に紛れ込む
+        // 引けなかったキーは Laravel がキー名をそのまま返すので、本文に紛れ込む。
+        //
+        // **素の "mail." で探さない。** 英語の本文には "...ignore this email." のように
+        // 単語の末尾として現れる。キーの形 (mail.<節>.<名前>) で照合する
         foreach (['subject' => $subject, 'html' => $html, 'text' => $text] as $where => $body) {
-            $this->assertStringNotContainsString('mail.', $body, "{$where} に引けていないキーがある");
+            $this->assertDoesNotMatchRegularExpression(
+                '/mail\.[a-z0-9_]+(?:\.[a-z0-9_]+)+/',
+                $body,
+                "{$where} に引けていないキーがある",
+            );
         }
 
         foreach ($expected as $value) {
