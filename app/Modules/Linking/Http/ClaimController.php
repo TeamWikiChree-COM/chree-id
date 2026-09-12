@@ -264,7 +264,7 @@ class ClaimController {
      */
     private function serviceName(ServiceAccountModel $link): string {
         // client_id は外部キーなので、紐付けがある限り必ず引ける
-        return OAuthClientModel::query()->findOrFail($link->client_id)->name;
+        return OAuthClientModel::query()->findOrFail($link->client_id)->displayName();
     }
 
     /**

@@ -221,7 +221,8 @@ class AdminAccountController {
 
         $names = OAuthClientModel::query()
             ->whereIn('id', $links->pluck('client_id')->unique()->all())
-            ->pluck('name', 'id');
+            ->get()
+            ->mapWithKeys(fn (OAuthClientModel $c): array => [$c->id => $c->displayName()]);
 
         $services = [];
 

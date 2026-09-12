@@ -37,6 +37,7 @@ use App\Modules\Provider\Http\JwksController;
 use App\Modules\Provider\Http\TokenController;
 use App\Modules\Provider\Http\UserinfoController;
 use App\Http\Controllers\LocaleController;
+use App\Modules\Backup\Http\AdminBackupController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', DashboardController::class);
@@ -178,6 +179,10 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     // 本番はシェルに入れない。例外の中身をここから読む
     Route::get('/logs', [AdminLogController::class, 'index']);
     Route::post('/logs/clear', [AdminLogController::class, 'clear']);
+
+    // cron を組めていない間も、ここから手で流せるようにしておく
+    Route::get('/backups', [AdminBackupController::class, 'index']);
+    Route::post('/backups', [AdminBackupController::class, 'store']);
 
     Route::get('/maintenance', [AdminMaintenanceController::class, 'index']);
     Route::post('/maintenance/prune', [AdminMaintenanceController::class, 'prune']);

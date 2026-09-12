@@ -54,7 +54,7 @@ class AuthorizeController {
         // 同意の省略は信頼状態とは別の設定。承認済みでも省略したいサービスがある
         if (!$authorize->client->skips_consent) {
             return Inertia::render('Oauth/Consent', [
-                'clientName' => $authorize->client->name,
+                'clientName' => $authorize->client->displayName(),
                 'clientIconUrl' => $authorize->client->icon_url,
                 'scopes' => $authorize->scopes,
                 'query' => $request->query(),
@@ -127,7 +127,7 @@ class AuthorizeController {
             ->all();
 
         return Inertia::render('Oauth/ChooseAccount', [
-            'clientName' => $authorize->client->name,
+            'clientName' => $authorize->client->displayName(),
             'clientIconUrl' => $authorize->client->icon_url,
             'accounts' => $accounts,
             'query' => $request->query(),

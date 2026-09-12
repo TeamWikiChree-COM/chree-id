@@ -34,6 +34,30 @@ return [
     'locales' => ['ja', 'en'],
 
     /*
+     * バックアップ。
+     *
+     * **鍵が入っていないときは何もしない。** 中身は資格情報そのものなので、
+     * 暗号化できない状態で外へ出すくらいなら取らないほうがよい。
+     * 鍵は `openssl rand -base64 32` で作って .env に置く。
+     *
+     * 保管先は Google Drive。OAuth の refresh token を使う (サービスアカウントは
+     * 自分の容量を持たず、共有ドライブを用意しないと置けないため)。4つ揃ったときだけ送る。
+     */
+    'backup' => [
+        'key' => env('CHREEID_BACKUP_KEY'),
+
+        /* 残す世代数。これを超えた古いものから消す */
+        'keep' => (int) env('CHREEID_BACKUP_KEEP', 14),
+
+        'drive' => [
+            'client_id' => env('CHREEID_BACKUP_DRIVE_CLIENT_ID'),
+            'client_secret' => env('CHREEID_BACKUP_DRIVE_CLIENT_SECRET'),
+            'refresh_token' => env('CHREEID_BACKUP_DRIVE_REFRESH_TOKEN'),
+            'folder_id' => env('CHREEID_BACKUP_DRIVE_FOLDER_ID'),
+        ],
+    ],
+
+    /*
      * 管理画面に入れるアカウントのメールアドレス。カンマ区切り。
      * 検証済みのアドレスだけを見るので、未検証のまま名乗っても通らない。
      */

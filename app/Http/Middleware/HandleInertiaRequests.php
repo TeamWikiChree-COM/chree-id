@@ -90,6 +90,7 @@ class HandleInertiaRequests extends Middleware {
                 'connectionRemoved' => $request->session()->get('connectionRemoved'),
                 'sessionsRevoked' => $request->session()->get('sessionsRevoked'),
                 'trustRevoked' => $request->session()->get('trustRevoked'),
+                'backupTaken' => $request->session()->get('backupTaken'),
             ],
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める

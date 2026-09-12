@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string|null $secret_hash
  * @property string $name
+ * @property array<string, string>|null $names 言語ごとの表示名。無い言語は $name を出す
  * @property string|null $homepage_url
  * @property string|null $icon_url
  * @property list<string> $redirect_uris
@@ -31,6 +32,7 @@ class OAuthClientModel extends Model {
         'id',
         'secret_hash',
         'name',
+        'names',
         'homepage_url',
         'icon_url',
         'redirect_uris',
@@ -43,6 +45,7 @@ class OAuthClientModel extends Model {
 
     protected $casts = [
         'redirect_uris' => 'array',
+        'names' => 'array',
         'is_confidential' => 'boolean',
         'skips_consent' => 'boolean',
         'can_provision' => 'boolean',
@@ -80,5 +83,21 @@ class OAuthClientModel extends Model {
      */
     public function requiresPkce(): bool {
         return !$this->is_confidential;
+    }
+
+    /**
+     * 利用者に出す名前。
+     *
+     * **`name` をそのまま出さない。** あれは運営が識別に使う名前で、
+     * 言語ごとの表示名があるならそちらを優先する。無ければ `name` に落ちる
+     * (どの言語でも何かしら出せることを、この1か所で保証する)。
+     *
+     * @param string|null $locale 出したい言語。省略すると現在の表示言語
+     * @return string
+     */
+    public function displayName(?string $locale = null): string {
+        $name = $this->names[$locale ?? app()->getLocale()] ?? null;
+
+        return is_string($name) && trim($name) !== '' ? $name : $this->name;
     }
 }

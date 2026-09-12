@@ -56,7 +56,7 @@ class SplitServiceController {
 
         return Inertia::render('Settings/SplitService', [
             'serviceAccountId' => $target->id,
-            'serviceName' => OAuthClientModel::query()->findOrFail($target->client_id)->name,
+            'serviceName' => OAuthClientModel::query()->findOrFail($target->client_id)->displayName(),
             'serviceUserId' => $target->service_user_id,
             'options' => $options,
         ]);

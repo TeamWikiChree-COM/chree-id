@@ -41,7 +41,7 @@ class ListConnectedServices {
                 'id' => $subject->id,
                 'clientId' => $client->id,
                 'serviceUserId' => $subject->service_user_id,
-                'name' => $client->name,
+                'name' => $client->displayName(),
                 'iconUrl' => $client->icon_url,
                 'trust' => $client->trust->value,
                 'connectedAt' => $subject->created_at?->toDateTimeString(),
