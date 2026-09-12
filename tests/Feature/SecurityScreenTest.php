@@ -158,9 +158,10 @@ class SecurityScreenTest extends TestCase {
             ->assertRedirect('/settings/security');
 
         $data = CredentialModel::query()->findOrFail($row->id)->data;
-        $this->assertSame('仕事用ノート', $data['label']);
+        $this->assertIsArray($data);
+        $this->assertSame('仕事用ノート', $data['label'] ?? null);
         // 検証に使う値を巻き添えにしない
-        $this->assertSame(3, $data['sign_count']);
+        $this->assertSame(3, $data['sign_count'] ?? null);
     }
 
     /**
