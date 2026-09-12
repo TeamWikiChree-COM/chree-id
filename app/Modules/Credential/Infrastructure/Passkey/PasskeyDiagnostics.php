@@ -12,6 +12,12 @@ use RuntimeException;
  * 消えたのか、別のホストで開いているのかが区別できない。
  */
 class PasskeyDiagnostics {
+    /**
+     * 診断の版。**必ず出力に載せる。**
+     * 載せないと、古い版が動いているのか本当に情報が無いのかを、ログから区別できない。
+     */
+    private const VERSION = '2026-09-12b';
+
     private readonly PasskeyContext $context;
 
     public function __construct(PasskeyContext $context) {
@@ -44,6 +50,7 @@ class PasskeyDiagnostics {
         $cookie = $request->cookies->get(config()->string('session.cookie'));
 
         return [
+            'diag' => self::VERSION,
             // 届いていなければブラウザ側 (クッキーが落ちている)。届いていればサーバ側
             'session_cookie_sent' => $cookie !== null,
             'session_started' => $request->hasSession() && $request->session()->isStarted(),

@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
  * ここに引っかかるのは意図しないものだけになる。
  */
 class DetectSessionLoss {
+    /** 診断の版。古い版が動いているのかを、ログから見分けられるようにする */
+    private const VERSION = '2026-09-12b';
+
     private readonly ChreeSession $session;
     private readonly SignedInMarker $marker;
 
@@ -64,6 +67,7 @@ class DetectSessionLoss {
         $keys = array_keys($session->all());
 
         return [
+            'diag' => self::VERSION,
             // どの要求で消えたか。ここが犯人のいる場所
             'path' => $request->path(),
             'method' => $request->method(),
