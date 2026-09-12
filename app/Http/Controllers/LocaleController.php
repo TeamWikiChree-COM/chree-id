@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Support\Locale\LocaleNegotiator;
 use App\Support\Locale\Locales;
 use App\Support\Locale\StoredLocale;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * 表示言語の切り替え。
@@ -22,10 +23,17 @@ class LocaleController {
     ) {}
 
     /**
+     * 選んだ言語に切り替える。
+     *
+     * **画面ごと読み込み直させる (Inertia::location)。** 文言の辞書はビルド時に
+     * バンドルへ畳み込まれていて、どちらを使うかは最初の読み込みで決まる
+     * (resources/js/lib/i18n.ts)。Inertia の部分更新で戻ると、props の locale
+     * だけが変わって画面の文字は元の言語のまま残る。
+     *
      * @param Request $request 選んだ言語を含む要求
-     * @return RedirectResponse
+     * @return Response
      */
-    public function update(Request $request): RedirectResponse {
+    public function update(Request $request): Response {
         $locale = $request->string('locale')->toString();
 
         // 知らない名前は黙って無視する。押せるのはこちらが出したボタンだけなので、
@@ -35,6 +43,7 @@ class LocaleController {
         $this->stored->remember($locale);
 
         // Cookie も必ず置く。ログアウトしたあとも選んだ言語で出すため
-        return back()->withCookie(cookie()->forever(LocaleNegotiator::COOKIE, $locale));
+        return Inertia::location(url()->previous())
+            ->withCookie(cookie()->forever(LocaleNegotiator::COOKIE, $locale));
     }
 }

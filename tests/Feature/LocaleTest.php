@@ -80,6 +80,20 @@ class LocaleTest extends \Tests\TestCase {
             ->assertCookieMissing(LocaleNegotiator::COOKIE);
     }
 
+    /**
+     * **切り替えたら画面ごと読み込み直させる。**
+     *
+     * 文言の辞書はバンドルに畳み込まれていて、どちらを使うかは最初の読み込みで決まる。
+     * Inertia の部分更新で戻すと、props の locale だけ変わって画面の文字が元の言語で残る。
+     */
+    public function test_forcesAFullPageLoad(): void {
+        $this->withHeaders(['X-Inertia' => 'true', 'Referer' => url('/login')])
+            ->post('/locale', ['locale' => 'en'])
+            ->assertStatus(409)
+            ->assertHeader('X-Inertia-Location', url('/login'))
+            ->assertCookie(LocaleNegotiator::COOKIE, 'en');
+    }
+
     // ログイン中は行に持たせる。端末を変えても付いてくるようにするため
     public function test_storesTheChoiceOnTheAccountWhenSignedIn(): void {
         $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '本人');
