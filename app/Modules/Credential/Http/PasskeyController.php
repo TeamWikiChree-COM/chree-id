@@ -91,7 +91,7 @@ class PasskeyController {
      */
     public function register(Request $request): JsonResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return $this->signedOut('register', $request);
+        // if ($accountId === null) return $this->signedOut('register', $request);
 
         $stored = $request->session()->pull(self::PENDING_OPTIONS);
         if (!is_string($stored)) return response()->json(['error' => 'no_challenge'], 400);
