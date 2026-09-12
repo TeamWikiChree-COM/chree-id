@@ -61,6 +61,19 @@ export interface LoginSessionSummary {
     isCurrent: boolean;
 }
 
+/** ログイン履歴の1行 */
+export interface LoginEventSummary {
+    id: string;
+    /** 'password' や 'oauth:google' など。PHP の LoginMethod と合わせる */
+    method: string;
+    /** 成立したか。false は失敗した試み */
+    succeeded: boolean;
+    /** 「Chrome (Windows)」のような表示名 */
+    label: string;
+    ipAddress: string | null;
+    at: string | null;
+}
+
 /** 2段階目を省略してよい端末の1行 */
 export interface TrustedDeviceSummary {
     id: string;

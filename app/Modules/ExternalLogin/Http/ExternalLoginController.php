@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\ExternalLogin\Http;
 
+use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
@@ -107,7 +108,7 @@ class ExternalLoginController {
 
         if ($claimToken !== null) $this->finalizeClaim($claimToken, $accountId);
 
-        $this->session->login($accountId);
+        $this->session->login($accountId, LoginMethod::OAUTH->with($identity->provider));
 
         return redirect('/');
     }
@@ -161,7 +162,7 @@ class ExternalLoginController {
 
         if ($claimToken !== null) $this->finalizeClaim($claimToken, $chosen);
 
-        $this->session->login($chosen);
+        $this->session->login($chosen, LoginMethod::OAUTH->value);
 
         return redirect('/');
     }

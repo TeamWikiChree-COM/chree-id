@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
@@ -160,7 +161,7 @@ class ClaimController {
         }
 
         // 本人が認証手段を決めた直後なので、ここはログインさせてよい
-        $this->session->login($accountId);
+        $this->session->login($accountId, LoginMethod::CLAIM->value);
 
         return redirect('/')->with('claimed', true);
     }

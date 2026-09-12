@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Device\Http;
 
+use App\Modules\Audit\Application\LoginHistory;
 use App\Modules\Device\Application\LoginSessions;
 use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -19,11 +20,13 @@ class DeviceController {
     private readonly ChreeSession $session;
     private readonly LoginSessions $sessions;
     private readonly TrustedDevices $trustedDevices;
+    private readonly LoginHistory $history;
 
-    public function __construct(ChreeSession $session, LoginSessions $sessions, TrustedDevices $trustedDevices) {
+    public function __construct(ChreeSession $session, LoginSessions $sessions, TrustedDevices $trustedDevices, LoginHistory $history) {
         $this->session = $session;
         $this->sessions = $sessions;
         $this->trustedDevices = $trustedDevices;
+        $this->history = $history;
     }
 
     /**
@@ -37,6 +40,7 @@ class DeviceController {
         return Inertia::render('Settings/Devices', [
             'sessions' => $this->sessions->listFor($accountId, $request->session()->getId()),
             'trustedDevices' => $this->trustedDevices->listFor($accountId, $this->trustedDevices->tokenFrom($request)),
+            'loginHistory' => $this->history->listFor($accountId),
         ]);
     }
 

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Identity\Application\CompleteRegistration;
 use App\Modules\Identity\Application\RegistrationTokenException;
 use App\Modules\Identity\Application\StartRegistration;
@@ -116,7 +117,7 @@ class RegisterController {
             ]);
         }
 
-        $this->session->login($account->id);
+        $this->session->login($account->id, LoginMethod::REGISTRATION->value);
 
         return redirect('/');
     }

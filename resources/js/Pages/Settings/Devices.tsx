@@ -13,11 +13,14 @@ import SettingsTabs from '../../Components/SettingsTabs';
 import DeviceRow from '../../Components/Settings/DeviceRow';
 import { useConfirm } from '../../lib/confirm';
 import { formatDateTime, formatRelative } from '../../lib/datetime';
-import type { LoginSessionSummary, TrustedDeviceSummary } from '../../types';
+import { methodLabel } from '../../lib/credentials';
+import type { LoginEventSummary, LoginSessionSummary, TrustedDeviceSummary } from '../../types';
 
 interface DevicesProps {
     sessions: LoginSessionSummary[];
     trustedDevices: TrustedDeviceSummary[];
+    /** 直近のログイン。切れた分も残る */
+    loginHistory: LoginEventSummary[];
 }
 
 /**
@@ -26,7 +29,7 @@ interface DevicesProps {
  * 「ログイン中」と「信頼済み」は別物。前者は切ればその場でログアウトになり、
  * 後者は切っても入り直せる (次から2段階目を聞かれるだけ)。混ぜて見せない。
  */
-export default function Devices({ sessions, trustedDevices }: DevicesProps) {
+export default function Devices({ sessions, trustedDevices, loginHistory }: DevicesProps) {
     const { flash } = usePage().props;
     const { ask, dialog } = useConfirm();
 
@@ -151,6 +154,35 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                     </Button>
                 </Box>
             )}
+
+            <SectionTitle note={`直近 ${loginHistory.length} 件`}>最近のログイン</SectionTitle>
+            <Paper variant="outlined">
+                {loginHistory.length === 0 && (
+                    <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
+                        記録がありません
+                    </Typography>
+                )}
+
+                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    {loginHistory.map((event) => (
+                        <DeviceRow
+                            key={event.id}
+                            label={event.label}
+                            detail={[methodLabel(event.method), event.ipAddress, formatDateTime(event.at)]}
+                            badge={
+                                event.succeeded ? null : (
+                                    <Chip size="small" color="error" variant="outlined" label="失敗" />
+                                )
+                            }
+                            action={null}
+                        />
+                    ))}
+                </Stack>
+            </Paper>
+
+            <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
+                身に覚えのないログインがあるときは、パスワードを変えて他の端末をログアウトしてください
+            </Typography>
 
             {dialog}
         </AppLayout>

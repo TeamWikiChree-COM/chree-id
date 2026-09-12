@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Audit\Application\LoginHistory;
+use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
@@ -31,6 +33,7 @@ class LoginController {
         private readonly LoginHint $loginHint,
         private readonly TrustedDevices $trustedDevices,
         private readonly LoginSessions $sessions,
+        private readonly LoginHistory $history,
     ) {}
 
     /**
@@ -66,7 +69,12 @@ class LoginController {
             $factors,
         );
 
-        if (!$verified->isSuccess()) throw $this->invalidCredentials();
+        if (!$verified->isSuccess()) {
+            // 本人が「誰かが試している」と気付ける唯一の手がかりになる
+            $this->history->record($account->id, LoginMethod::PASSWORD->value, succeeded: false);
+
+            throw $this->invalidCredentials();
+        }
 
         // 2FA を有効にしているアカウントは、パスワードだけでは成立しない。
         // ただし本人が2段階目を通したうえで信頼した端末なら、そこは省く
@@ -78,7 +86,7 @@ class LoginController {
             return redirect('/login/challenge');
         }
 
-        $this->session->login($account->id);
+        $this->session->login($account->id, LoginMethod::PASSWORD->value);
 
         return redirect()->intended('/');
     }

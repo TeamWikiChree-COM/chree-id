@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\ConsumeMagicLink;
 use App\Modules\Credential\Application\RequestMagicLink;
@@ -89,7 +90,7 @@ class MagicLinkController {
             return redirect('/login/challenge');
         }
 
-        $this->session->login($accountId);
+        $this->session->login($accountId, LoginMethod::MAGIC_LINK->value);
 
         return redirect()->intended('/');
     }

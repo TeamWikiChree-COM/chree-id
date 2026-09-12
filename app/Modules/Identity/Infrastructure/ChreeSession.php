@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Infrastructure;
 
+use App\Modules\Audit\Application\LoginHistory;
 use Illuminate\Http\Request;
 
 /**
@@ -12,19 +13,31 @@ use Illuminate\Http\Request;
 class ChreeSession {
     private const KEY = 'chreeid.account_id';
 
-    public function __construct(private readonly Request $request) {}
+    private readonly Request $request;
+    private readonly LoginHistory $history;
+
+    public function __construct(Request $request, LoginHistory $history) {
+        $this->request = $request;
+        $this->history = $history;
+    }
 
     /**
      * ログイン状態にする。
      *
      * セッション固定攻撃を避けるため、ここで必ずIDを再生成する。
      *
+     * **履歴もここで残す。** ログインの成立点は全経路がここを通るので、
+     * 呼び出し側に記録を任せると、経路を足したときに取りこぼす。
+     *
      * @param string $accountId アカウントID (ULID)
+     * @param string $method どう入ったか。LoginMethod の値
      * @return void
      */
-    public function login(string $accountId): void {
+    public function login(string $accountId, string $method): void {
         $this->request->session()->regenerate();
         $this->request->session()->put(self::KEY, $accountId);
+
+        $this->history->record($accountId, $method);
     }
 
     /**
