@@ -11,6 +11,7 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
 import AppLayout from "../../../Components/AppLayout";
+import { useConfirm } from "../../../lib/confirm";
 import Icon from "../../../Components/Icon";
 import SectionTitle from "../../../Components/SectionTitle";
 import type { OAuthClient } from "../../../types";
@@ -67,26 +68,25 @@ export default function Form({ client, trustOptions }: FormProps) {
 
     const remove = (): void => {
         if (client === null) return;
-        if (
-            !window.confirm(
-                `${client.name} を削除します。このサービスからはログインできなくなります。`,
-            )
-        )
-            return;
 
-        router.post(`/admin/clients/${client.id}/delete`);
+        ask({
+            title: `${client.name} を削除しますか`,
+            description: "このサービスからはログインできなくなります",
+            confirmText: "削除する",
+            expected: client.name,
+            onConfirm: () => router.post(`/admin/clients/${client.id}/delete`),
+        });
     };
 
     const rotate = (): void => {
         if (client === null) return;
-        if (
-            !window.confirm(
-                "client_secret を作り直します。RP 側の設定を書き換えるまでログインが止まります。",
-            )
-        )
-            return;
 
-        router.post(`/admin/clients/${client.id}/secret`);
+        ask({
+            title: "client_secret を作り直しますか",
+            description: "RP 側の設定を書き換えるまで、このサービスのログインは止まります",
+            confirmText: "作り直す",
+            onConfirm: () => router.post(`/admin/clients/${client.id}/secret`),
+        });
     };
 
     return (
@@ -263,6 +263,8 @@ export default function Form({ client, trustOptions }: FormProps) {
                     </Paper>
                 </>
             )}
+
+            {dialog}
         </AppLayout>
     );
 }

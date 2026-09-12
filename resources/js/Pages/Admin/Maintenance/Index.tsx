@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import AppLayout from '../../../Components/AppLayout';
+import { useConfirm } from '../../../lib/confirm';
 import SectionTitle from '../../../Components/SectionTitle';
 
 interface Pending {
@@ -58,12 +59,18 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
     const { prunedTokens } = usePage().props.flash;
     const [running, setRunning] = useState(false);
 
-    const prune = (): void => {
-        if (!window.confirm(`${String(pending.total)} 件を削除します。`)) return;
+    const { ask, dialog } = useConfirm();
 
-        router.post('/admin/maintenance/prune', {}, {
-            onStart: () => setRunning(true),
-            onFinish: () => setRunning(false),
+    const prune = (): void => {
+        ask({
+            title: '溜まったものを消しますか',
+            description: `${String(pending.total)} 件を削除します。退会済みのアカウントは行ごと消え、元に戻せません`,
+            confirmText: '削除する',
+            onConfirm: () =>
+                router.post('/admin/maintenance/prune', {}, {
+                    onStart: () => setRunning(true),
+                    onFinish: () => setRunning(false),
+                }),
         });
     };
 
@@ -108,6 +115,8 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
                     日次の chreeid:prune-tokens と同じ処理です
                 </Typography>
             </Box>
+
+            {dialog}
         </AppLayout>
     );
 }

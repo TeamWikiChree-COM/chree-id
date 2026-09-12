@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import AppLayout from '../../../Components/AppLayout';
+import { useConfirm } from '../../../lib/confirm';
 import Icon from '../../../Components/Icon';
 import SectionTitle from '../../../Components/SectionTitle';
 
@@ -27,12 +28,18 @@ export default function Index({ pending, applied }: IndexProps) {
     const { migrationOutput } = usePage().props.flash;
     const [running, setRunning] = useState(false);
 
-    const run = (): void => {
-        if (!window.confirm(`未適用の ${pending.length} 件を適用します。データベースの構造が変わります。`)) return;
+    const { ask, dialog } = useConfirm();
 
-        router.post('/admin/migrations/run', {}, {
-            onStart: () => setRunning(true),
-            onFinish: () => setRunning(false),
+    const run = (): void => {
+        ask({
+            title: '未適用のマイグレーションを流しますか',
+            description: `${String(pending.length)} 件を適用します。データベースの構造が変わり、戻すには手当てが要ります`,
+            confirmText: '適用する',
+            onConfirm: () =>
+                router.post('/admin/migrations/run', {}, {
+                    onStart: () => setRunning(true),
+                    onFinish: () => setRunning(false),
+                }),
         });
     };
 
@@ -104,6 +111,8 @@ export default function Index({ pending, applied }: IndexProps) {
                     ))}
                 </Stack>
             </Paper>
+
+            {dialog}
         </AppLayout>
     );
 }
