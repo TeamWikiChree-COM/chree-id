@@ -58,6 +58,7 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
     };
 
     const hasTotp = credentials.some((c) => c.type === 'totp');
+    const passkeys = credentials.filter((c) => c.type === 'passkey');
     const hasMagicLink = credentials.some((c) => c.type === 'magic_link');
 
     return (
@@ -122,8 +123,14 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                 </Box>
             </Paper>
 
-            <SectionTitle>{t('settings.security.passkey.heading')}</SectionTitle>
-            <Paper variant="outlined" sx={{ p: 2 }}>
+            <SectionTitle note={t('common.count', { count: passkeys.length })}>
+                {t('settings.security.passkey.heading')}
+            </SectionTitle>
+
+            {/* どの端末を登録したのかは、ここに出ていないと本人にも分からない */}
+            <CredentialList credentials={passkeys} onRemove={confirmRemove} onRename={setRenaming} />
+
+            <Paper variant="outlined" sx={{ p: 2, mt: 1.5 }}>
                 {passkeyError && <Alert severity="error" sx={{ mb: 1.5 }}>{passkeyError}</Alert>}
 
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
