@@ -156,7 +156,15 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                     variant="outlined"
                     color="inherit"
                     startIcon={<Icon name="rotate" />}
-                    onClick={() => router.post('/security/recovery-codes')}
+                    onClick={() =>
+                        ask({
+                            title: '復旧コードを作り直しますか',
+                            description:
+                                'いま控えてあるコードはすべて使えなくなります。作り直したあとは、新しいものを控え直してください',
+                            confirmText: '作り直す',
+                            onConfirm: () => router.post('/security/recovery-codes'),
+                        })
+                    }
                 >
                     作り直す
                 </Button>
