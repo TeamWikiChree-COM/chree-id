@@ -10,6 +10,7 @@ import Icon from '../../Components/Icon';
 import RowAction from '../../Components/RowAction';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
+import { useConfirm } from '../../lib/confirm';
 import { formatDateTime } from '../../lib/datetime';
 import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
 import type { ExternalConnection } from '../../types';
@@ -28,6 +29,8 @@ interface ConnectionsProps {
  */
 export default function Connections({ connections, providers }: ConnectionsProps) {
     const { flash, errors } = usePage().props;
+
+    const { ask, dialog } = useConfirm();
 
     const connected = new Set(connections.map((c) => c.provider));
     const available = providers.filter((name) => !connected.has(name));
@@ -77,7 +80,13 @@ export default function Connections({ connections, providers }: ConnectionsProps
                             <RowAction
                                 destructive
                                 onClick={() =>
-                                    router.post('/settings/connections/remove', { id: connection.id })
+                                    ask({
+                                        title: `${idpLabel(connection.provider)} との連携を解除しますか`,
+                                        description: `${idpLabel(connection.provider)} ではログインできなくなります。連携し直せば元に戻せます`,
+                                        confirmText: '解除する',
+                                        onConfirm: () =>
+                                            router.post('/settings/connections/remove', { id: connection.id }),
+                                    })
                                 }
                             >
                                 解除
@@ -115,6 +124,8 @@ export default function Connections({ connections, providers }: ConnectionsProps
                     </Stack>
                 )}
             </Paper>
+
+            {dialog}
         </AppLayout>
     );
 }

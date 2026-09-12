@@ -15,7 +15,9 @@ import CredentialList from '../../Components/CredentialList';
 import PasswordSection from '../../Components/Settings/PasswordSection';
 import TotpSection from '../../Components/Settings/TotpSection';
 import RenameCredentialDialog from '../../Components/Settings/RenameCredentialDialog';
+import { useConfirm } from '../../lib/confirm';
 import { registerPasskey } from '../../lib/passkey';
+import { credentialLabel } from '../../lib/credentials';
 import type { CredentialSummary } from '../../types';
 
 interface SecurityProps {
@@ -32,6 +34,16 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
     const { flash, errors } = usePage().props;
     const [passkeyError, setPasskeyError] = useState<string | null>(null);
     const [renaming, setRenaming] = useState<CredentialSummary | null>(null);
+    const { ask, dialog } = useConfirm();
+
+    // 消せる = 他に入る手段が残っている、ということ。残り1件はサーバ側が弾く
+    const confirmRemove = (credential: CredentialSummary): void => {
+        ask({
+            title: 'ログイン方法を削除しますか',
+            description: `${credentialLabel(credential)}ではログインできなくなります。元に戻すには登録し直してください`,
+            onConfirm: () => router.post('/security/credentials/remove', { id: credential.id }),
+        });
+    };
 
     const addPasskey = async (): Promise<void> => {
         setPasskeyError(null);
@@ -59,11 +71,12 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
             {errors.credential && <Alert severity="error" sx={{ mb: 1 }}>{errors.credential}</Alert>}
             <CredentialList
                 credentials={credentials}
-                onRemove={(credential) => router.post('/security/credentials/remove', { id: credential.id })}
+                onRemove={confirmRemove}
                 onRename={setRenaming}
             />
 
             <RenameCredentialDialog credential={renaming} onClose={() => setRenaming(null)} />
+            {dialog}
 
             <SectionTitle>パスワード</SectionTitle>
             <PasswordSection hasPassword={hasPassword} />
@@ -83,9 +96,20 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
                     <ToggleSwitch
                         checked={hasMagicLink}
                         label="マジックリンク"
-                        onChange={(next) =>
-                            router.post(next ? '/security/magic-link' : '/security/magic-link/disable')
-                        }
+                        onChange={(next) => {
+                            if (next) {
+                                router.post('/security/magic-link');
+
+                                return;
+                            }
+
+                            ask({
+                                title: 'マジックリンクをやめますか',
+                                description: 'メールのリンクからはログインできなくなります',
+                                confirmText: '無効にする',
+                                onConfirm: () => router.post('/security/magic-link/disable'),
+                            });
+                        }}
                     />
                 </Box>
             </Paper>

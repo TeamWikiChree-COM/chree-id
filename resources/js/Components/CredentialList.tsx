@@ -5,39 +5,8 @@ import Typography from '@mui/material/Typography';
 import Icon from './Icon';
 import RowAction from './RowAction';
 import { formatDateTime, formatRelative } from '../lib/datetime';
-import { idpIcon, idpIconFamily, idpLabel } from '../lib/idps';
-import type { CredentialSummary, CredentialTypeValue } from '../types';
-
-const TYPE_LABELS: Partial<Record<CredentialTypeValue, string>> = {
-    password: 'パスワード',
-    magic_link: 'メールのリンク',
-    totp: '認証アプリ (TOTP)',
-    passkey: 'パスキー',
-    oauth: '外部アカウント',
-};
-
-const TYPE_ICONS: Partial<Record<CredentialTypeValue, string>> = {
-    password: 'key',
-    magic_link: 'envelope',
-    totp: 'mobile-screen',
-    passkey: 'fingerprint',
-    oauth: 'right-to-bracket',
-};
-
-/**
- * 行の名前。
- *
- * 外部アカウントとパスキーは複数持てるので、種別名だけだと同じ行が並ぶ。
- * 連携先や端末名が分かるならそちらを名前にする。
- *
- * @param credential 認証手段の1行
- */
-function titleOf(credential: CredentialSummary): string {
-    if (credential.provider !== null) return idpLabel(credential.provider);
-    if (credential.label !== null) return credential.label;
-
-    return TYPE_LABELS[credential.type] ?? credential.type;
-}
+import { credentialIcon, credentialIconFamily, credentialLabel } from '../lib/credentials';
+import type { CredentialSummary } from '../types';
 
 /**
  * 行の下に添える手がかり。
@@ -93,19 +62,11 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
                         <Box>
                             <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                                 <Icon
-                                    name={
-                                        credential.provider === null
-                                            ? TYPE_ICONS[credential.type] ?? 'circle-question'
-                                            : idpIcon(credential.provider)
-                                    }
-                                    family={
-                                        credential.provider === null
-                                            ? 'solid'
-                                            : idpIconFamily(credential.provider)
-                                    }
+                                    name={credentialIcon(credential)}
+                                    family={credentialIconFamily(credential)}
                                     sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
                                 />
-                                {titleOf(credential)}
+                                {credentialLabel(credential)}
                             </Typography>
                             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
                                 {detailOf(credential)}

@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import Icon from '../../../Components/Icon';
 import RowAction from '../../../Components/RowAction';
+import { useConfirm } from '../../../lib/confirm';
+import type { ConfirmRequest } from '../../../Components/ConfirmDialog';
 import type { AdminAccount } from './types';
 
 /** 認証方式の表示ラベル */
@@ -17,6 +19,9 @@ const CREDENTIAL_LABELS: Record<string, string> = {
     totp: '2FA',
     magic_link: 'マジックリンク',
 };
+
+/** act() に渡す確認内容。実行そのものは act() が組み立てる */
+type ConfirmText = Omit<ConfirmRequest, 'onConfirm'>;
 
 interface AccountRowProps {
     account: AdminAccount;
@@ -39,10 +44,23 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
         email: account.email ?? '',
     });
 
-    const act = (action: string, confirmation?: string): void => {
-        if (confirmation !== undefined && !window.confirm(confirmation)) return;
+    const { ask, dialog } = useConfirm();
 
-        router.post(`/admin/accounts/${account.id}/act`, { action });
+    /**
+     * 確認の文言を渡したものだけダイアログを挟む。
+     * 停止の解除のように戻せる操作では聞かない。
+     */
+    const act = (action: string, confirmation?: ConfirmText): void => {
+        if (confirmation === undefined) {
+            router.post(`/admin/accounts/${account.id}/act`, { action });
+
+            return;
+        }
+
+        ask({
+            ...confirmation,
+            onConfirm: () => router.post(`/admin/accounts/${account.id}/act`, { action }),
+        });
     };
 
     const save = (): void => {
@@ -118,7 +136,15 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                             )}
 
                             {!account.isDeleted && !account.isSuspended && (
-                                <RowAction onClick={() => act('suspend', 'このアカウントのログインを止めます。')}>
+                                <RowAction
+                                    onClick={() =>
+                                        act('suspend', {
+                                            title: 'このアカウントを停止しますか',
+                                            description: 'ログインできなくなります。停止はあとから解除できます',
+                                            confirmText: '停止する',
+                                        })
+                                    }
+                                >
                                     停止
                                 </RowAction>
                             )}
@@ -127,7 +153,11 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                                 <RowAction
                                     destructive
                                     onClick={() =>
-                                        act('withdraw', `退会させます。${String(graceDays)} 日以内なら取り消せます。`)
+                                        act('withdraw', {
+                                            title: 'このアカウントを退会させますか',
+                                            description: `${String(graceDays)} 日以内なら取り消せます。過ぎると行ごと消えます`,
+                                            confirmText: '退会させる',
+                                        })
                                     }
                                 >
                                     退会させる
@@ -136,7 +166,15 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
 
                             <RowAction
                                 destructive
-                                onClick={() => act('purge', '猶予を待たずに完全に削除します。元に戻せません。')}
+                                onClick={() =>
+                                    act('purge', {
+                                        title: 'このアカウントを完全に削除しますか',
+                                        description:
+                                            '猶予を待たずに消します。連携先のサービスのアカウントも道連れになり、元に戻せません',
+                                        confirmText: '完全に削除する',
+                                        expected: account.email ?? account.id,
+                                    })
+                                }
                             >
                                 完全に削除
                             </RowAction>
@@ -169,6 +207,8 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                     </Button>
                 </Stack>
             )}
+
+            {dialog}
         </Box>
     );
 }

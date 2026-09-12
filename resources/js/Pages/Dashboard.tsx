@@ -12,6 +12,7 @@ import RowAction from "../Components/RowAction";
 import CredentialList from "../Components/CredentialList";
 import Icon from "../Components/Icon";
 import SectionTitle from "../Components/SectionTitle";
+import { useConfirm } from "../lib/confirm";
 import { formatDateTime } from "../lib/datetime";
 import type { Account, ConnectedService, CredentialSummary } from "../types";
 
@@ -38,14 +39,16 @@ export default function Dashboard({
 }: DashboardProps) {
     const { flash } = usePage().props;
 
+    const { ask, dialog } = useConfirm();
+
     const revoke = (service: ConnectedService): void => {
-        const message =
-            `${service.name} との連携を解除します。` +
-            "発行済みのアクセストークンが無効になり、次に使うときは改めてログインが必要です。";
-
-        if (!window.confirm(message)) return;
-
-        router.post(`/services/${service.clientId}/revoke`);
+        ask({
+            title: `${service.name} との連携を解除しますか`,
+            description:
+                "発行済みのアクセストークンが無効になり、次に使うときは改めてログインが必要です",
+            confirmText: "解除する",
+            onConfirm: () => router.post(`/services/${service.clientId}/revoke`),
+        });
     };
 
     return (
@@ -312,6 +315,8 @@ export default function Dashboard({
                     ログアウト
                 </Button>
             </Stack>
+
+            {dialog}
         </AppLayout>
     );
 }

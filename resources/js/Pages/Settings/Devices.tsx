@@ -11,6 +11,7 @@ import RowAction from '../../Components/RowAction';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import DeviceRow from '../../Components/Settings/DeviceRow';
+import { useConfirm } from '../../lib/confirm';
 import { formatDateTime, formatRelative } from '../../lib/datetime';
 import type { LoginSessionSummary, TrustedDeviceSummary } from '../../types';
 
@@ -27,6 +28,18 @@ interface DevicesProps {
  */
 export default function Devices({ sessions, trustedDevices }: DevicesProps) {
     const { flash } = usePage().props;
+    const { ask, dialog } = useConfirm();
+
+    const endSession = (session: LoginSessionSummary): void => {
+        ask({
+            title: session.isCurrent ? 'ログアウトしますか' : 'この端末のログインを終了しますか',
+            description: session.isCurrent
+                ? 'この端末からログアウトします'
+                : `${session.label} は次から入り直しが必要になります`,
+            confirmText: session.isCurrent ? 'ログアウトする' : '終了する',
+            onConfirm: () => router.post('/settings/devices/sessions/revoke', { id: session.id }),
+        });
+    };
 
     return (
         <AppLayout
@@ -54,9 +67,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                             action={
                                 <RowAction
                                     destructive
-                                    onClick={() =>
-                                        router.post('/settings/devices/sessions/revoke', { id: session.id })
-                                    }
+                                    onClick={() => endSession(session)}
                                 >
                                     {session.isCurrent ? 'ログアウト' : '終了'}
                                 </RowAction>
@@ -71,7 +82,15 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                     <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => router.post('/settings/devices/sessions/revoke-others')}
+                        onClick={() =>
+                            ask({
+                                title: 'この端末以外をすべてログアウトしますか',
+                                description: `${String(sessions.length - 1)} 台のログインを終了します。心当たりのない端末があるときは、あわせてパスワードも変えてください`,
+                                confirmText: 'すべて終了する',
+                                expected: 'ログアウト',
+                                onConfirm: () => router.post('/settings/devices/sessions/revoke-others'),
+                            })
+                        }
                     >
                         この端末以外をすべてログアウト
                     </Button>
@@ -97,7 +116,13 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                                 <RowAction
                                     destructive
                                     onClick={() =>
-                                        router.post('/settings/devices/trusted/revoke', { id: device.id })
+                                        ask({
+                                            title: '端末の信頼を取り消しますか',
+                                            description: `${device.label} では次のログインから2段階目を求めます`,
+                                            confirmText: '取り消す',
+                                            onConfirm: () =>
+                                                router.post('/settings/devices/trusted/revoke', { id: device.id }),
+                                        })
                                     }
                                 >
                                     取り消す
@@ -113,12 +138,21 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                     <Button
                         variant="outlined"
                         color="error"
-                        onClick={() => router.post('/settings/devices/trusted/revoke-all')}
+                        onClick={() =>
+                            ask({
+                                title: 'すべての端末の信頼を取り消しますか',
+                                description: 'どの端末でも、次のログインから2段階目を求めます',
+                                confirmText: 'すべて取り消す',
+                                onConfirm: () => router.post('/settings/devices/trusted/revoke-all'),
+                            })
+                        }
                     >
                         すべての端末の信頼を取り消す
                     </Button>
                 </Box>
             )}
+
+            {dialog}
         </AppLayout>
     );
 }
