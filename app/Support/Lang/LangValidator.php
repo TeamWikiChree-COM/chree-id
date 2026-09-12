@@ -86,9 +86,6 @@ final class LangValidator {
     private function extract(string $text): array {
         preg_match_all('/:([a-zA-Z_][a-zA-Z0-9_]*)/', $text, $matches);
 
-        /** @var list<string> $names */
-        $names = $matches[1];
-
-        return $names;
+        return $matches[1];
     }
 }

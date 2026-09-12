@@ -74,6 +74,7 @@ class LangBuildTest extends \Tests\TestCase {
 
         $tree = require $this->dir . '/out/ja/a.php';
 
+        $this->assertIsArray($tree);
         $this->assertSame("I'm here \ \"x\"", $tree['b']);
     }
 

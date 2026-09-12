@@ -55,6 +55,9 @@ final class LangCompiler {
             $segments = explode('.', $key);
             $file = array_shift($segments);
 
+            // LangValidator が落としているはずだが、ここだけ見ても成り立つようにする
+            if ($segments === []) throw new LangBuildException("ドットの無いキーは分割できません: {$key}");
+
             $files[$file] ??= [];
             $this->nest($files[$file], $segments, $text);
         }
@@ -66,7 +69,7 @@ final class LangCompiler {
 
     /**
      * @param array<string, mixed> $tree 書き込み先
-     * @param list<string> $segments 残りのセグメント
+     * @param non-empty-list<string> $segments 残りのセグメント
      * @param string $text 文言
      * @return void
      */
