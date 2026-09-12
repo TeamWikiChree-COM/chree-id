@@ -12,6 +12,7 @@ use App\Modules\Identity\Application\MergeException;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Application\TransferableCredentials;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -64,7 +65,7 @@ class MergeController {
      */
     public function show(string $candidate): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $found = $this->candidateOf($accountId, $candidate);
         if ($found === null) return redirect('/');
@@ -83,7 +84,7 @@ class MergeController {
      */
     public function store(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate([
             'candidate' => ['required', 'string'],

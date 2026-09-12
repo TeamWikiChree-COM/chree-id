@@ -13,6 +13,7 @@ use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\Totp;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -46,7 +47,7 @@ class SecurityController {
      */
     public function show(Request $request): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Security', [
             'credentials' => $this->credentials->execute($accountId),
@@ -65,7 +66,7 @@ class SecurityController {
      */
     public function enableMagicLink(): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $this->enableMagicLink->execute($accountId);
         $this->audit->record(AuditAction::CREDENTIAL_ADDED, $accountId, ['type' => 'magic_link']);
@@ -81,7 +82,7 @@ class SecurityController {
      */
     public function startTotp(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $secret = $this->enableTotp->generateSecret();
         $issuer = config('chreeid.issuer');
@@ -104,7 +105,7 @@ class SecurityController {
      */
     public function confirmTotp(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate(['code' => ['required', 'string']]);
 
@@ -134,7 +135,7 @@ class SecurityController {
      */
     public function generateRecoveryCodes(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $codes = $this->recoveryCodes->execute($accountId);
         $this->audit->record(AuditAction::RECOVERY_CODES_GENERATED, $accountId);
@@ -154,7 +155,7 @@ class SecurityController {
      */
     public function removeCredential(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate(['id' => ['required', 'string']]);
 
@@ -181,7 +182,7 @@ class SecurityController {
      */
     public function renameCredential(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate([
             'id' => ['required', 'string'],
@@ -214,7 +215,7 @@ class SecurityController {
      */
     public function disableMagicLink(): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         try {
             $this->remove->execute($accountId, CredentialType::MAGIC_LINK);

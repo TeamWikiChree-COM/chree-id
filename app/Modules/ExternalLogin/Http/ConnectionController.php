@@ -8,6 +8,7 @@ use App\Modules\ExternalLogin\Application\ConnectedExternalAccounts;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\ExternalLogin\Infrastructure\ExternalLoginFlow;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,7 +47,7 @@ class ConnectionController {
      */
     public function index(): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Connections', [
             'connections' => $this->connected->listFor($accountId),
@@ -66,7 +67,7 @@ class ConnectionController {
      */
     public function store(Request $request, string $provider): SymfonyResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $idp = $this->registry->get($provider);
         if ($idp === null || !$idp->isConfigured()) {
@@ -87,7 +88,7 @@ class ConnectionController {
      */
     public function destroy(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate(['id' => ['required', 'string']]);
 

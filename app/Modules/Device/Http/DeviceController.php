@@ -6,6 +6,7 @@ use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Device\Application\LoginSessions;
 use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,7 +37,7 @@ class DeviceController {
      */
     public function index(Request $request): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Devices', [
             'sessions' => $this->sessions->listFor($accountId, $request->session()->getId()),
@@ -52,7 +53,7 @@ class DeviceController {
      */
     public function revokeSession(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate(['id' => ['required', 'string']]);
 
@@ -63,7 +64,7 @@ class DeviceController {
             $this->sessions->forget($id);
             $this->session->logout();
 
-            return redirect('/login');
+            return LoginRedirect::guest();
         }
 
         $this->sessions->revoke($accountId, $id);
@@ -80,7 +81,7 @@ class DeviceController {
      */
     public function revokeOtherSessions(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $count = $this->sessions->revokeOthers($accountId, $request->session()->getId());
         $this->audit->record(AuditAction::SESSION_REVOKED, $accountId, ['count' => $count]);
@@ -99,7 +100,7 @@ class DeviceController {
      */
     public function revokeTrusted(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate(['id' => ['required', 'string']]);
 
@@ -120,7 +121,7 @@ class DeviceController {
      */
     public function revokeAllTrusted(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $count = $this->trustedDevices->revokeAll($accountId);
         $this->audit->record(AuditAction::DEVICE_TRUST_REVOKED, $accountId, ['count' => $count]);

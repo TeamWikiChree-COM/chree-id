@@ -8,6 +8,7 @@ use App\Modules\Identity\Application\WithdrawAccount;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -34,10 +35,10 @@ class WithdrawalController {
      */
     public function show(): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return redirect('/login');
+        if ($account === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Withdraw', [
             'email' => $account->email,
@@ -54,7 +55,7 @@ class WithdrawalController {
      */
     public function store(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         // 画面の説明を読み飛ばして押せてしまわないよう、明示の同意を要る形にする
         $request->validate(['understood' => ['accepted']]);

@@ -8,6 +8,7 @@ use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\Verifiers\PasswordVerifier;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -42,7 +43,7 @@ class PasswordController {
      */
     public function update(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate([
             'current_password' => ['nullable', 'string'],

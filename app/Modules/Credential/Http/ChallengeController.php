@@ -11,6 +11,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
 use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -76,7 +77,7 @@ class ChallengeController {
         $this->pending->forget();
         $this->session->login($accountId, $type->value);
 
-        $response = redirect()->intended('/');
+        $response = redirect(LoginRedirect::intended());
 
         // 2段階目を通した直後だけ信頼できる。ここ以外で配ってはいけない
         if (!$request->boolean('trustDevice')) return $response;

@@ -14,6 +14,7 @@ use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Provider\Infrastructure\LoginHint;
+use App\Support\Http\LoginRedirect;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ class LoginController {
 
         $this->session->login($account->id, LoginMethod::PASSWORD->value);
 
-        return redirect()->intended('/');
+        return redirect(LoginRedirect::intended());
     }
 
     /**

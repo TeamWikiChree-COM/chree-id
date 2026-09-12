@@ -11,6 +11,7 @@ use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
 use App\Modules\Provider\Infrastructure\LoginHint;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -92,6 +93,6 @@ class MagicLinkController {
 
         $this->session->login($accountId, LoginMethod::MAGIC_LINK->value);
 
-        return redirect()->intended('/');
+        return redirect(LoginRedirect::intended());
     }
 }

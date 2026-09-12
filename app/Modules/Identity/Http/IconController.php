@@ -7,6 +7,7 @@ use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\IconSource;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -63,10 +64,10 @@ class IconController {
      */
     public function update(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return redirect('/login');
+        if ($account === null) return LoginRedirect::guest();
 
         $request->validate([
             'source' => ['required', 'string', 'in:none,gravatar,upload'],

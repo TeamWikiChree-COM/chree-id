@@ -12,6 +12,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -41,10 +42,10 @@ class ProfileController {
      */
     public function show(): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return redirect('/login');
+        if ($account === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Profile', [
             'displayName' => $account->displayName,
@@ -63,7 +64,7 @@ class ProfileController {
      */
     public function update(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate([
             'display_name' => ['nullable', 'string', 'max:100'],
@@ -105,7 +106,7 @@ class ProfileController {
      */
     public function cancelEmailChange(): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();
         $this->audit->record(AuditAction::EMAIL_CHANGE_CANCELLED, $accountId);
@@ -120,7 +121,7 @@ class ProfileController {
      */
     public function sendEmailVerification(): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $this->requestVerification->execute($accountId);
 
@@ -136,7 +137,7 @@ class ProfileController {
      */
     public function changeEmail(Request $request): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],

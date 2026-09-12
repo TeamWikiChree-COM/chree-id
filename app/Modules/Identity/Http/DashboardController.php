@@ -6,6 +6,7 @@ use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,10 +28,10 @@ class DashboardController {
      */
     public function __invoke(): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $account = $this->accounts->findById($accountId);
-        if ($account === null) return redirect('/login');
+        if ($account === null) return LoginRedirect::guest();
 
         return Inertia::render('Dashboard', [
             'account' => [

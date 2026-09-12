@@ -5,6 +5,7 @@ use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\RevokeServiceAccess;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -26,7 +27,7 @@ class ConnectedServiceController {
      */
     public function destroy(string $client): RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         $this->revoke->execute($accountId, $client);
         $this->audit->record(AuditAction::SERVICE_REVOKED, $accountId, ['client' => $client]);

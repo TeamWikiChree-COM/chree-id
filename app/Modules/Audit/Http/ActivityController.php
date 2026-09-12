@@ -3,6 +3,7 @@ namespace App\Modules\Audit\Http;
 
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,7 +28,7 @@ class ActivityController {
      */
     public function index(): Response|RedirectResponse {
         $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect('/login');
+        if ($accountId === null) return LoginRedirect::guest();
 
         return Inertia::render('Settings/Activity', [
             'events' => $this->audit->listFor($accountId),

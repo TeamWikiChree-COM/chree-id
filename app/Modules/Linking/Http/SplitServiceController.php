@@ -6,6 +6,7 @@ use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -43,7 +44,7 @@ class SplitServiceController {
      */
     public function show(string $serviceAccount): Response|RedirectResponse {
         $identityId = $this->session->accountId();
-        if ($identityId === null) return redirect('/login');
+        if ($identityId === null) return LoginRedirect::guest();
 
         $target = $this->find($serviceAccount, $identityId);
         if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
@@ -68,7 +69,7 @@ class SplitServiceController {
      */
     public function store(Request $request): RedirectResponse {
         $identityId = $this->session->accountId();
-        if ($identityId === null) return redirect('/login');
+        if ($identityId === null) return LoginRedirect::guest();
 
         $request->validate([
             'service_account_id' => ['required', 'string'],
