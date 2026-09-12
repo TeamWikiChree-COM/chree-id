@@ -234,4 +234,45 @@ class AdminClientTest extends TestCase {
         $this->assertTrue($client->skips_consent);
         $this->assertTrue($client->can_provision);
     }
+
+    // name は運営が識別に使う名前。利用者に出すのは表示言語に合わせた名前
+    public function test_showsTheNameForTheViewersLanguage(): void {
+        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::create([
+            'id' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ulid()->toString()),
+            'secret_hash' => hash('sha256', 'secret'),
+            'name' => 'DokuFarm',
+            'names' => ['en' => 'DokuFarm Wiki Hosting'],
+            'redirect_uris' => ['https://doku.example.com/callback'],
+            'scopes' => 'openid',
+            'is_confidential' => true,
+            'trust' => \App\Modules\Registry\Domain\ServiceTrust::OFFICIAL,
+            'can_provision' => true,
+        ]);
+
+        app()->setLocale('en');
+        $this->assertSame('DokuFarm Wiki Hosting', $client->displayName());
+
+        // 入っていない言語は name に落ちる。どの言語でも何かしら出せること
+        app()->setLocale('ja');
+        $this->assertSame('DokuFarm', $client->displayName());
+    }
+
+    // 空欄は持たない。持つと「消したつもりの欄」が空の名前として出る
+    public function test_dropsAnEmptyLocaleName(): void {
+        $this->loginAs(self::ADMIN_EMAIL);
+
+        $this->post('/admin/clients', [
+            'name' => 'WikiChree',
+            'names' => ['ja' => '  ', 'en' => 'WikiChree'],
+            'redirect_uris' => ['https://wiki.example.com/callback'],
+            'scopes' => 'openid',
+            'trust' => 'unapproved',
+        ])->assertRedirect();
+
+        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::query()
+            ->where('name', 'WikiChree')
+            ->firstOrFail();
+
+        $this->assertSame(['en' => 'WikiChree'], $client->names);
+    }
 }

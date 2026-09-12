@@ -105,7 +105,10 @@ export type TrustValue = 'official' | 'approved' | 'unapproved' | 'disabled';
 /** 管理画面が扱う接続サービス。client_secret はここには載らない */
 export interface OAuthClient {
     id: string;
+    /** 運営が識別に使う名前。どの言語でも出せる最後の拠り所 */
     name: string;
+    /** 言語ごとの表示名。入っていない言語は name を出す */
+    names: Record<string, string>;
     redirectUris: string[];
     scopes: string;
     isConfidential: boolean;
@@ -187,6 +190,15 @@ declare module '@inertiajs/core' {
                 sessionsRevoked: number | null;
                 /** 端末の信頼を取り消した直後だけ true */
                 trustRevoked: boolean | null;
+                /** バックアップを取った直後だけ入る結果 */
+                backupTaken: {
+                    name: string;
+                    bytes: number;
+                    tables: number;
+                    rows: number;
+                    /** 消した古い控えの数 */
+                    pruned: number;
+                } | null;
             };
             /** Turnstile 未設定なら null。その場合ウィジェットを出さない */
             turnstileSiteKey: string | null;

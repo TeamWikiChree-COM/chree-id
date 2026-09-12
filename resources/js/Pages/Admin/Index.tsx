@@ -73,6 +73,12 @@ export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps
                         description={t('admin.index.nav.maintenance.description')}
                         href="/admin/maintenance"
                     />
+                    <NavRow
+                        icon="cloud-arrow-up"
+                        title={t('admin.index.nav.backups.title')}
+                        description={t('admin.index.nav.backups.description')}
+                        href="/admin/backups"
+                    />
                 </Stack>
             </Paper>
         </AppLayout>

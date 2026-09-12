@@ -1,4 +1,4 @@
-import { router, useForm } from "@inertiajs/react";
+import { router, useForm, usePage } from "@inertiajs/react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -14,7 +14,7 @@ import AppLayout from "../../../Components/AppLayout";
 import { useConfirm } from "../../../lib/confirm";
 import Icon from "../../../Components/Icon";
 import SectionTitle from "../../../Components/SectionTitle";
-import { t } from "../../../lib/i18n";
+import { localeLabel, t } from "../../../lib/i18n";
 import type { OAuthClient } from "../../../types";
 
 interface TrustOption {
@@ -32,8 +32,11 @@ export default function Form({ client, trustOptions }: FormProps) {
     const isNew = client === null;
 
     // trust は select の値なので string で持つ。妥当性はサーバ側 (ServiceTrust) で確かめる
+    const { locales } = usePage().props;
+
     const { data, setData, post, processing, errors, transform } = useForm<{
         name: string;
+        names: Record<string, string>;
         redirect_uris: string;
         scopes: string;
         trust: string;
@@ -43,6 +46,7 @@ export default function Form({ client, trustOptions }: FormProps) {
         is_confidential: boolean;
     }>({
         name: client?.name ?? "",
+        names: client?.names ?? {},
         // 1行1つで編集させる。配列を UI に出すより間違いが起きにくい
         redirect_uris: (client?.redirectUris ?? []).join("\n"),
         scopes: client?.scopes ?? "openid profile email",
@@ -122,6 +126,16 @@ export default function Form({ client, trustOptions }: FormProps) {
                             autoFocus
                             required
                         />
+
+                        {locales.map((locale) => (
+                            <TextField
+                                key={locale}
+                                label={t('admin.clients.form.fields.name_for', { language: localeLabel(locale) })}
+                                value={data.names[locale] ?? ''}
+                                onChange={(e) => setData('names', { ...data.names, [locale]: e.target.value })}
+                                helperText={t('admin.clients.form.fields.name_for_helper')}
+                            />
+                        ))}
 
                         <TextField
                             label={t('admin.clients.form.fields.redirect_uris')}
