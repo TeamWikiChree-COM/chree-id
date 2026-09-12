@@ -2,6 +2,7 @@
 namespace App\Modules\Identity\Infrastructure;
 
 use App\Modules\Audit\Application\AuditLog;
+use App\Support\Session\SignedInMarker;
 use App\Modules\Audit\Domain\AuditAction;
 use Illuminate\Http\Request;
 
@@ -16,10 +17,12 @@ class ChreeSession {
 
     private readonly Request $request;
     private readonly AuditLog $audit;
+    private readonly SignedInMarker $marker;
 
-    public function __construct(Request $request, AuditLog $audit) {
+    public function __construct(Request $request, AuditLog $audit, SignedInMarker $marker) {
         $this->request = $request;
         $this->audit = $audit;
+        $this->marker = $marker;
     }
 
     /**
@@ -47,6 +50,9 @@ class ChreeSession {
     public function logout(): void {
         $this->request->session()->forget(self::KEY);
         $this->request->session()->regenerate();
+
+        // 意図したログアウトなので、勝手に消えた扱いにしない (DetectSessionLoss)
+        $this->marker->forget();
     }
 
     /**
