@@ -60,8 +60,9 @@ class PasskeyController {
         $options = $this->start->execute($account);
 
 
-logger()->debug('passkey options created', [
-    'class' => get_class($options),
+logger()->debug('options inspect', [
+    'json' => $this->serializer->encodeOptions($options),
+    'serialized_size' => strlen(serialize($options)),
 ]);
         
         // わかったことはこのL63の行を消すとログアウトされなくなる
