@@ -10,12 +10,13 @@ namespace App\Support\Lang;
 final class LangValidator {
     /**
      * @param array<string, array<string, string>> $locales ロケール => キー => 文言
+     * @param bool $requireFileSegment キーにドットを要求するか (PHP ローダー向けのみ true)
      * @return list<string> 警告。異常があれば例外を投げる
      * @throws LangBuildException 基準ロケールとの食い違いがある
      */
-    public function validate(array $locales): array {
+    public function validate(array $locales, bool $requireFileSegment = true): array {
         $base = $locales[LangSource::BASE];
-        $errors = $this->keysWithoutFile($base);
+        $errors = $requireFileSegment ? $this->keysWithoutFile($base) : [];
         $warnings = [];
 
         foreach ($locales as $locale => $messages) {

@@ -17,7 +17,7 @@ class BuildLang extends Command {
     protected $signature = 'lang:build';
 
     #[\Override]
-    protected $description = '翻訳 JSON を検証して PHP 配列を生成する';
+    protected $description = '翻訳 JSON を検証して PHP 配列を生成する (生成するのは server 側だけ)';
 
     /**
      * @param LangBuild $build ビルドの本体
