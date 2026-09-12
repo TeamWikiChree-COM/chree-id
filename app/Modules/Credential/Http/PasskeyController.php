@@ -78,7 +78,7 @@ logger()->warning('AFTER PUT', [
 ]);
 
         // これはいける、だからserialize(..)
-        $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']); // なおここで上書きしていると問題ない
+        // $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']); // なおここで上書きしていると問題ない
 
         // 次の往復と突き合わせるために、成功した側も残す
         $this->diagnostics->reportStep('options', $request);
