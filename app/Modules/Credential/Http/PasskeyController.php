@@ -58,9 +58,14 @@ class PasskeyController {
         }
 
         $options = $this->start->execute($account);
+
+
+logger()->debug('passkey options created', [
+    'class' => get_class($options),
+]);
         
         // わかったことはこのL63の行を消すとログアウトされなくなる
-        $request->session()->put(self::PENDING_OPTIONS, $options);
+        // $request->session()->put(self::PENDING_OPTIONS, serialize($options));
 
         // これはいける、だからserialize(..)
         // $request->session()->put(self::PENDING_OPTIONS, ['aaa' => 'aaa']);
