@@ -39,11 +39,13 @@ class LoginHistoryTest extends TestCase {
      * @return list<LoginEventModel> 古い順
      */
     private function events(string $accountId): array {
-        return LoginEventModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->orderBy('id')
-            ->get()
-            ->all();
+        return array_values(
+            LoginEventModel::query()
+                ->where('auth_identity_id', $accountId)
+                ->orderBy('id')
+                ->get()
+                ->all(),
+        );
     }
 
     public function test_recordsSuccessfulLogin(): void {
