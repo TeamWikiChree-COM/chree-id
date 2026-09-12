@@ -61,6 +61,17 @@ export interface LoginSessionSummary {
     isCurrent: boolean;
 }
 
+/** アプリケーションログの1件。PHP の LogFile が組み立てる */
+export interface LogEntry {
+    at: string;
+    channel: string;
+    /** ERROR / WARNING など */
+    level: string;
+    message: string;
+    /** スタックトレース。無ければ空文字 */
+    trace: string;
+}
+
 /** 監査ログの1行 */
 export interface AuditEventSummary {
     id: string;
@@ -160,6 +171,8 @@ declare module '@inertiajs/core' {
                 migrationOutput: string | null;
                 /** 掃除を流した直後だけ入る削除件数 */
                 prunedTokens: number | null;
+                /** ログを空にした直後だけ true */
+                logCleared: boolean | null;
                 /** 管理画面でアカウントを作った直後だけ true */
                 accountCreated: boolean | null;
                 /** パスワードを変更した直後だけ true */
