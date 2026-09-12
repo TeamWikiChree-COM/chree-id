@@ -6,6 +6,7 @@ use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
+use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class ChallengeController {
         private readonly CompleteAuthentication $complete,
         private readonly CredentialRepository $credentials,
         private readonly ChreeSession $session,
+        private readonly TrustedDevices $trustedDevices,
     ) {}
 
     /**
@@ -52,6 +54,7 @@ class ChallengeController {
         $request->validate([
             'code' => ['required', 'string'],
             'useRecoveryCode' => ['boolean'],
+            'trustDevice' => ['boolean'],
         ]);
 
         $type = $request->boolean('useRecoveryCode') ? CredentialType::RECOVERY_CODE : CredentialType::TOTP;
@@ -66,7 +69,32 @@ class ChallengeController {
         $this->pending->forget();
         $this->session->login($accountId);
 
-        return redirect()->intended('/');
+        $response = redirect()->intended('/');
+
+        // 2段階目を通した直後だけ信頼できる。ここ以外で配ってはいけない
+        if (!$request->boolean('trustDevice')) return $response;
+
+        return $response->withCookie($this->trustCookie($request, $accountId));
+    }
+
+    /**
+     * 信頼済み端末のクッキーを組み立てる。
+     *
+     * JS からは触らせない (httpOnly)。持ち出されると2段階目を飛ばせてしまう。
+     *
+     * @param Request $request
+     * @param string $accountId アカウントID (ULID)
+     * @return Cookie
+     */
+    private function trustCookie(Request $request, string $accountId): Cookie {
+        $token = $this->trustedDevices->remember($request, $accountId);
+
+        return cookie(
+            TrustedDevices::COOKIE,
+            $token,
+            TrustedDevices::LIFETIME_DAYS * 24 * 60,
+            httpOnly: true,
+        );
     }
 
     /**

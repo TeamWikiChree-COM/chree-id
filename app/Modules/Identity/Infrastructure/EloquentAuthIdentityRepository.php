@@ -4,6 +4,7 @@ namespace App\Modules\Identity\Infrastructure;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentity;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
+use App\Modules\Identity\Domain\IconSource;
 
 /**
  * AuthIdentityRepository の Eloquent 実装
@@ -64,6 +65,19 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
      */
     public function updateDisplayName(string $id, ?string $displayName): void {
         AuthIdentityModel::query()->whereKey($id)->update(['display_name' => $displayName]);
+    }
+
+    /**
+     * @param string $id アカウントID (ULID)
+     * @param IconSource $source アイコンの出どころ
+     * @param string|null $path アップロードした画像の保管先。UPLOAD 以外では null
+     * @return void
+     */
+    public function updateIcon(string $id, IconSource $source, ?string $path): void {
+        AuthIdentityModel::query()->whereKey($id)->update([
+            'icon_source' => $source,
+            'icon_path' => $path,
+        ]);
     }
 
     /**
@@ -152,6 +166,8 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
             $model->origin,
             $model->suspended_at,
             $model->deleted_at,
+            $model->icon_source,
+            $model->icon_path,
         );
     }
 }

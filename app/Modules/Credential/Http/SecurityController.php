@@ -5,6 +5,7 @@ use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Application\EnableTotp;
 use App\Modules\Credential\Application\GenerateRecoveryCodes;
 use App\Modules\Credential\Application\RemoveCredential;
+use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\Totp;
@@ -30,6 +31,7 @@ class SecurityController {
         private readonly GenerateRecoveryCodes $recoveryCodes,
         private readonly RemoveCredential $remove,
         private readonly EnableMagicLink $enableMagicLink,
+        private readonly CredentialRepository $credentials,
     ) {}
 
     /**
@@ -42,6 +44,7 @@ class SecurityController {
 
         return Inertia::render('Settings/Security', [
             'credentials' => $this->credentialsOf($accountId),
+            'hasPassword' => $this->credentials->has($accountId, CredentialType::PASSWORD),
             'recoveryCodeCount' => $this->recoveryCodes->remaining($accountId),
             'pendingTotp' => $request->session()->get(self::PENDING_TOTP . '.uri'),
         ]);
@@ -130,6 +133,10 @@ class SecurityController {
     }
 
     /**
+     * 認証手段を1件だけ消す。
+     *
+     * パスキーや外部アカウントは同じ種別を複数持てるので、種別ではなく行を指す。
+     *
      * @param Request $request
      * @return RedirectResponse
      * @throws ValidationException 最後の1件を消そうとした場合
@@ -138,15 +145,33 @@ class SecurityController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        $request->validate(['type' => ['required', 'string']]);
-
-        $type = CredentialType::tryFrom($request->string('type')->toString());
-        if ($type === null) throw ValidationException::withMessages(['type' => '不明な認証方法です']);
+        $request->validate(['id' => ['required', 'string']]);
 
         try {
-            $this->remove->execute($accountId, $type);
+            $this->remove->executeById($accountId, $request->string('id')->toString());
         } catch (RuntimeException $e) {
-            throw ValidationException::withMessages(['type' => $e->getMessage()]);
+            throw ValidationException::withMessages(['credential' => $e->getMessage()]);
+        }
+
+        return redirect('/settings/security');
+    }
+
+    /**
+     * マジックリンクでのログインをやめる。
+     *
+     * 有効化の行は1つしか無いので、こちらは種別で消す。
+     *
+     * @return RedirectResponse
+     * @throws ValidationException 最後の1件を消そうとした場合
+     */
+    public function disableMagicLink(): RedirectResponse {
+        $accountId = $this->session->accountId();
+        if ($accountId === null) return redirect('/login');
+
+        try {
+            $this->remove->execute($accountId, CredentialType::MAGIC_LINK);
+        } catch (RuntimeException $e) {
+            throw ValidationException::withMessages(['credential' => $e->getMessage()]);
         }
 
         return redirect('/settings/security');
@@ -154,13 +179,14 @@ class SecurityController {
 
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{type: string, label: string|null, lastUsedAt: string|null}>
+     * @return list<array{id: string, type: string, label: string|null, lastUsedAt: string|null, createdAt: string|null}>
      */
     private function credentialsOf(string $accountId): array {
         $rows = CredentialModel::query()
             ->where('auth_identity_id', $accountId)
             ->where('type', '!=', CredentialType::RECOVERY_CODE->value)
             ->orderBy('type')
+            ->orderBy('created_at')
             ->get();
 
         $result = [];
@@ -169,9 +195,11 @@ class SecurityController {
             $label = is_array($data) && is_string($data['label'] ?? null) ? $data['label'] : null;
 
             $result[] = [
+                'id' => $row->id,
                 'type' => $row->type->value,
                 'label' => $label,
                 'lastUsedAt' => $row->last_used_at?->toDateTimeString(),
+                'createdAt' => $row->created_at?->toDateTimeString(),
             ];
         }
 

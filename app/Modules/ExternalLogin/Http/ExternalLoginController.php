@@ -2,30 +2,27 @@
 namespace App\Modules\ExternalLogin\Http;
 
 use App\Modules\ExternalLogin\Application\LinkExternalIdentity;
+use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
+use App\Modules\ExternalLogin\Infrastructure\ExternalLoginFlow;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 use Throwable;
 
 /**
  * 外部 IdP へのログイン (ChreeID が RP 側)
+ *
+ * 設定画面から後付けで連携する入口は ConnectionController。IdP からの着地は
+ * どちらもここに来る (1か所にまとめないと state の扱いが分かれる)。
  */
 class ExternalLoginController {
-    private const STATE_KEY = 'external_login.state';
-    private const NONCE_KEY = 'external_login.nonce';
-
-    /** 引き取り (claim) 中に連携を始めた場合、戻ってきたときに引き取りへつなげるためのトークン */
-    private const CLAIM_TOKEN_KEY = 'external_login.claim_token';
-
-    /** 複数の認証主体に紐付いていたときの候補。選ばれるまで持っておく */
-    private const CANDIDATES_KEY = 'external_login.candidates';
-
     public function __construct(
         private readonly ExternalIdpRegistry $registry,
         private readonly LinkExternalIdentity $link,
@@ -33,6 +30,7 @@ class ExternalLoginController {
         private readonly ClaimTickets $tickets,
         private readonly ClaimServiceAccount $claim,
         private readonly AuthIdentityRepository $accounts,
+        private readonly ExternalLoginFlow $flow,
     ) {}
 
     /**
@@ -44,17 +42,7 @@ class ExternalLoginController {
         $idp = $this->registry->get($provider);
         if ($idp === null) return redirect('/login')->withErrors(['email' => '対応していない連携先です']);
 
-        $state = Str::random(40);
-        $nonce = Str::random(40);
-
-        $request->session()->put(self::STATE_KEY, $state);
-        $request->session()->put(self::NONCE_KEY, $nonce);
-
-        // 引き取り画面から来た場合は、戻ってきたときに分かるよう覚えておく
-        $claimToken = $request->string('claim_token')->toString();
-        if ($claimToken !== '') $request->session()->put(self::CLAIM_TOKEN_KEY, $claimToken);
-
-        return redirect()->away($idp->authorizationUrl($state, $nonce));
+        return redirect()->away($this->flow->start($idp, $request->string('claim_token')->toString()));
     }
 
     /**
@@ -66,26 +54,46 @@ class ExternalLoginController {
         $idp = $this->registry->get($provider);
         if ($idp === null) return $this->fail('対応していない連携先です');
 
-        $state = $request->session()->pull(self::STATE_KEY);
-        $nonce = $request->session()->pull(self::NONCE_KEY);
-        $claimToken = $request->session()->pull(self::CLAIM_TOKEN_KEY);
+        $linkAccountId = $this->flow->pullLinkAccountId();
+        $nonce = $this->flow->pullNonce();
+        $claimToken = $this->flow->pullClaimToken();
 
-        // state が一致しないリクエストは、第三者に開始させられた可能性がある
-        if (!\is_string($state) || !hash_equals($state, $request->string('state')->toString())) {
-            return $this->fail('連携を確認できませんでした');
+        if (!$this->flow->matchesState($request->string('state')->toString()) || $nonce === null) {
+            return $this->fail('連携を確認できませんでした', $linkAccountId);
         }
-        if (!\is_string($nonce)) return $this->fail('連携を確認できませんでした');
 
         $code = $request->string('code')->toString();
-        if ($code === '') return $this->fail('連携がキャンセルされました');
+        if ($code === '') return $this->fail('連携がキャンセルされました', $linkAccountId);
 
         try {
             $identity = $idp->exchange($code, $nonce);
+        } catch (Throwable) {
+            return $this->fail('連携に失敗しました', $linkAccountId);
+        }
 
+        // 設定画面から始めた連携は、ログインではなく本人のアカウントへ足すだけ
+        if ($linkAccountId !== null) return $this->addToAccount($linkAccountId, $identity);
+
+        return $this->loginWith($identity, $claimToken);
+    }
+
+    /**
+     * ログイン経路。連携先のアカウントを決めてセッションを張る。
+     *
+     * @param ExternalIdentity $identity IdP が主張してきた内容
+     * @param string|null $claimToken 引き取り中ならそのトークン
+     * @return RedirectResponse
+     */
+    private function loginWith(ExternalIdentity $identity, ?string $claimToken): RedirectResponse {
+        try {
             // 分離すると、同じ外部アカウントが複数の認証主体に紐付きうる。
             // 黙ってどれかを選ぶと別のアカウントとして入れてしまうので、本人に選ばせる
             $candidates = $this->link->candidates($identity);
-            if (count($candidates) > 1) return $this->chooseIdentity($request, $candidates, $claimToken);
+            if (count($candidates) > 1) {
+                $this->flow->keepCandidates($candidates, $claimToken);
+
+                return redirect('/login/choose');
+            }
 
             $accountId = $this->link->execute($identity);
         } catch (ExternalIdentityConflict) {
@@ -97,9 +105,7 @@ class ExternalLoginController {
         $account = $this->accounts->findById($accountId);
         if ($account === null || $account->isSuspended()) return $this->fail('このアカウントは使用できません');
 
-        if (\is_string($claimToken) && $claimToken !== '') {
-            $this->finalizeClaim($claimToken, $accountId);
-        }
+        if ($claimToken !== null) $this->finalizeClaim($claimToken, $accountId);
 
         $this->session->login($accountId);
 
@@ -107,20 +113,29 @@ class ExternalLoginController {
     }
 
     /**
-     * どの認証主体として入るかを選ばせる画面へ送る。
+     * 設定画面から始めた連携の着地。
      *
-     * @param Request $request
-     * @param list<string> $candidates 紐付いている認証主体のID
-     * @param mixed $claimToken 引き取り中ならそのトークン
+     * **セッションの本人と、連携を始めた本人が一致することを確かめる。**
+     * 途中で別のアカウントに入り直していた場合、そちらに足すと本人の意図とずれる。
+     *
+     * @param string $linkAccountId 連携を始めたときのアカウントID
+     * @param ExternalIdentity $identity IdP が主張してきた内容
      * @return RedirectResponse
      */
-    private function chooseIdentity(Request $request, array $candidates, mixed $claimToken): RedirectResponse {
-        $request->session()->put(self::CANDIDATES_KEY, $candidates);
-        if (\is_string($claimToken) && $claimToken !== '') {
-            $request->session()->put(self::CLAIM_TOKEN_KEY, $claimToken);
+    private function addToAccount(string $linkAccountId, ExternalIdentity $identity): RedirectResponse {
+        if ($this->session->accountId() !== $linkAccountId) {
+            return $this->fail('連携を確認できませんでした');
         }
 
-        return redirect('/login/choose');
+        try {
+            $this->link->linkTo($linkAccountId, $identity);
+        } catch (ExternalIdentityConflict $e) {
+            return redirect('/settings/connections')->withErrors(['provider' => $e->getMessage()]);
+        } catch (Throwable) {
+            return redirect('/settings/connections')->withErrors(['provider' => '連携に失敗しました']);
+        }
+
+        return redirect('/settings/connections')->with('connectionAdded', true);
     }
 
     /**
@@ -132,8 +147,8 @@ class ExternalLoginController {
      * @return RedirectResponse
      */
     public function choose(Request $request): RedirectResponse {
-        $candidates = $request->session()->get(self::CANDIDATES_KEY);
-        if (!\is_array($candidates) || $candidates === []) return $this->fail('連携を確認できませんでした');
+        $candidates = $this->flow->candidates();
+        if ($candidates === []) return $this->fail('連携を確認できませんでした');
 
         $chosen = $request->string('account_id')->toString();
         if (!\in_array($chosen, $candidates, true)) return $this->fail('連携を確認できませんでした');
@@ -141,10 +156,10 @@ class ExternalLoginController {
         $account = $this->accounts->findById($chosen);
         if ($account === null || $account->isSuspended()) return $this->fail('このアカウントは使用できません');
 
-        $request->session()->forget(self::CANDIDATES_KEY);
-        $claimToken = $request->session()->pull(self::CLAIM_TOKEN_KEY);
+        $this->flow->forgetCandidates();
+        $claimToken = $this->flow->pullClaimToken();
 
-        if (\is_string($claimToken) && $claimToken !== '') $this->finalizeClaim($claimToken, $chosen);
+        if ($claimToken !== null) $this->finalizeClaim($claimToken, $chosen);
 
         $this->session->login($chosen);
 
@@ -154,16 +169,15 @@ class ExternalLoginController {
     /**
      * 選択画面。候補が無ければログインへ戻す。
      *
-     * @param Request $request
-     * @return \Inertia\Response|RedirectResponse
+     * @return Response|RedirectResponse
      */
-    public function showChoice(Request $request): \Inertia\Response|RedirectResponse {
-        $candidates = $request->session()->get(self::CANDIDATES_KEY);
-        if (!\is_array($candidates) || $candidates === []) return redirect('/login');
+    public function showChoice(): Response|RedirectResponse {
+        $candidates = $this->flow->candidates();
+        if ($candidates === []) return redirect('/login');
 
         $accounts = [];
         foreach ($candidates as $id) {
-            $account = \is_string($id) ? $this->accounts->findById($id) : null;
+            $account = $this->accounts->findById($id);
             if ($account === null || $account->isSuspended()) continue;
 
             $accounts[] = [
@@ -173,7 +187,7 @@ class ExternalLoginController {
             ];
         }
 
-        return \Inertia\Inertia::render('Auth/ChooseIdentity', ['accounts' => $accounts]);
+        return Inertia::render('Auth/ChooseIdentity', ['accounts' => $accounts]);
     }
 
     /**
@@ -199,9 +213,15 @@ class ExternalLoginController {
 
     /**
      * @param string $message 画面に出す文言
+     * @param string|null $linkAccountId 設定画面から始めていた場合、そのアカウントID
      * @return RedirectResponse
      */
-    private function fail(string $message): RedirectResponse {
+    private function fail(string $message, ?string $linkAccountId = null): RedirectResponse {
+        // 設定画面から始めた人をログイン画面に落とさない。ログイン中なのに追い出される
+        if ($linkAccountId !== null) {
+            return redirect('/settings/connections')->withErrors(['provider' => $message]);
+        }
+
         return redirect('/login')->withErrors(['email' => $message]);
     }
 }

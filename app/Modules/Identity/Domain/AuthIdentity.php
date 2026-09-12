@@ -16,6 +16,8 @@ readonly class AuthIdentity {
     public AccountOrigin $origin;
     public ?CarbonInterface $suspendedAt;
     public ?CarbonInterface $deletedAt;
+    public IconSource $iconSource;
+    public ?string $iconPath;
 
     /**
      * @param string $id アカウントID (ULID)
@@ -25,6 +27,8 @@ readonly class AuthIdentity {
      * @param AccountOrigin $origin 発行経路
      * @param CarbonInterface|null $suspendedAt 停止日時
      * @param CarbonInterface|null $deletedAt 退会日時。猶予のあいだ残し、過ぎたら行ごと消す
+     * @param IconSource $iconSource アイコンの出どころ
+     * @param string|null $iconPath アップロードした画像の保管先。UPLOAD 以外では null
      */
     public function __construct(
         string $id,
@@ -34,6 +38,8 @@ readonly class AuthIdentity {
         AccountOrigin $origin,
         ?CarbonInterface $suspendedAt,
         ?CarbonInterface $deletedAt = null,
+        IconSource $iconSource = IconSource::NONE,
+        ?string $iconPath = null,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -42,6 +48,8 @@ readonly class AuthIdentity {
         $this->origin = $origin;
         $this->suspendedAt = $suspendedAt;
         $this->deletedAt = $deletedAt;
+        $this->iconSource = $iconSource;
+        $this->iconPath = $iconPath;
     }
 
     /** @return bool */

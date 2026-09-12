@@ -6,6 +6,8 @@ use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
+use App\Modules\Device\Application\LoginSessions;
+use App\Modules\Device\Application\TrustedDevices;
 use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Provider\Infrastructure\LoginHint;
@@ -27,6 +29,8 @@ class LoginController {
         private readonly PendingAuthentication $pending,
         private readonly ChreeSession $session,
         private readonly LoginHint $loginHint,
+        private readonly TrustedDevices $trustedDevices,
+        private readonly LoginSessions $sessions,
     ) {}
 
     /**
@@ -64,8 +68,11 @@ class LoginController {
 
         if (!$verified->isSuccess()) throw $this->invalidCredentials();
 
-        // 2FA を有効にしているアカウントは、パスワードだけでは成立しない
-        if (!$this->complete->execute($account->id, $factors)) {
+        // 2FA を有効にしているアカウントは、パスワードだけでは成立しない。
+        // ただし本人が2段階目を通したうえで信頼した端末なら、そこは省く
+        $trusted = $this->trustedDevices->isTrusted($account->id, $request->cookie(TrustedDevices::COOKIE));
+
+        if (!$trusted && !$this->complete->execute($account->id, $factors)) {
             $this->pending->start($account->id, $factors);
 
             return redirect('/login/challenge');
@@ -88,9 +95,13 @@ class LoginController {
     }
 
     /**
+     * @param Request $request
      * @return RedirectResponse
      */
-    public function destroy(): RedirectResponse {
+    public function destroy(Request $request): RedirectResponse {
+        // セッションIDが再生成される前に控えを落とす。後だと別のIDを消しにいく
+        $this->sessions->forget($request->session()->getId());
+
         $this->pending->forget();
         $this->session->logout();
 

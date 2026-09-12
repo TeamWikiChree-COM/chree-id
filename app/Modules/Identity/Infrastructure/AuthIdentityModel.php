@@ -2,6 +2,7 @@
 namespace App\Modules\Identity\Infrastructure;
 
 use App\Modules\Identity\Domain\AccountOrigin;
+use App\Modules\Identity\Domain\IconSource;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $display_name
  * @property AccountOrigin $origin
  * @property \Illuminate\Support\Carbon|null $suspended_at
+ * @property IconSource $icon_source
+ * @property string|null $icon_path
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -42,6 +45,8 @@ class AuthIdentityModel extends Model {
         "email_verified_at",
         "display_name",
         'origin',
+        'icon_source',
+        'icon_path',
     ];
 
     // PHPではただの文字列だけどDBでは日付なのでDBに入れる時のメモ的なやつ
@@ -53,6 +58,7 @@ class AuthIdentityModel extends Model {
         'suspended_at' => 'datetime',
         'deleted_at' => 'datetime',
         'origin' => AccountOrigin::class,
+        'icon_source' => IconSource::class,
     ];
     
     // なんとなくかいとく、いらんけどこれあったほうがおちつくやろ知らんけど

@@ -116,6 +116,29 @@ class LinkExternalIdentity {
     }
 
     /**
+     * ログイン済みの本人が、後から外部アカウントを足す。
+     *
+     * ログイン経路の execute() と違い、メールが一致するかは見ない。
+     * 本人がログインした状態で始めた連携なので、寄せ先を推測する必要がない。
+     *
+     * @param string $accountId 連携先のアカウントID (ULID)
+     * @param ExternalIdentity $identity IdP が主張してきた内容
+     * @return void
+     * @throws ExternalIdentityConflict 既に同じアカウントへ連携済みの場合
+     */
+    public function linkTo(string $accountId, ExternalIdentity $identity): void {
+        $exists = CredentialModel::query()
+            ->where('auth_identity_id', $accountId)
+            ->where('type', CredentialType::OAUTH)
+            ->where('identifier', $identity->credentialIdentifier())
+            ->exists();
+
+        if ($exists) throw new ExternalIdentityConflict('この外部アカウントは既に連携しています');
+
+        $this->link($accountId, $identity);
+    }
+
+    /**
      * @param string $accountId アカウントID (ULID)
      * @param ExternalIdentity $identity
      * @return void

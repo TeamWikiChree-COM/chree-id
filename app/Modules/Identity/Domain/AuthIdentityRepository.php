@@ -53,6 +53,18 @@ interface AuthIdentityRepository {
     public function updateDisplayName(string $id, ?string $displayName): void;
 
     /**
+     * アイコンの設定を差し替える。
+     *
+     * 画像そのものの保存・削除は呼び出し側 (AccountIcons) の担当。
+     *
+     * @param string $id アカウントID (ULID)
+     * @param IconSource $source アイコンの出どころ
+     * @param string|null $path アップロードした画像の保管先。UPLOAD 以外では null
+     * @return void
+     */
+    public function updateIcon(string $id, IconSource $source, ?string $path): void;
+
+    /**
      * 発行経路を差し替える。
      *
      * サービスが裏で作ったアカウントを、本人が引き取ったときに user へ移す。
