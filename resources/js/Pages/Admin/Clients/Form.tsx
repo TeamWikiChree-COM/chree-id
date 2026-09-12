@@ -61,6 +61,8 @@ export default function Form({ client, trustOptions }: FormProps) {
             .filter((uri) => uri !== ""),
     }));
 
+    const { ask, dialog } = useConfirm();
+
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post(isNew ? "/admin/clients" : `/admin/clients/${client.id}`);
