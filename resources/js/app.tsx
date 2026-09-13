@@ -28,8 +28,11 @@ function Root({ children }: { children: ReactNode }) {
     );
 }
 
+/** ビルド時に .env の APP_NAME から埋め込まれる。タイトルは Head より前に確定させる必要があるため */
+const appName = import.meta.env.VITE_APP_NAME ?? 'ChreeID';
+
 createInertiaApp({
-    title: (title: string) => (title ? `${title} - ChreeID` : 'ChreeID'),
+    title: (title: string) => (title ? `${title} - ${appName}` : appName),
 
     resolve: (name: string) => {
         const pages = import.meta.glob<{ default: ComponentType }>('./Pages/**/*.tsx', { eager: true });

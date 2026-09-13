@@ -241,6 +241,10 @@ declare module '@inertiajs/core' {
             isLoggedIn: boolean;
             /** ログイン中の本人のアイコン。未設定なら null */
             iconUrl: string | null;
+            /** アプリ名。.env の APP_NAME */
+            appName: string;
+            /** ヘッダー・ログイン画面に出すロゴ。.env で未設定なら同梱のロゴ */
+            appLogoUrl: string;
             /** 画面の言語。辞書そのものはバンドルに入っているので名前だけ渡す */
             locale: string;
             /** 切り替えメニューに並べる言語。config/chreeid.php の locales */

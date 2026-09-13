@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -22,6 +22,8 @@ interface AppLayoutProps {
  * ヘッダー・パンくず・見出しまでを揃える。画面ごとに組み立てるとズレるので、ここに固定する。
  */
 export default function AppLayout({ title, lead, crumbs, children }: AppLayoutProps) {
+    const { appName } = usePage().props;
+
     return (
         <>
             <Head title={title} />
@@ -43,7 +45,8 @@ export default function AppLayout({ title, lead, crumbs, children }: AppLayoutPr
 
             {crumbs !== undefined && (
                 <Container maxWidth="md">
-                    <Breadcrumbs items={crumbs} />
+                    {/* 先頭のホームへの導線はどの画面でも同じなので、呼び出し側には持たせない */}
+                    <Breadcrumbs items={[{ label: appName, href: '/' }, ...crumbs]} />
                 </Container>
             )}
 

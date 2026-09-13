@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -25,6 +25,8 @@ interface AuthLayoutProps {
  * 「何のためのアカウントか」を一言で言えなくなるため。
  */
 export default function AuthLayout({ title, heading, children, footer }: AuthLayoutProps) {
+    const { appName, appLogoUrl } = usePage().props;
+
     return (
         <>
             <Head title={title} />
@@ -35,12 +37,12 @@ export default function AuthLayout({ title, heading, children, footer }: AuthLay
                     <Box sx={{ textAlign: 'center', mb: 3.5 }}>
                         <Box
                             component="img"
-                            src="/icon.png"
+                            src={appLogoUrl}
                             alt=""
                             sx={{ width: 36, height: 36, verticalAlign: '-0.5rem', mr: 1 }}
                         />
                         <Box component="span" sx={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
-                            ChreeID
+                            {appName}
                         </Box>
 
                         {heading !== undefined && (

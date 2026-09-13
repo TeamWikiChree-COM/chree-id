@@ -29,7 +29,7 @@ import { t } from '../lib/i18n';
  * ログインしていないときは、行き先の無いリンクを出さずロゴと表示設定だけにする。
  */
 export default function AppHeader() {
-    const { isAdmin, isLoggedIn, iconUrl } = usePage().props;
+    const { isAdmin, isLoggedIn, iconUrl, appName, appLogoUrl } = usePage().props;
     const { mode, toggle } = useThemeModeContext();
     const theme = useTheme();
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -59,9 +59,9 @@ export default function AppHeader() {
                     href="/"
                     sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, textDecoration: 'none' }}
                 >
-                    <Box component="img" src="/icon.png" alt="" sx={{ width: 28, height: 28 }} />
+                    <Box component="img" src={appLogoUrl} alt="" sx={{ width: 28, height: 28 }} />
                     <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: 'text.primary', lineHeight: 1 }}>
-                        ChreeID
+                        {appName}
                     </Typography>
                 </Box>
 
