@@ -1,8 +1,6 @@
 <?php
 namespace App\Modules\Registry\Http;
 
-use App\Modules\Identity\Infrastructure\UserAccountModel;
-use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Application\RegisterClient;
 use App\Modules\Registry\Application\RotateClientSecret;
 use App\Modules\Registry\Application\UpdateClient;
@@ -25,6 +23,7 @@ class AdminClientController {
         private readonly RegisterClient $register,
         private readonly UpdateClient $update,
         private readonly RotateClientSecret $rotate,
+        private readonly ClientPresenter $presenter,
     ) {}
 
     /**
@@ -33,7 +32,7 @@ class AdminClientController {
      */
     public function index(Request $request): Response {
         return Inertia::render('Admin/Clients/Index', [
-            'clients' => $this->all(),
+            'clients' => $this->presenter->all(),
             // 登録・再発行の直後だけ平文を渡す。次の表示では消える
             'issued' => $request->session()->get('issuedSecret'),
         ]);
@@ -45,7 +44,7 @@ class AdminClientController {
     public function create(): Response {
         return Inertia::render('Admin/Clients/Form', [
             'client' => null,
-            'trustOptions' => $this->trustOptions(),
+            'trustOptions' => $this->presenter->trustOptions(),
         ]);
     }
 
@@ -84,8 +83,8 @@ class AdminClientController {
         $model = OAuthClientModel::query()->findOrFail($client);
 
         return Inertia::render('Admin/Clients/Form', [
-            'client' => $this->toArray($model),
-            'trustOptions' => $this->trustOptions(),
+            'client' => $this->presenter->toArray($model),
+            'trustOptions' => $this->presenter->trustOptions(),
         ]);
     }
 
@@ -167,7 +166,27 @@ class AdminClientController {
      * @throws ValidationException
      */
     private function validated(Request $request): array {
-        $request->validate([
+        $request->validate($this->rules());
+
+        return [
+            'name' => $request->string('name')->toString(),
+            'names' => $this->localeNames($request),
+            'redirect_uris' => $this->redirectUris($request),
+            'scopes' => $request->string('scopes')->toString(),
+            'trust' => $this->trust($request),
+            // 同意の省略も発行権限も、信頼状態とは別の設定
+            'skips_consent' => $request->boolean('skips_consent'),
+            'can_provision' => $request->boolean('can_provision'),
+            'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
+            'settings_url' => $this->trimmedOrNull($request->string('settings_url')->toString()),
+        ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function rules(): array {
+        return [
             'name' => ['required', 'string', 'max:100'],
             // 言語ごとの表示名。空欄なら name を出すので、埋めさせない
             'names' => ['array'],
@@ -183,13 +202,26 @@ class AdminClientController {
             'icon_url' => ['nullable', 'string', 'url', 'max:500'],
             // 利用者を案内する先。サービス側が持つ画面なので、こちらは場所を預かるだけ
             'settings_url' => ['nullable', 'string', 'url', 'max:500'],
-        ]);
+        ];
+    }
 
+    /**
+     * @param Request $request
+     * @return ServiceTrust
+     * @throws ValidationException
+     */
+    private function trust(Request $request): ServiceTrust {
         $trust = ServiceTrust::tryFrom($request->string('trust')->toString());
-        if ($trust === null) {
-            throw ValidationException::withMessages(['trust' => __('admin.client.invalid_trust')]);
-        }
+        if ($trust === null) throw ValidationException::withMessages(['trust' => __('admin.client.invalid_trust')]);
 
+        return $trust;
+    }
+
+    /**
+     * @param Request $request
+     * @return list<string> 前後の空白を落とし、空行を除いたもの
+     */
+    private function redirectUris(Request $request): array {
         $uris = [];
         foreach ($request->collect('redirect_uris') as $uri) {
             if (!is_string($uri)) continue;
@@ -198,77 +230,7 @@ class AdminClientController {
             if ($uri !== '') $uris[] = $uri;
         }
 
-        return [
-            'name' => $request->string('name')->toString(),
-            'names' => $this->localeNames($request),
-            'redirect_uris' => $uris,
-            'scopes' => $request->string('scopes')->toString(),
-            'trust' => $trust,
-            // 同意の省略も発行権限も、信頼状態とは別の設定
-            'skips_consent' => $request->boolean('skips_consent'),
-            'can_provision' => $request->boolean('can_provision'),
-            'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
-            'settings_url' => $this->trimmedOrNull($request->string('settings_url')->toString()),
-        ];
-    }
-
-    /**
-     * @return list<array{id: string, name: string, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}>
-     */
-    private function all(): array {
-        $result = [];
-        foreach (OAuthClientModel::query()->orderBy('name')->get() as $client) {
-            $result[] = $this->toArray($client);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param OAuthClientModel $client
-     * @return array{id: string, name: string, names: array<string, string>, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
-     */
-    private function toArray(OAuthClientModel $client): array {
-        return [
-            'id' => $client->id,
-            'name' => $client->name,
-            'names' => $client->names ?? [],
-            'redirectUris' => $client->redirect_uris,
-            'scopes' => $client->scopes,
-            'isConfidential' => $client->is_confidential,
-            'trust' => $client->trust->value,
-            'skipsConsent' => $client->skips_consent,
-            'canProvision' => $client->can_provision,
-            'iconUrl' => $client->icon_url,
-            'settingsUrl' => $client->settings_url,
-            'reviewRequestedAt' => $client->review_requested_at?->format('Y/m/d H:i'),
-            'hasOwner' => $client->owner_id !== null,
-            // 移行元へ落とす経路をいつ消せるかの目安になる
-            'serviceAccounts' => $this->countServiceAccounts($client->id),
-            'migratedAccounts' => $this->countMigrated($client->id),
-            'createdAt' => $client->created_at?->toDateTimeString(),
-        ];
-    }
-
-    /**
-     * @param string $clientId サービスの client_id
-     * @return int このサービスのサービスアカウント数
-     */
-    private function countServiceAccounts(string $clientId): int {
-        return ServiceAccountModel::query()->where('client_id', $clientId)->count();
-    }
-
-    /**
-     * 束ねる人格を持つに至った数。移行がどこまで進んでいるかの目安。
-     *
-     * @param string $clientId サービスの client_id
-     * @return int
-     */
-    private function countMigrated(string $clientId): int {
-        return ServiceAccountModel::query()
-            ->where('client_id', $clientId)
-            ->whereIn('auth_identity_id', UserAccountModel::query()->select('auth_identity_id'))
-            ->count();
+        return $uris;
     }
 
     /**
@@ -279,18 +241,6 @@ class AdminClientController {
         $value = trim($value);
 
         return $value === '' ? null : $value;
-    }
-
-    /**
-     * @return list<array{value: string, label: string}>
-     */
-    private function trustOptions(): array {
-        return [
-            ['value' => ServiceTrust::OFFICIAL->value, 'label' => __('admin.client.trust.official')],
-            ['value' => ServiceTrust::APPROVED->value, 'label' => __('admin.client.trust.approved')],
-            ['value' => ServiceTrust::UNAPPROVED->value, 'label' => __('admin.client.trust.unapproved')],
-            ['value' => ServiceTrust::DISABLED->value, 'label' => __('admin.client.trust.disabled')],
-        ];
     }
 
     /**
