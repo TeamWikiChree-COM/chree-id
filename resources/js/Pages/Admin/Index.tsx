@@ -22,7 +22,7 @@ export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps
         <AppLayout
             title={t('admin.index.title')}
             lead={t('admin.index.lead')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('admin.crumb') }]}
+            crumbs={[{ label: t('admin.crumb') }]}
         >
             <Stack direction="row" spacing={1.5}>
                 <StatCard label={t('admin.index.stats.clients')} value={stats.clients} />

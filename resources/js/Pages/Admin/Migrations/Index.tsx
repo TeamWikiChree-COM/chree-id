@@ -49,7 +49,6 @@ export default function Index({ pending, applied }: IndexProps) {
             title={t('admin.migrations.title')}
             lead={t('admin.migrations.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.crumb'), href: '/admin' },
                 { label: t('admin.migrations.crumb') },
             ]}

@@ -55,7 +55,7 @@ export default function Dashboard({
         <AppLayout
             title={t("dashboard.title")}
             lead={t("dashboard.lead")}
-            crumbs={[{ label: "ChreeID", href: "/" }, { label: t("dashboard.crumb") }]}
+            crumbs={[{ label: t("dashboard.crumb") }]}
         >
             {flash.accountMerged && (
                 <Alert severity="success" sx={{ mb: 2 }}>
@@ -88,14 +88,6 @@ export default function Dashboard({
                             }}
                         >
                             {account.displayName ?? t("dashboard.profile.no_display_name")}
-                            <Chip
-                                size="small"
-                                label={
-                                    account.origin === "user"
-                                        ? t("dashboard.profile.origin_user")
-                                        : t("dashboard.profile.origin_service")
-                                }
-                            />
                         </Typography>
 
                         <Typography
@@ -333,7 +325,7 @@ export default function Dashboard({
 
             <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
                 <Button
-                    variant="outlined"
+                    // variant="outlined"
                     color="inherit"
                     startIcon={<Icon name="gear" />}
                     onClick={() => router.get("/settings")}

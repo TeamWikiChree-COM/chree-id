@@ -81,7 +81,7 @@ export default function Merge({ candidate, proofs, transferable }: MergeProps) {
         <AppLayout
             title={t('settings.merge.title')}
             lead={t('settings.merge.lead')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.merge.crumb') }]}
+            crumbs={[{ label: t('settings.merge.crumb') }]}
         >
             <SectionTitle>{t('settings.merge.source_heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>

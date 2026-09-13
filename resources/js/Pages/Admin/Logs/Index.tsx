@@ -47,7 +47,6 @@ export default function Index({ files, file, entries }: IndexProps) {
             title={t('admin.logs.title')}
             lead={t('admin.logs.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.index.title'), href: '/admin' },
                 { label: t('admin.logs.crumb') },
             ]}

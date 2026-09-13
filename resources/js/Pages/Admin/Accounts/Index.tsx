@@ -42,7 +42,6 @@ export default function Index({ accounts, selfId, graceDays }: IndexProps) {
             title={t('admin.accounts.title')}
             lead={t('admin.accounts.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.crumb'), href: '/admin' },
                 { label: t('admin.accounts.crumb') },
             ]}

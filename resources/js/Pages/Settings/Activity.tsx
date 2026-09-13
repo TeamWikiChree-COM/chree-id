@@ -23,7 +23,6 @@ export default function Activity({ events, keepDays }: ActivityProps) {
         <AppLayout
             title={t('settings.title')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('settings.title'), href: '/settings' },
                 { label: t('settings.activity.crumb') },
             ]}

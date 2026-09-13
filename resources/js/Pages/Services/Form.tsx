@@ -50,7 +50,6 @@ export default function Form({ service, scopes }: FormProps) {
         <AppLayout
             title={title}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('services.crumb'), href: '/services' },
                 { label: title },
             ]}

@@ -45,7 +45,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
     return (
         <AppLayout
             title={t('settings.title')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title'), href: '/settings' }, { label: t('settings.devices.crumb') }]}
+            crumbs={[{ label: t('settings.title'), href: '/settings' }, { label: t('settings.devices.crumb') }]}
         >
             <SettingsTabs current="/settings/devices" />
 

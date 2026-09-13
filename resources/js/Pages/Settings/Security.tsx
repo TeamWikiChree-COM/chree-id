@@ -65,7 +65,6 @@ export default function Security({ credentials, hasPassword, recoveryCodeCount, 
         <AppLayout
             title={t('settings.title')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('settings.title'), href: '/settings' },
                 { label: t('settings.security.crumb') },
             ]}

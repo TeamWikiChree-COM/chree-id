@@ -39,7 +39,7 @@ export default function Connections({ connections, providers }: ConnectionsProps
     return (
         <AppLayout
             title={t('settings.title')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title'), href: '/settings' }, { label: t('settings.connections.crumb') }]}
+            crumbs={[{ label: t('settings.title'), href: '/settings' }, { label: t('settings.connections.crumb') }]}
         >
             <SettingsTabs current="/settings/connections" />
 

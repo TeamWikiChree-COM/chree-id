@@ -50,7 +50,7 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
     return (
         <AppLayout
             title={t('settings.title')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('settings.title') }]}
+            crumbs={[{ label: t('settings.title') }]}
         >
             <SettingsTabs current="/settings" />
 

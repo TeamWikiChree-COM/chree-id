@@ -80,7 +80,6 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
             title={t('admin.maintenance.title')}
             lead={t('admin.maintenance.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.crumb'), href: '/admin' },
                 { label: t('admin.maintenance.crumb') },
             ]}

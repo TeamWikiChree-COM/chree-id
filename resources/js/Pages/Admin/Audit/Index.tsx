@@ -20,7 +20,6 @@ export default function Index({ events, keepDays }: IndexProps) {
             title={t('admin.audit.title')}
             lead={t('admin.audit.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.index.title'), href: '/admin' },
                 { label: t('admin.audit.crumb') },
             ]}

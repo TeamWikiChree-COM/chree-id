@@ -32,7 +32,6 @@ export default function Index({ clients, issued }: IndexProps) {
             title={t('admin.clients.title')}
             lead={t('admin.clients.lead')}
             crumbs={[
-                { label: "ChreeID", href: "/" },
                 { label: t('admin.crumb'), href: "/admin" },
                 { label: t('admin.clients.crumb') },
             ]}

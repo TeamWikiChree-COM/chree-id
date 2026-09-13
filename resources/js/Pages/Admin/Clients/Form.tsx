@@ -102,7 +102,6 @@ export default function Form({ client, trustOptions }: FormProps) {
         <AppLayout
             title={isNew ? t('admin.clients.form.new_title') : client.name}
             crumbs={[
-                { label: "ChreeID", href: "/" },
                 { label: t('admin.crumb'), href: "/admin" },
                 { label: t('admin.clients.crumb'), href: "/admin/clients" },
                 { label: isNew ? t('admin.clients.form.crumb.create') : t('admin.clients.form.crumb.edit') },

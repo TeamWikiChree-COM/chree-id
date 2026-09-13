@@ -97,7 +97,6 @@ export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, bac
         <AppLayout
             title={t('admin.backups.title')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('admin.crumb'), href: '/admin' },
                 { label: t('admin.backups.crumb') },
             ]}

@@ -42,7 +42,6 @@ export default function Withdraw({ email, services, graceDays }: WithdrawProps) 
             title={t('settings.withdraw.crumb')}
             lead={t('settings.withdraw.lead')}
             crumbs={[
-                { label: 'ChreeID', href: '/' },
                 { label: t('settings.title'), href: '/settings' },
                 { label: t('settings.withdraw.crumb') },
             ]}

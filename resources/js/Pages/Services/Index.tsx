@@ -32,7 +32,7 @@ export default function Index({ services }: IndexProps) {
         <AppLayout
             title={t('services.title')}
             lead={t('services.lead')}
-            crumbs={[{ label: 'ChreeID', href: '/' }, { label: t('services.crumb') }]}
+            crumbs={[{ label: t('services.crumb') }]}
         >
             <Stack spacing={1.5}>
                 {serviceSaved && <Alert severity="success">{t('services.saved')}</Alert>}
