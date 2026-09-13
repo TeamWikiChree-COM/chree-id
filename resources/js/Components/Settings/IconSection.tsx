@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FormEvent } from 'react';
 import Icon from '../Icon';
+import StickySaveBar from '../StickySaveBar';
 import { t } from '../../lib/i18n';
 import type { IconSourceValue } from '../../types';
 
@@ -31,9 +32,13 @@ interface IconSectionProps {
 export default function IconSection({ iconSource, iconUrl, hasEmail }: IconSectionProps) {
     const form = useForm<{ source: IconSourceValue; icon: File | null }>({ source: iconSource, icon: null });
 
+    const save = (): void => {
+        form.post('/profile/icon', { forceFormData: true, onSuccess: () => form.setData('icon', null) });
+    };
+
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
-        form.post('/profile/icon', { forceFormData: true, onSuccess: () => form.setData('icon', null) });
+        save();
     };
 
     const pick = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -77,12 +82,10 @@ export default function IconSection({ iconSource, iconUrl, hasEmail }: IconSecti
                             {form.errors.source}
                         </Typography>
                     )}
-
-                    <Button type="submit" variant="contained" disabled={form.processing}>
-                        {t('settings.common.save')}
-                    </Button>
                 </Stack>
             </Box>
+
+            <StickySaveBar open={form.isDirty} saving={form.processing} onSave={save} onDiscard={() => form.reset()} />
         </Paper>
     );
 }

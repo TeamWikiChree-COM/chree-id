@@ -14,6 +14,7 @@ import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import IconSection from '../../Components/Settings/IconSection';
+import StickySaveBar from '../../Components/StickySaveBar';
 import { formatDateTime } from '../../lib/datetime';
 import { t } from '../../lib/i18n';
 import type { IconSourceValue } from '../../types';
@@ -32,13 +33,12 @@ interface ProfileProps {
 
 export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl, pendingEmail }: ProfileProps) {
     const { flash } = usePage().props;
-    const { data, setData, post, processing, errors } = useForm({ display_name: displayName ?? '' });
+    const { data, setData, post, processing, errors, isDirty, reset } = useForm({ display_name: displayName ?? '' });
     // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
     // 「確認メールを送りました」が出るのに何も変わらない
     const emailForm = useForm({ email: '' });
 
-    const submit = (event: FormEvent<HTMLFormElement>): void => {
-        event.preventDefault();
+    const submit = (): void => {
         post('/profile');
     };
 
@@ -79,7 +79,14 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
 
             <SectionTitle>{t('settings.profile.display_name.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
-                <Box component="form" onSubmit={submit} noValidate>
+                <Box
+                    component="form"
+                    onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                        event.preventDefault();
+                        submit();
+                    }}
+                    noValidate
+                >
                     <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
                         <TextField
                             label={t('settings.profile.display_name.label')}
@@ -89,12 +96,11 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                             helperText={errors.display_name ?? t('settings.profile.display_name.hint')}
                             autoComplete="nickname"
                         />
-                        <Button type="submit" variant="contained" disabled={processing}>
-                            {t('settings.common.save')}
-                        </Button>
                     </Stack>
                 </Box>
             </Paper>
+
+            <StickySaveBar open={isDirty} saving={processing} onSave={submit} onDiscard={() => reset()} />
 
             <SectionTitle>{t('settings.profile.email.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
