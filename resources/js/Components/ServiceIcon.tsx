@@ -24,7 +24,7 @@ export default function ServiceIcon({ name, iconUrl, size = 32 }: ServiceIconPro
             src={iconUrl ?? undefined}
             alt=""
             variant="rounded"
-            sx={{ width: size, height: size, fontSize: size * 0.45, bgcolor: "action.hover", color: "text.secondary" }}
+            sx={{ width: size, height: size, fontSize: size * 0.45, color: "text.secondary" }}
         >
             {initial !== "" ? initial : <Icon name="plug" />}
         </Avatar>
