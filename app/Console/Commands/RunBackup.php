@@ -17,7 +17,7 @@ class RunBackup extends Command {
     protected $signature = 'chreeid:backup';
 
     #[\Override]
-    protected $description = 'データベースを暗号化して Google Drive に置く';
+    protected $description = 'データベースを暗号化してサーバ内と Google Drive に置く';
 
     /**
      * @param Backup $backup バックアップの本体

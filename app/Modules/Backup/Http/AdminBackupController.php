@@ -5,6 +5,7 @@ use App\Modules\Backup\Application\BackupCipher;
 use App\Modules\Backup\Application\RunBackup;
 use App\Modules\Backup\Domain\BackupSettings;
 use App\Modules\Backup\Infrastructure\GoogleDrive;
+use App\Modules\Backup\Infrastructure\LocalBackupStore;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +22,7 @@ class AdminBackupController {
         private readonly RunBackup $backup,
         private readonly BackupCipher $cipher,
         private readonly GoogleDrive $drive,
+        private readonly LocalBackupStore $local,
         private readonly BackupSettings $settings,
     ) {}
 
@@ -30,6 +32,7 @@ class AdminBackupController {
     public function index(): Response {
         $hasKey = $this->cipher->isConfigured();
         $hasDrive = $this->drive->isConfigured();
+        $hasLocal = $this->local->isEnabled();
 
         // 引くのは1回だけ。一覧用と理由用で別々に叩くと、通信も判定も二重になる
         $listed = $hasKey && $hasDrive ? $this->list() : ['backups' => [], 'error' => null];
@@ -38,8 +41,11 @@ class AdminBackupController {
             // 何が足りないかを分けて出す。どちらも「使えません」に潰すと直しようがない
             'hasKey' => $hasKey,
             'hasDrive' => $hasDrive,
+            'hasLocal' => $hasLocal,
             'keep' => $this->settings->keep(),
+            'localDays' => $this->settings->localDays(),
             'backups' => $listed['backups'],
+            'localBackups' => $hasLocal ? $this->local->list() : [],
             'listError' => $listed['error'],
         ]);
     }

@@ -13,7 +13,7 @@ import { useConfirm } from '../../../lib/confirm';
 import { formatDateTime } from '../../../lib/datetime';
 import { t } from '../../../lib/i18n';
 
-interface DriveFile {
+interface BackupFile {
     id: string;
     name: string;
     createdTime: string;
@@ -24,19 +24,62 @@ interface IndexProps {
     hasKey: boolean;
     /** Google Drive の設定が4つ揃っているか */
     hasDrive: boolean;
-    /** 残す世代数 */
+    /** サーバ内にも置くか */
+    hasLocal: boolean;
+    /** Drive に残す世代数 */
     keep: number;
-    backups: DriveFile[];
+    /** サーバ内に残す日数 */
+    localDays: number;
+    backups: BackupFile[];
+    localBackups: BackupFile[];
     /** 一覧を引けなかった理由。引けていれば null */
     listError: string | null;
 }
 
-export default function Index({ hasKey, hasDrive, keep, backups, listError }: IndexProps) {
+/**
+ * 置き場ごとの控えの一覧。
+ */
+function BackupList({ heading, files }: { heading: string; files: BackupFile[] }) {
+    return (
+        <>
+            <SectionTitle note={t('admin.backups.count', { count: files.length })}>{heading}</SectionTitle>
+            <Paper variant="outlined" sx={{ mb: 2 }}>
+                {files.length === 0 ? (
+                    <Box sx={{ px: 2, py: 1.5 }}>
+                        <Typography sx={{ fontSize: '0.875rem', color: 'text.disabled' }}>
+                            {t('admin.backups.list.empty')}
+                        </Typography>
+                    </Box>
+                ) : (
+                    files.map((file) => (
+                        <Box
+                            key={file.id}
+                            sx={{
+                                px: 2,
+                                py: 1.25,
+                                borderTop: '1px solid',
+                                borderColor: 'divider',
+                                '&:first-of-type': { borderTop: 'none' },
+                            }}
+                        >
+                            <Typography sx={{ fontSize: '0.9375rem' }}>{file.name}</Typography>
+                            <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
+                                {formatDateTime(file.createdTime) ?? file.createdTime}
+                            </Typography>
+                        </Box>
+                    ))
+                )}
+            </Paper>
+        </>
+    );
+}
+
+export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, backups, localBackups, listError }: IndexProps) {
     const { flash, errors } = usePage().props;
     const { ask, dialog } = useConfirm();
     const [running, setRunning] = useState(false);
 
-    const ready = hasKey && hasDrive;
+    const ready = hasKey && (hasDrive || hasLocal);
 
     const run = (): void => {
         ask({
@@ -78,12 +121,15 @@ export default function Index({ hasKey, hasDrive, keep, backups, listError }: In
             {/* 何が足りないかを分けて出す。ひとまとめの「使えません」では直しようがない */}
             {!hasKey && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_key')}</Alert>}
             {!hasDrive && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_drive')}</Alert>}
+            {!hasLocal && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_local')}</Alert>}
             {listError !== null && <Alert severity="error" sx={{ mb: 1.5 }}>{listError}</Alert>}
 
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
                     <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                         {t('admin.backups.keep_note', { count: keep })}
+                        <br />
+                        {t('admin.backups.local_keep_note', { count: localDays })}
                     </Typography>
                     <Button
                         variant="outlined"
@@ -99,36 +145,8 @@ export default function Index({ hasKey, hasDrive, keep, backups, listError }: In
 
             {dialog}
 
-            <SectionTitle note={t('admin.backups.count', { count: backups.length })}>
-                {t('admin.backups.list.heading')}
-            </SectionTitle>
-            <Paper variant="outlined">
-                {backups.length === 0 ? (
-                    <Box sx={{ px: 2, py: 1.5 }}>
-                        <Typography sx={{ fontSize: '0.875rem', color: 'text.disabled' }}>
-                            {t('admin.backups.list.empty')}
-                        </Typography>
-                    </Box>
-                ) : (
-                    backups.map((file) => (
-                        <Box
-                            key={file.id}
-                            sx={{
-                                px: 2,
-                                py: 1.25,
-                                borderTop: '1px solid',
-                                borderColor: 'divider',
-                                '&:first-of-type': { borderTop: 'none' },
-                            }}
-                        >
-                            <Typography sx={{ fontSize: '0.9375rem' }}>{file.name}</Typography>
-                            <Typography sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
-                                {formatDateTime(file.createdTime) ?? file.createdTime}
-                            </Typography>
-                        </Box>
-                    ))
-                )}
-            </Paper>
+            {hasLocal && <BackupList heading={t('admin.backups.local_list.heading')} files={localBackups} />}
+            <BackupList heading={t('admin.backups.list.heading')} files={backups} />
         </AppLayout>
     );
 }

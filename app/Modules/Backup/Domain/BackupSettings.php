@@ -25,6 +25,29 @@ final class BackupSettings {
     }
 
     /**
+     * @return bool サーバ内にも置くか
+     */
+    public function localEnabled(): bool {
+        return config('chreeid.backup.local.enabled') === true;
+    }
+
+    /**
+     * @return int サーバ内に残す日数。最低でも1日は残す
+     */
+    public function localDays(): int {
+        $days = config('chreeid.backup.local.days');
+
+        return is_int($days) && $days > 0 ? $days : 1;
+    }
+
+    /**
+     * @return string サーバ内の置き場
+     */
+    public function localPath(): string {
+        return $this->text('chreeid.backup.local.path') ?? storage_path('app/private/backups');
+    }
+
+    /**
      * @return string|null
      */
     public function driveClientId(): ?string {

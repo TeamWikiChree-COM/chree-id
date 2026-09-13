@@ -21,6 +21,8 @@ class BackupTest extends TestCase {
 
     private const KEY = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 
+    private string $localPath;
+
     #[\Override]
     protected function setUp(): void {
         parent::setUp();
@@ -33,6 +35,18 @@ class BackupTest extends TestCase {
             'refresh_token' => 'refresh',
             'folder_id' => 'folder',
         ]);
+
+        // 並列実行で取り合わないよう、テストごとに別の置き場を使う
+        $this->localPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'chreeid-backup-' . bin2hex(random_bytes(6));
+        Config::set('chreeid.backup.local', ['enabled' => true, 'days' => 7, 'path' => $this->localPath]);
+    }
+
+    #[\Override]
+    protected function tearDown(): void {
+        foreach (glob($this->localPath . '/*') ?: [] as $file) unlink($file);
+        if (is_dir($this->localPath)) rmdir($this->localPath);
+
+        parent::tearDown();
     }
 
     // セッションを戻すと、他人のログイン状態まで蘇る
@@ -87,6 +101,57 @@ class BackupTest extends TestCase {
     public function test_doesNotRunWithoutAKey(): void {
         Config::set('chreeid.backup.key', null);
         Http::fake();
+
+        $this->expectException(RuntimeException::class);
+        app(RunBackup::class)->execute();
+    }
+
+    public function test_keepsAnEncryptedCopyOnTheServer(): void {
+        Config::set('chreeid.backup.drive', []);
+        Http::fake();
+
+        $result = app(RunBackup::class)->execute();
+        $path = $this->localPath . DIRECTORY_SEPARATOR . $result->name;
+
+        $this->assertFileExists($path);
+        $this->assertStringNotContainsString('auth_identities', (string) file_get_contents($path));
+        Http::assertNothingSent();
+    }
+
+    // Drive が落ちた日にもサーバ内の控えは残る。失敗は失敗として伝える
+    public function test_keepsTheLocalCopyWhenDriveFails(): void {
+        Http::fake(['*' => Http::response('down', 500)]);
+
+        try {
+            app(RunBackup::class)->execute();
+            $this->fail('Drive の失敗が伝わっていない');
+        } catch (RuntimeException) {
+            $this->assertCount(1, glob($this->localPath . '/chreeid-*.json.enc') ?: []);
+        }
+    }
+
+    public function test_prunesLocalCopiesOlderThanTheKeptDays(): void {
+        Config::set('chreeid.backup.drive', []);
+        Config::set('chreeid.backup.local.days', 7);
+        mkdir($this->localPath, 0700, true);
+
+        $old = $this->localPath . '/chreeid-20260101-000000.json.enc';
+        $recent = $this->localPath . '/chreeid-20260102-000000.json.enc';
+        $foreign = $this->localPath . '/keep-me.txt';
+        foreach ([$old, $recent, $foreign] as $file) file_put_contents($file, 'x');
+        touch($old, now()->subDays(8)->getTimestamp());
+        touch($foreign, now()->subDays(30)->getTimestamp());
+
+        $result = app(RunBackup::class)->execute();
+
+        $this->assertSame(['chreeid-20260101-000000.json.enc'], $result->pruned);
+        $this->assertFileExists($recent);
+        $this->assertFileExists($foreign);
+    }
+
+    public function test_refusesWhenNoDestinationIsAvailable(): void {
+        Config::set('chreeid.backup.drive', []);
+        Config::set('chreeid.backup.local.enabled', false);
 
         $this->expectException(RuntimeException::class);
         app(RunBackup::class)->execute();

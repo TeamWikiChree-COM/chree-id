@@ -49,6 +49,16 @@ return [
         /* 残す世代数。これを超えた古いものから消す */
         'keep' => (int) env('CHREEID_BACKUP_KEEP', 14),
 
+        /*
+         * サーバ内にも同じ暗号化済みの控えを置く。Drive が失敗した日にも控えを残すため。
+         * 世代数ではなく日数で整理する (手で何度流しても期間で決まるように)。
+         */
+        'local' => [
+            'enabled' => (bool) env('CHREEID_BACKUP_LOCAL', true),
+            'days' => (int) env('CHREEID_BACKUP_LOCAL_DAYS', 7),
+            'path' => storage_path('app/private/backups'),
+        ],
+
         'drive' => [
             'client_id' => env('CHREEID_BACKUP_DRIVE_CLIENT_ID'),
             'client_secret' => env('CHREEID_BACKUP_DRIVE_CLIENT_SECRET'),
