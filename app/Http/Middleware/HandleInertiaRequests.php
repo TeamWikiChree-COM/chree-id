@@ -112,6 +112,10 @@ class HandleInertiaRequests extends Middleware {
             // ヘッダーに出すアイコン。未設定なら null
             'iconUrl' => $this->iconUrl(),
 
+            // ヘッダー・ログイン画面・パンくずに出すアプリ名とロゴ。.env で差し替え可能
+            'appName' => config('app.name'),
+            'appLogoUrl' => config('chreeid.logo_url') ?: '/icon.png',
+
             // 辞書は Vite がバンドルへ畳み込んでいるので、渡すのは名前だけ。
             // 辞書ごと載せると、ページ遷移のたびに全文がレスポンスに乗る
             'locale' => app()->getLocale(),

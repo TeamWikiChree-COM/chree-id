@@ -7,14 +7,14 @@
 </head>
 <body style="font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333;">
 <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">ChreeID</h1>
+    <h1 style="color: #1976d2; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">{{ config('app.name') }}</h1>
 
     @yield('body')
 
     <p style="color: #999; font-size: 0.85em; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
         @yield('note', __('mail.common.default_note'))<br>
         --<br>
-        ChreeID by Team WikiChree.COM
+        {{ config('app.name') }} by Team WikiChree.COM
     </p>
 </div>
 </body>

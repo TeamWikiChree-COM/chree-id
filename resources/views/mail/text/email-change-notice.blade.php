@@ -6,4 +6,4 @@
 {{ __('mail.email_change_notice.note_line2') }}
 
 --
-ChreeID by Team WikiChree.COM
+{{ config('app.name') }} by Team WikiChree.COM

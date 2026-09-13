@@ -26,6 +26,12 @@ return [
     ],
 
     /*
+     * ヘッダー・ログイン画面・パンくずに出すロゴ画像の URL。
+     * 空なら同梱の ChreeID ロゴ (public/icon.png) を使う。
+     */
+    'logo_url' => env('CHREEID_LOGO_URL'),
+
+    /*
      * 出せる表示言語。lang/client/ と lang/server/ に同じ名前の JSON を置き、
      * ここに1行足すと選べるようになる (resources/js/lib/i18n.ts の CATALOGS にも足す)。
      *

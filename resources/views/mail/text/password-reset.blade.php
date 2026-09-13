@@ -10,4 +10,4 @@
 {{ __('mail.password_reset.note_extra') }}
 
 --
-ChreeID by Team WikiChree.COM
+{{ config('app.name') }} by Team WikiChree.COM

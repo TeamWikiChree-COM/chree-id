@@ -10,4 +10,4 @@
 {{ __('mail.common.default_note') }}
 
 --
-ChreeID by Team WikiChree.COM
+{{ config('app.name') }} by Team WikiChree.COM
