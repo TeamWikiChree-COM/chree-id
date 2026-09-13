@@ -102,6 +102,7 @@
     "auth.external_login.failed": "The connection failed.",
     "auth.external_login.link_existing_account_first": "Please log in to your existing account before connecting.",
     "auth.external_login.link_failed": "We couldn't verify the connection.",
+    "auth.external_login.unreachable": "We couldn't reach the service. Please try again later.",
     "auth.external_login.provider_unsupported": "This connection isn't supported.",
     "auth.register.email_taken": "This email address is already in use. Please try logging in instead.",
     "auth.register.link_expired": "This link has expired. Please start the registration again.",

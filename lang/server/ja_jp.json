@@ -102,6 +102,7 @@
     "auth.external_login.failed": "連携に失敗しました",
     "auth.external_login.link_existing_account_first": "既存のアカウントでログインしてから連携してください",
     "auth.external_login.link_failed": "連携を確認できませんでした",
+    "auth.external_login.unreachable": "外部サービスに接続できませんでした。時間をおいてお試しください",
     "auth.external_login.provider_unsupported": "対応していない連携先です",
     "auth.register.email_taken": "このメールアドレスは既に使われています。ログインをお試しください",
     "auth.register.link_expired": "このリンクは期限切れです。お手数ですが、もう一度登録をやり直してください",
