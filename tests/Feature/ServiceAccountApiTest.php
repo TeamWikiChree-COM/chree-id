@@ -57,11 +57,22 @@ class ServiceAccountApiTest extends TestCase {
      * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
      */
     private function issue(OAuthClientModel $client, array $payload = []): \Illuminate\Testing\TestResponse {
-        return $this->postJson('/api/v1/service-accounts', array_merge([
-            'client_id' => $client->id,
-            'client_secret' => self::SECRET,
-            'service_user_id' => '42',
-        ], $payload));
+        $serviceUserId = $payload['service_user_id'] ?? '42';
+        unset($payload['service_user_id']);
+
+        return $this->putJson(
+            '/api/v1/service-accounts/' . (is_string($serviceUserId) ? $serviceUserId : '42'),
+            array_merge(['client_id' => $client->id, 'client_secret' => self::SECRET], $payload),
+        );
+    }
+
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @param string $secret 名乗る secret
+     * @return array<string, string> Basic 認証のヘッダー
+     */
+    private function basic(OAuthClientModel $client, string $secret = self::SECRET): array {
+        return ['Authorization' => 'Basic ' . base64_encode("{$client->id}:{$secret}")];
     }
 
     /**
@@ -69,11 +80,7 @@ class ServiceAccountApiTest extends TestCase {
      * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
      */
     private function askStatus(OAuthClientModel $client): \Illuminate\Testing\TestResponse {
-        return $this->postJson('/api/v1/service-accounts/status', [
-            'client_id' => $client->id,
-            'client_secret' => self::SECRET,
-            'service_user_id' => '42',
-        ]);
+        return $this->getJson('/api/v1/service-accounts/42', $this->basic($client));
     }
 
     public function test_issuesAnAccountForAServiceUser(): void {
@@ -272,10 +279,9 @@ class ServiceAccountApiTest extends TestCase {
      * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
      */
     private function sendPassword(OAuthClientModel $client, string $hash): \Illuminate\Testing\TestResponse {
-        return $this->postJson('/api/v1/service-accounts/password', [
+        return $this->putJson('/api/v1/service-accounts/42/password', [
             'client_id' => $client->id,
             'client_secret' => self::SECRET,
-            'service_user_id' => '42',
             'password_hash' => $hash,
         ]);
     }
@@ -286,7 +292,7 @@ class ServiceAccountApiTest extends TestCase {
         $this->issue($client, ['password_hash' => password_hash('old', PASSWORD_BCRYPT)]);
 
         $new = password_hash('brand-new', PASSWORD_BCRYPT);
-        $this->sendPassword($client, $new)->assertOk();
+        $this->sendPassword($client, $new)->assertNoContent();
 
         $link = ServiceAccountModel::query()->firstOrFail();
         $stored = \App\Modules\Credential\Infrastructure\CredentialModel::query()
@@ -368,11 +374,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client);
 
-        $this->postJson('/api/v1/service-accounts/status', [
-            'client_id' => $client->id,
-            'client_secret' => 'wrong',
-            'service_user_id' => '42',
-        ])->assertStatus(401);
+        $this->getJson('/api/v1/service-accounts/42', $this->basic($client, 'wrong'))->assertStatus(401);
     }
 
     // 同じサービスの別利用者どうしも、アドレスが同じというだけで一緒にしない。
@@ -460,10 +462,9 @@ class ServiceAccountApiTest extends TestCase {
     public function test_rejectsAWrongSecret(): void {
         $client = $this->client();
 
-        $this->postJson('/api/v1/service-accounts', [
+        $this->putJson('/api/v1/service-accounts/42', [
             'client_id' => $client->id,
             'client_secret' => 'wrong',
-            'service_user_id' => '42',
         ])->assertStatus(401);
 
         $this->assertSame(0, ServiceAccountModel::query()->count());
@@ -482,9 +483,8 @@ class ServiceAccountApiTest extends TestCase {
     public function test_rejectsAPublicClient(): void {
         $client = $this->client(ServiceTrust::OFFICIAL, confidential: false);
 
-        $this->postJson('/api/v1/service-accounts', [
+        $this->putJson('/api/v1/service-accounts/42', [
             'client_id' => $client->id,
-            'service_user_id' => '42',
         ])->assertStatus(401);
     }
 
@@ -494,18 +494,16 @@ class ServiceAccountApiTest extends TestCase {
         $this->issue($client)->assertStatus(401);
     }
 
-    public function test_requiresTheServiceUserId(): void {
+    public function test_rejectsAnOverlongServiceUserId(): void {
         $client = $this->client();
 
-        $this->issue($client, ['service_user_id' => ''])->assertStatus(422);
+        $this->issue($client, ['service_user_id' => str_repeat('a', 191)])->assertStatus(422);
     }
 
     public function test_acceptsBasicAuthentication(): void {
         $client = $this->client();
 
-        $this->postJson('/api/v1/service-accounts', ['service_user_id' => '42'], [
-            'Authorization' => 'Basic ' . base64_encode("{$client->id}:" . self::SECRET),
-        ])->assertOk();
+        $this->putJson('/api/v1/service-accounts/42', [], $this->basic($client))->assertOk();
     }
 
     /**
@@ -513,11 +511,7 @@ class ServiceAccountApiTest extends TestCase {
      * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
      */
     private function retire(OAuthClientModel $client): \Illuminate\Testing\TestResponse {
-        return $this->postJson('/api/v1/service-accounts/deactivate', [
-            'client_id' => $client->id,
-            'client_secret' => self::SECRET,
-            'service_user_id' => '42',
-        ]);
+        return $this->deleteJson('/api/v1/service-accounts/42', [], $this->basic($client));
     }
 
     // 退会: サービス上の人格しか無ければ、認証主体ごと消す
@@ -527,7 +521,7 @@ class ServiceAccountApiTest extends TestCase {
 
         $identityId = ServiceAccountModel::query()->firstOrFail()->auth_identity_id;
 
-        $this->retire($client)->assertOk();
+        $this->retire($client)->assertNoContent();
 
         $this->assertSame(0, ServiceAccountModel::query()->count());
         $this->assertNull(app(AuthIdentityRepository::class)->findById($identityId));
@@ -549,7 +543,7 @@ class ServiceAccountApiTest extends TestCase {
             'auth_identity_id' => $identityId,
         ]);
 
-        $this->retire($client)->assertOk();
+        $this->retire($client)->assertNoContent();
 
         $this->assertSame(0, ServiceAccountModel::query()->count());
 
@@ -571,7 +565,7 @@ class ServiceAccountApiTest extends TestCase {
             'service_user_id' => '99',
         ]);
 
-        $this->retire($client)->assertOk();
+        $this->retire($client)->assertNoContent();
 
         $this->assertNotNull(app(AuthIdentityRepository::class)->findById($link->auth_identity_id));
         $this->assertSame(1, ServiceAccountModel::query()->count());
@@ -582,7 +576,7 @@ class ServiceAccountApiTest extends TestCase {
         $client = $this->client();
         $this->issue($client);
 
-        $this->retire($client)->assertOk();
+        $this->retire($client)->assertNoContent();
         $this->retire($client)->assertStatus(404);
     }
 }

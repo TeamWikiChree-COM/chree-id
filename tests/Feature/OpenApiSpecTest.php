@@ -108,13 +108,11 @@ class OpenApiSpecTest extends TestCase {
             'can_provision' => true,
         ]);
 
-        $this->postJson('/api/v1/service-accounts/status', [
-            'client_id' => $client->id,
-            'client_secret' => 'service-secret',
-        ])
+        $this->withBasicAuth($client->id, 'service-secret')
+            ->putJson('/api/v1/service-accounts/42/password', [])
             ->assertStatus(422)
             ->assertJsonPath('error', 'invalid_request')
-            ->assertJsonValidationErrors('service_user_id');
+            ->assertJsonValidationErrors('password_hash');
     }
 
     // サーバ間 API にセッションを張らない。張るとリクエストのたびにセッションが増える

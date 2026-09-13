@@ -1,7 +1,6 @@
 <?php
 
 use App\Modules\ApiDocs\Http\OpenApiController;
-use App\Modules\Linking\Http\LegacyServiceAccountController;
 use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Linking\Http\ServiceAuthController;
 use App\Modules\Registry\Http\EnsureProvisioningClient;
@@ -26,15 +25,6 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/password', 'updatePassword');
                 Route::post('/claim-tickets', 'storeClaimTicket');
             });
-
-        // 旧経路。DokuFarm が呼んでいるので、移り終えるまで消さない (NEW-REST.md)
-        Route::controller(LegacyServiceAccountController::class)->group(function (): void {
-            Route::post('/service-accounts', 'store');
-            Route::post('/service-accounts/claim-tickets', 'claimTicket');
-            Route::post('/service-accounts/status', 'status');
-            Route::post('/service-accounts/password', 'changePassword');
-            Route::post('/service-accounts/deactivate', 'deactivate');
-        });
 
         // サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
         Route::post('/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])

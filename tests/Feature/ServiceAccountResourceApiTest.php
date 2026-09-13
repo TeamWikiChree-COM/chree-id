@@ -8,8 +8,8 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-// /api/v1/service-accounts/{serviceUserId}。処理の中身は ServiceAccountApiTest (旧経路) が見ている。
-// ここでは新しい経路の形 (メソッドとステータス) を見る
+// /api/v1/service-accounts/{serviceUserId}。処理の中身は ServiceAccountApiTest が見ている。
+// ここでは経路の形 (メソッドとステータス) を見る
 class ServiceAccountResourceApiTest extends TestCase {
     use RefreshDatabase;
 
@@ -74,14 +74,6 @@ class ServiceAccountResourceApiTest extends TestCase {
         $this->send('PUT', '42');
 
         $this->send('POST', '42/claim-tickets')->assertCreated()->assertJsonStructure(['claim_url', 'expires_at']);
-    }
-
-    // 旧経路は DokuFarm が 200 ちょうどで判定しているので、変えていないこと
-    public function test_legacyRoutesStillAnswerOk(): void {
-        $this->send('PUT', '42');
-
-        $this->send('POST', 'claim-tickets', ['service_user_id' => '42'])->assertOk();
-        $this->send('POST', 'deactivate', ['service_user_id' => '42'])->assertOk()->assertJsonPath('ok', true);
     }
 
     public function test_rejectsAnOverlongIdentifierInThePath(): void {

@@ -50,7 +50,6 @@
     "apidocs.info.description": "ChreeID と連携するサービスのサーバから呼び出す API です。\n\n## 認証\n\nサーバ間 API (`/api/v1/*`) は、管理画面で登録したクライアントの ID とシークレットで認証します。HTTP Basic 認証か、フォーム値 `client_id` / `client_secret` のどちらかで送ってください。\n\n呼び出せるのは、アカウント発行を許可された (`can_provision`) 機密クライアントだけです。\n\n## エラー\n\n失敗時は HTTP ステータスとあわせて OAuth 2.0 と同じ形を返します。入力エラー (422) では `errors` に項目ごとの理由が付きます。\n\n```json\n{ \"error\": \"invalid_client\", \"error_description\": \"クライアント認証に失敗しました\" }\n```\n\n説明文は `Accept-Language` の言語で返ります。分岐には必ず `error` を使ってください。",
     "apidocs.jwks.body": "公開鍵の一覧",
     "apidocs.jwks.summary": "ID Token の署名鍵 (JWKS)",
-    "apidocs.legacy.description": "非推奨。:method :path を使ってください。成功は常に 200 で返ります。",
     "apidocs.magic_consume.consumed": "ログインさせる利用者",
     "apidocs.magic_consume.description": "トークンは一度しか使えません。",
     "apidocs.magic_consume.invalid": "使えないトークン、またはクライアント認証に失敗した",

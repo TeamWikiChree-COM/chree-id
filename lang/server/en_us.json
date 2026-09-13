@@ -50,7 +50,6 @@
     "apidocs.info.description": "This API is called from the servers of services integrated with ChreeID.\n\n## Authentication\n\nThe server-to-server API (`/api/v1/*`) authenticates with the ID and secret of a client registered in the admin console. Send them either with HTTP Basic authentication or as the form fields `client_id` / `client_secret`.\n\nOnly confidential clients allowed to provision accounts (`can_provision`) may call it.\n\n## Errors\n\nOn failure, the response uses the same shape as OAuth 2.0 along with the HTTP status. Validation errors (422) also include per-field reasons in `errors`.\n\n```json\n{ \"error\": \"invalid_client\", \"error_description\": \"Client authentication failed\" }\n```\n\nDescriptions are returned in the language of `Accept-Language`. Always branch on `error`.",
     "apidocs.jwks.body": "The list of public keys",
     "apidocs.jwks.summary": "ID token signing keys (JWKS)",
-    "apidocs.legacy.description": "Deprecated. Use :method :path instead. Success is always returned as 200.",
     "apidocs.magic_consume.consumed": "The user to sign in",
     "apidocs.magic_consume.description": "Each token can be used only once.",
     "apidocs.magic_consume.invalid": "The token cannot be used, or client authentication failed",

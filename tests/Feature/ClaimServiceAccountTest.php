@@ -53,10 +53,9 @@ class ClaimServiceAccountTest extends TestCase {
      * @return void
      */
     private function issueAccount(OAuthClientModel $client, array $payload = []): void {
-        $this->postJson('/api/v1/service-accounts', array_merge([
+        $this->putJson('/api/v1/service-accounts/42', array_merge([
             'client_id' => $client->id,
             'client_secret' => self::SECRET,
-            'service_user_id' => '42',
         ], $payload))->assertOk();
     }
 
@@ -65,10 +64,9 @@ class ClaimServiceAccountTest extends TestCase {
      * @return TestResponse<\Illuminate\Http\Response>
      */
     private function requestTicket(OAuthClientModel $client): TestResponse {
-        return $this->postJson('/api/v1/service-accounts/claim-tickets', [
+        return $this->postJson('/api/v1/service-accounts/42/claim-tickets', [
             'client_id' => $client->id,
             'client_secret' => self::SECRET,
-            'service_user_id' => '42',
         ]);
     }
 
@@ -79,7 +77,7 @@ class ClaimServiceAccountTest extends TestCase {
      * @return string 平文トークン
      */
     private function ticketToken(OAuthClientModel $client): string {
-        $url = $this->requestTicket($client)->assertOk()->json('claim_url');
+        $url = $this->requestTicket($client)->assertCreated()->json('claim_url');
         if (!is_string($url)) $this->fail('claim_url が返っていません');
 
         return Str::afterLast($url, '/');
@@ -91,7 +89,7 @@ class ClaimServiceAccountTest extends TestCase {
         $client = $this->client();
         $this->issueAccount($client);
 
-        $response = $this->requestTicket($client)->assertOk();
+        $response = $this->requestTicket($client)->assertCreated();
         $url = $response->json('claim_url');
 
         $this->assertIsString($url);
@@ -125,10 +123,9 @@ class ClaimServiceAccountTest extends TestCase {
         $client = $this->client();
         $this->issueAccount($client);
 
-        $this->postJson('/api/v1/service-accounts/claim-tickets', [
+        $this->postJson('/api/v1/service-accounts/42/claim-tickets', [
             'client_id' => $client->id,
             'client_secret' => 'wrong',
-            'service_user_id' => '42',
         ])->assertStatus(401);
     }
 

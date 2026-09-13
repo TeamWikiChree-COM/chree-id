@@ -182,7 +182,7 @@ class ServiceAccountController {
     }
 
     /**
-     * パスの識別子も本文と同じ規則で検証する。旧経路は本文で送ってくるので、形を揃えておく。
+     * パスの識別子も本文の項目と同じ規則で検証する。長すぎる識別子を 404 ではなく 422 で断るため。
      *
      * @param Request $request
      * @param string $serviceUserId サービス側での利用者の識別子
