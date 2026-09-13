@@ -2,8 +2,6 @@ import { useForm, usePage } from "@inertiajs/react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -12,10 +10,12 @@ import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import AuthLayout from "../../Components/AuthLayout";
+import CredentialPicker from "../../Components/CredentialPicker";
+import type { PickableCredential } from "../../Components/CredentialPicker";
 import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
-import { registerClaimPasskey } from "../../lib/passkey";
 import { t } from "../../lib/i18n";
+import PasskeyRegistration from "./PasskeyRegistration";
 
 interface ClaimShowProps {
     /** サービスから渡された平文トークン。そのまま送り返す */
@@ -31,13 +31,7 @@ interface ClaimShowProps {
     /** 移行元で既にパスワードを使っていたか。false ならパスワード以外を勧める */
     hasPassword: boolean;
     /** 移行元から引き継いだ認証手段。既定は全部オン */
-    carried: CarriedCredential[];
-}
-
-/** 移行元から引き継いだ認証手段 */
-interface CarriedCredential {
-    id: string;
-    type: string;
+    carried: PickableCredential[];
 }
 
 /** 画面に出す名前 */
@@ -75,9 +69,7 @@ export default function ClaimShow({
     const initialMethod: Method =
         hasPassword || !googleAvailable ? "password" : "google";
     const [method, setMethod] = useState<Method>(initialMethod);
-    const [passkeyError, setPasskeyError] = useState<string | null>(null);
     const [passkeyRegistered, setPasskeyRegistered] = useState(false);
-    const [passkeyBusy, setPasskeyBusy] = useState(false);
 
     const hasCarried = carried.length > 0;
 
@@ -98,15 +90,6 @@ export default function ClaimShow({
         credentials: carried.map((credential) => credential.id),
     });
 
-    const toggle = (id: string): void => {
-        setData(
-            "credentials",
-            data.credentials.includes(id)
-                ? data.credentials.filter((chosen) => chosen !== id)
-                : [...data.credentials, id],
-        );
-    };
-
     const changeMethod = (next: Method): void => {
         setMethod(next);
         setData("method", next);
@@ -115,23 +98,6 @@ export default function ClaimShow({
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post("/claim");
-    };
-
-    const addPasskey = async (): Promise<void> => {
-        setPasskeyError(null);
-        setPasskeyBusy(true);
-        try {
-            await registerClaimPasskey(token);
-            setPasskeyRegistered(true);
-        } catch (e) {
-            setPasskeyError(
-                e instanceof Error
-                    ? e.message
-                    : t('claim.show.passkey.register_failed'),
-            );
-        } finally {
-            setPasskeyBusy(false);
-        }
     };
 
     const emailField =
@@ -185,46 +151,15 @@ export default function ClaimShow({
 
                 <Box component="form" onSubmit={submit} noValidate>
                     <Stack spacing={2}>
-                        <Box
-                            sx={{
-                                border: "1px solid",
-                                borderColor: "divider",
-                                borderRadius: 2,
-                                p: 2,
-                            }}
-                        >
-                            <Typography variant="body2" sx={{ mb: 1 }}>
-                                {t('claim.merge_panel.select_credentials')}
-                            </Typography>
-                            {carried.map((credential) => (
-                                <FormControlLabel
-                                    key={credential.id}
-                                    control={
-                                        <Checkbox
-                                            checked={data.credentials.includes(
-                                                credential.id,
-                                            )}
-                                            onChange={() =>
-                                                toggle(credential.id)
-                                            }
-                                        />
-                                    }
-                                    label={
-                                        CREDENTIAL_LABELS[credential.type] ??
-                                        credential.type
-                                    }
-                                    sx={{ display: "flex" }}
-                                />
-                            ))}
-                            <Typography variant="body2" color="text.secondary">
-                                {t('claim.show.carried.unchecked_note', { serviceName })}
-                            </Typography>
-                            {errors.method && (
-                                <Alert severity="error" sx={{ mt: 1 }}>
-                                    {errors.method}
-                                </Alert>
-                            )}
-                        </Box>
+                        <CredentialPicker
+                            options={carried}
+                            selected={data.credentials}
+                            onChange={(selected) => setData("credentials", selected)}
+                            instruction={t('claim.merge_panel.select_credentials')}
+                            note={t('claim.show.carried.unchecked_note', { serviceName })}
+                            labels={CREDENTIAL_LABELS}
+                            error={errors.method}
+                        />
 
                         {keepsNothing && (
                             <Alert severity="warning">
@@ -301,33 +236,12 @@ export default function ClaimShow({
                         )}
 
                         {method === "passkey" && (
-                            <Stack spacing={1}>
-                                {passkeyError && (
-                                    <Alert severity="error">
-                                        {passkeyError}
-                                    </Alert>
-                                )}
-                                {errors.method && (
-                                    <Alert severity="error">
-                                        {errors.method}
-                                    </Alert>
-                                )}
-                                {passkeyRegistered ? (
-                                    <Alert severity="success">
-                                        {t('claim.show.passkey.registered')}
-                                    </Alert>
-                                ) : (
-                                    <Button
-                                        variant="outlined"
-                                        color="inherit"
-                                        startIcon={<Icon name="fingerprint" />}
-                                        disabled={passkeyBusy}
-                                        onClick={() => void addPasskey()}
-                                    >
-                                        {t('claim.show.passkey.register')}
-                                    </Button>
-                                )}
-                            </Stack>
+                            <PasskeyRegistration
+                                token={token}
+                                registered={passkeyRegistered}
+                                onRegistered={() => setPasskeyRegistered(true)}
+                                error={errors.method}
+                            />
                         )}
 
                         {displayNameField}

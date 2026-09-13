@@ -1,14 +1,12 @@
 import { useForm } from "@inertiajs/react";
-import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
 import AuthLayout from "../../Components/AuthLayout";
+import CredentialPicker from "../../Components/CredentialPicker";
 import { t } from "../../lib/i18n";
 
 /** 分離先へ複製できる認証方法 */
@@ -60,15 +58,6 @@ export default function SplitService({
         credentials: options.map((option) => option.id),
     });
 
-    const toggle = (id: string): void => {
-        setData(
-            "credentials",
-            data.credentials.includes(id)
-                ? data.credentials.filter((chosen) => chosen !== id)
-                : [...data.credentials, id],
-        );
-    };
-
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post("/services/split");
@@ -86,39 +75,15 @@ export default function SplitService({
 
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
-                    <Box
-                        sx={{
-                            border: "1px solid",
-                            borderColor: "divider",
-                            borderRadius: 2,
-                            p: 2,
-                        }}
-                    >
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                            {t("settings.split.credentials.instruction")}
-                        </Typography>
-                        {options.map((option) => (
-                            <FormControlLabel
-                                key={option.id}
-                                control={
-                                    <Checkbox
-                                        checked={data.credentials.includes(option.id)}
-                                        onChange={() => toggle(option.id)}
-                                    />
-                                }
-                                label={CREDENTIAL_LABELS[option.type] ?? option.type}
-                                sx={{ display: "flex" }}
-                            />
-                        ))}
-                        <Typography variant="body2" color="text.secondary">
-                            {t("settings.split.credentials.note")}
-                        </Typography>
-                        {errors.credentials && (
-                            <Alert severity="error" sx={{ mt: 1 }}>
-                                {errors.credentials}
-                            </Alert>
-                        )}
-                    </Box>
+                    <CredentialPicker
+                        options={options}
+                        selected={data.credentials}
+                        onChange={(selected) => setData("credentials", selected)}
+                        instruction={t("settings.split.credentials.instruction")}
+                        note={t("settings.split.credentials.note")}
+                        labels={CREDENTIAL_LABELS}
+                        error={errors.credentials}
+                    />
 
                     <TextField
                         label={t("settings.split.email.label")}

@@ -1,21 +1,17 @@
-import { router, useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
 import AppLayout from "../../../Components/AppLayout";
-import { useConfirm } from "../../../lib/confirm";
-import Icon from "../../../Components/Icon";
-import SectionTitle from "../../../Components/SectionTitle";
+import SwitchField from "../../../Components/SwitchField";
 import { localeLabel, t } from "../../../lib/i18n";
 import type { OAuthClient } from "../../../types";
+import ClientActions from "./ClientActions";
 
 interface TrustOption {
     value: string;
@@ -68,34 +64,9 @@ export default function Form({ client, trustOptions }: FormProps) {
             .filter((uri) => uri !== ""),
     }));
 
-    const { ask, dialog } = useConfirm();
-
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post(isNew ? "/admin/clients" : `/admin/clients/${client.id}`);
-    };
-
-    const remove = (): void => {
-        if (client === null) return;
-
-        ask({
-            title: t('admin.clients.form.remove.title', { name: client.name }),
-            description: t('admin.clients.form.remove.description'),
-            confirmText: t('admin.clients.form.remove.confirm'),
-            expected: client.name,
-            onConfirm: () => router.post(`/admin/clients/${client.id}/delete`),
-        });
-    };
-
-    const rotate = (): void => {
-        if (client === null) return;
-
-        ask({
-            title: t('admin.clients.form.rotate.title'),
-            description: t('admin.clients.form.rotate.description'),
-            confirmText: t('admin.clients.form.rotate.confirm'),
-            onConfirm: () => router.post(`/admin/clients/${client.id}/secret`),
-        });
     };
 
     return (
@@ -207,50 +178,23 @@ export default function Form({ client, trustOptions }: FormProps) {
                             ))}
                         </TextField>
 
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={data.skips_consent}
-                                    onChange={(e) =>
-                                        setData(
-                                            "skips_consent",
-                                            e.target.checked,
-                                        )
-                                    }
-                                />
-                            }
+                        <SwitchField
                             label={t('admin.clients.form.fields.skips_consent')}
+                            checked={data.skips_consent}
+                            onChange={(checked) => setData("skips_consent", checked)}
                         />
 
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={data.can_provision}
-                                    onChange={(e) =>
-                                        setData(
-                                            "can_provision",
-                                            e.target.checked,
-                                        )
-                                    }
-                                />
-                            }
+                        <SwitchField
                             label={t('admin.clients.form.fields.can_provision')}
+                            checked={data.can_provision}
+                            onChange={(checked) => setData("can_provision", checked)}
                         />
 
                         {isNew && (
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={data.is_confidential}
-                                        onChange={(e) =>
-                                            setData(
-                                                "is_confidential",
-                                                e.target.checked,
-                                            )
-                                        }
-                                    />
-                                }
+                            <SwitchField
                                 label={t('admin.clients.form.fields.is_confidential')}
+                                checked={data.is_confidential}
+                                onChange={(checked) => setData("is_confidential", checked)}
                             />
                         )}
 
@@ -267,35 +211,7 @@ export default function Form({ client, trustOptions }: FormProps) {
                 </Box>
             </Paper>
 
-            {!isNew && (
-                <>
-                    <SectionTitle>{t('admin.clients.form.actions.heading')}</SectionTitle>
-                    <Paper variant="outlined" sx={{ p: 2 }}>
-                        <Stack spacing={1.5} sx={{ alignItems: "flex-start" }}>
-                            {client.isConfidential && (
-                                <Button
-                                    variant="outlined"
-                                    color="inherit"
-                                    startIcon={<Icon name="rotate" />}
-                                    onClick={rotate}
-                                >
-                                    {t('admin.clients.form.actions.rotate')}
-                                </Button>
-                            )}
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                startIcon={<Icon name="trash" />}
-                                onClick={remove}
-                            >
-                                {t('admin.clients.form.actions.remove')}
-                            </Button>
-                        </Stack>
-                    </Paper>
-                </>
-            )}
-
-            {dialog}
+            {!isNew && <ClientActions client={client} />}
         </AppLayout>
     );
 }

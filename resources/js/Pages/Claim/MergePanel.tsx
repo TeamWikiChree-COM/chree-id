@@ -2,11 +2,10 @@ import { useForm } from "@inertiajs/react";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
+import CredentialPicker from "../../Components/CredentialPicker";
 import { t } from "../../lib/i18n";
 
 /** ログイン中のアカウント。していなければ null */
@@ -61,15 +60,6 @@ export default function MergePanel({
         credentials: transferable.map((credential) => credential.id),
     });
 
-    const toggle = (id: string): void => {
-        setData(
-            "credentials",
-            data.credentials.includes(id)
-                ? data.credentials.filter((chosen) => chosen !== id)
-                : [...data.credentials, id],
-        );
-    };
-
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
         post("/claim/merge");
@@ -120,39 +110,14 @@ export default function MergePanel({
                 </Typography>
 
                 {transferable.length > 0 && (
-                    <Box
-                        sx={{
-                            border: "1px solid",
-                            borderColor: "divider",
-                            borderRadius: 2,
-                            p: 2,
-                        }}
-                    >
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                            {t('claim.merge_panel.select_credentials')}
-                        </Typography>
-                        {transferable.map((credential) => (
-                            <FormControlLabel
-                                key={credential.id}
-                                control={
-                                    <Checkbox
-                                        checked={data.credentials.includes(
-                                            credential.id,
-                                        )}
-                                        onChange={() => toggle(credential.id)}
-                                    />
-                                }
-                                label={
-                                    CREDENTIAL_LABELS[credential.type] ??
-                                    credential.type
-                                }
-                                sx={{ display: "flex" }}
-                            />
-                        ))}
-                        <Typography variant="body2" color="text.secondary">
-                            {t('claim.merge_panel.passkey_note')}
-                        </Typography>
-                    </Box>
+                    <CredentialPicker
+                        options={transferable}
+                        selected={data.credentials}
+                        onChange={(selected) => setData("credentials", selected)}
+                        instruction={t('claim.merge_panel.select_credentials')}
+                        note={t('claim.merge_panel.passkey_note')}
+                        labels={CREDENTIAL_LABELS}
+                    />
                 )}
 
                 {errors.token && <Alert severity="error">{errors.token}</Alert>}
