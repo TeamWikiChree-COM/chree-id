@@ -101,6 +101,29 @@ class ServiceAuthApiTest extends TestCase {
         ]);
     }
 
+    // 移行で OIDC のログインだけの行が古い ID で並んでいても、サービスが発行した行として照合する
+    public function test_prefersTheServiceAccountWithAServiceUserId(): void {
+        $client = $this->client();
+        $accountId = $this->account(null);
+
+        ServiceAccountModel::create([
+            'client_id' => $client->id,
+            'auth_identity_id' => $accountId,
+            'service_user_id' => null,
+            'sub' => Str::lower(Str::ulid()->toString()),
+        ]);
+        // ULID は時刻順。後から作った行の ID が確実に大きくなるよう、ミリ秒をまたがせる
+        usleep(5000);
+        ServiceAccountModel::create([
+            'client_id' => $client->id,
+            'auth_identity_id' => $accountId,
+            'service_user_id' => '42',
+            'service_email' => self::EMAIL,
+        ]);
+
+        $this->verify($client)->assertOk()->assertJson(['status' => 'ok', 'service_user_id' => '42']);
+    }
+
     public function test_rejectsAWrongPassword(): void {
         $client = $this->client();
         $this->account($client);

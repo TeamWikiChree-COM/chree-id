@@ -48,10 +48,10 @@ class ChooseServiceAccountTest extends TestCase {
     /**
      * @param OAuthClientModel $client サービス
      * @param string $identityId 認証主体のID
-     * @param string $serviceUserId サービス側での識別子
+     * @param string|null $serviceUserId サービス側での識別子。null は OIDC でログインしただけの行
      * @return ServiceAccountModel
      */
-    private function serviceAccount(OAuthClientModel $client, string $identityId, string $serviceUserId): ServiceAccountModel {
+    private function serviceAccount(OAuthClientModel $client, string $identityId, ?string $serviceUserId): ServiceAccountModel {
         return ServiceAccountModel::create([
             'client_id' => $client->id,
             'auth_identity_id' => $identityId,
@@ -95,6 +95,33 @@ class ChooseServiceAccountTest extends TestCase {
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
                 ->component('Oauth/ChooseAccount')
                 ->has('accounts', 2));
+    }
+
+    // 移行で「ログインだけの行」と「サービスが発行した行」が並んでも、聞かずに後者で入る
+    public function test_prefersTheLinkedAccountOverOneCreatedByLoginAlone(): void {
+        $client = $this->client();
+        $identityId = $this->signIn();
+        $this->serviceAccount($client, $identityId, null);
+        $linked = $this->serviceAccount($client, $identityId, 'wiki-a');
+
+        $this->get('/oauth/authorize?' . http_build_query($this->authorizeQuery($client)))
+            ->assertRedirectContains(self::REDIRECT_URI);
+
+        $this->assertSame($linked->id, AuthCodeModel::query()->firstOrFail()->service_account_id);
+        // 行は消さない (sub が変わると向こうから別人に見える)
+        $this->assertSame(2, ServiceAccountModel::query()->count());
+    }
+
+    // サービスが発行した行が無ければ、ログインだけの行をそのまま使う
+    public function test_usesTheLoginOnlyAccountWhenThereIsNoLinkedOne(): void {
+        $client = $this->client();
+        $identityId = $this->signIn();
+        $loginOnly = $this->serviceAccount($client, $identityId, null);
+
+        $this->get('/oauth/authorize?' . http_build_query($this->authorizeQuery($client)))
+            ->assertRedirectContains(self::REDIRECT_URI);
+
+        $this->assertSame($loginOnly->id, AuthCodeModel::query()->firstOrFail()->service_account_id);
     }
 
     // 黙ってどれかを選ぶとログインさせてしまうので、コードは出さない

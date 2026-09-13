@@ -1,9 +1,10 @@
 <?php
 namespace App\Modules\Provider\Application;
 
+use App\Modules\Linking\Domain\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 /**
  * そのサービスに「どのサービスアカウントとして」入るかを決める。
@@ -16,16 +17,21 @@ class SelectServiceAccount {
     /**
      * 候補を古い順に返す。
      *
+     * サービスが発行した行があるなら、OIDC でログインしただけの行は候補にしない (LinkedServiceAccounts)。
+     * 移行で両方が並んだ人に、意味の無い選択を迫らないため。
+     *
      * @param OAuthClientModel $client 接続先サービス
      * @param string $identityId 認証主体のID (ULID)
      * @return Collection<int, ServiceAccountModel>
      */
     public function candidates(OAuthClientModel $client, string $identityId): Collection {
-        return ServiceAccountModel::query()
+        $accounts = ServiceAccountModel::query()
             ->where('client_id', $client->id)
             ->where('auth_identity_id', $identityId)
             ->orderBy('id')
             ->get();
+
+        return LinkedServiceAccounts::prefer($accounts->toBase());
     }
 
     /**

@@ -136,6 +136,24 @@ class ConnectedServiceTest extends TestCase {
                 ->where('services.0.hasActiveToken', false));
     }
 
+    // 移行で同じサービスに「ログインだけの行」と「サービスが発行した行」が並んでも、一覧には1つだけ出す
+    public function test_showsOneEntryWhenALinkedAccountExistsForTheSameService(): void {
+        $accountId = $this->login();
+        $clientId = $this->connect($accountId);
+
+        ServiceAccountModel::create([
+            'client_id' => $clientId,
+            'auth_identity_id' => $accountId,
+            'service_user_id' => 'wiki-user-1',
+            'sub' => Str::random(32),
+        ]);
+
+        $this->get('/')
+            ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+                ->has('services', 1)
+                ->where('services.0.serviceUserId', 'wiki-user-1'));
+    }
+
     public function test_doesNotTouchAnotherAccountsTokens(): void {
         $accountId = $this->login();
         $clientId = $this->connect($accountId);

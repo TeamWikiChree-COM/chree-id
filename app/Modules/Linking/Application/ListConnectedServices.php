@@ -1,9 +1,11 @@
 <?php
 namespace App\Modules\Linking\Application;
 
+use App\Modules\Linking\Domain\LinkedServiceAccounts;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use Illuminate\Support\Collection;
 
 /**
  * 利用者から見た「連携しているサービス」の一覧。
@@ -18,10 +20,17 @@ class ListConnectedServices {
      * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, connectedAt: string|null, hasActiveToken: bool}>
      */
     public function execute(string $accountId): array {
+        // 移行で同じサービスに「ログインだけの行」と「サービスが発行した行」が並ぶと、
+        // 同じサービスが2つ出て、解除しても片方が残って見える。使われている方だけを出す
         $subjects = ServiceAccountModel::query()
             ->where('auth_identity_id', $accountId)
             ->orderBy('created_at')
-            ->get();
+            ->get()
+            ->toBase()
+            ->groupBy('client_id')
+            ->flatMap(static fn (Collection $rows): Collection => LinkedServiceAccounts::prefer($rows))
+            ->sortBy('created_at')
+            ->values();
 
         if ($subjects->isEmpty()) return [];
 

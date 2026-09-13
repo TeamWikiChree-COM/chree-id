@@ -42,9 +42,12 @@ class VerifyServiceUserPassword {
         $account = null;
 
         foreach ($this->byEmail->candidates($email) as $candidate) {
+            // サービスが発行した行 (service_user_id がある) を先に取る。移行で OIDC のログインだけの行が
+            // 古い ID で並んでいると、識別子が空のまま返り、サービスが本人のログインとみなせなくなる
             $found = ServiceAccountModel::query()
                 ->where('client_id', $client->id)
                 ->where('auth_identity_id', $candidate->id)
+                ->orderByRaw('service_user_id IS NULL')
                 ->orderBy('id')
                 ->first();
 
