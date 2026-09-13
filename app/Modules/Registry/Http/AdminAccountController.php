@@ -54,9 +54,9 @@ class AdminAccountController {
             'isEmailVerified' => $m->email_verified_at !== null,
             'isSuspended' => $m->suspended_at !== null,
             'isDeleted' => $m->deleted_at !== null,
-            'deletedAt' => $m->deleted_at?->format('Y/m/d H:i'),
+            'deletedAt' => $m->deleted_at?->toDateTimeString(),
             'isAdmin' => $this->isAdmin($m),
-            'createdAt' => $m->created_at?->format('Y/m/d H:i') ?? '',
+            'createdAt' => $m->created_at?->toDateTimeString() ?? '',
             'credentialTypes' => $types[$m->id] ?? [],
             'services' => $services[$m->id] ?? [],
         ], $models));

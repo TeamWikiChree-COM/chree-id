@@ -9,6 +9,7 @@ import { useState } from 'react';
 import Icon from '../../../Components/Icon';
 import RowAction from '../../../Components/RowAction';
 import { useConfirm } from '../../../lib/confirm';
+import { formatDateTime } from '../../../lib/datetime';
 import { t } from '../../../lib/i18n';
 import type { ConfirmRequest } from '../../../Components/ConfirmDialog';
 import type { AdminAccount } from './types';
@@ -135,7 +136,7 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
 
                         {account.isDeleted && account.deletedAt !== null && (
                             <Typography sx={{ fontSize: '0.75rem', color: 'error.main' }}>
-                                {t('admin.accounts.row.deleted_note', { date: account.deletedAt, days: graceDays })}
+                                {t('admin.accounts.row.deleted_note', { date: formatDateTime(account.deletedAt) ?? account.deletedAt, days: graceDays })}
                             </Typography>
                         )}
                     </Box>
@@ -143,7 +144,7 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
 
                 <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
                     <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary', mb: 0.5 }}>
-                        {account.createdAt}
+                        {formatDateTime(account.createdAt)}
                     </Typography>
 
                     {!isSelf && (

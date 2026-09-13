@@ -1,7 +1,8 @@
 /**
  * 画面に出す日時の整形。
  *
- * サーバは "2026-09-12 00:20:32" (アプリのタイムゾーン) で寄こす。
+ * サーバは "2026-09-12 00:20:32" を UTC (config/app.php の timezone) で寄こす。
+ * 時差を持たない形なので、ローカル時刻として読むと利用者の時差ぶんずれる。
  * `new Date(文字列)` はこの形の扱いがブラウザ任せで、Safari では NaN になることがあるので
  * 自前で分解する。
  */
@@ -20,14 +21,14 @@ function parse(value: string | null): Date | null {
     const m = PATTERN.exec(value);
     if (m === null) return null;
 
-    return new Date(
+    return new Date(Date.UTC(
         Number(m[1]),
         Number(m[2]) - 1,
         Number(m[3]),
         Number(m[4]),
         Number(m[5]),
         Number(m[6] ?? '0'),
-    );
+    ));
 }
 
 /**
