@@ -4,14 +4,17 @@ use App\Http\Middleware\DetectSessionLoss;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackLoginSession;
+use App\Support\Api\ApiError;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -28,17 +31,26 @@ $app = Application::configure(basePath: dirname(__DIR__))
             DetectSessionLoss::class,
         ]);
 
+        // エラーの説明文を呼び出し元の Accept-Language に合わせる。セッションが無くても動く
+        $middleware->api(append: [SetLocale::class]);
+
         // RP からのサーバ間通信。ブラウザのセッションを使わないので CSRF の対象外にする。
-        // ルート側の withoutMiddleware() では除外されないため、ここで指定する
-        $middleware->validateCsrfTokens(except: [
+        // ルート側の withoutMiddleware() では除外されないため、ここで指定する。
+        // /api/* は api グループで、そもそも CSRF を通らない
+        $middleware->preventRequestForgery(except: [
             'oauth/token',
-            'api/v1/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // 入力エラーも他の失敗と同じ error / error_description の形で返す。
+        // 呼び出し元がエラーの読み口を2つ持たずに済むように
+        $exceptions->render(fn (ValidationException $e, Request $request) => $request->is('api/*')
+            ? ApiError::invalidRequest($e)
+            : null);
     })->create();
 
 // 翻訳の正は lang/*.json で、読むのはそこから生成した PHP (ARCHITECTURE.md 10章)。

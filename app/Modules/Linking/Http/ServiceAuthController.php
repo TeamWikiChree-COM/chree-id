@@ -4,7 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Linking\Application\ServiceMagicLink;
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
-use App\Modules\Registry\Http\ProvisioningClientGuard;
+use App\Modules\Registry\Http\EnsureProvisioningClient;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,11 +20,14 @@ use Illuminate\Validation\ValidationException;
  * かつ呼び出し元に紐付いた利用者しか引けない (VerifyServiceUserPassword)。
  */
 class ServiceAuthController {
-    public function __construct(
-        private readonly ProvisioningClientGuard $guard,
-        private readonly VerifyServiceUserPassword $verify,
-        private readonly ServiceMagicLink $magicLinks,
-    ) {}
+
+    private readonly VerifyServiceUserPassword $verify;
+    private readonly ServiceMagicLink $magicLinks;
+
+    public function __construct(VerifyServiceUserPassword $verify, ServiceMagicLink $magicLinks) {
+        $this->verify = $verify;
+        $this->magicLinks = $magicLinks;
+    }
 
     /**
      * @param Request $request
@@ -32,8 +35,7 @@ class ServiceAuthController {
      * @throws ValidationException
      */
     public function verifyPassword(Request $request): JsonResponse {
-        $client = $this->guard->check($request);
-        if ($client instanceof JsonResponse) return $client;
+        $client = EnsureProvisioningClient::client($request);
 
         $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
@@ -75,8 +77,7 @@ class ServiceAuthController {
      * @throws ValidationException
      */
     public function issueMagicLink(Request $request): JsonResponse {
-        $client = $this->guard->check($request);
-        if ($client instanceof JsonResponse) return $client;
+        $client = EnsureProvisioningClient::client($request);
 
         $request->validate(['email' => ['required', 'string', 'email', 'max:255']]);
 
@@ -97,8 +98,7 @@ class ServiceAuthController {
      * @throws ValidationException
      */
     public function consumeMagicLink(Request $request): JsonResponse {
-        $client = $this->guard->check($request);
-        if ($client instanceof JsonResponse) return $client;
+        $client = EnsureProvisioningClient::client($request);
 
         $request->validate(['token' => ['required', 'string', 'max:128']]);
 

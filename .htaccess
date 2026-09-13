@@ -1,6 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # CGI 版の PHP には Authorization ヘッダーが渡らない。サーバ間 API の Basic 認証と
+    # userinfo の Bearer が届かなくなるので、環境変数に写して渡す (public/.htaccess と同じ)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
     # ドットから始まる隠しファイル（.env など）へのアクセスを遮断。
     # ただし .well-known は RFC 8615 の公開パスなので通す。
     # ここで塞ぐと OIDC ディスカバリが 403 になり、RP が接続先を解決できない

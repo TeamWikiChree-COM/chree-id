@@ -2,6 +2,7 @@
 namespace App\Support\Api;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 /**
  * サーバ間 API のエラー応答の形。
@@ -18,5 +19,19 @@ final class ApiError {
      */
     public static function make(string $error, string $description, int $status): JsonResponse {
         return response()->json(['error' => $error, 'error_description' => $description], $status);
+    }
+
+    /**
+     * 入力エラー。どの項目がなぜ駄目かは `errors` に項目ごとに載せる。
+     *
+     * @param ValidationException $e
+     * @return JsonResponse
+     */
+    public static function invalidRequest(ValidationException $e): JsonResponse {
+        return response()->json([
+            'error' => 'invalid_request',
+            'error_description' => $e->getMessage(),
+            'errors' => $e->errors(),
+        ], $e->status);
     }
 }

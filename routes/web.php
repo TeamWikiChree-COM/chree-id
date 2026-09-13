@@ -20,9 +20,8 @@ use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
 use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
-use App\Modules\Linking\Http\ServiceAccountController;
-use App\Modules\Linking\Http\ServiceAuthController;
 use App\Modules\Linking\Http\SplitServiceController;
+use App\Modules\ApiDocs\Http\ApiDocsController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
@@ -216,20 +215,7 @@ Route::post('/oauth/authorize/approve', [AuthorizeController::class, 'approve'])
 // RP からのサーバ間通信。CSRF の除外は bootstrap/app.php 側で指定している
 Route::post('/oauth/token', TokenController::class);
 
-// サービスが自分の利用者ぶんの ChreeID を取りに来る。こちらもブラウザを介さない
-Route::post('/api/v1/service-accounts', [ServiceAccountController::class, 'store']);
-Route::post('/api/v1/service-accounts/claim-tickets', [ServiceAccountController::class, 'claimTicket']);
-Route::post('/api/v1/service-accounts/status', [ServiceAccountController::class, 'status']);
-Route::post('/api/v1/service-accounts/password', [ServiceAccountController::class, 'changePassword']);
-Route::post('/api/v1/service-accounts/deactivate', [ServiceAccountController::class, 'deactivate']);
-
-// サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
-Route::post('/api/v1/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])
-    ->middleware('throttle:service-auth');
-
-// サービスが自前で出すメールリンクの裏付け。画面もメールも向こうのまま
-Route::post('/api/v1/service-auth/magic-link', [ServiceAuthController::class, 'issueMagicLink'])
-    ->middleware('throttle:service-auth');
-Route::post('/api/v1/service-auth/magic-link/consume', [ServiceAuthController::class, 'consumeMagicLink'])
-    ->middleware('throttle:verify');
 Route::get('/oauth/userinfo', UserinfoController::class);
+
+// サーバ間 API (/api/v1/*) は routes/api.php。ここにはその説明画面だけを置く
+Route::get('/api-docs/{version}', ApiDocsController::class)->where('version', 'v\d+');
