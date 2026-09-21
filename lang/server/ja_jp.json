@@ -187,6 +187,7 @@
     "oauth.error.response_type_unsupported": "response_type は code のみ対応しています",
     "oauth.error.scope_not_allowed": "許可されていない scope が含まれています",
     "oauth.error.scope_openid_required": "scope に openid が必要です",
+    "oauth.error.service_account_unclaimed": "このアカウントは作成元のサービス専用です。他のサービスで使うには、先に作成元のサービスから ChreeID への移行を済ませてください",
     "oauth.error.service_suspended": "このサービスは利用を停止しています",
     "oauth.error.token_invalid": "トークンが不正です",
     "oauth.error.token_missing": "トークンがありません",

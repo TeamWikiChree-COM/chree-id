@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Provider\Infrastructure\AccessTokenModel;
@@ -45,6 +46,7 @@ class TokenTest extends TestCase {
     private function obtainCode(OAuthClientModel $client, bool $withPkce = false): string {
         $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト太郎');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
+        app(UserAccounts::class)->ensure($account->id);
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 
         $query = [

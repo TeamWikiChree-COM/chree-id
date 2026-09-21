@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use App\Modules\Credential\Application\SetPassword;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentity;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -41,6 +42,8 @@ class AuthorizeTest extends TestCase {
     private function loginAccount(): AuthIdentity {
         $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', 'テスト');
         app(SetPassword::class)->execute($account->id, 'correct-horse');
+        // 登録を済ませた人と同じ状態にする。無いと引き取り前のサービスアカウント扱いで止められる
+        app(UserAccounts::class)->ensure($account->id);
         $this->post('/login', ['email' => 'user@example.com', 'password' => 'correct-horse']);
 
         return $account;

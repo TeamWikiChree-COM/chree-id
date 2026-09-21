@@ -5,6 +5,7 @@ use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Provider\Application\AmbiguousServiceAccountException;
 use App\Modules\Provider\Application\IssueAuthCode;
 use App\Modules\Provider\Application\SelectServiceAccount;
+use App\Modules\Provider\Application\UnclaimedServiceAccountGuard;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
 use App\Modules\Provider\Infrastructure\LoginHint;
 use App\Modules\Provider\Domain\AuthorizeError;
@@ -26,6 +27,7 @@ class AuthorizeController {
         private readonly ChreeSession $session,
         private readonly SelectServiceAccount $select,
         private readonly LoginHint $loginHint,
+        private readonly UnclaimedServiceAccountGuard $unclaimed,
     ) {}
 
     /**
@@ -49,6 +51,7 @@ class AuthorizeController {
 
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect()->guest('/login');
+        if ($this->unclaimed->blocks($authorize->client, $accountId)) return $this->rejectUnclaimed($request);
 
         // 公式サービスは ChreeID の一部とみなせるので、毎回の同意を求めない
         // 同意の省略は信頼状態とは別の設定。承認済みでも省略したいサービスがある
@@ -81,6 +84,7 @@ class AuthorizeController {
 
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect()->guest('/login');
+        if ($this->unclaimed->blocks($authorize->client, $accountId)) return $this->rejectUnclaimed($request);
 
         return $this->redirectWithCode($authorize, $accountId, $request);
     }
@@ -132,6 +136,18 @@ class AuthorizeController {
             'accounts' => $accounts,
             'query' => $request->query(),
         ]);
+    }
+
+    /**
+     * 引き取り前のサービスアカウントには、発行元で移行してもらうよう画面で伝える。
+     *
+     * RP へエラーで返すと、本人には何をすればよいか伝わらない。
+     *
+     * @param Request $request
+     * @return RedirectResponse|InertiaResponse
+     */
+    private function rejectUnclaimed(Request $request): RedirectResponse|InertiaResponse {
+        return $this->handleError($request, AuthorizeError::fatal('access_denied', __('oauth.error.service_account_unclaimed')));
     }
 
     /**

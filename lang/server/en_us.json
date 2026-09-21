@@ -187,6 +187,7 @@
     "oauth.error.response_type_unsupported": "response_type only supports code",
     "oauth.error.scope_not_allowed": "The request includes a scope that is not allowed",
     "oauth.error.scope_openid_required": "scope must include openid",
+    "oauth.error.service_account_unclaimed": "This account can only be used with the service that created it. To use it with other services, first migrate it to a ChreeID from that service",
     "oauth.error.service_suspended": "This service has been suspended",
     "oauth.error.token_invalid": "The token is invalid",
     "oauth.error.token_missing": "No token was provided",
