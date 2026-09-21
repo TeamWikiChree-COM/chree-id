@@ -75,8 +75,7 @@ class AdminAccountDetailController {
     public function split(Request $request, string $account, string $link): RedirectResponse {
         $request->validate(['credentials' => ['array'], 'credentials.*' => ['string']]);
 
-        /** @var list<string> $credentialIds */
-        $credentialIds = array_values($request->input('credentials', []));
+        $credentialIds = array_values(array_filter($request->array('credentials'), is_string(...)));
 
         return $this->run($account, 'split_service', ['link' => $link],
             fn () => $this->links->split($this->actor(), $account, $link, $credentialIds));
@@ -126,7 +125,7 @@ class AdminAccountDetailController {
      */
     private function links(string $accountId): array {
         $rows = ServiceAccountModel::query()->where('auth_identity_id', $accountId)->orderBy('created_at')->get();
-        $names = $this->presenter->clientNames(array_values($rows->pluck('client_id')->all()));
+        $names = $this->presenter->clientNames(array_values($rows->map(fn (ServiceAccountModel $row): string => $row->client_id)->all()));
 
         return array_values($rows->map(fn (ServiceAccountModel $row): array => [
             'id' => $row->id,

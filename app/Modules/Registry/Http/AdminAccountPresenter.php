@@ -22,11 +22,11 @@ class AdminAccountPresenter {
      * @return list<array<string, mixed>>
      */
     public function present(array $models): array {
-        $ids = array_values(array_map(fn (AuthIdentityModel $m): string => $m->id, $models));
+        $ids = array_map(fn (AuthIdentityModel $m): string => $m->id, $models);
         $types = $this->credentialTypes($ids);
         $services = $this->services($ids);
 
-        return array_values(array_map(fn (AuthIdentityModel $m): array => [
+        return array_map(fn (AuthIdentityModel $m): array => [
             'id' => $m->id,
             'email' => $m->email,
             'displayName' => $m->display_name,
@@ -39,7 +39,7 @@ class AdminAccountPresenter {
             'createdAt' => $m->created_at?->toDateTimeString() ?? '',
             'credentialTypes' => $types[$m->id] ?? [],
             'services' => $services[$m->id] ?? [],
-        ], $models));
+        ], $models);
     }
 
     /**
@@ -95,7 +95,7 @@ class AdminAccountPresenter {
             ->orderBy('created_at')
             ->get();
 
-        $names = $this->clientNames(array_values($links->pluck('client_id')->all()));
+        $names = $this->clientNames(array_values($links->map(fn (ServiceAccountModel $link): string => $link->client_id)->all()));
         $services = [];
 
         foreach ($links as $link) {

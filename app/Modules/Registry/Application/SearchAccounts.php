@@ -4,6 +4,7 @@ namespace App\Modules\Registry\Application;
 use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * 管理画面のアカウント検索。
@@ -33,7 +34,7 @@ class SearchAccounts {
         if ($status !== null) $this->matchStatus($builder, $status);
 
         if ($clientId !== null) {
-            $builder->whereIn('id', fn ($sub) => $sub->select('auth_identity_id')->from('service_accounts')->where('client_id', $clientId));
+            $builder->whereIn('id', fn (QueryBuilder $sub) => $sub->select('auth_identity_id')->from('service_accounts')->where('client_id', $clientId));
         }
 
         return $builder
@@ -57,7 +58,7 @@ class SearchAccounts {
             ->whereRaw('LOWER(email) LIKE ?', [$like])
             ->orWhereRaw('LOWER(display_name) LIKE ?', [$like])
             ->orWhere('id', mb_strtolower($query))
-            ->orWhereIn('id', fn ($sub) => $sub->select('auth_identity_id')->from('service_accounts')
+            ->orWhereIn('id', fn (QueryBuilder $sub) => $sub->select('auth_identity_id')->from('service_accounts')
                 ->where('service_user_id', $query)
                 ->orWhere('sub', $query)));
     }

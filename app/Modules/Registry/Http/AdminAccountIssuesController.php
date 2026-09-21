@@ -29,12 +29,14 @@ class AdminAccountIssuesController {
      */
     public function index(): Response {
         $issues = $this->issues->execute();
-        $models = AuthIdentityModel::query()->whereIn('id', array_keys($issues))->orderByDesc('created_at')->get()->all();
+        $models = array_values(AuthIdentityModel::query()->whereIn('id', array_keys($issues))->orderByDesc('created_at')->get()->all());
 
         return Inertia::render('Admin/Accounts/Issues', [
+            // present は並びを保つので、同じ位置のモデルから問題を引く
             'accounts' => array_map(
-                fn (array $row): array => $row + ['issues' => $issues[$row['id']]],
-                $this->presenter->present(array_values($models)),
+                fn (array $row, AuthIdentityModel $model): array => $row + ['issues' => $issues[$model->id]],
+                $this->presenter->present($models),
+                $models,
             ),
             'selfId' => $this->session->accountId(),
             'graceDays' => PurgeDeletedAccounts::graceDays(),

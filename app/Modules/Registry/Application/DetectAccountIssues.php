@@ -55,13 +55,13 @@ class DetectAccountIssues {
      * @return list<string>
      */
     private function multiService(): array {
-        return array_values(array_map('strval', DB::table('service_accounts')
+        return $this->strings(DB::table('service_accounts')
             ->select('auth_identity_id')
             ->whereNotIn('auth_identity_id', DB::table('user_accounts')->select('auth_identity_id'))
             ->groupBy('auth_identity_id')
             ->havingRaw('COUNT(DISTINCT client_id) > 1')
             ->pluck('auth_identity_id')
-            ->all()));
+            ->all());
     }
 
     /**
@@ -69,6 +69,14 @@ class DetectAccountIssues {
      * @return list<string>
      */
     private function ids(Builder $query): array {
-        return array_values(array_map('strval', $query->pluck('id')->all()));
+        return $this->strings($query->pluck('id')->all());
+    }
+
+    /**
+     * @param array<mixed> $values
+     * @return list<string>
+     */
+    private function strings(array $values): array {
+        return array_values(array_filter($values, is_string(...)));
     }
 }
