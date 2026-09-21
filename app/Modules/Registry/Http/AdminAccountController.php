@@ -122,7 +122,7 @@ class AdminAccountController {
      */
     public function act(Request $request, string $account): RedirectResponse {
         $request->validate([
-            'action' => ['required', 'string', 'in:suspend,unsuspend,withdraw,restore,purge'],
+            'action' => ['required', 'string', 'in:suspend,unsuspend,withdraw,restore,purge,promote'],
         ]);
 
         $actor = $this->actor();
@@ -134,6 +134,7 @@ class AdminAccountController {
             'withdraw' => $this->manage->withdraw($actor, $account),
             'restore' => $this->manage->restore($actor, $account),
             'purge' => $this->manage->purge($actor, $account),
+            'promote' => $this->manage->promote($actor, $account),
             // validate が in: で絞っているが、そちらを足してここを忘れると黙って何もしない
             default => throw new RuntimeException(__('admin.account.unknown_action')),
         });

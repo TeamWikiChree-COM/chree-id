@@ -11,12 +11,12 @@ use Illuminate\Support\Str;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-// origin は出自、UserAccount の有無は現在の統合状態。この2つは別の軸 (KAKUTEI.md)
+// UserAccount の有無と origin (種別) は、昇格のたびに揃える
 class UserAccountTest extends TestCase {
     use RefreshDatabase;
 
     /**
-     * @param AccountOrigin $origin 出自
+     * @param AccountOrigin $origin 種別
      * @return string 認証主体のID (ULID)
      */
     private function identity(AccountOrigin $origin): string {
@@ -39,13 +39,13 @@ class UserAccountTest extends TestCase {
         $this->assertSame(1, UserAccountModel::query()->where('auth_identity_id', $id)->count());
     }
 
-    // 束ねる人格ができても、どういう経緯で作られたかの記録は動かない
-    public function test_doesNotTouchTheOrigin(): void {
+    // 昇格したのに service のまま残ると、種別が実体と食い違う
+    public function test_promotesTheOriginToUser(): void {
         $id = $this->identity(AccountOrigin::SERVICE);
 
         app(UserAccounts::class)->ensure($id);
 
-        $this->assertSame(AccountOrigin::SERVICE, app(AuthIdentityRepository::class)->findById($id)?->origin);
+        $this->assertSame(AccountOrigin::USER, app(AuthIdentityRepository::class)->findById($id)?->origin);
     }
 
     // 逆も同じ。origin が user でも、束ねていなければ UserAccount は無い

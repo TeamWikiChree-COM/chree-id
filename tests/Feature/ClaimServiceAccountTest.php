@@ -198,9 +198,9 @@ class ClaimServiceAccountTest extends TestCase {
 
         $this->assertNotNull($account);
 
-        // 束ねる人格ができる。origin は出自の記録なので service のまま動かない
+        // 束ねる人格ができ、種別も user へ揃う
         $this->assertTrue(app(UserAccounts::class)->exists($account->id));
-        $this->assertSame(AccountOrigin::SERVICE, $account->origin);
+        $this->assertSame(AccountOrigin::USER, $account->origin);
         $this->assertSame('太郎', $account->displayName);
         $this->assertNotNull($link->claimed_at);
         $this->assertSame($link->auth_identity_id, session('chreeid.account_id'));

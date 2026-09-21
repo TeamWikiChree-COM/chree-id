@@ -151,6 +151,20 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                             <RowAction onClick={() => setEditing(!editing)}>{editing ? t('admin.accounts.row.action.close') : t('admin.accounts.row.action.edit')}</RowAction>
 
+                            {!account.isDeleted && account.origin === 'service' && (
+                                <RowAction
+                                    onClick={() =>
+                                        act('promote', {
+                                            title: t('admin.accounts.row.promote.title'),
+                                            description: t('admin.accounts.row.promote.description'),
+                                            confirmText: t('admin.accounts.row.promote.confirm'),
+                                        })
+                                    }
+                                >
+                                    {t('admin.accounts.row.action.promote')}
+                                </RowAction>
+                            )}
+
                             {account.isDeleted && <RowAction onClick={() => act('restore')}>{t('admin.accounts.row.action.restore')}</RowAction>}
 
                             {!account.isDeleted && account.isSuspended && (

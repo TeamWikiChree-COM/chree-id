@@ -8,7 +8,7 @@
 /** 認証手段の種別。PHP の CredentialType と合わせる */
 export type CredentialTypeValue = 'password' | 'magic_link' | 'totp' | 'passkey' | 'recovery_code' | 'oauth';
 
-/** アカウントの出自。PHP の AccountOrigin と合わせる */
+/** アカウントの種別。PHP の AccountOrigin と合わせる */
 export type AccountOriginValue = 'user' | 'service';
 
 /** DashboardController が渡すアカウント情報 */

@@ -35,7 +35,6 @@ class DescribeServiceAccount {
         return [
             'sub' => $this->subjects->forServiceAccount($serviceAccount),
             // 束ねる人格を持っていれば、本人のものになっている。
-            // origin は出自の記録なので、この判定には使わない
             'migrated' => $this->userAccounts->exists($serviceAccount->auth_identity_id),
             'migrated_at' => $serviceAccount->claimed_at?->toIso8601String(),
             // 移行元が「まだ渡していないもの」を判断できるように返す。

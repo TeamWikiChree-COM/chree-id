@@ -122,6 +122,23 @@ class ManageAccount {
     }
 
     /**
+     * ユーザーアカウントへ昇格させる。種別と実体が食い違ったデータを直すための入口。
+     *
+     * 本来は本人の引き取り・統合で昇格するが、その経路を通らずに
+     * 複数サービスを束ねてしまった行を運営が直せるようにしておく。
+     *
+     * @param string $actorId 操作している管理者のアカウントID
+     * @param string $targetId 対象のアカウントID
+     * @return void
+     * @throws RuntimeException 自分自身を操作しようとした場合
+     */
+    public function promote(string $actorId, string $targetId): void {
+        $this->require($actorId, $targetId);
+
+        $this->userAccounts->ensure($targetId);
+    }
+
+    /**
      * 猶予を待たずに消す。**元に戻せない。**
      *
      * @param string $actorId 操作している管理者のアカウントID

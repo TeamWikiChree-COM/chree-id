@@ -87,6 +87,17 @@ class AdminAccountManageTest extends TestCase {
         $this->assertSame('moved@example.com', $account->email);
     }
 
+    // 引き取りを経ずに複数サービスを束ねてしまった行を、運営が直せるようにする
+    public function test_promotesAServiceAccountToAUserAccount(): void {
+        $this->loginAsAdmin();
+        $id = app(AuthIdentityRepository::class)->create(AccountOrigin::SERVICE, 'svc@example.com', null)->id;
+
+        $this->act($id, 'promote')->assertRedirect('/admin/accounts');
+
+        $this->assertTrue(app(UserAccounts::class)->exists($id));
+        $this->assertSame(AccountOrigin::USER, app(AuthIdentityRepository::class)->findById($id)?->origin);
+    }
+
     public function test_suspendsAndReleases(): void {
         $this->loginAsAdmin();
         $id = $this->target();

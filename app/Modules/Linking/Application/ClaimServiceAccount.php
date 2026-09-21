@@ -131,7 +131,7 @@ class ClaimServiceAccount {
         $account = $this->accounts->findById($link->auth_identity_id);
 
         // 既に本人のものなら触らない。許すと他人のパスワードを差し替えられる。
-        // 判定は UserAccount の有無で行う。origin は出自の記録なので使わない
+        // 判定は UserAccount の有無で行う
         if ($account === null || $this->userAccounts->exists($account->id)) {
             throw new ClaimException(ClaimException::ALREADY_CLAIMED);
         }
@@ -150,7 +150,7 @@ class ClaimServiceAccount {
 
             if ($displayName !== null) $this->accounts->updateDisplayName($account->id, $displayName);
 
-            // ここで束ねる人格ができる。origin (出自) は service のまま触らない
+            // ここで束ねる人格ができ、origin も user へ揃う
             $this->userAccounts->ensure($account->id);
 
             $link->forceFill(['claimed_at' => now()])->save();

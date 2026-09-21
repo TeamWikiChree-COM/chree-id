@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * user_accounts テーブルのモデル (複数の ServiceAccount を束ねる人格)
  *
- * **行の有無が「束ねているか」を表す。** origin は出自の記録であって、
- * この判定には使わない (KAKUTEI.md)。
+ * **行の有無が「束ねているか」を表す。** origin はこれに揃える (UserAccounts::ensure)。
  *
  * @property string $id
  * @property string $auth_identity_id
