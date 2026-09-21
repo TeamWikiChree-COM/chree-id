@@ -1,6 +1,10 @@
 {
     "admin.account.already_withdrawn": "退会済みです。先に退会を取り消してください",
     "admin.account.cannot_operate_self": "自分のアカウントはここから操作できません",
+    "admin.account.link_not_found": "このアカウントのサービスアカウントではありません",
+    "admin.account.split_failed.email_taken": "そのメールアドレスは使えません",
+    "admin.account.split_failed.no_credential": "分離先へ持っていく認証手段を1つ以上選んでください",
+    "admin.account.split_failed.not_found": "アカウントが見つかりません",
     "admin.account.not_found": "アカウントが見つかりません",
     "admin.account.unknown_action": "不明な操作です",
     "admin.client.invalid_trust": "信頼状態の指定が不正です",

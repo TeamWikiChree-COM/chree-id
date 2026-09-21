@@ -7,20 +7,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import Icon from '../../../Components/Icon';
+import InertiaLink from '../../../Components/InertiaLink';
 import RowAction from '../../../Components/RowAction';
 import { useConfirm } from '../../../lib/confirm';
 import { formatDateTime } from '../../../lib/datetime';
 import { t } from '../../../lib/i18n';
 import type { ConfirmRequest } from '../../../Components/ConfirmDialog';
+import { CREDENTIAL_LABELS } from './credentialLabels';
 import type { AdminAccount } from './types';
 
-/** 認証方式の表示ラベル */
-const CREDENTIAL_LABELS: Record<string, string> = {
-    password: t('admin.accounts.row.credential.password'),
-    passkey: t('admin.accounts.row.credential.passkey'),
-    totp: t('admin.accounts.row.credential.totp'),
-    magic_link: t('admin.accounts.row.credential.magic_link'),
-};
 
 /** act() に渡す確認内容。実行そのものは act() が組み立てる */
 type ConfirmText = Omit<ConfirmRequest, 'onConfirm'>;
@@ -78,7 +73,11 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
                             name={account.origin === 'service' ? 'robot' : 'user'}
                             sx={{ color: 'text.secondary', fontSize: '0.9375rem' }}
                         />
-                        <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem' }}>
+                        <Typography
+                            component={InertiaLink}
+                            href={`/admin/accounts/${account.id}`}
+                            sx={{ fontWeight: 600, fontSize: '0.9375rem', color: 'text.primary', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        >
                             {account.displayName || t('admin.accounts.row.unset')}
                         </Typography>
                         <Chip

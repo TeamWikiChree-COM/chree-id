@@ -1,15 +1,12 @@
 <?php
 namespace App\Modules\Registry\Http;
 
-use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
-use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use App\Modules\Identity\Infrastructure\ChreeSession;
-use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Registry\Application\ManageAccount;
-use App\Modules\Registry\Domain\AdminAccess;
+use App\Modules\Registry\Application\SearchAccounts;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,44 +22,32 @@ use RuntimeException;
  */
 class AdminAccountController {
     public function __construct(
-        private readonly AdminAccess $adminAccess,
         private readonly ManageAccount $manage,
+        private readonly SearchAccounts $search,
+        private readonly AdminAccountPresenter $presenter,
         private readonly ChreeSession $session,
         private readonly AuditLog $audit,
     ) {}
 
     /**
+     * @param Request $request
      * @return Response
      */
-    public function index(): Response {
-        $models = AuthIdentityModel::query()
-            ->orderByDesc('created_at')
-            // 同じ秒に作られた分の並びが揺れないよう、ULID で決着を付ける
-            ->orderByDesc('id')
-            ->get()
-            ->all();
-
-        $ids = array_values(array_map(fn (AuthIdentityModel $m): string => $m->id, $models));
-        $types = $this->credentialTypes($ids);
-        $services = $this->services($ids);
-
-        $accounts = array_values(array_map(fn (AuthIdentityModel $m): array => [
-            'id' => $m->id,
-            'email' => $m->email,
-            'displayName' => $m->display_name,
-            'origin' => $m->origin->value,
-            'isEmailVerified' => $m->email_verified_at !== null,
-            'isSuspended' => $m->suspended_at !== null,
-            'isDeleted' => $m->deleted_at !== null,
-            'deletedAt' => $m->deleted_at?->toDateTimeString(),
-            'isAdmin' => $this->isAdmin($m),
-            'createdAt' => $m->created_at?->toDateTimeString() ?? '',
-            'credentialTypes' => $types[$m->id] ?? [],
-            'services' => $services[$m->id] ?? [],
-        ], $models));
+    public function index(Request $request): Response {
+        $query = $request->string('q')->trim()->toString();
+        $kind = $this->choice($request, 'kind', SearchAccounts::KINDS);
+        $status = $this->choice($request, 'status', SearchAccounts::STATUSES);
+        $client = $request->string('client')->toString();
+        $page = $this->search->execute($query, $kind, $status, $client === '' ? null : $client, max(1, $request->integer('page', 1)));
 
         return Inertia::render('Admin/Accounts/Index', [
-            'accounts' => $accounts,
+            'accounts' => $this->presenter->present(array_values($page->items())),
+            'pagination' => ['page' => $page->currentPage(), 'lastPage' => $page->lastPage(), 'total' => $page->total()],
+            'filters' => ['q' => $query, 'kind' => $kind ?? '', 'status' => $status ?? '', 'client' => $client],
+            'clients' => array_map(
+                fn (OAuthClientModel $c): array => ['id' => $c->id, 'name' => $c->displayName()],
+                OAuthClientModel::query()->orderBy('name')->get()->all(),
+            ),
             // 自分の行では操作ボタンを出さない。締め出されると戻れなくなる
             'selfId' => $this->session->accountId(),
             'graceDays' => PurgeDeletedAccounts::graceDays(),
@@ -147,7 +132,8 @@ class AdminAccountController {
             actorId: $actor,
         );
 
-        return $result;
+        // 詳細ページで消すと戻り先が無くなる
+        return $action === 'purge' ? redirect('/admin/accounts') : $result;
     }
 
     /**
@@ -164,7 +150,8 @@ class AdminAccountController {
             throw ValidationException::withMessages(['account' => $e->getMessage()]);
         }
 
-        return redirect('/admin/accounts');
+        // 一覧と詳細のどちらからも呼ばれるので、来た画面へ戻す
+        return redirect()->back(302, [], '/admin/accounts');
     }
 
     /**
@@ -185,68 +172,16 @@ class AdminAccountController {
     }
 
     /**
-     * アカウントごとの認証手段の種類。
+     * 決まった値以外は「絞らない」として扱う。
      *
-     * @param list<string> $accountIds 対象のアカウントID
-     * @return array<string, list<string>> アカウントID => 種類の値
+     * @param Request $request
+     * @param string $key
+     * @param list<string> $allowed
+     * @return string|null
      */
-    private function credentialTypes(array $accountIds): array {
-        if ($accountIds === []) return [];
+    private function choice(Request $request, string $key, array $allowed): ?string {
+        $value = $request->string($key)->toString();
 
-        $types = [];
-
-        foreach (CredentialModel::query()->whereIn('auth_identity_id', $accountIds)->get() as $credential) {
-            $types[$credential->auth_identity_id][$credential->type->value] = true;
-        }
-
-        return array_map(fn (array $set): array => array_keys($set), $types);
-    }
-
-    /**
-     * アカウントがどのサービスの人格を持っているか。
-     *
-     * `origin` では分からない。あれは出自の記録で、**いま何に紐付いているかは
-     * ServiceAccount の行を見るしかない**（KAKUTEI.md）。
-     * 1人が同じサービスに複数持てるので、サービス名だけでなく識別子も出す。
-     *
-     * @param list<string> $accountIds 対象のアカウントID
-     * @return array<string, list<array{clientId: string, name: string, serviceUserId: string|null}>>
-     */
-    private function services(array $accountIds): array {
-        if ($accountIds === []) return [];
-
-        $links = ServiceAccountModel::query()
-            ->whereIn('auth_identity_id', $accountIds)
-            ->orderBy('created_at')
-            ->get();
-
-        $names = OAuthClientModel::query()
-            ->whereIn('id', $links->pluck('client_id')->unique()->all())
-            ->get()
-            ->mapWithKeys(fn (OAuthClientModel $c): array => [$c->id => $c->displayName()]);
-
-        $services = [];
-
-        foreach ($links as $link) {
-            $services[$link->auth_identity_id][] = [
-                'clientId' => $link->client_id,
-                // 消されたクライアントの行が残ることがある。IDを出して追えるようにする
-                'name' => is_string($names[$link->client_id] ?? null) ? $names[$link->client_id] : $link->client_id,
-                'serviceUserId' => $link->service_user_id,
-            ];
-        }
-
-        return $services;
-    }
-
-    /**
-     * @param AuthIdentityModel $account 判定するアカウント
-     * @return bool
-     */
-    private function isAdmin(AuthIdentityModel $account): bool {
-        // 未検証のアドレスで名乗れると、管理者のアドレスを先に登録するだけで管理者に見えてしまう
-        if ($account->email === null || $account->email_verified_at === null) return false;
-
-        return $this->adminAccess->allowsEmail($account->email);
+        return in_array($value, $allowed, true) ? $value : null;
     }
 }

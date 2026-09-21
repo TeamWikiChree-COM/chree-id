@@ -1,6 +1,10 @@
 {
     "admin.account.already_withdrawn": "This account has already withdrawn. Please restore it first.",
     "admin.account.cannot_operate_self": "You can't perform this action on your own account here.",
+    "admin.account.link_not_found": "That service account does not belong to this account",
+    "admin.account.split_failed.email_taken": "That email address cannot be used",
+    "admin.account.split_failed.no_credential": "Choose at least one sign-in method to carry over",
+    "admin.account.split_failed.not_found": "Account not found",
     "admin.account.not_found": "Account not found",
     "admin.account.unknown_action": "Unknown action",
     "admin.client.invalid_trust": "The trust level is invalid",

@@ -4,7 +4,6 @@ namespace App\Modules\Registry\Application;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Application\WithdrawAccount;
 use App\Modules\Identity\Domain\AccountOrigin;
-use App\Modules\Identity\Domain\AuthIdentity;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use RuntimeException;
 
@@ -22,6 +21,7 @@ class ManageAccount {
         private readonly AuthIdentityRepository $accounts,
         private readonly UserAccounts $userAccounts,
         private readonly WithdrawAccount $withdraw,
+        private readonly AdminTarget $target,
     ) {}
 
     /**
@@ -52,7 +52,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function update(string $actorId, string $targetId, ?string $displayName, ?string $email): void {
-        $target = $this->require($actorId, $targetId);
+        $target = $this->target->require($actorId, $targetId);
 
         $this->accounts->updateDisplayName($targetId, $displayName);
 
@@ -69,7 +69,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function withdraw(string $actorId, string $targetId): void {
-        $this->require($actorId, $targetId);
+        $this->target->require($actorId, $targetId);
 
         $this->withdraw->execute($targetId);
     }
@@ -83,7 +83,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function suspend(string $actorId, string $targetId): void {
-        $this->require($actorId, $targetId);
+        $this->target->require($actorId, $targetId);
 
         $this->accounts->suspend($targetId);
     }
@@ -97,7 +97,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身、または退会済みを対象にした場合
      */
     public function unsuspend(string $actorId, string $targetId): void {
-        $target = $this->require($actorId, $targetId);
+        $target = $this->target->require($actorId, $targetId);
 
         // 解除しても deleted_at が残るので、中途半端な状態になる
         if ($target->isDeleted()) {
@@ -116,7 +116,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function restore(string $actorId, string $targetId): void {
-        $this->require($actorId, $targetId);
+        $this->target->require($actorId, $targetId);
 
         $this->accounts->restore($targetId);
     }
@@ -133,7 +133,7 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function promote(string $actorId, string $targetId): void {
-        $this->require($actorId, $targetId);
+        $this->target->require($actorId, $targetId);
 
         $this->userAccounts->ensure($targetId);
     }
@@ -147,27 +147,8 @@ class ManageAccount {
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function purge(string $actorId, string $targetId): void {
-        $this->require($actorId, $targetId);
+        $this->target->require($actorId, $targetId);
 
         $this->accounts->delete($targetId);
-    }
-
-    /**
-     * 対象が居て、かつ自分自身でないことを確かめる。
-     *
-     * @param string $actorId 操作している管理者のアカウントID
-     * @param string $targetId 対象のアカウントID
-     * @return AuthIdentity 対象
-     * @throws RuntimeException 対象が居ない、または自分自身の場合
-     */
-    private function require(string $actorId, string $targetId): AuthIdentity {
-        if ($actorId === $targetId) {
-            throw new RuntimeException(__('admin.account.cannot_operate_self'));
-        }
-
-        $target = $this->accounts->findById($targetId);
-        if ($target === null) throw new RuntimeException(__('admin.account.not_found'));
-
-        return $target;
     }
 }

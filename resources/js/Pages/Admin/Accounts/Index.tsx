@@ -8,13 +8,18 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AppLayout from '../../../Components/AppLayout';
+import InertiaLink from '../../../Components/InertiaLink';
 import SectionTitle from '../../../Components/SectionTitle';
 import { t } from '../../../lib/i18n';
+import { AccountFilters, AccountPager } from './AccountFilters';
 import AccountRow from './AccountRow';
-import type { AdminAccount } from './types';
+import type { AdminAccount, AdminAccountFilters, AdminClientOption, AdminPagination } from './types';
 
 interface IndexProps {
     accounts: AdminAccount[];
+    pagination: AdminPagination;
+    filters: AdminAccountFilters;
+    clients: AdminClientOption[];
     /** 操作している管理者のアカウントID。自分の行では操作を出さない */
     selfId: string | null;
     /** 退会したアカウントが消えるまでの日数 */
@@ -27,7 +32,7 @@ interface IndexProps {
  * 退会済みのものも出す。猶予のあいだは取り消せるので、
  * 隠すと戻せることに気付けない。
  */
-export default function Index({ accounts, selfId, graceDays }: IndexProps) {
+export default function Index({ accounts, pagination, filters, clients, selfId, graceDays }: IndexProps) {
     const { accountCreated } = usePage().props.flash;
     const { errors } = usePage().props;
     const form = useForm({ email: '', display_name: '' });
@@ -86,9 +91,15 @@ export default function Index({ accounts, selfId, graceDays }: IndexProps) {
                 </Typography>
             </Paper>
 
-            <SectionTitle note={t('admin.accounts.count', { count: accounts.length })}>
+            <SectionTitle note={t('admin.accounts.count', { count: pagination.total })}>
                 {t('admin.accounts.list.heading')}
             </SectionTitle>
+            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
+                <AccountFilters filters={filters} clients={clients} />
+                <Button component={InertiaLink} href="/admin/accounts/issues" size="small" variant="outlined">
+                    {t('admin.accounts.issues.link')}
+                </Button>
+            </Stack>
             <Paper variant="outlined">
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {accounts.length === 0 && (
@@ -107,6 +118,7 @@ export default function Index({ accounts, selfId, graceDays }: IndexProps) {
                     ))}
                 </Stack>
             </Paper>
+            <AccountPager filters={filters} pagination={pagination} />
         </AppLayout>
     );
 }

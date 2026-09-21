@@ -26,6 +26,8 @@ use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
 use App\Modules\Registry\Http\AdminAccountController;
+use App\Modules\Registry\Http\AdminAccountDetailController;
+use App\Modules\Registry\Http\AdminAccountIssuesController;
 use App\Modules\Registry\Http\AdminClientController;
 use App\Modules\Registry\Http\AdminController;
 use App\Modules\Registry\Http\AdminLogController;
@@ -173,6 +175,13 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
 
     Route::get('/accounts', [AdminAccountController::class, 'index']);
     Route::post('/accounts', [AdminAccountController::class, 'store']);
+    // {account} より先に置く。後ろだと "issues" がアカウントIDとして拾われる
+    Route::get('/accounts/issues', [AdminAccountIssuesController::class, 'index']);
+    Route::post('/accounts/issues/fix', [AdminAccountIssuesController::class, 'fixAll']);
+    Route::get('/accounts/{account}', [AdminAccountDetailController::class, 'show']);
+    Route::post('/accounts/{account}/credentials/{credential}/delete', [AdminAccountDetailController::class, 'removeCredential']);
+    Route::post('/accounts/{account}/links/{link}/split', [AdminAccountDetailController::class, 'split']);
+    Route::post('/accounts/{account}/links/{link}/delete', [AdminAccountDetailController::class, 'unlink']);
     Route::post('/accounts/{account}', [AdminAccountController::class, 'update']);
     // 停止 / 解除 / 退会 / 復帰 / 物理削除。何をするかは action で決まる
     Route::post('/accounts/{account}/act', [AdminAccountController::class, 'act']);
