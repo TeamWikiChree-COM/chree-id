@@ -11,7 +11,7 @@ class TotpTest extends TestCase {
     /**
      * RFC 6238 のテストベクタで使われる鍵 "12345678901234567890" を base32 にしたもの
      */
-    private const RFC_SECRET = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+    private const string RFC_SECRET = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
 
     #[\Override]
     protected function setUp(): void {
