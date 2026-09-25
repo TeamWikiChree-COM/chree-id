@@ -4,6 +4,8 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useState } from 'react';
+import ActionRow from '../../../Components/ActionRow';
+import OutlinedList from '../../../Components/OutlinedList';
 import { useConfirm } from '../../../lib/confirm';
 import { t } from '../../../lib/i18n';
 import type { ConfirmRequest } from '../../../Components/ConfirmDialog';
@@ -50,73 +52,76 @@ export default function AccountActions({ account, graceDays }: AccountActionsPro
     });
 
     return (
-        <Paper variant="outlined" sx={{ p: 2 }}>
-            <Stack useFlexGap direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                <Button variant="outlined" color="inherit" onClick={() => setEditing(!editing)}>
-                    {editing ? t('admin.accounts.row.action.close') : t('admin.accounts.row.action.edit')}
-                </Button>
+        <Stack spacing={1.5}>
+            <OutlinedList>
+                <ActionRow
+                    label={editing ? t('admin.accounts.row.action.close') : t('admin.accounts.row.action.edit')}
+                    onClick={() => setEditing(!editing)}
+                />
                 {!account.isDeleted && account.origin === 'service' && (
-                    <Button variant="outlined" color="inherit" onClick={() => act('promote', confirmOf('promote'))}>
-                        {t('admin.accounts.row.action.promote')}
-                    </Button>
+                    <ActionRow
+                        label={t('admin.accounts.row.action.promote')}
+                        description={t('admin.accounts.row.promote.description')}
+                        onClick={() => act('promote', confirmOf('promote'))}
+                    />
                 )}
-                {account.isDeleted && (
-                    <Button variant="outlined" color="inherit" onClick={() => act('restore')}>{t('admin.accounts.row.action.restore')}</Button>
-                )}
+                {account.isDeleted && <ActionRow label={t('admin.accounts.row.action.restore')} onClick={() => act('restore')} />}
                 {!account.isDeleted && account.isSuspended && (
-                    <Button variant="outlined" color="inherit" onClick={() => act('unsuspend')}>{t('admin.accounts.row.action.unsuspend')}</Button>
+                    <ActionRow label={t('admin.accounts.row.action.unsuspend')} onClick={() => act('unsuspend')} />
                 )}
                 {!account.isDeleted && !account.isSuspended && (
-                    <Button variant="outlined" color="inherit" onClick={() => act('suspend', confirmOf('suspend'))}>
-                        {t('admin.accounts.row.action.suspend')}
-                    </Button>
+                    <ActionRow
+                        label={t('admin.accounts.row.action.suspend')}
+                        description={t('admin.accounts.row.suspend.description')}
+                        onClick={() => act('suspend', confirmOf('suspend'))}
+                    />
                 )}
                 {!account.isDeleted && (
-                    <Button
-                        variant="outlined"
-                        color="error"
+                    <ActionRow
+                        label={t('admin.accounts.row.withdraw.confirm')}
+                        description={t('admin.accounts.row.withdraw.description', { days: graceDays })}
+                        destructive
                         onClick={() => act('withdraw', {
                             title: t('admin.accounts.row.withdraw.title'),
                             description: t('admin.accounts.row.withdraw.description', { days: graceDays }),
                             confirmText: t('admin.accounts.row.withdraw.confirm'),
                         })}
-                    >
-                        {t('admin.accounts.row.withdraw.confirm')}
-                    </Button>
+                    />
                 )}
-                <Button
-                    variant="outlined"
-                    color="error"
+                <ActionRow
+                    label={t('admin.accounts.row.action.purge')}
+                    description={t('admin.accounts.row.purge.description')}
+                    destructive
                     onClick={() => act('purge', { ...confirmOf('purge'), expected: account.email ?? account.id })}
-                >
-                    {t('admin.accounts.row.action.purge')}
-                </Button>
-            </Stack>
+                />
+            </OutlinedList>
 
             {editing && (
-                <Stack spacing={1.5} sx={{ mt: 2, alignItems: 'flex-start' }}>
-                    <TextField
-                        label={t('admin.accounts.fields.display_name')}
-                        value={form.data.display_name}
-                        onChange={(e) => form.setData('display_name', e.target.value)}
-                        error={Boolean(form.errors.display_name)}
-                        helperText={form.errors.display_name}
-                    />
-                    <TextField
-                        label={t('admin.accounts.fields.email')}
-                        type="email"
-                        value={form.data.email}
-                        onChange={(e) => form.setData('email', e.target.value)}
-                        error={Boolean(form.errors.email)}
-                        helperText={form.errors.email ?? t('admin.accounts.row.email_helper')}
-                    />
-                    <Button variant="contained" onClick={save} disabled={form.processing}>
-                        {t('admin.accounts.row.save')}
-                    </Button>
-                </Stack>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                        <TextField
+                            label={t('admin.accounts.fields.display_name')}
+                            value={form.data.display_name}
+                            onChange={(e) => form.setData('display_name', e.target.value)}
+                            error={Boolean(form.errors.display_name)}
+                            helperText={form.errors.display_name}
+                        />
+                        <TextField
+                            label={t('admin.accounts.fields.email')}
+                            type="email"
+                            value={form.data.email}
+                            onChange={(e) => form.setData('email', e.target.value)}
+                            error={Boolean(form.errors.email)}
+                            helperText={form.errors.email ?? t('admin.accounts.row.email_helper')}
+                        />
+                        <Button variant="contained" onClick={save} disabled={form.processing}>
+                            {t('admin.accounts.row.save')}
+                        </Button>
+                    </Stack>
+                </Paper>
             )}
 
             {dialog}
-        </Paper>
+        </Stack>
     );
 }

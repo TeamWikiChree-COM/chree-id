@@ -5,7 +5,7 @@ import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import AppLayout from '../../Components/AppLayout';
-import ListRow from '../../Components/ListRow';
+import ActionRow from '../../Components/ActionRow';
 import OutlinedList from '../../Components/OutlinedList';
 import SectionTitle from '../../Components/SectionTitle';
 import ServiceIcon from '../../Components/ServiceIcon';
@@ -95,28 +95,5 @@ export default function Connected({ service, primaryEmail, emailOptions }: Conne
 
             {dialog}
         </AppLayout>
-    );
-}
-
-interface ActionRowProps {
-    label: string;
-    description?: string;
-    destructive?: boolean;
-    onClick: () => void;
-}
-
-/**
- * 操作の1行。ボタンを横に並べず、何が起きるかを添えて縦に置く。
- */
-function ActionRow({ label, description, destructive = false, onClick }: ActionRowProps) {
-    return (
-        <ListRow onClick={onClick}>
-            <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontSize: '0.9375rem', color: destructive ? 'error.main' : 'text.primary' }}>{label}</Typography>
-                {description !== undefined && (
-                    <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{description}</Typography>
-                )}
-            </Box>
-        </ListRow>
     );
 }
