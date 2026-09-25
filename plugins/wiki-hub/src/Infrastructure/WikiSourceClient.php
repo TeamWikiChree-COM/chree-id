@@ -38,8 +38,9 @@ class WikiSourceClient {
             throw new RuntimeException("wiki-hub: {$source->key} へ繋がりません", 0, $e);
         }
 
-        // その利用者がサービス側にまだいないだけ。失敗ではない
-        if ($response->status() === 404) return [];
+        // その利用者がサービス側にまだいないだけ。失敗ではない。
+        // ただし JSON でない 404 は入口そのものが無い (置き忘れ・URL 違い) ので失敗として出す
+        if ($response->status() === 404 && is_array($response->json())) return [];
         if (!$response->successful()) throw new RuntimeException("wiki-hub: {$source->key} が {$response->status()} を返しました");
 
         $wikis = $response->json('wikis');

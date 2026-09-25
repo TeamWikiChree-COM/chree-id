@@ -63,7 +63,7 @@ export default function Index({ groups }: IndexProps) {
 
             {groups.map((group) => (
                 <Box key={group.key}>
-                    <SectionTitle note={core('common.count', { count: group.wikis.length })}>{group.label}</SectionTitle>
+                    <SectionTitle note={group.failed ? undefined : core('common.count', { count: group.wikis.length })}>{group.label}</SectionTitle>
                     {group.failed
                         ? <Alert severity="warning">{t('page.failed')}</Alert>
                         : (

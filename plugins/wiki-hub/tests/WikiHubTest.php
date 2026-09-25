@@ -106,4 +106,24 @@ class WikiHubTest extends TestCase {
         $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->has('groups', 0));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'dokufarm.example.com'));
     }
+
+    // 入口が無い (HTML の 404) のを「0件」と見せると、置き忘れに気付けない
+    public function test_missingEndpointIsAFailure(): void {
+        $id = $this->login();
+        $this->source('wikichree', $id);
+        Http::fake(['wikichree.example.com/*' => Http::response('<html>404</html>', 404)]);
+
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('groups.0.failed', true));
+    }
+
+    public function test_unknownUserIsEmptyNotFailure(): void {
+        $id = $this->login();
+        $this->source('wikichree', $id);
+        Http::fake(['wikichree.example.com/*' => Http::response(['error' => 'user_not_found'], 404)]);
+
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->where('groups.0.failed', false)
+            ->has('groups.0.wikis', 0));
+    }
 }
