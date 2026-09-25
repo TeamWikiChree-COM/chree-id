@@ -33,7 +33,7 @@ export default function LogEntryRow({ entry }: LogEntryRowProps) {
 
     return (
         <Box sx={{ px: 2, py: 1.5 }}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Stack useFlexGap direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
                 <Chip size="small" variant="outlined" color={COLORS[entry.level]} label={entry.level} />
                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{entry.at}</Typography>
                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{entry.channel}</Typography>

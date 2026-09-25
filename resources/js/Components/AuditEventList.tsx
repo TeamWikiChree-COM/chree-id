@@ -60,7 +60,7 @@ export default function AuditEventList({ events, emptyText }: AuditEventListProp
             <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                 {events.map((event) => (
                     <Box key={event.id} sx={{ px: 2, py: 1.5 }}>
-                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                        <Stack useFlexGap direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
                             <Typography sx={{ fontSize: '0.9375rem' }}>
                                 {t(`audit.action.${event.action}` as TranslationKey)}
                             </Typography>

@@ -109,7 +109,7 @@ export default function Connections({ connections, providers }: ConnectionsProps
                             {t('settings.connections.available.description')}
                         </Typography>
 
-                        <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
+                        <Stack useFlexGap direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
                             {available.map((provider) => (
                                 <Button
                                     key={provider}

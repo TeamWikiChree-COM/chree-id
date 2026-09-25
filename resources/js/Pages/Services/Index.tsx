@@ -70,7 +70,7 @@ export default function Index({ services }: IndexProps) {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                                 <ServiceIcon name={service.name} iconUrl={service.iconUrl} />
                                 <Box sx={{ minWidth: 0 }}>
-                                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <Stack useFlexGap direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
                                         <Typography sx={{ fontSize: '0.9375rem' }}>{service.name}</Typography>
                                         <Chip size="small" label={trustLabel(service.trust)} />
                                         {service.reviewRequestedAt !== null && (

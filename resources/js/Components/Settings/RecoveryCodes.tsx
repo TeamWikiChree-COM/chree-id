@@ -53,7 +53,7 @@ export default function RecoveryCodes({ codes }: RecoveryCodesProps) {
                 {codes.join('\n')}
             </Box>
 
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+            <Stack useFlexGap direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                 <Button
                     size="small"
                     variant="outlined"

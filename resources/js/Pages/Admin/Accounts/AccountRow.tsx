@@ -218,7 +218,7 @@ export default function AccountRow({ account, isSelf, graceDays }: AccountRowPro
             </Box>
 
             {editing && (
-                <Stack direction="row" spacing={1.5} sx={{ mt: 1.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <Stack useFlexGap direction="row" spacing={1.5} sx={{ mt: 1.5, alignItems: 'flex-start', flexWrap: 'wrap' }}>
                     <TextField
                         size="small"
                         label={t('admin.accounts.fields.display_name')}

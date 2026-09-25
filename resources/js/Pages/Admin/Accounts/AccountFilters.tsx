@@ -48,7 +48,7 @@ export function AccountFilters({ filters, clients }: AccountFiltersProps) {
     };
 
     return (
-        <Stack component="form" onSubmit={submit} direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', rowGap: 1.5 }}>
+        <Stack useFlexGap component="form" onSubmit={submit} direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
             <TextField
                 size="small"
                 label={t('admin.accounts.filter.query')}

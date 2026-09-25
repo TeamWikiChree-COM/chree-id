@@ -62,7 +62,7 @@ export default function Index({ accounts, pagination, filters, clients, selfId, 
             <SectionTitle>{t('admin.accounts.create.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
                 <Box component="form" onSubmit={submit} noValidate>
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                    <Stack useFlexGap direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
                         <TextField
                             size="small"
                             label={t('admin.accounts.fields.email')}
