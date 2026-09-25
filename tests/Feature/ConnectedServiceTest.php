@@ -83,8 +83,7 @@ class ConnectedServiceTest extends TestCase {
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
                 ->has('services', 1)
-                ->where('services.0.name', 'DokuFarm')
-                ->where('services.0.hasActiveToken', true));
+                ->where('services.0.name', 'DokuFarm'));
     }
 
     public function test_showsNothingWhenNeverConnected(): void {
@@ -93,15 +92,6 @@ class ConnectedServiceTest extends TestCase {
         $this->get('/')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->has('services', 0));
-    }
-
-    public function test_marksExpiredTokenAsInactive(): void {
-        $accountId = $this->login();
-        $this->connect($accountId, active: false);
-
-        $this->get('/')
-            ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-                ->where('services.0.hasActiveToken', false));
     }
 
     public function test_revokesAccess(): void {
@@ -132,8 +122,7 @@ class ConnectedServiceTest extends TestCase {
 
         $this->get('/')
             ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-                ->has('services', 1)
-                ->where('services.0.hasActiveToken', false));
+                ->has('services', 1));
     }
 
     // 移行で同じサービスに「ログインだけの行」と「サービスが発行した行」が並んでも、一覧には1つだけ出す

@@ -30,6 +30,15 @@ class SplitServiceAccount {
      */
     private const IMMOVABLE = [CredentialType::PASSKEY];
 
+    /**
+     * 選ばせずに TOTP へ追随させる型。
+     *
+     * 復旧コードは1本1行なので、選択肢に並べると同じものが10個並ぶ。単独では意味も持たない。
+     *
+     * @var list<CredentialType>
+     */
+    private const FOLLOWS_TOTP = [CredentialType::RECOVERY_CODE];
+
     public function __construct(private readonly AuthIdentityRepository $accounts) {}
 
     /**
@@ -43,6 +52,7 @@ class SplitServiceAccount {
 
         foreach (CredentialModel::query()->where('auth_identity_id', $identityId)->orderBy('id')->get() as $credential) {
             if (in_array($credential->type, self::IMMOVABLE, true)) continue;
+            if (in_array($credential->type, self::FOLLOWS_TOTP, true)) continue;
 
             $options[] = $credential;
         }
@@ -110,12 +120,25 @@ class SplitServiceAccount {
      */
     private function carried(string $identityId, array $credentialIds): array {
         $carried = [];
+        $takesTotp = false;
 
         foreach ($this->options($identityId) as $credential) {
-            if (in_array($credential->id, $credentialIds, true)) $carried[] = $credential;
+            if (!in_array($credential->id, $credentialIds, true)) continue;
+
+            $carried[] = $credential;
+            if ($credential->type === CredentialType::TOTP) $takesTotp = true;
         }
 
-        return $carried;
+        // TOTP を持っていくなら復旧コードも一緒に。片方だけでは詰む
+        if (!$takesTotp) return $carried;
+
+        $codes = CredentialModel::query()
+            ->where('auth_identity_id', $identityId)
+            ->whereIn('type', array_map(static fn (CredentialType $type): string => $type->value, self::FOLLOWS_TOTP))
+            ->get()
+            ->all();
+
+        return array_merge($carried, $codes);
     }
 
     /**

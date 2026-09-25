@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 export interface PickableCredential {
     id: string;
     type: string;
+    /** 同じ種別が並んだときに見分ける手がかり (連携先のメールアドレスなど) */
+    detail?: string | null;
 }
 
 interface CredentialPickerProps {
@@ -41,7 +43,7 @@ export default function CredentialPicker({ options, selected, onChange, instruct
                 <FormControlLabel
                     key={option.id}
                     control={<Checkbox checked={selected.includes(option.id)} onChange={() => toggle(option.id)} />}
-                    label={labels[option.type] ?? option.type}
+                    label={option.detail ? `${labels[option.type] ?? option.type} (${option.detail})` : (labels[option.type] ?? option.type)}
                     sx={{ display: 'flex' }}
                 />
             ))}

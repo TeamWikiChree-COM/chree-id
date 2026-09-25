@@ -51,7 +51,10 @@ class SplitServiceController {
 
         $options = [];
         foreach ($this->split->options($identityId) as $credential) {
-            $options[] = ['id' => $credential->id, 'type' => $credential->type->value];
+            $data = is_array($credential->data) ? $credential->data : [];
+            // 同じ種別が並んだとき (Google を2つ連携しているなど) に見分けが付くように
+            $detail = $data['email'] ?? null;
+            $options[] = ['id' => $credential->id, 'type' => $credential->type->value, 'detail' => is_string($detail) ? $detail : null];
         }
 
         return Inertia::render('Settings/SplitService', [

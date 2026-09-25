@@ -13,6 +13,8 @@ import { t } from "../../lib/i18n";
 interface SplitOption {
     id: string;
     type: string;
+    /** 同じ種別が並んだときの見分け (連携先のメールアドレスなど) */
+    detail: string | null;
 }
 
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
