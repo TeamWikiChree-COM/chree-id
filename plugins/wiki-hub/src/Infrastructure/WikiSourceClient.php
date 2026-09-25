@@ -25,7 +25,7 @@ class WikiSourceClient {
      * @param WikiSource $source 問い合わせ先
      * @param string|null $sub OIDC で渡した sub
      * @param string|null $serviceUserId サービス側の識別子
-     * @return list<array{name: string, url: string, settingsUrl: string|null, views: int|null, updatedAt: string|null}>
+     * @return list<array{name: string, url: string, iconUrl: string|null, settingsUrl: string|null, views: int|null, updatedAt: string|null}>
      * @throws RuntimeException 通信に失敗した・形が違う場合
      */
     public function fetch(WikiSource $source, ?string $sub, ?string $serviceUserId): array {
@@ -53,7 +53,7 @@ class WikiSourceClient {
 
     /**
      * @param mixed $row 応答の1件
-     * @return array{name: string, url: string, settingsUrl: string|null, views: int|null, updatedAt: string|null}|null 使えない行は null
+     * @return array{name: string, url: string, iconUrl: string|null, settingsUrl: string|null, views: int|null, updatedAt: string|null}|null 使えない行は null
      */
     private function normalize(mixed $row): ?array {
         if (!is_array($row) || !is_string($row['name'] ?? null) || !is_string($row['url'] ?? null)) return null;
@@ -61,6 +61,7 @@ class WikiSourceClient {
         return [
             'name' => $row['name'],
             'url' => $row['url'],
+            'iconUrl' => is_string($row['icon_url'] ?? null) ? $row['icon_url'] : null,
             'settingsUrl' => is_string($row['settings_url'] ?? null) ? $row['settings_url'] : null,
             'views' => is_int($row['views'] ?? null) ? $row['views'] : null,
             'updatedAt' => is_string($row['updated_at'] ?? null) ? $row['updated_at'] : null,

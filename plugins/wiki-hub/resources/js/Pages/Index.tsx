@@ -6,6 +6,7 @@ import ListRow from '@/Components/ListRow';
 import OutlinedList from '@/Components/OutlinedList';
 import RowAction from '@/Components/RowAction';
 import SectionTitle from '@/Components/SectionTitle';
+import ServiceIcon from '@/Components/ServiceIcon';
 import { formatDateTime } from '@/lib/datetime';
 import { t as core } from '@/lib/i18n';
 import { t } from '../lib/i18n';
@@ -13,6 +14,8 @@ import { t } from '../lib/i18n';
 interface Wiki {
     name: string;
     url: string;
+    /** ウィキのロゴ。無ければ null (頭文字で代わりを出す) */
+    iconUrl: string | null;
     /** サービス側の設定画面。無ければ null */
     settingsUrl: string | null;
     /** サービスが数えていなければ null */
@@ -76,10 +79,13 @@ function WikiSummary({ wiki }: { wiki: Wiki }) {
     ].filter(Boolean).join(' ・ ');
 
     return (
-        <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ fontSize: '0.9375rem' }}>{wiki.name}</Typography>
-            <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>{wiki.url}</Typography>
-            {meta !== '' && <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{meta}</Typography>}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+            <ServiceIcon name={wiki.name} iconUrl={wiki.iconUrl} />
+            <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontSize: '0.9375rem' }}>{wiki.name}</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>{wiki.url}</Typography>
+                {meta !== '' && <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{meta}</Typography>}
+            </Box>
         </Box>
     );
 }

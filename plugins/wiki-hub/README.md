@@ -43,6 +43,7 @@ Accept: application/json
         {
             "name": "ウィキ名",
             "url": "https://…/",
+            "icon_url": "https://…/logo.png",
             "settings_url": "https://…/settings",
             "views": 1234,
             "updated_at": "2026-09-26T12:00:00+09:00"
@@ -55,6 +56,7 @@ Accept: application/json
 | --- | --- | --- |
 | `name` | ○ | ウィキ名 |
 | `url` | ○ | ウィキのトップ |
+| `icon_url` | | ウィキのロゴ (絶対 URL)。無ければ省略か null。ChreeID 側は頭文字で代わりを出す |
 | `settings_url` | | そのウィキの設定画面。無ければ省略か null |
 | `views` | | アクセス数 (整数)。数えていなければ省略か null |
 | `updated_at` | | 最終更新 (ISO 8601) |
