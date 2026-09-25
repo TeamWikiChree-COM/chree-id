@@ -14,16 +14,18 @@ import type { ConnectedService } from '../../types';
 interface ServiceListProps {
     services: ConnectedService[];
     onRevoke: (service: ConnectedService) => void;
+    /** 渡すアドレスを選ばせる。選べるアドレスが無ければ null */
+    onEditEmail: ((service: ConnectedService) => void) | null;
 }
 
 /**
  * 連携中のサービスの一覧。
  */
-export default function ServiceList({ services, onRevoke }: ServiceListProps) {
+export default function ServiceList({ services, onRevoke, onEditEmail }: ServiceListProps) {
     return (
         <OutlinedList empty={services.length === 0 && t('dashboard.services.empty')}>
             {services.map((service) => (
-                <ListRow key={service.id} actions={<ServiceActions service={service} onRevoke={onRevoke} />}>
+                <ListRow key={service.id} actions={<ServiceActions service={service} onRevoke={onRevoke} onEditEmail={onEditEmail} />}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                         <ServiceIcon name={service.name} iconUrl={service.iconUrl} />
                         <Box sx={{ minWidth: 0 }}>
@@ -35,6 +37,11 @@ export default function ServiceList({ services, onRevoke }: ServiceListProps) {
                                 {service.serviceUserId ?? connectedLabel(service.connectedAt)}
                                 {!service.hasActiveToken && ` ・ ${t('dashboard.services.inactive')}`}
                             </Typography>
+                            {service.email !== null && (
+                                <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>
+                                    {t('dashboard.services.email_assigned', { email: service.email })}
+                                </Typography>
+                            )}
                         </Box>
                     </Box>
                 </ListRow>
@@ -53,7 +60,13 @@ function connectedLabel(connectedAt: ConnectedService['connectedAt']): string {
     return time ? t('dashboard.services.connected_at', { time: String(time) }) : t('dashboard.services.connected');
 }
 
-function ServiceActions({ service, onRevoke }: { service: ConnectedService; onRevoke: (service: ConnectedService) => void }) {
+interface ServiceActionsProps {
+    service: ConnectedService;
+    onRevoke: (service: ConnectedService) => void;
+    onEditEmail: ((service: ConnectedService) => void) | null;
+}
+
+function ServiceActions({ service, onRevoke, onEditEmail }: ServiceActionsProps) {
     return (
         <Stack direction="row" spacing={1}>
             {/* サービス側が設定画面を指定していれば案内する */}
@@ -61,6 +74,9 @@ function ServiceActions({ service, onRevoke }: { service: ConnectedService; onRe
                 <RowAction onClick={() => window.open(service.settingsUrl ?? '', '_blank', 'noopener')}>
                     {t('dashboard.service.settings')}
                 </RowAction>
+            )}
+            {onEditEmail !== null && (
+                <RowAction onClick={() => onEditEmail(service)}>{t('dashboard.services.email')}</RowAction>
             )}
             <RowAction onClick={() => router.get(`/services/${service.id}/split`)}>{t('dashboard.services.split')}</RowAction>
             <RowAction destructive onClick={() => onRevoke(service)}>

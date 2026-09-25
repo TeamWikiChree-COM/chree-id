@@ -7,18 +7,22 @@ import CredentialList from "../Components/CredentialList";
 import MergeCandidateList from "../Components/Dashboard/MergeCandidateList";
 import type { MergeCandidate } from "../Components/Dashboard/MergeCandidateList";
 import ProfileSummary from "../Components/Dashboard/ProfileSummary";
+import ServiceEmailDialog from "../Components/Dashboard/ServiceEmailDialog";
 import ServiceList from "../Components/Dashboard/ServiceList";
 import Icon from "../Components/Icon";
 import SectionTitle from "../Components/SectionTitle";
+import { useState } from "react";
 import { useConfirm } from "../lib/confirm";
 import { t } from "../lib/i18n";
-import type { Account, ConnectedService, CredentialSummary } from "../types";
+import type { Account, ConnectedService, CredentialSummary, EmailOption } from "../types";
 
 interface DashboardProps {
     account: Account;
     credentials: CredentialSummary[];
     services: ConnectedService[];
     mergeCandidates: MergeCandidate[];
+    /** サービスへ渡すアドレスとして選べるもの。空ならこのアカウントでは選ばせない */
+    emailOptions: EmailOption[];
 }
 
 export default function Dashboard({
@@ -26,10 +30,12 @@ export default function Dashboard({
     credentials,
     services,
     mergeCandidates,
+    emailOptions,
 }: DashboardProps) {
     const { flash } = usePage().props;
 
     const { ask, dialog } = useConfirm();
+    const [emailTarget, setEmailTarget] = useState<ConnectedService | null>(null);
 
     const revoke = (service: ConnectedService): void => {
         ask({
@@ -52,6 +58,12 @@ export default function Dashboard({
                 </Alert>
             )}
 
+            {flash.serviceEmailSaved && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    {t("dashboard.service_email_saved")}
+                </Alert>
+            )}
+
             {flash.serviceRevoked && (
                 <Alert severity="success" sx={{ mb: 2 }}>
                     {t("dashboard.service_revoked")}
@@ -70,7 +82,12 @@ export default function Dashboard({
             <SectionTitle note={t("common.count", { count: services.length })}>
                 {t("dashboard.services.heading")}
             </SectionTitle>
-            <ServiceList services={services} onRevoke={revoke} />
+            <ServiceList
+                services={services}
+                onRevoke={revoke}
+                onEditEmail={emailOptions.length > 0 ? setEmailTarget : null}
+            />
+            <ServiceEmailDialog service={emailTarget} options={emailOptions} onClose={() => setEmailTarget(null)} />
 
             <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
                 <Button
