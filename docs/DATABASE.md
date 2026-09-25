@@ -23,6 +23,64 @@ oauth_clients ─┬─ oauth_auth_codes
                └─ oauth_access_tokens
 ```
 
+
+```mermaid
+erDiagram
+    auth_identities ||--o{ credentials : "認証手段"
+    auth_identities ||--o| user_accounts : "UserAccount"
+    auth_identities ||--o{ service_accounts : "ServiceAccount"
+    auth_identities ||--o{ account_emails : "追加アドレス"
+    auth_identities ||--o{ login_sessions : ""
+    auth_identities ||--o{ trusted_devices : ""
+    auth_identities ||--o{ one_time_tokens : ""
+    auth_identities ||--o{ pending_email_changes : ""
+    auth_identities ||--o{ audit_events : ""
+    auth_identities |o--o{ oauth_clients : "owner"
+    oauth_clients ||--o{ service_accounts : ""
+    oauth_clients ||--o{ oauth_auth_codes : ""
+    oauth_clients ||--o{ oauth_access_tokens : ""
+    service_accounts |o--o{ oauth_auth_codes : ""
+    service_accounts |o--o{ oauth_access_tokens : ""
+
+    auth_identities {
+        ulid id PK
+        string email "一意ではない"
+        string origin "user / service"
+        timestamp suspended_at
+        timestamp deleted_at
+    }
+    user_accounts {
+        ulid id PK
+        ulid auth_identity_id FK "一意"
+    }
+    service_accounts {
+        ulid id PK
+        ulid auth_identity_id FK
+        string client_id FK
+        string service_user_id
+        string sub
+        string email "割り当てたアドレス"
+        timestamp claimed_at
+    }
+    credentials {
+        ulid id PK
+        ulid auth_identity_id FK
+        string type
+        string identifier
+        text secret
+        json data
+    }
+    oauth_clients {
+        string id PK "client_id"
+        string secret_hash
+        string trust
+        boolean can_provision
+        ulid owner_id FK
+    }
+```
+
+`pending_registrations` はまだ認証主体が無い段階の申し込みなので、どこにもつながらない。`auth_identity_aliases` は統合で消えた古い ID を指すため、外部キーは統合先 (`current_id`) にだけ張っている。
+
 ## テーブル
 
 ### アカウント
@@ -68,9 +126,15 @@ oauth_clients ─┬─ oauth_auth_codes
 
 主キーは ULID (26文字、小文字) にしている。連番だと件数や登録順が外から推測できるため。`oauth_clients.id` だけは `client_id` として外に出す文字列。
 
-### トークンはハッシュで持つ
+### 秘密の値は平文で持たない
 
-トークン、秘密鍵、確認コードなどは平文で保存しない。カラム名は `token_hash`、`code_hash`、`secret_hash` のように `_hash` で終わる。DB が漏れても、そのままでは使えないようにするため。
+DB が漏れても、そのままでは使えないようにするため。
+
+| もの | 保存の仕方 |
+| --- | --- |
+| トークン、認可コード、client_secret | ハッシュ。カラム名は `token_hash`、`code_hash`、`secret_hash` のように `_hash` で終わる |
+| パスワード | パスワード用のハッシュ (bcrypt など) |
+| TOTP の秘密 | 照合のたびに元の値が要るので、`APP_KEY` で暗号化する |
 
 ### 認証主体を消すと、ぶら下がるものも消える
 
