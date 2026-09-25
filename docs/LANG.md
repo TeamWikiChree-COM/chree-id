@@ -26,8 +26,6 @@ t('admin.backups.count', { count: 3 });
 
 ## lang:build
 
-辞書を変えたら実行する。
-
 ```bash
 php artisan lang:build
 ```
@@ -37,9 +35,16 @@ php artisan lang:build
 1. 検証: ロケールごとにキーの過不足が無いか、`:name` の差し込みがそろっているかを確かめる。欠けていれば失敗する
 2. 生成: `lang/server/*.json` から、Laravel が読む PHP の配列を `generated/lang/` に書き出す
 
-`generated/` は git に入れない。デプロイのときは CI が同じ処理 (`tools/build_lang.php`) を実行する。
+PHP に変換しているのは、OPcache に載せて毎回の JSON の読み込みを省くため。`generated/` は git に入れない。
 
-PHP に変換しているのは、OPcache に載せて毎回の JSON の読み込みを省くため。画面用の辞書は Vite がビルド時にバンドルへ取り込むので、変換は要らない。
+### いつ実行するか
+
+| 変えた辞書 | ローカル | CI |
+| --- | --- | --- |
+| `lang/client/` (画面) | 不要。Vite が JSON を直接読むので、`npm run dev` 中ならすぐ反映される | テストの前に検証される |
+| `lang/server/` (PHP) | 必要。実行するまで PHP 側は古い文言のまま | テストとデプロイの前に自動で実行される |
+
+CI では、テスト (`.github/workflows/test.yml`) とデプロイ (`.github/workflows/deploy.yml`、`tools/build_lang.php`) の前に自動で実行している。ローカルで忘れても本番に古い文言が出ることは無いが、キーの欠けは push するまで分からないので、辞書を変えたら一度は実行しておくとよい。
 
 ## 言語の決まり方
 
