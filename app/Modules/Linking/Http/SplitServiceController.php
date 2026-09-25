@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
@@ -54,7 +55,14 @@ class SplitServiceController {
             $data = is_array($credential->data) ? $credential->data : [];
             // 同じ種別が並んだとき (Google を2つ連携しているなど) に見分けが付くように
             $detail = $data['email'] ?? null;
-            $options[] = ['id' => $credential->id, 'type' => $credential->type->value, 'detail' => is_string($detail) ? $detail : null];
+            // 外部ログインはどこの連携かを識別子の頭 (google:… など) で持っている
+            $provider = $credential->type === CredentialType::OAUTH ? explode(':', (string) $credential->identifier)[0] : null;
+            $options[] = [
+                'id' => $credential->id,
+                'type' => $credential->type->value,
+                'provider' => $provider,
+                'detail' => is_string($detail) ? $detail : null,
+            ];
         }
 
         return Inertia::render('Settings/SplitService', [

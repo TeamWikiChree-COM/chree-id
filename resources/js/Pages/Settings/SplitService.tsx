@@ -8,6 +8,7 @@ import type { FormEvent } from "react";
 import AuthLayout from "../../Components/AuthLayout";
 import CredentialPicker from "../../Components/CredentialPicker";
 import { t } from "../../lib/i18n";
+import { idpLabel } from "../../lib/idps";
 
 /** 分離先へ複製できる認証方法 */
 interface SplitOption {
@@ -15,6 +16,8 @@ interface SplitOption {
     type: string;
     /** 同じ種別が並んだときの見分け (連携先のメールアドレスなど) */
     detail: string | null;
+    /** 外部ログインの連携先 (google など)。それ以外は null */
+    provider: string | null;
 }
 
 /** 画面に出す名前。移せないものはサーバ側で候補から外れている */
@@ -78,7 +81,10 @@ export default function SplitService({
             <Box component="form" onSubmit={submit} noValidate>
                 <Stack spacing={2}>
                     <CredentialPicker
-                        options={options}
+                        options={options.map((option) => ({
+                            ...option,
+                            label: option.provider === null ? undefined : t("settings.split.credential.oauth_named", { name: idpLabel(option.provider) }),
+                        }))}
                         selected={data.credentials}
                         onChange={(selected) => setData("credentials", selected)}
                         instruction={t("settings.split.credentials.instruction")}

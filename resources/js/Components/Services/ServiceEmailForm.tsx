@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { t } from '../../lib/i18n';
+import LinkedText from '../LinkedText';
 import type { ConnectedService, EmailOption } from '../../types';
 
 interface ServiceEmailFormProps {
@@ -47,7 +48,7 @@ export default function ServiceEmailForm({ service, options, primaryEmail }: Ser
                     value={base}
                     onChange={(e) => setBase(e.target.value)}
                     error={Boolean(form.errors.email)}
-                    helperText={form.errors.email ?? t('dashboard.service_email.hint')}
+                    helperText={form.errors.email ?? <LinkedText text={t('dashboard.service_email.hint')} />}
                 >
                     <MenuItem value={PRIMARY}>
                         {primaryEmail === null

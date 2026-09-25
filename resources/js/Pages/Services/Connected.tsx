@@ -3,6 +3,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import AppLayout from '../../Components/AppLayout';
 import ActionRow from '../../Components/ActionRow';
@@ -53,7 +54,11 @@ export default function Connected({ service, primaryEmail, emailOptions }: Conne
                     <Box sx={{ minWidth: 0 }}>
                         <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                             {service.name}
-                            {service.trust === 'official' && <Chip size="small" label={t('dashboard.services.official')} />}
+                            {service.trust === 'official' && (
+                                    <Tooltip title={t('common.tooltip.official')}>
+                                        <Chip size="small" label={t('dashboard.services.official')} />
+                                    </Tooltip>
+                                )}
                         </Typography>
                         <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>
                             {[

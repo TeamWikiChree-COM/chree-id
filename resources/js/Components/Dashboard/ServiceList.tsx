@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import ListRow from '../ListRow';
 import OutlinedList from '../OutlinedList';
@@ -26,7 +27,11 @@ export default function ServiceList({ services }: ServiceListProps) {
                         <Box sx={{ minWidth: 0 }}>
                             <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                                 {service.name}
-                                {service.trust === 'official' && <Chip size="small" label={t('dashboard.services.official')} />}
+                                {service.trust === 'official' && (
+                                    <Tooltip title={t('common.tooltip.official')}>
+                                        <Chip size="small" label={t('dashboard.services.official')} />
+                                    </Tooltip>
+                                )}
                             </Typography>
                             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
                                 {service.serviceUserId ?? connectedLabel(service.connectedAt)}

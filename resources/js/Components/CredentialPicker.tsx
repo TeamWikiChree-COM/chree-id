@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
+import LinkedText from './LinkedText';
 
 /** 引き継ぎ候補の認証手段 */
 export interface PickableCredential {
@@ -10,6 +11,8 @@ export interface PickableCredential {
     type: string;
     /** 同じ種別が並んだときに見分ける手がかり (連携先のメールアドレスなど) */
     detail?: string | null;
+    /** 種別の表示名より優先する名前 (「GitHub 連携」など) */
+    label?: string;
 }
 
 interface CredentialPickerProps {
@@ -43,12 +46,12 @@ export default function CredentialPicker({ options, selected, onChange, instruct
                 <FormControlLabel
                     key={option.id}
                     control={<Checkbox checked={selected.includes(option.id)} onChange={() => toggle(option.id)} />}
-                    label={option.detail ? `${labels[option.type] ?? option.type} (${option.detail})` : (labels[option.type] ?? option.type)}
+                    label={labelOf(option, labels)}
                     sx={{ display: 'flex' }}
                 />
             ))}
             <Typography variant="body2" color="text.secondary">
-                {note}
+                <LinkedText text={note} />
             </Typography>
             {error && (
                 <Alert severity="error" sx={{ mt: 1 }}>
@@ -57,4 +60,15 @@ export default function CredentialPicker({ options, selected, onChange, instruct
             )}
         </Box>
     );
+}
+
+/**
+ * @param option 候補
+ * @param labels 種別ごとの表示名
+ * @returns 画面に出す名前。見分けの手がかりがあれば添える
+ */
+function labelOf(option: PickableCredential, labels: Record<string, string>): string {
+    const name = option.label ?? labels[option.type] ?? option.type;
+
+    return option.detail ? `${name} (${option.detail})` : name;
 }

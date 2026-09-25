@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
@@ -72,18 +73,20 @@ export default function AppHeader() {
                         <NavLink href="/login">{t('common.nav.login')}</NavLink>
                     )}
 
-                    <IconButton
-                        aria-label={t('common.nav.menu')}
-                        onClick={(event) => setAnchor(event.currentTarget)}
-                        sx={{ color: 'text.secondary' }}
-                    >
-                        {/* アイコンを設定していれば本人の絵。無ければログイン前後で変えない */}
-                        {iconUrl === null ? (
-                            <Icon name="circle-user" />
-                        ) : (
-                            <Avatar src={iconUrl} sx={{ width: 24, height: 24 }} />
-                        )}
-                    </IconButton>
+                    <Tooltip title={t('common.nav.menu')}>
+                        <IconButton
+                            aria-label={t('common.nav.menu')}
+                            onClick={(event) => setAnchor(event.currentTarget)}
+                            sx={{ color: 'text.secondary' }}
+                        >
+                            {/* アイコンを設定していれば本人の絵。無ければログイン前後で変えない */}
+                            {iconUrl === null ? (
+                                <Icon name="circle-user" />
+                            ) : (
+                                <Avatar src={iconUrl} sx={{ width: 24, height: 24 }} />
+                            )}
+                        </IconButton>
+                    </Tooltip>
 
                     <Menu
                         anchorEl={anchor}

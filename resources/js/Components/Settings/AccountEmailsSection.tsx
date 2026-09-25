@@ -4,9 +4,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
+import LinkedText from '../LinkedText';
 import ListRow from '../ListRow';
 import OutlinedList from '../OutlinedList';
 import type { RowActionItem } from '../ActionDialog';
@@ -85,7 +87,9 @@ export default function AccountEmailsSection({ email, emailVerified, pendingEmai
                     <Box sx={{ minWidth: 0 }}>
                         <Typography sx={{ fontSize: '0.9375rem', overflowWrap: 'anywhere' }}>{email ?? t('settings.profile.email.unset')}</Typography>
                         <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
-                            <Chip size="small" variant="outlined" label={t('settings.profile.emails.primary_badge')} />
+                            <Tooltip title={t('settings.profile.emails.primary_tooltip')}>
+                                <Chip size="small" variant="outlined" label={t('settings.profile.emails.primary_badge')} />
+                            </Tooltip>
                             {email !== null && <VerifiedChip verified={emailVerified} />}
                         </Stack>
                     </Box>
@@ -101,7 +105,7 @@ export default function AccountEmailsSection({ email, emailVerified, pendingEmai
             </OutlinedList>
 
             {emails !== null && (
-                <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>{t('settings.profile.emails.lead')}</Typography>
+                <Typography sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}><LinkedText text={t('settings.profile.emails.lead')} /></Typography>
             )}
             {emails !== null ? <AddForm /> : <ChangeForm />}
 
@@ -113,11 +117,13 @@ export default function AccountEmailsSection({ email, emailVerified, pendingEmai
 
 function VerifiedChip({ verified }: { verified: boolean }) {
     return (
-        <Chip
-            size="small"
-            color={verified ? 'success' : 'default'}
-            label={verified ? t('settings.profile.email.verified') : t('settings.profile.email.unverified')}
-        />
+        <Tooltip title={verified ? t('settings.profile.email.verified_tooltip') : t('settings.profile.email.unverified_tooltip')}>
+            <Chip
+                size="small"
+                color={verified ? 'success' : 'default'}
+                label={verified ? t('settings.profile.email.verified') : t('settings.profile.email.unverified')}
+            />
+        </Tooltip>
     );
 }
 

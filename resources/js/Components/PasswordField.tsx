@@ -1,4 +1,5 @@
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
 import type { TextFieldProps } from '@mui/material/TextField';
 import { useState } from 'react';
@@ -22,15 +23,17 @@ export default function PasswordField(props: Omit<TextFieldProps, 'type'>) {
                 input: {
                     ...props.slotProps?.input,
                     endAdornment: (
-                        <IconButton
-                            aria-label={visible ? t('common.password.hide') : t('common.password.show')}
-                            onClick={() => setVisible((v) => !v)}
-                            edge="end"
-                            size="small"
-                            tabIndex={-1}
-                        >
-                            <Icon name={visible ? 'eye-slash' : 'eye'} sx={{ fontSize: '0.9375rem' }} />
-                        </IconButton>
+                        <Tooltip title={visible ? t('common.password.hide') : t('common.password.show')}>
+                            <IconButton
+                                aria-label={visible ? t('common.password.hide') : t('common.password.show')}
+                                onClick={() => setVisible((v) => !v)}
+                                edge="end"
+                                size="small"
+                                tabIndex={-1}
+                            >
+                                <Icon name={visible ? 'eye-slash' : 'eye'} sx={{ fontSize: '0.9375rem' }} />
+                            </IconButton>
+                        </Tooltip>
                     ),
                 },
             }}
