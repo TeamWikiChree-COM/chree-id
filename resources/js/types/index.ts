@@ -163,8 +163,6 @@ export interface ConnectedService {
     name: string;
     trust: TrustValue;
     connectedAt: string | null;
-    /** 有効なアクセストークンが残っているか */
-    hasActiveToken: boolean;
 }
 
 /** サービスへ渡すアドレスとして選べるもの */

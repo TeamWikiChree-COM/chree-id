@@ -1,12 +1,12 @@
 import { router, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AppLayout from '../../Components/AppLayout';
+import ListRow from '../../Components/ListRow';
+import OutlinedList from '../../Components/OutlinedList';
 import SectionTitle from '../../Components/SectionTitle';
 import ServiceIcon from '../../Components/ServiceIcon';
 import ServiceEmailForm from '../../Components/Services/ServiceEmailForm';
@@ -59,7 +59,6 @@ export default function Connected({ service, primaryEmail, emailOptions }: Conne
                             {[
                                 service.serviceUserId,
                                 connectedAt !== null && t('dashboard.services.connected_at', { time: String(connectedAt) }),
-                                !service.hasActiveToken && t('dashboard.services.inactive'),
                             ].filter(Boolean).join(' ・ ')}
                         </Typography>
                     </Box>
@@ -78,23 +77,46 @@ export default function Connected({ service, primaryEmail, emailOptions }: Conne
                 )}
 
             <SectionTitle>{t('admin.accounts.detail.actions')}</SectionTitle>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-                <Stack useFlexGap direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                    {service.settingsUrl !== null && (
-                        <Button variant="outlined" color="inherit" onClick={() => window.open(service.settingsUrl ?? '', '_blank', 'noopener')}>
-                            {t('dashboard.service.settings')}
-                        </Button>
-                    )}
-                    <Button variant="outlined" color="inherit" onClick={() => router.get(`/services/${service.id}/split`)}>
-                        {t('dashboard.services.split')}
-                    </Button>
-                    <Button variant="outlined" color="error" onClick={revoke}>
-                        {t('dashboard.services.revoke')}
-                    </Button>
-                </Stack>
-            </Paper>
+            <OutlinedList>
+                {service.settingsUrl !== null && (
+                    <ActionRow
+                        label={t('dashboard.service.settings')}
+                        description={t('dashboard.service.settings_description')}
+                        onClick={() => window.open(service.settingsUrl ?? '', '_blank', 'noopener')}
+                    />
+                )}
+                <ActionRow
+                    label={t('dashboard.services.split')}
+                    description={t('dashboard.services.split_description')}
+                    onClick={() => router.get(`/services/${service.id}/split`)}
+                />
+                <ActionRow label={t('dashboard.services.revoke')} destructive onClick={revoke} />
+            </OutlinedList>
 
             {dialog}
         </AppLayout>
+    );
+}
+
+interface ActionRowProps {
+    label: string;
+    description?: string;
+    destructive?: boolean;
+    onClick: () => void;
+}
+
+/**
+ * 操作の1行。ボタンを横に並べず、何が起きるかを添えて縦に置く。
+ */
+function ActionRow({ label, description, destructive = false, onClick }: ActionRowProps) {
+    return (
+        <ListRow onClick={onClick}>
+            <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontSize: '0.9375rem', color: destructive ? 'error.main' : 'text.primary' }}>{label}</Typography>
+                {description !== undefined && (
+                    <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{description}</Typography>
+                )}
+            </Box>
+        </ListRow>
     );
 }

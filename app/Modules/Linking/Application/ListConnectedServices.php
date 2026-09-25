@@ -2,7 +2,6 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Linking\Domain\LinkedServiceAccounts;
-use App\Modules\Provider\Infrastructure\AccessTokenModel;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Registry\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Collection;
@@ -17,7 +16,7 @@ use Illuminate\Support\Collection;
 class ListConnectedServices {
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, email: string|null, connectedAt: string|null, hasActiveToken: bool}>
+     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, email: string|null, connectedAt: string|null}>
      */
     public function execute(string $accountId): array {
         // 移行で同じサービスに「ログインだけの行」と「サービスが発行した行」が並ぶと、
@@ -58,24 +57,9 @@ class ListConnectedServices {
                 'settingsUrl' => $client->settings_url,
                 'trust' => $client->trust->value,
                 'connectedAt' => $subject->created_at?->toDateTimeString(),
-                'hasActiveToken' => $this->hasActiveToken($accountId, $client->id),
             ];
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $accountId アカウントID (ULID)
-     * @param string $clientId サービスの client_id
-     * @return bool 有効なアクセストークンが残っているか
-     */
-    private function hasActiveToken(string $accountId, string $clientId): bool {
-        return AccessTokenModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('client_id', $clientId)
-            ->whereNull('revoked_at')
-            ->where('expires_at', '>', now())
-            ->exists();
     }
 }

@@ -30,7 +30,6 @@ export default function ServiceList({ services }: ServiceListProps) {
                             </Typography>
                             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>
                                 {service.serviceUserId ?? connectedLabel(service.connectedAt)}
-                                {!service.hasActiveToken && ` ・ ${t('dashboard.services.inactive')}`}
                             </Typography>
                             {service.email !== null && (
                                 <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>
