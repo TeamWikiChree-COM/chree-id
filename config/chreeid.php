@@ -90,4 +90,29 @@ return [
 
     /* 登録の確認メールに載せるリンクの有効分数 */
     'registration_ttl_minutes' => (int) env('CHREEID_REGISTRATION_TTL_MINUTES', 60),
+
+    /*
+     * 「+」以降を無視して同じ受信箱へ届けると分かっているドメイン。
+     *
+     * ここに載っているドメインだけ、登録済みアドレスの「+」付き版を確認メールなしで
+     * サービスへ割り当てられる。**対応していないドメインを載せてはいけない。**
+     * そのドメインでは aaa+bbb が別人の受信箱になり得て、他人のアドレスを
+     * 確認済みとしてサービスへ渡してしまう。
+     */
+    'plus_address_domains' => [
+        'gmail.com',
+        'googlemail.com',
+        'outlook.com',
+        'outlook.jp',
+        'hotmail.com',
+        'hotmail.co.jp',
+        'live.com',
+        'live.jp',
+        'icloud.com',
+        'me.com',
+        'mac.com',
+        'fastmail.com',
+        'proton.me',
+        'protonmail.com',
+    ],
 ];

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $service_user_id
  * @property string|null $sub
  * @property string|null $service_email
+ * @property string|null $email 利用者が割り当てたアドレス。null なら主アドレスを渡す
  * @property string|null $claim_token_hash
  * @property \Illuminate\Support\Carbon|null $claim_expires_at
  * @property \Illuminate\Support\Carbon|null $claimed_at
@@ -32,6 +33,7 @@ class ServiceAccountModel extends Model {
         'service_user_id',
         'sub',
         'service_email',
+        'email',
         'claim_token_hash',
         'claim_expires_at',
     ];
