@@ -5,5 +5,9 @@
     "title": {
         "ja": "Wiki Hub",
         "en": "Wiki Hub"
+    },
+    "description": {
+        "ja": "連携しているサービスのウィキをまとめて見られます",
+        "en": "See your wikis across connected services"
     }
 }

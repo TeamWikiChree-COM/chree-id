@@ -4,6 +4,7 @@ namespace Plugins\WikiHub;
 use App\Modules\Plugin\Application\PluginContext;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Domain\PluginMenuItem;
+use App\Modules\Plugin\Infrastructure\PluginDiscovery;
 use Illuminate\Support\ServiceProvider;
 use Plugins\WikiHub\Application\ListWikis;
 use Plugins\WikiHub\Domain\WikiSource;
@@ -20,7 +21,8 @@ class WikiHubServiceProvider extends ServiceProvider {
     public function register(): void {
         $this->mergeConfigFrom(__DIR__ . '/../config.php', 'wiki-hub');
 
-        $this->app->singleton(ListWikis::class, fn (): ListWikis => new ListWikis(
+        // 設定は使うときに読む。起動時に固めると、差し替えた設定が効かない
+        $this->app->bind(ListWikis::class, fn (): ListWikis => new ListWikis(
             $this->app->make(PluginContext::class),
             new WikiSourceClient((int) config('wiki-hub.timeout')),
             $this->sources(),
@@ -32,37 +34,23 @@ class WikiHubServiceProvider extends ServiceProvider {
      * @param PluginMenu $menu
      * @return void
      */
-    public function boot(PluginMenu $menu): void {
+    public function boot(PluginMenu $menu, PluginDiscovery $plugins): void {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $sources = $this->sources();
         // 繋いだサービスが1つも無いうちは、入口を出しても空の画面にしかならない
         if ($sources === []) return;
 
+        // 名前と説明は plugin.json の1か所だけに書く
+        $manifest = $plugins->find('wiki-hub');
+
         $menu->add(new PluginMenuItem(
             PluginMenu::AREA_DASHBOARD,
             '/plugins/wiki-hub',
-            $this->phrases('menu.label'),
-            $this->phrases('menu.description'),
+            $manifest?->title ?? [],
+            $manifest?->description ?? [],
             array_map(static fn (WikiSource $source): string => $source->clientId, $sources),
         ));
-    }
-
-    /**
-     * 本体の辞書に混ぜず、プラグインの lang/*.json から引く。
-     *
-     * @param string $key キー
-     * @return array<string, string> ロケールごとの文言
-     */
-    private function phrases(string $key): array {
-        $result = [];
-
-        foreach (['ja' => 'ja_jp', 'en' => 'en_us'] as $locale => $file) {
-            $catalog = json_decode((string) file_get_contents(__DIR__ . "/../lang/{$file}.json"), true);
-            if (is_array($catalog) && is_string($catalog[$key] ?? null)) $result[$locale] = $catalog[$key];
-        }
-
-        return $result;
     }
 
     /**

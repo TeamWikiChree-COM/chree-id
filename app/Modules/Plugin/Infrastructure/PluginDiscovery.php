@@ -39,6 +39,16 @@ class PluginDiscovery {
     }
 
     /**
+     * @param string $name ディレクトリ名
+     * @return PluginManifest|null
+     */
+    public function find(string $name): ?PluginManifest {
+        $file = "{$this->root}/{$name}/plugin.json";
+
+        return is_file($file) ? $this->read($file) : null;
+    }
+
+    /**
      * @param string $file plugin.json のパス
      * @return PluginManifest
      * @throws RuntimeException
@@ -57,6 +67,7 @@ class PluginDiscovery {
             $json['provider'],
             ($json['enabled'] ?? true) === true,
             is_array($json['title'] ?? null) ? $json['title'] : [],
+            is_array($json['description'] ?? null) ? $json['description'] : [],
         );
     }
 }

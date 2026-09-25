@@ -11,8 +11,10 @@ final class PluginManifest {
     /** 読み込む ServiceProvider の完全修飾クラス名 */
     public readonly string $provider;
     public readonly bool $enabled;
-    /** 画面に出す名前。ロケールごと (ja, en) */
+    /** @var array<string, string> 画面に出す名前。ロケールごと (ja, en) */
     public readonly array $title;
+    /** @var array<string, string> 何ができるかの説明。ロケールごと */
+    public readonly array $description;
 
     /**
      * @param string $name ディレクトリ名
@@ -20,13 +22,15 @@ final class PluginManifest {
      * @param string $provider ServiceProvider のクラス名
      * @param bool $enabled 読み込むか
      * @param array<string, string> $title ロケールごとの表示名
+     * @param array<string, string> $description ロケールごとの説明
      */
-    public function __construct(string $name, string $version, string $provider, bool $enabled, array $title) {
+    public function __construct(string $name, string $version, string $provider, bool $enabled, array $title, array $description = []) {
         $this->name = $name;
         $this->version = $version;
         $this->provider = $provider;
         $this->enabled = $enabled;
         $this->title = $title;
+        $this->description = $description;
     }
 
     /**

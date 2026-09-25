@@ -2,8 +2,6 @@
     "action.open": "Open wiki",
     "action.settings": "Open wiki settings",
     "action.settings_description": "Opens the service's settings page in a new tab",
-    "menu.description": "See your wikis across connected services, with view counts and links to their settings",
-    "menu.label": "Wiki Hub",
     "page.empty": "No wikis yet",
     "page.failed": "Could not load the list from this service. Please try again later",
     "page.lead": "Wikis from your connected services, in one place",
