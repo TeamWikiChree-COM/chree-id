@@ -12,10 +12,12 @@ use App\Modules\Credential\Http\SecurityController;
 use App\Modules\Device\Http\DeviceController;
 use App\Modules\ExternalLogin\Http\ConnectionController;
 use App\Modules\ExternalLogin\Http\ExternalLoginController;
+use App\Modules\Identity\Http\AccountEmailController;
 use App\Modules\Identity\Http\DashboardController;
 use App\Modules\Identity\Http\IconController;
 use App\Modules\Identity\Http\MergeController;
 use App\Modules\Identity\Http\ProfileController;
+use App\Modules\Identity\Http\ServiceEmailController;
 use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
 use App\Modules\Linking\Http\ClaimPasskeyController;
@@ -105,6 +107,13 @@ Route::post('/profile/email/change', [ProfileController::class, 'changeEmail'])-
 Route::post('/profile/email/change/cancel', [ProfileController::class, 'cancelEmailChange']);
 Route::get('/profile/email/change/{token}', [ProfileController::class, 'confirmEmailChange'])->middleware('throttle:verify');
 
+// 追加のメールアドレス。サービスへ渡す選択肢で、ログインやパスワード再設定には使わない
+Route::post('/profile/emails', [AccountEmailController::class, 'store'])->middleware('throttle:register');
+Route::post('/profile/emails/resend', [AccountEmailController::class, 'resend'])->middleware('throttle:register');
+Route::post('/profile/emails/remove', [AccountEmailController::class, 'destroy']);
+Route::post('/profile/emails/primary', [AccountEmailController::class, 'makePrimary']);
+Route::get('/profile/emails/verify/{token}', [AccountEmailController::class, 'verify'])->middleware('throttle:verify');
+
 // アイコン。表示はログインを求めない (同意画面や連携先からも引くため)
 Route::get('/profile/icon/{account}', [IconController::class, 'show']);
 Route::post('/profile/icon', [IconController::class, 'update']);
@@ -136,6 +145,9 @@ Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'de
 // まとめから外して単独のアカウントに戻す (統合の逆)
 Route::get('/services/{serviceAccount}/split', [SplitServiceController::class, 'show']);
 Route::post('/services/split', [SplitServiceController::class, 'store']);
+
+// サービスへ渡すメールアドレスを選ぶ
+Route::post('/services/{serviceAccount}/email', [ServiceEmailController::class, 'update']);
 
 // 認証方法の管理
 Route::post('/security/totp/start', [SecurityController::class, 'startTotp']);

@@ -3,11 +3,13 @@ namespace App\Modules\Identity\Http;
 
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
+use App\Modules\Identity\Application\AccountEmails;
 use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Application\ConfirmEmailChange;
 use App\Modules\Identity\Application\ConfirmEmailVerification;
 use App\Modules\Identity\Application\RequestEmailChange;
 use App\Modules\Identity\Application\RequestEmailVerification;
+use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\ChreeSession;
@@ -35,6 +37,8 @@ class ProfileController {
         private readonly ConfirmEmailChange $confirmChange,
         private readonly AccountIcons $icons,
         private readonly AuditLog $audit,
+        private readonly AccountEmails $emails,
+        private readonly UserAccounts $userAccounts,
     ) {}
 
     /**
@@ -54,6 +58,8 @@ class ProfileController {
             'iconSource' => $account->iconSource->value,
             'iconUrl' => $this->icons->urlFor($account),
             'pendingEmail' => $this->pendingEmailChange($accountId),
+            // サービスアカウントは追加アドレスを持たない。null なら欄ごと出さない
+            'emails' => $this->userAccounts->exists($accountId) ? $this->emails->list($accountId) : null,
         ]);
     }
 

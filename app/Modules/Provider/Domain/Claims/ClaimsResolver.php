@@ -14,7 +14,8 @@ interface ClaimsResolver {
 
     /**
      * @param AuthIdentity $account
+     * @param string|null $serviceAccountId 渡す先のサービスアカウント。サービスごとの設定を引くのに使う
      * @return array<string, mixed>
      */
-    public function resolve(AuthIdentity $account): array;
+    public function resolve(AuthIdentity $account, ?string $serviceAccountId): array;
 }

@@ -78,6 +78,8 @@ class HandleInertiaRequests extends Middleware {
                 'emailChangeSent' => $request->session()->get('emailChangeSent'),
                 'emailChangeCancelled' => $request->session()->get('emailChangeCancelled'),
                 'emailChanged' => $request->session()->get('emailChanged'),
+                'accountEmail' => $request->session()->get('accountEmail'),
+                'serviceEmailSaved' => $request->session()->get('serviceEmailSaved'),
                 'serviceRevoked' => $request->session()->get('serviceRevoked'),
                 'accountMerged' => $request->session()->get('accountMerged'),
                 'serviceSaved' => $request->session()->get('serviceSaved'),

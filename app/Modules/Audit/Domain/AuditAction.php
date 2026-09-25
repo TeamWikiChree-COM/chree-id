@@ -19,6 +19,8 @@ enum AuditAction: string {
     case EMAIL_CHANGE_CANCELLED = 'email.change_cancelled';
     case EMAIL_CHANGED = 'email.changed';
     case EMAIL_VERIFIED = 'email.verified';
+    case EMAIL_ADDED = 'email.added';
+    case EMAIL_REMOVED = 'email.removed';
     case PROFILE_UPDATED = 'profile.updated';
     case ICON_CHANGED = 'icon.changed';
 
@@ -30,6 +32,7 @@ enum AuditAction: string {
     case CONNECTION_REMOVED = 'connection.removed';
     case SERVICE_REVOKED = 'service.revoked';
     case SERVICE_SPLIT = 'service.split';
+    case SERVICE_EMAIL_ASSIGNED = 'service.email_assigned';
     case SERVICE_REGISTERED = 'service.registered';
     case SERVICE_REVIEW_REQUESTED = 'service.review_requested';
 

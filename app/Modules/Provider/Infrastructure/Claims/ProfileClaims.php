@@ -15,9 +15,10 @@ class ProfileClaims implements ClaimsResolver {
 
     /**
      * @param AuthIdentity $account
+     * @param string|null $serviceAccountId
      * @return array<string, mixed>
      */
-    public function resolve(AuthIdentity $account): array {
+    public function resolve(AuthIdentity $account, ?string $serviceAccountId): array {
         return ['name' => $account->displayName];
     }
 }

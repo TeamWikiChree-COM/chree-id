@@ -18,7 +18,10 @@ use Illuminate\Support\Facades\DB;
  * メールの一致は候補を出す材料であって、実行の根拠にはならない (同 8.7)。
  */
 class MergeAccounts {
-    public function __construct(private readonly AuthIdentityRepository $accounts) {}
+    public function __construct(
+        private readonly AuthIdentityRepository $accounts,
+        private readonly TransferAccountEmails $emails,
+    ) {}
 
     /**
      * @param string $sourceId 消える側のアカウントID (ULID)
@@ -43,6 +46,8 @@ class MergeAccounts {
                     ->whereIn('id', $credentialIds)
                     ->update(['auth_identity_id' => $targetId]);
             }
+
+            $this->emails->execute($sourceId, $targetId);
 
             AuthIdentityAliasModel::create([
                 'legacy_id' => $sourceId,

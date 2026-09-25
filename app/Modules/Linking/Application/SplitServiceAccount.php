@@ -91,6 +91,8 @@ class SplitServiceAccount {
                 'auth_identity_id' => $created->id,
                 // 束ね直したわけではないので、引き取り済みの記録は持ち越さない
                 'claimed_at' => null,
+                // 割り当てていたのは元のアカウントのアドレス。分けた先はそれを持っていない
+                'email' => null,
             ])->save();
 
             return $created->id;

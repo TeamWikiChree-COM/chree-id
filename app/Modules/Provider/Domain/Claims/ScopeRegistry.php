@@ -29,15 +29,16 @@ class ScopeRegistry {
      *
      * @param AuthIdentity $account
      * @param list<string> $scopes
+     * @param string|null $serviceAccountId 渡す先のサービスアカウント
      * @return array<string, mixed>
      */
-    public function claimsFor(AuthIdentity $account, array $scopes): array {
+    public function claimsFor(AuthIdentity $account, array $scopes, ?string $serviceAccountId = null): array {
         $claims = [];
         foreach ($scopes as $scope) {
             $resolver = $this->resolvers[$scope] ?? null;
             if ($resolver === null) continue;
 
-            $claims = array_merge($claims, $resolver->resolve($account));
+            $claims = array_merge($claims, $resolver->resolve($account, $serviceAccountId));
         }
 
         return $claims;

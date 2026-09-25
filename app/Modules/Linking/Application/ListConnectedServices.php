@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
 class ListConnectedServices {
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, connectedAt: string|null, hasActiveToken: bool}>
+     * @return list<array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, email: string|null, connectedAt: string|null, hasActiveToken: bool}>
      */
     public function execute(string $accountId): array {
         // 移行で同じサービスに「ログインだけの行」と「サービスが発行した行」が並ぶと、
@@ -50,6 +50,8 @@ class ListConnectedServices {
                 'id' => $subject->id,
                 'clientId' => $client->id,
                 'serviceUserId' => $subject->service_user_id,
+                // 割り当てたアドレス。null なら主アドレスを渡している
+                'email' => $subject->email,
                 'name' => $client->displayName(),
                 'iconUrl' => $client->icon_url,
                 // サービス側の設定画面。指定が無ければ導線を出さない

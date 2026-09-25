@@ -14,6 +14,7 @@ class ConfirmEmailChange {
     public function __construct(
         private readonly AuthIdentityRepository $accounts,
         private readonly ResolveByEmail $byEmail,
+        private readonly ServiceEmails $serviceEmails,
     ) {}
 
     /**
@@ -39,6 +40,9 @@ class ConfirmEmailChange {
             $this->accounts->updateEmail($pending->auth_identity_id, $pending->new_email);
             $this->accounts->markEmailVerified($pending->auth_identity_id);
             $pending->delete();
+
+            // 前の主アドレスを割り当てていたサービスへ、もう受け取れないアドレスを渡し続けないように
+            $this->serviceEmails->prune($pending->auth_identity_id);
 
             return $pending->auth_identity_id;
         });

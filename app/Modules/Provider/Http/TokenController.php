@@ -124,7 +124,7 @@ class TokenController {
             $client->id,
             $subject,
             $row->nonce,
-            $this->scopes->claimsFor($account, $scopes),
+            $this->scopes->claimsFor($account, $scopes, $serviceAccount?->id),
         );
 
         return response()->json([

@@ -47,7 +47,7 @@ class UserinfoController {
             ['sub' => $serviceAccount === null
                 ? $this->subjects->execute($client, $account->id)
                 : $this->subjects->forServiceAccount($serviceAccount)],
-            $this->scopes->claimsFor($account, $token->scopes()),
+            $this->scopes->claimsFor($account, $token->scopes(), $serviceAccount?->id),
         );
 
         return response()->json($claims);
