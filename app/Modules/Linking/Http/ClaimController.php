@@ -2,6 +2,7 @@
 namespace App\Modules\Linking\Http;
 
 use App\Modules\Audit\Domain\LoginMethod;
+use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
@@ -137,10 +138,10 @@ class ClaimController {
             'method' => ['required', 'in:existing,password,passkey'],
             'credentials' => ['array'],
             'credentials.*' => ['string'],
-            'password' => ['required_if:method,password', 'nullable', 'string', 'min:8'],
+            'password' => ['required_if:method,password', 'nullable', 'string', 'min:' . SetPassword::MIN_LENGTH],
             'display_name' => ['nullable', 'string', 'max:100'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
-        ]);
+        ], ['password.min' => __('credential.password.min_length', ['min' => SetPassword::MIN_LENGTH])]);
 
         $link = $this->tickets->find($request->string('token')->toString());
         if ($link === null) return $this->failed(ClaimException::INVALID_TICKET);

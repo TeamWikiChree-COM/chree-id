@@ -2,6 +2,7 @@
 namespace App\Modules\Identity\Http;
 
 use App\Modules\Audit\Domain\LoginMethod;
+use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Application\CompleteRegistration;
 use App\Modules\Identity\Application\RegistrationTokenException;
 use App\Modules\Identity\Application\StartRegistration;
@@ -105,9 +106,9 @@ class RegisterController {
     public function complete(Request $request): RedirectResponse|Response {
         $request->validate([
             'token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:' . SetPassword::MIN_LENGTH],
             'display_name' => ['nullable', 'string', 'max:100'],
-        ]);
+        ], ['password.min' => __('credential.password.min_length', ['min' => SetPassword::MIN_LENGTH])]);
 
         $displayName = $request->string('display_name')->trim()->toString();
 

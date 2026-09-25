@@ -4,6 +4,7 @@ namespace App\Modules\Credential\Http;
 use App\Modules\Credential\Application\PasswordResetTokenException;
 use App\Modules\Credential\Application\RequestPasswordReset;
 use App\Modules\Credential\Application\ResetPassword;
+use App\Modules\Credential\Application\SetPassword;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -82,8 +83,8 @@ class PasswordResetController {
     public function update(Request $request): RedirectResponse|Response {
         $request->validate([
             'token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8'],
-        ]);
+            'password' => ['required', 'string', 'min:' . SetPassword::MIN_LENGTH],
+        ], ['password.min' => __('credential.password.min_length', ['min' => SetPassword::MIN_LENGTH])]);
 
         try {
             $this->reset->execute(

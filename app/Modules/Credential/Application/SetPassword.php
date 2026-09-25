@@ -10,7 +10,7 @@ use InvalidArgumentException;
  */
 class SetPassword {
     /** 短すぎるパスワードを弾く下限 */
-    private const MIN_LENGTH = 8;
+    public const MIN_LENGTH = 8;
 
     /**
      * @param string $accountId アカウントID (ULID)
