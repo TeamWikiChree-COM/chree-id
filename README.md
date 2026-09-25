@@ -53,7 +53,7 @@ npm run dev
 | 設計の方針 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | 書き方の決まり | [docs/CODING.md](docs/CODING.md) |
 | アカウントの仕組み | [docs/ACCOUNTS.md](docs/ACCOUNTS.md) |
-| 用語集 | [docs/term/README.md](docs/term/README.md) |
+| 用語リスト | [docs/term/README.md](docs/term/README.md) |
 | 知らずに触ると事故になる決定 | [docs/DECISIONS.md](docs/DECISIONS.md) |
 | API と OpenAPI の場所 | [docs/API.md](docs/API.md) |
 | サービス接続 | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
