@@ -86,6 +86,33 @@ export function t(key: TranslationKey, replacements?: Replacements): string {
 }
 
 /**
+ * プラグイン用の t() を作る。
+ *
+ * **プラグインの文言は本体の辞書に混ぜない。** 混ぜると、プラグインを足すたびに
+ * 本体の lang/ へ差分が出る。プラグインは自分の plugins/<name>/lang/*.json を渡す。
+ *
+ * ```ts
+ * import ja from '../../lang/ja_jp.json';
+ * import en from '../../lang/en_us.json';
+ * export const t = createTranslator({ ja, en });
+ * ```
+ *
+ * @param catalogs ロケールごとの辞書。ja のキーが型になる
+ * @returns その辞書を引く t()
+ */
+export function createTranslator<T extends Record<string, string>>(
+    catalogs: { ja: T } & Partial<Record<Locale, Record<keyof T, string>>>,
+): (key: keyof T & string, replacements?: Replacements) => string {
+    const catalog = catalogs[current] ?? catalogs.ja;
+
+    return (key, replacements) => {
+        const text = catalog[key] ?? key;
+
+        return replacements === undefined ? text : interpolate(text, replacements);
+    };
+}
+
+/**
  * Laravel と同じ `:name` 形式で差し込む。書式を揃えてあるので、
  * lang:build のプレースホルダ検証がフロントの文言にも効く。
  *

@@ -20,5 +20,5 @@
             "@/*": ["./resources/js/*"]
         }
     },
-    "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx"]
+    "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx", "plugins/*/resources/js/**/*.ts", "plugins/*/resources/js/**/*.tsx"]
 }

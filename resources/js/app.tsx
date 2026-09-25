@@ -36,7 +36,12 @@ createInertiaApp({
 
     resolve: (name: string) => {
         const pages = import.meta.glob<{ default: ComponentType }>('./Pages/**/*.tsx', { eager: true });
-        const page = pages[`./Pages/${name}.tsx`];
+        // プラグインの画面は "<プラグイン名>::<画面名>" で呼ぶ。本体の画面名とは衝突しない
+        const pluginPages = import.meta.glob<{ default: ComponentType }>('../../plugins/*/resources/js/Pages/**/*.tsx', { eager: true });
+        const [plugin, pluginPage] = name.split('::');
+        const page = pluginPage === undefined
+            ? pages[`./Pages/${name}.tsx`]
+            : pluginPages[`../../plugins/${plugin}/resources/js/Pages/${pluginPage}.tsx`];
 
         if (page === undefined) throw new Error(t('common.error.page_not_found', { name }));
 
