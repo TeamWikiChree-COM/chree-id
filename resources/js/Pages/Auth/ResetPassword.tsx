@@ -44,7 +44,7 @@ export default function ResetPassword({ token }: ResetPasswordProps) {
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={Boolean(errors.password)}
-                        helperText={errors.password ?? t('auth.common.password_min_length')}
+                        helperText={errors.password}
                         autoComplete="new-password"
                         autoFocus
                         required

@@ -43,7 +43,7 @@ export default function RegisterPassword({ token }: RegisterPasswordProps) {
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         error={Boolean(errors.password)}
-                        helperText={errors.password ?? t('auth.common.password_min_length')}
+                        helperText={errors.password}
                         autoComplete="new-password"
                         autoFocus
                         required

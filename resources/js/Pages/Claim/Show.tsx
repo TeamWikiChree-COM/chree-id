@@ -229,7 +229,7 @@ export default function ClaimShow({
                                     setData("password", e.target.value)
                                 }
                                 error={Boolean(errors.password)}
-                                helperText={errors.password ?? t('auth.common.password_min_length')}
+                                helperText={errors.password}
                                 autoComplete="new-password"
                                 required
                             />

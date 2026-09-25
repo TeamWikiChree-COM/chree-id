@@ -53,7 +53,7 @@ export default function PasswordSection({ hasPassword }: PasswordSectionProps) {
                         value={form.data.password}
                         onChange={(e) => form.setData('password', e.target.value)}
                         error={Boolean(form.errors.password)}
-                        helperText={form.errors.password ?? t('settings.password.min_length_hint')}
+                        helperText={form.errors.password}
                         autoComplete="new-password"
                     />
 
