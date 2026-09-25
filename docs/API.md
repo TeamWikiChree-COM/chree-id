@@ -13,12 +13,13 @@ ChreeID が外に出している口は2種類ある。
 
 サーバ間 API の詳しい仕様は OpenAPI で公開しており、こちらを正とする。
 
+- 本番: https://id.wikichree.com/api-docs/v1
+- ローカル: http://chreeid.test/api-docs/v1
+
 | もの | URL |
 | --- | --- |
 | ドキュメント (ブラウザで読む) | `/api-docs/v1` |
 | OpenAPI の定義 (JSON) | `/api/v1/openapi.json` |
-
-本番なら `https://id.wikichree.com/api-docs/v1`、ローカルなら `http://chreeid.test/api-docs/v1`。
 
 定義はコードから生成している (`app/Modules/ApiDocs/`)。API を変えたら、こちらも合わせて直す。
 
