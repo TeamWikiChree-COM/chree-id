@@ -114,6 +114,7 @@ export default function Index({ accounts, pagination, filters, clients, selfId, 
                             account={account}
                             isSelf={account.id === selfId}
                             graceDays={graceDays}
+                            linked
                         />
                     ))}
                 </Stack>

@@ -6,6 +6,7 @@ import AuditEventList from '../../../Components/AuditEventList';
 import SectionTitle from '../../../Components/SectionTitle';
 import { t } from '../../../lib/i18n';
 import type { AuditEventSummary, CredentialSummary } from '../../../types';
+import AccountActions from './AccountActions';
 import AccountCredentials from './AccountCredentials';
 import AccountLinks from './AccountLinks';
 import AccountRow from './AccountRow';
@@ -52,6 +53,13 @@ export default function Show({ account, credentials, splittable, links, issues, 
             <Paper variant="outlined">
                 <AccountRow account={account} isSelf={isSelf} graceDays={graceDays} />
             </Paper>
+
+            {!isSelf && (
+                <>
+                    <SectionTitle>{t('admin.accounts.detail.actions')}</SectionTitle>
+                    <AccountActions account={account} graceDays={graceDays} />
+                </>
+            )}
 
             <SectionTitle>{t('admin.accounts.detail.credentials')}</SectionTitle>
             <AccountCredentials accountId={account.id} credentials={credentials} readOnly={isSelf} />

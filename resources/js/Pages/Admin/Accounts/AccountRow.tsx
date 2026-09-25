@@ -116,7 +116,6 @@ export default function AccountRow({ account, isSelf, graceDays, linked = false 
                     {linked && <Icon name="chevron-right" sx={{ fontSize: '0.75rem', color: 'text.disabled' }} />}
                 </Box>
             </Box>
-
         </Box>
     );
 }

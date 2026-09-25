@@ -5,6 +5,7 @@
     "admin.accounts.create.submit": "Create",
     "admin.accounts.created": "Account created. It has no sign-in method yet, so have the person start from password reset",
     "admin.accounts.crumb": "Accounts",
+    "admin.accounts.detail.actions": "Actions",
     "admin.accounts.detail.claimed_at": "Claimed :date",
     "admin.accounts.detail.created_at": "Created :date",
     "admin.accounts.detail.credential_remove.confirm": "Remove",

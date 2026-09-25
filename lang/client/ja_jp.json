@@ -5,6 +5,7 @@
     "admin.accounts.create.submit": "作成",
     "admin.accounts.created": "アカウントを作りました。ログイン手段は付いていないので、本人にパスワード再設定から入ってもらってください",
     "admin.accounts.crumb": "アカウント",
+    "admin.accounts.detail.actions": "操作",
     "admin.accounts.detail.claimed_at": "引き取り :date",
     "admin.accounts.detail.created_at": "作成 :date",
     "admin.accounts.detail.credential_remove.confirm": "削除",
