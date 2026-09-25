@@ -55,5 +55,5 @@ ServiceAccount のままでも使い続けられる。UserAccount にするか�
 
 ## 状態の判定
 
-- 統合済みかどうかは UserAccount の行があるかで判定する。`origin` は出自の記録であって、今の状態を表さない
+- UserAccount かどうかは `user_accounts` の行があるかで判定する。`origin` は移行・統合のときに `user` へ揃えているが、表示用の種別であって判定には使わない
 - ログインできるかどうかは `isSuspended()` だけで判定する。詳しくは [DECISIONS.md](DECISIONS.md)

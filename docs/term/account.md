@@ -10,6 +10,6 @@
 | Credential (認証手段) | AuthIdentity に属する認証の手段。種類は [認証](auth.md) を参照 | 見える |
 | 主アドレス | AuthIdentity のメールアドレス。サービスに別のアドレスを割り当てていなければ、これが渡る | 見える |
 | 追加アドレス | 主アドレスとは別に登録したアドレス。サービスごとに割り当てられる | 見える |
-| origin (出自) | そのアカウントがどこから作られたかの記録 (`user` か `service`)。今の状態の判定には使わない | 見えない |
+| origin (種別) | `user` か `service`。サービスから作られたものは `service` で始まり、移行・統合で UserAccount になると `user` に揃える。判定には `user_accounts` の行の有無を使う | 見えない |
 
 利用者に「アカウント」として見せるのは UserAccount と ServiceAccount の2つだけ。
