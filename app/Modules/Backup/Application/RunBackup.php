@@ -28,9 +28,9 @@ class RunBackup {
      */
     public function execute(): BackupResult {
         // 鍵が無いなら取らない。暗号化できない控えを外へ出すくらいなら、無いほうがよい
-        if (!$this->cipher->isConfigured()) throw new RuntimeException('CHREEID_BACKUP_KEY が設定されていません');
+        if (!$this->cipher->isConfigured()) throw new RuntimeException(__('backup.errors.key_missing'));
         if (!$this->local->isEnabled() && !$this->drive->isConfigured()) {
-            throw new RuntimeException('バックアップの置き場がありません (サーバ内も Google Drive も無効です)');
+            throw new RuntimeException(__('backup.errors.no_destination'));
         }
 
         $data = $this->export->execute();

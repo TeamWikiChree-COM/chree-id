@@ -48,11 +48,11 @@ class GoogleDrive {
             ->post(self::UPLOAD_URL . '?uploadType=multipart&fields=id');
 
         if ($response->failed()) {
-            throw new RuntimeException('Drive に置けませんでした: ' . $response->body());
+            throw new RuntimeException(__('backup.errors.drive_upload_failed', ['detail' => $response->body()]));
         }
 
         $id = $response->json('id');
-        if (!is_string($id)) throw new RuntimeException('Drive がファイルIDを返しませんでした');
+        if (!is_string($id)) throw new RuntimeException(__('backup.errors.drive_no_file_id'));
 
         return $id;
     }
@@ -73,7 +73,7 @@ class GoogleDrive {
                 'pageSize' => 100,
             ]);
 
-        if ($response->failed()) throw new RuntimeException('Drive の一覧を引けませんでした: ' . $response->body());
+        if ($response->failed()) throw new RuntimeException(__('backup.errors.drive_list_failed', ['detail' => $response->body()]));
 
         /** @var list<array{id: string, name: string, createdTime: string}> $files */
         $files = $response->json('files') ?? [];
@@ -91,7 +91,7 @@ class GoogleDrive {
             ->timeout(self::TIMEOUT_SECONDS)
             ->delete(self::FILES_URL . '/' . $id);
 
-        if ($response->failed()) throw new RuntimeException('Drive から消せませんでした: ' . $response->body());
+        if ($response->failed()) throw new RuntimeException(__('backup.errors.drive_delete_failed', ['detail' => $response->body()]));
     }
 
     /**
@@ -110,7 +110,7 @@ class GoogleDrive {
 
         // 本文の error を見る。交換に失敗しても 200 が返ることがある (GitHub で踏んだ)
         if ($response->failed() || !is_string($token)) {
-            throw new RuntimeException('Drive のアクセストークンを取れませんでした: ' . $response->body());
+            throw new RuntimeException(__('backup.errors.drive_token_failed', ['detail' => $response->body()]));
         }
 
         return $token;
@@ -122,7 +122,7 @@ class GoogleDrive {
      */
     private function folderId(): string {
         $id = $this->settings->driveFolderId();
-        if ($id === null) throw new RuntimeException('Google Drive のフォルダIDが設定されていません');
+        if ($id === null) throw new RuntimeException(__('backup.errors.drive_folder_missing'));
 
         return $id;
     }

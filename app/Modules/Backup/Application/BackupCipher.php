@@ -50,7 +50,7 @@ class BackupCipher {
             $tag,
         );
 
-        if ($cipherText === false) throw new RuntimeException('バックアップを暗号化できませんでした');
+        if ($cipherText === false) throw new RuntimeException(__('backup.errors.encrypt_failed'));
 
         return json_encode([
             'alg' => self::ALGORITHM,
@@ -70,11 +70,11 @@ class BackupCipher {
         $envelope = json_decode($sealed, true, 512, JSON_THROW_ON_ERROR);
 
         foreach (['alg', 'iv', 'tag', 'data'] as $field) {
-            if (!is_string($envelope[$field] ?? null)) throw new RuntimeException("バックアップの形が違います: {$field}");
+            if (!is_string($envelope[$field] ?? null)) throw new RuntimeException(__('backup.errors.invalid_envelope', ['field' => $field]));
         }
 
         if ($envelope['alg'] !== self::ALGORITHM) {
-            throw new RuntimeException('知らない暗号方式です: ' . (string) $envelope['alg']);
+            throw new RuntimeException(__('backup.errors.unknown_algorithm', ['alg' => (string) $envelope['alg']]));
         }
 
         $plain = openssl_decrypt(
@@ -87,7 +87,7 @@ class BackupCipher {
         );
 
         // GCM なので、鍵違いも改竄もここで false になる
-        if ($plain === false) throw new RuntimeException('バックアップを復号できませんでした (鍵が違うか、壊れています)');
+        if ($plain === false) throw new RuntimeException(__('backup.errors.decrypt_failed'));
 
         /** @var array<string, mixed> $data */
         $data = json_decode($plain, true, 512, JSON_THROW_ON_ERROR);
@@ -101,13 +101,13 @@ class BackupCipher {
      */
     private function key(): string {
         $configured = $this->settings->key();
-        if ($configured === null) throw new RuntimeException('CHREEID_BACKUP_KEY が設定されていません');
+        if ($configured === null) throw new RuntimeException(__('backup.errors.key_missing'));
 
         $key = base64_decode($configured, true);
 
         // 短い鍵を黙って受けると、弱いまま運用され続ける
         if ($key === false || strlen($key) !== 32) {
-            throw new RuntimeException('CHREEID_BACKUP_KEY は base64 で 32 バイトにしてください');
+            throw new RuntimeException(__('backup.errors.key_invalid'));
         }
 
         return $key;

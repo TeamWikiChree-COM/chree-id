@@ -34,14 +34,14 @@ class TurnstileGuard {
             report($e);
 
             throw ValidationException::withMessages([
-                self::FIELD => '確認に失敗しました。時間をおいてもう一度お試しください',
+                self::FIELD => __('turnstile.unavailable'),
             ])->status(503);
         }
 
         if ($passed) return;
 
         throw ValidationException::withMessages([
-            self::FIELD => '人間による操作であることを確認できませんでした。もう一度お試しください',
+            self::FIELD => __('turnstile.failed'),
         ]);
     }
 }

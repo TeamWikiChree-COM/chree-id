@@ -37,11 +37,11 @@ class LocalBackupStore {
         $dir = $this->settings->localPath();
 
         if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
-            throw new RuntimeException("バックアップの置き場を作れませんでした: {$dir}");
+            throw new RuntimeException(__('backup.errors.local_mkdir_failed', ['dir' => $dir]));
         }
 
         if (@file_put_contents($dir . DIRECTORY_SEPARATOR . $name, $content, LOCK_EX) === false) {
-            throw new RuntimeException("バックアップを書き込めませんでした: {$dir}");
+            throw new RuntimeException(__('backup.errors.local_write_failed', ['dir' => $dir]));
         }
     }
 
@@ -83,7 +83,7 @@ class LocalBackupStore {
             if (strtotime($file['createdTime']) >= $limit) continue;
 
             if (!@unlink($dir . DIRECTORY_SEPARATOR . $file['name'])) {
-                throw new RuntimeException("古いバックアップを消せませんでした: {$file['name']}");
+                throw new RuntimeException(__('backup.errors.local_prune_failed', ['name' => $file['name']]));
             }
             $pruned[] = $file['name'];
         }
