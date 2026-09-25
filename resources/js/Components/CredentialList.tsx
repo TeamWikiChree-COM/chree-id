@@ -3,7 +3,9 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Icon from './Icon';
-import RowAction from './RowAction';
+import ListRow from './ListRow';
+import type { RowActionItem } from './ActionDialog';
+import { useActions } from '../lib/actions';
 import { formatDateTime, formatRelative } from '../lib/datetime';
 import { credentialIcon, credentialIconFamily, credentialLabel } from '../lib/credentials';
 import { t } from '../lib/i18n';
@@ -34,9 +36,9 @@ function detailOf(credential: CredentialSummary): string {
 
 interface CredentialListProps {
     credentials: CredentialSummary[];
-    /** 渡すと削除ボタンを出す。読むだけの画面では省く */
+    /** 渡すと、行を押したときに削除を選べる。読むだけの画面では省く */
     onRemove?: (credential: CredentialSummary) => void;
-    /** 渡すと、名前を持てる認証手段 (パスキー) にだけ改名ボタンを出す */
+    /** 渡すと、名前を持てる認証手段 (パスキー) でだけ改名を選べる */
     onRename?: (credential: CredentialSummary) => void;
 }
 
@@ -46,6 +48,24 @@ interface CredentialListProps {
  * 削除は種別ではなく行を指す。種別で消すと、同じ種別のものが一度に全部消える。
  */
 export default function CredentialList({ credentials, onRemove, onRename }: CredentialListProps) {
+    const { open, dialog } = useActions();
+
+    const actionsFor = (credential: CredentialSummary): RowActionItem[] => [
+        ...(onRename !== undefined && credential.type === 'passkey'
+            ? [{ label: t('credential.action.rename'), onClick: () => onRename(credential) }]
+            : []),
+        ...(onRemove !== undefined
+            ? [{ label: t('credential.action.remove'), destructive: true, onClick: () => onRemove(credential) }]
+            : []),
+    ];
+
+    const select = (credential: CredentialSummary): (() => void) | undefined => {
+        const actions = actionsFor(credential);
+        if (actions.length === 0) return undefined;
+
+        return () => open({ title: credentialLabel(credential), detail: detailOf(credential), actions });
+    };
+
     return (
         <Paper variant="outlined">
             <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
@@ -56,10 +76,7 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
                 )}
 
                 {credentials.map((credential) => (
-                    <Box
-                        key={credential.id}
-                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
-                    >
+                    <ListRow key={credential.id} onClick={select(credential)}>
                         <Box>
                             <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
                                 <Icon
@@ -73,21 +90,10 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
                                 {detailOf(credential)}
                             </Typography>
                         </Box>
-
-                        <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-                            {onRename !== undefined && credential.type === 'passkey' && (
-                                <RowAction onClick={() => onRename(credential)}>{t('credential.action.rename')}</RowAction>
-                            )}
-
-                            {onRemove !== undefined && (
-                                <RowAction destructive onClick={() => onRemove(credential)}>
-                                    {t('credential.action.remove')}
-                                </RowAction>
-                            )}
-                        </Stack>
-                    </Box>
+                    </ListRow>
                 ))}
             </Stack>
+            {dialog}
         </Paper>
     );
 }

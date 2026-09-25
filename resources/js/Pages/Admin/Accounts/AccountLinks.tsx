@@ -10,7 +10,7 @@ import { useState } from 'react';
 import CredentialPicker from '../../../Components/CredentialPicker';
 import ListRow from '../../../Components/ListRow';
 import OutlinedList from '../../../Components/OutlinedList';
-import RowAction from '../../../Components/RowAction';
+import { useActions } from '../../../lib/actions';
 import { useConfirm } from '../../../lib/confirm';
 import { formatDateTime } from '../../../lib/datetime';
 import { t } from '../../../lib/i18n';
@@ -35,6 +35,7 @@ interface AccountLinksProps {
  */
 export default function AccountLinks({ accountId, links, credentials, splittable, readOnly }: AccountLinksProps) {
     const { ask, dialog } = useConfirm();
+    const actions = useActions();
     const [splitting, setSplitting] = useState<AdminServiceLink | null>(null);
     const [chosen, setChosen] = useState<string[]>([]);
 
@@ -60,19 +61,22 @@ export default function AccountLinks({ accountId, links, credentials, splittable
         });
     };
 
+    const openActions = (link: AdminServiceLink): void => {
+        actions.open({
+            title: link.name,
+            detail: link.serviceUserId === null ? undefined : link.serviceUserId,
+            actions: [
+                { label: t('admin.accounts.detail.split.action'), onClick: () => openSplit(link) },
+                { label: t('admin.accounts.detail.unlink.confirm'), destructive: true, onClick: () => unlink(link) },
+            ],
+        });
+    };
+
     return (
         <>
             <OutlinedList empty={links.length === 0 && t('admin.accounts.detail.links_empty')}>
                 {links.map((link) => (
-                    <ListRow
-                        key={link.id}
-                        actions={!readOnly && (
-                            <Box sx={{ display: 'flex', flexShrink: 0 }}>
-                                <RowAction onClick={() => openSplit(link)}>{t('admin.accounts.detail.split.action')}</RowAction>
-                                <RowAction destructive onClick={() => unlink(link)}>{t('admin.accounts.detail.unlink.confirm')}</RowAction>
-                            </Box>
-                        )}
-                    >
+                    <ListRow key={link.id} onClick={readOnly ? undefined : () => openActions(link)}>
                         <Box sx={{ minWidth: 0 }}>
                             <Typography sx={{ fontSize: '0.9375rem' }}>
                                 {link.serviceUserId === null ? link.name : t('admin.accounts.row.service', { name: link.name, id: link.serviceUserId })}
@@ -111,6 +115,7 @@ export default function AccountLinks({ accountId, links, credentials, splittable
                     </Button>
                 </DialogActions>
             </Dialog>
+            {actions.dialog}
             {dialog}
         </>
     );

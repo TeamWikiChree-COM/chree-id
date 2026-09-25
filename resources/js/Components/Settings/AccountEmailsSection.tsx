@@ -9,8 +9,8 @@ import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import ListRow from '../ListRow';
 import OutlinedList from '../OutlinedList';
-import RowAction from '../RowAction';
 import { formatDateTime } from '../../lib/datetime';
+import { useActions } from '../../lib/actions';
 import { useConfirm } from '../../lib/confirm';
 import { t } from '../../lib/i18n';
 import type { AccountEmail } from '../../types';
@@ -28,6 +28,7 @@ export default function AccountEmailsSection({ emails }: AccountEmailsSectionPro
     const { flash, errors } = usePage().props;
     const form = useForm({ email: '' });
     const { ask, dialog } = useConfirm();
+    const actions = useActions();
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -52,6 +53,18 @@ export default function AccountEmailsSection({ emails }: AccountEmailsSectionPro
         });
     };
 
+    const openActions = (row: AccountEmail): void => {
+        actions.open({
+            title: row.email,
+            actions: [
+                ...(row.verified
+                    ? [{ label: t('settings.profile.emails.promote'), onClick: () => promote(row) }]
+                    : [{ label: t('settings.profile.emails.resend'), onClick: () => router.post('/profile/emails/resend', { id: row.id }) }]),
+                { label: t('settings.profile.emails.remove'), destructive: true, onClick: () => remove(row) },
+            ],
+        });
+    };
+
     return (
         <Stack spacing={1.5}>
             {flash.accountEmail && (
@@ -65,7 +78,7 @@ export default function AccountEmailsSection({ emails }: AccountEmailsSectionPro
 
             <OutlinedList empty={emails.length === 0 && t('settings.profile.emails.empty')}>
                 {emails.map((row) => (
-                    <ListRow key={row.id} actions={<EmailActions row={row} onRemove={remove} onPromote={promote} />}>
+                    <ListRow key={row.id} onClick={() => openActions(row)}>
                         <Box sx={{ minWidth: 0 }}>
                             <Typography sx={{ fontSize: '0.9375rem', overflowWrap: 'anywhere' }}>{row.email}</Typography>
                             <EmailStatus row={row} />
@@ -90,6 +103,7 @@ export default function AccountEmailsSection({ emails }: AccountEmailsSectionPro
                 </Stack>
             </Box>
 
+            {actions.dialog}
             {dialog}
         </Stack>
     );
@@ -106,27 +120,5 @@ function EmailStatus({ row }: { row: AccountEmail }) {
                 ? t('settings.profile.emails.pending_until', { date: String(until) })
                 : t('settings.profile.emails.expired')}
         </Typography>
-    );
-}
-
-interface EmailActionsProps {
-    row: AccountEmail;
-    onRemove: (row: AccountEmail) => void;
-    onPromote: (row: AccountEmail) => void;
-}
-
-function EmailActions({ row, onRemove, onPromote }: EmailActionsProps) {
-    return (
-        <Stack direction="row" spacing={1}>
-            {row.verified && <RowAction onClick={() => onPromote(row)}>{t('settings.profile.emails.promote')}</RowAction>}
-            {!row.verified && (
-                <RowAction onClick={() => router.post('/profile/emails/resend', { id: row.id })}>
-                    {t('settings.profile.emails.resend')}
-                </RowAction>
-            )}
-            <RowAction destructive onClick={() => onRemove(row)}>
-                {t('settings.profile.emails.remove')}
-            </RowAction>
-        </Stack>
     );
 }

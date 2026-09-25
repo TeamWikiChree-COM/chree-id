@@ -8,9 +8,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AppLayout from '../../Components/AppLayout';
 import Icon from '../../Components/Icon';
-import RowAction from '../../Components/RowAction';
+import ListRow from '../../Components/ListRow';
 import SectionTitle from '../../Components/SectionTitle';
 import ServiceIcon from '../../Components/ServiceIcon';
+import { useActions } from '../../lib/actions';
 import { t } from '../../lib/i18n';
 import { trustLabel } from '../../lib/services';
 import type { OwnedService } from '../../types';
@@ -27,6 +28,20 @@ interface IndexProps {
  */
 export default function Index({ services }: IndexProps) {
     const { issuedSecret, serviceSaved, reviewRequested } = usePage().props.flash;
+    const { open, dialog } = useActions();
+
+    const openActions = (service: OwnedService): void => {
+        open({
+            title: service.name,
+            detail: service.id,
+            actions: [
+                { label: t('services.edit'), onClick: () => router.get(`/services/${service.id}/edit`) },
+                ...(service.trust === 'unapproved' && service.reviewRequestedAt === null
+                    ? [{ label: t('services.review.request'), onClick: () => router.post(`/services/${service.id}/review`) }]
+                    : []),
+            ],
+        });
+    };
 
     return (
         <AppLayout
@@ -63,10 +78,7 @@ export default function Index({ services }: IndexProps) {
 
                 <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
                     {services.map((service) => (
-                        <Box
-                            key={service.id}
-                            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2, py: 1.5 }}
-                        >
+                        <ListRow key={service.id} onClick={() => openActions(service)}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
                                 <ServiceIcon name={service.name} iconUrl={service.iconUrl} />
                                 <Box sx={{ minWidth: 0 }}>
@@ -83,17 +95,7 @@ export default function Index({ services }: IndexProps) {
                                 </Box>
                             </Box>
 
-                            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-                                {service.trust === 'unapproved' && service.reviewRequestedAt === null && (
-                                    <RowAction onClick={() => router.post(`/services/${service.id}/review`)}>
-                                        {t('services.review.request')}
-                                    </RowAction>
-                                )}
-                                <RowAction onClick={() => router.get(`/services/${service.id}/edit`)}>
-                                    {t('services.edit')}
-                                </RowAction>
-                            </Stack>
-                        </Box>
+                        </ListRow>
                     ))}
                 </Stack>
             </Paper>
@@ -111,6 +113,8 @@ export default function Index({ services }: IndexProps) {
                     {t('services.register')}
                 </Button>
             </Box>
+
+            {dialog}
         </AppLayout>
     );
 }
