@@ -4,8 +4,8 @@ import Typography from '@mui/material/Typography';
 import AppLayout from '@/Components/AppLayout';
 import ListRow from '@/Components/ListRow';
 import OutlinedList from '@/Components/OutlinedList';
+import RowAction from '@/Components/RowAction';
 import SectionTitle from '@/Components/SectionTitle';
-import { useActions } from '@/lib/actions';
 import { formatDateTime } from '@/lib/datetime';
 import { t as core } from '@/lib/i18n';
 import { t } from '../lib/i18n';
@@ -36,23 +36,6 @@ interface IndexProps {
  * 連携しているサービスのウィキを、サービスごとにまとめて出す。
  */
 export default function Index({ groups }: IndexProps) {
-    const { open, dialog } = useActions();
-
-    const openActions = (wiki: Wiki): void => {
-        open({
-            title: wiki.name,
-            detail: wiki.url,
-            actions: [
-                { label: t('action.open'), onClick: () => window.open(wiki.url, '_blank', 'noopener') },
-                ...(wiki.settingsUrl === null ? [] : [{
-                    label: t('action.settings'),
-                    description: t('action.settings_description'),
-                    onClick: () => window.open(wiki.settingsUrl ?? '', '_blank', 'noopener'),
-                }]),
-            ],
-        });
-    };
-
     return (
         <AppLayout
             title={t('page.title')}
@@ -69,7 +52,11 @@ export default function Index({ groups }: IndexProps) {
                         : (
                             <OutlinedList empty={group.wikis.length === 0 && t('page.empty')}>
                                 {group.wikis.map((wiki) => (
-                                    <ListRow key={wiki.url} onClick={() => openActions(wiki)}>
+                                    <ListRow
+                                        key={wiki.url}
+                                        onClick={() => openInNewTab(wiki.url)}
+                                        actions={wiki.settingsUrl === null ? undefined : <SettingsAction url={wiki.settingsUrl} />}
+                                    >
                                         <WikiSummary wiki={wiki} />
                                     </ListRow>
                                 ))}
@@ -77,8 +64,6 @@ export default function Index({ groups }: IndexProps) {
                         )}
                 </Box>
             ))}
-
-            {dialog}
         </AppLayout>
     );
 }
@@ -95,6 +80,25 @@ function WikiSummary({ wiki }: { wiki: Wiki }) {
             <Typography sx={{ fontSize: '0.9375rem' }}>{wiki.name}</Typography>
             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled', overflowWrap: 'anywhere' }}>{wiki.url}</Typography>
             {meta !== '' && <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>{meta}</Typography>}
+        </Box>
+    );
+}
+
+/**
+ * @param url 開く先
+ */
+function openInNewTab(url: string): void {
+    window.open(url, '_blank', 'noopener');
+}
+
+/**
+ * 行そのものはウィキを開く。設定画面だけは行の右に置く (操作が1つだけなのでダイアログにしない)。
+ */
+function SettingsAction({ url }: { url: string }) {
+    return (
+        // 行の onClick まで伝わると、設定と一緒にウィキも開いてしまう
+        <Box onClick={(event) => event.stopPropagation()} sx={{ flexShrink: 0 }}>
+            <RowAction onClick={() => openInNewTab(url)}>{t('action.settings')}</RowAction>
         </Box>
     );
 }

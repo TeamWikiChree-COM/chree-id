@@ -1,7 +1,5 @@
 {
-    "action.open": "ウィキを開く",
-    "action.settings": "ウィキの設定を開く",
-    "action.settings_description": "サービス側の設定画面を新しいタブで開きます",
+    "action.settings": "設定",
     "page.empty": "ウィキはまだありません",
     "page.failed": "このサービスから一覧を取得できませんでした。時間をおいて開き直してください",
     "page.lead": "連携しているサービスのウィキをまとめて表示しています",

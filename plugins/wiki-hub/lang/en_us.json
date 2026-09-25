@@ -1,7 +1,5 @@
 {
-    "action.open": "Open wiki",
-    "action.settings": "Open wiki settings",
-    "action.settings_description": "Opens the service's settings page in a new tab",
+    "action.settings": "Settings",
     "page.empty": "No wikis yet",
     "page.failed": "Could not load the list from this service. Please try again later",
     "page.lead": "Wikis from your connected services, in one place",
