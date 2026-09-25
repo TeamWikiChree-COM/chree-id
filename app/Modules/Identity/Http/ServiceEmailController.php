@@ -50,6 +50,6 @@ class ServiceEmailController {
             'email' => $email,
         ]);
 
-        return redirect('/')->with('serviceEmailSaved', true);
+        return redirect("/connected/{$serviceAccount}")->with('serviceEmailSaved', true);
     }
 }

@@ -22,6 +22,7 @@ use App\Modules\Identity\Http\WithdrawalController;
 use App\Modules\Linking\Http\ClaimController;
 use App\Modules\Linking\Http\ClaimPasskeyController;
 use App\Modules\Linking\Http\ConnectedServiceController;
+use App\Modules\Linking\Http\ConnectedServicePageController;
 use App\Modules\Linking\Http\SplitServiceController;
 use App\Modules\ApiDocs\Http\ApiDocsController;
 use App\Modules\Identity\Http\RegisterController;
@@ -141,6 +142,7 @@ Route::post('/services/{client}/review', [ServiceConsoleController::class, 'requ
 
 // 連携しているサービスを利用者自身が切る。管理画面の接続サービスとは別物
 Route::post('/services/{client}/revoke', [ConnectedServiceController::class, 'destroy']);
+Route::get('/connected/{serviceAccount}', [ConnectedServicePageController::class, 'show']);
 
 // まとめから外して単独のアカウントに戻す (統合の逆)
 Route::get('/services/{serviceAccount}/split', [SplitServiceController::class, 'show']);

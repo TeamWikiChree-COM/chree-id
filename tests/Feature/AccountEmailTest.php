@@ -155,6 +155,16 @@ class AccountEmailTest extends TestCase {
         $this->post("/services/{$link->id}/email", ['email' => 'aaa@gmail.com'])->assertSessionHasErrors('email');
     }
 
+    public function test_connectedServicePageShowsOwnServiceOnly(): void {
+        $id = $this->login();
+        $own = $this->link($id);
+        $other = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'x@example.com');
+        $theirs = $this->link($other->id);
+
+        $this->get("/connected/{$own->id}")->assertOk();
+        $this->get("/connected/{$theirs->id}")->assertNotFound();
+    }
+
     public function test_mergeCarriesAddresses(): void {
         $target = $this->login();
         $repo = app(AuthIdentityRepository::class);

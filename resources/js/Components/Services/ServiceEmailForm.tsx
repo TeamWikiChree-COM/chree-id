@@ -1,22 +1,19 @@
 import { useForm } from '@inertiajs/react';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { t } from '../../lib/i18n';
 import type { ConnectedService, EmailOption } from '../../types';
 
-interface ServiceEmailDialogProps {
-    /** 設定する対象。null なら閉じている */
-    service: ConnectedService | null;
+interface ServiceEmailFormProps {
+    service: ConnectedService;
     options: EmailOption[];
-    onClose: () => void;
+    /** 割り当てが無いときに渡っているアドレス。選択肢に添えて、何が渡るかを見せる */
+    primaryEmail: string | null;
 }
 
 /** 「主アドレスに合わせる」を表す選択肢の値 */
@@ -27,71 +24,56 @@ const PRIMARY = '';
  *
  * 「+」に対応したドメインでは、後ろに付ける文字を足してサービスごとに見分けられるようにする。
  */
-export default function ServiceEmailDialog({ service, options, onClose }: ServiceEmailDialogProps) {
+export default function ServiceEmailForm({ service, options, primaryEmail }: ServiceEmailFormProps) {
+    const initial = splitAssigned(service.email, options);
     const form = useForm({ email: '' });
-    const [base, setBase] = useState(PRIMARY);
-    const [tag, setTag] = useState('');
-
-    // 開くたびに今の割り当てから組み立て直す。前回の入力が残ると別のサービスへ保存しうる
-    useEffect(() => {
-        if (service === null) return;
-
-        const current = splitAssigned(service.email, options);
-        setBase(current.base);
-        setTag(current.tag);
-        form.clearErrors();
-    }, [service]);
+    const [base, setBase] = useState(initial.base);
+    const [tag, setTag] = useState(initial.tag);
 
     const plus = options.find((option) => option.email === base)?.plus === true;
     const email = base === PRIMARY ? '' : withTag(base, plus ? tag : '');
 
     const submit = (): void => {
-        if (service === null) return;
-
         form.transform(() => ({ email }));
-        form.post(`/services/${service.id}/email`, { onSuccess: onClose });
+        form.post(`/services/${service.id}/email`);
     };
 
     return (
-        <Dialog open={service !== null} onClose={onClose} fullWidth maxWidth="xs">
-            <DialogTitle sx={{ fontSize: '1rem' }}>{t('dashboard.service_email.title', { name: service?.name ?? '' })}</DialogTitle>
-            <DialogContent>
-                <Stack spacing={2} sx={{ mt: 1 }}>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+            <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
+                <TextField
+                    select
+                    label={t('dashboard.service_email.address_label')}
+                    value={base}
+                    onChange={(e) => setBase(e.target.value)}
+                    error={Boolean(form.errors.email)}
+                    helperText={form.errors.email ?? t('dashboard.service_email.hint')}
+                >
+                    <MenuItem value={PRIMARY}>
+                        {primaryEmail === null
+                            ? t('dashboard.service_email.primary')
+                            : t('dashboard.service_email.primary_with', { email: primaryEmail })}
+                    </MenuItem>
+                    {options.map((option) => (
+                        <MenuItem key={option.email} value={option.email}>
+                            {option.email}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                {plus && (
                     <TextField
-                        select
-                        label={t('dashboard.service_email.address_label')}
-                        value={base}
-                        onChange={(e) => setBase(e.target.value)}
-                        error={Boolean(form.errors.email)}
-                        helperText={form.errors.email ?? t('dashboard.service_email.hint')}
-                    >
-                        <MenuItem value={PRIMARY}>{t('dashboard.service_email.primary')}</MenuItem>
-                        {options.map((option) => (
-                            <MenuItem key={option.email} value={option.email}>
-                                {option.email}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    {plus && (
-                        <TextField
-                            label={t('dashboard.service_email.tag_label')}
-                            value={tag}
-                            onChange={(e) => setTag(e.target.value.replace(/[@\s]/g, ''))}
-                            helperText={t('dashboard.service_email.tag_hint', { example: withTag(base, tag || 'service') })}
-                        />
-                    )}
-                    {email !== '' && <Typography sx={{ fontSize: '0.875rem', overflowWrap: 'anywhere' }}>{email}</Typography>}
-                </Stack>
-            </DialogContent>
-            <DialogActions>
-                <Button color="inherit" onClick={onClose}>
-                    {t('settings.common.cancel')}
-                </Button>
+                        label={t('dashboard.service_email.tag_label')}
+                        value={tag}
+                        onChange={(e) => setTag(e.target.value.replace(/[@\s]/g, ''))}
+                        helperText={t('dashboard.service_email.tag_hint', { example: withTag(base, tag || 'service') })}
+                    />
+                )}
+                {email !== '' && <Typography sx={{ fontSize: '0.875rem', overflowWrap: 'anywhere' }}>{email}</Typography>}
                 <Button variant="contained" onClick={submit} disabled={form.processing}>
                     {t('settings.common.save')}
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </Stack>
+        </Paper>
     );
 }
 

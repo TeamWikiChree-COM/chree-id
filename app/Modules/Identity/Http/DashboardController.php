@@ -2,9 +2,7 @@
 namespace App\Modules\Identity\Http;
 
 use App\Modules\Credential\Application\ListCredentials;
-use App\Modules\Identity\Application\ServiceEmails;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
-use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
@@ -23,8 +21,6 @@ class DashboardController {
         private readonly ListConnectedServices $services,
         private readonly SuggestMergeCandidates $candidates,
         private readonly ListCredentials $credentials,
-        private readonly ServiceEmails $serviceEmails,
-        private readonly UserAccounts $userAccounts,
     ) {}
 
     /**
@@ -47,8 +43,6 @@ class DashboardController {
             ],
             'credentials' => $this->credentials->execute($accountId),
             'services' => $this->services->execute($accountId),
-            // サービスごとに選べるアドレス。サービスアカウントは追加アドレスを持たないので選ばせない
-            'emailOptions' => $this->userAccounts->exists($accountId) ? $this->serviceEmails->options($accountId) : [],
             // 同じアドレスの別アカウント。挙げるだけで、統合は本人の操作を通す
             'mergeCandidates' => $this->candidates->execute($accountId),
         ]);

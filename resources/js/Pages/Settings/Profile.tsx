@@ -1,8 +1,7 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -10,13 +9,11 @@ import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AppLayout from '../../Components/AppLayout';
 import InertiaLink from '../../Components/InertiaLink';
-import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import AccountEmailsSection from '../../Components/Settings/AccountEmailsSection';
 import IconSection from '../../Components/Settings/IconSection';
 import StickySaveBar from '../../Components/StickySaveBar';
-import { formatDateTime } from '../../lib/datetime';
 import { t } from '../../lib/i18n';
 import type { AccountEmail, IconSourceValue } from '../../types';
 
@@ -37,17 +34,9 @@ interface ProfileProps {
 export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl, pendingEmail, emails }: ProfileProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors, isDirty, reset } = useForm({ display_name: displayName ?? '' });
-    // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
-    // 「確認メールを送りました」が出るのに何も変わらない
-    const emailForm = useForm({ email: '' });
 
     const submit = (): void => {
         post('/profile');
-    };
-
-    const submitEmail = (event: FormEvent<HTMLFormElement>): void => {
-        event.preventDefault();
-        emailForm.post('/profile/email/change', { onSuccess: () => emailForm.reset() });
     };
 
     return (
@@ -106,81 +95,7 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
             <StickySaveBar open={isDirty} saving={processing} onSave={submit} onDiscard={() => reset()} />
 
             <SectionTitle>{t('settings.profile.email.heading')}</SectionTitle>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-                <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                        <Typography sx={{ fontSize: '0.9375rem' }}>{email ?? t('settings.profile.email.unset')}</Typography>
-                        <Chip
-                            size="small"
-                            label={emailVerified ? t('settings.profile.email.verified') : t('settings.profile.email.unverified')}
-                            color={emailVerified ? 'success' : 'default'}
-                        />
-                    </Stack>
-
-                    {email !== null && !emailVerified && (
-                        <>
-                            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
-                                {t('settings.profile.email.unverified_notice')}
-                            </Typography>
-                            <Button
-                                variant="outlined"
-                                color="inherit"
-                                startIcon={<Icon name="envelope" />}
-                                onClick={() => router.post('/profile/email/verify')}
-                            >
-                                {t('settings.profile.email.send_verification')}
-                            </Button>
-                        </>
-                    )}
-
-                    {pendingEmail !== null && (
-                        <Alert
-                            severity="info"
-                            sx={{ width: '100%' }}
-                            action={
-                                <Button
-                                    size="small"
-                                    color="inherit"
-                                    onClick={() => router.post('/profile/email/change/cancel')}
-                                >
-                                    {t('settings.profile.email.pending_cancel')}
-                                </Button>
-                            }
-                        >
-                            {t('settings.profile.email.pending_notice', { email: pendingEmail.email })}
-                            {formatDateTime(pendingEmail.expiresAt) !== null &&
-                                t('settings.profile.email.pending_until', { date: String(formatDateTime(pendingEmail.expiresAt)) })}
-                        </Alert>
-                    )}
-
-                    <Box component="form" onSubmit={submitEmail} noValidate sx={{ width: '100%', pt: 1 }}>
-                        <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
-                            <TextField
-                                label={t('settings.profile.email.new_label')}
-                                placeholder={t('settings.profile.email.new_placeholder')}
-                                type="email"
-                                value={emailForm.data.email}
-                                onChange={(e) => emailForm.setData('email', e.target.value)}
-                                error={Boolean(emailForm.errors.email)}
-                                helperText={
-                                    emailForm.errors.email ??
-                                    t('settings.profile.email.new_hint')
-                                }
-                            />
-                            <Button type="submit" variant="outlined" color="inherit" disabled={emailForm.processing}>
-                                {t('settings.profile.email.submit')}
-                            </Button>
-                        </Stack>
-                    </Box>
-                </Stack>
-            </Paper>
-
-            {emails !== null && (
-                <>
-                    <SectionTitle>{t('settings.profile.emails.heading')}</SectionTitle>
-                    <AccountEmailsSection emails={emails} />
-                </>
-            )}
+            <AccountEmailsSection email={email} emailVerified={emailVerified} pendingEmail={pendingEmail} emails={emails} />
 
             <SectionTitle>{t('settings.profile.withdraw.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>
