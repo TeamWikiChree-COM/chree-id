@@ -83,7 +83,7 @@ export default function SplitService({
                     <CredentialPicker
                         options={options.map((option) => ({
                             ...option,
-                            label: option.provider === null ? undefined : t("settings.split.credential.oauth_named", { name: idpLabel(option.provider) }),
+                            name: option.provider === null ? undefined : t("settings.split.credential.oauth_named", { name: idpLabel(option.provider) }),
                         }))}
                         selected={data.credentials}
                         onChange={(selected) => setData("credentials", selected)}

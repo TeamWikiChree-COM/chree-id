@@ -616,7 +616,7 @@
     "settings.profile.emails.flash.resent": "Confirmation resent",
     "settings.profile.emails.flash.verified": "Additional email address confirmed",
     "settings.profile.emails.flash.verify_failed": "This link has expired or has already been used",
-    "settings.profile.emails.lead": "You can choose these as the address shared with connected services (pick one per service from the [dashboard](/)). They cannot be used to sign in or reset your password",
+    "settings.profile.emails.lead": "You can choose these as the address shared with connected services (pick one per service from the [dashboard](/))",
     "settings.profile.emails.new_hint": "Open the link in the confirmation email to use it. You can also make it your primary address",
     "settings.profile.emails.new_label": "Address to add",
     "settings.profile.emails.pending_until": "Awaiting confirmation (until :date)",

@@ -12,7 +12,7 @@ export interface PickableCredential {
     /** 同じ種別が並んだときに見分ける手がかり (連携先のメールアドレスなど) */
     detail?: string | null;
     /** 種別の表示名より優先する名前 (「GitHub 連携」など) */
-    label?: string;
+    name?: string;
 }
 
 interface CredentialPickerProps {
@@ -68,7 +68,7 @@ export default function CredentialPicker({ options, selected, onChange, instruct
  * @returns 画面に出す名前。見分けの手がかりがあれば添える
  */
 function labelOf(option: PickableCredential, labels: Record<string, string>): string {
-    const name = option.label ?? labels[option.type] ?? option.type;
+    const name = option.name ?? labels[option.type] ?? option.type;
 
     return option.detail ? `${name} (${option.detail})` : name;
 }

@@ -616,7 +616,7 @@
     "settings.profile.emails.flash.resent": "確認メールを送り直しました",
     "settings.profile.emails.flash.verified": "追加のメールアドレスを確認しました",
     "settings.profile.emails.flash.verify_failed": "このリンクは期限切れか、すでに使用されています",
-    "settings.profile.emails.lead": "連携先のサービスへ渡すアドレスとして選べます (サービスごとの選択は[ダッシュボード](/)の連携サービスから)。ログインやパスワードの再設定には使えません",
+    "settings.profile.emails.lead": "連携先のサービスへ渡すアドレスとして選べます (サービスごとの選択は[ダッシュボード](/)の連携サービスから)",
     "settings.profile.emails.new_hint": "確認メールのリンクを開くと使えるようになります。主アドレスにすることもできます",
     "settings.profile.emails.new_label": "追加するメールアドレス",
     "settings.profile.emails.pending_until": "確認待ち (:date まで)",
