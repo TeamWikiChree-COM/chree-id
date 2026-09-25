@@ -97,7 +97,10 @@ class AccountEmailTest extends TestCase {
 
         $this->post("/services/{$link->id}/email", ['email' => 'other@example.com'])->assertSessionHasNoErrors();
 
-        $claims = app(EmailClaims::class)->resolve(app(AuthIdentityRepository::class)->findById($id), $link->id);
+        $account = app(AuthIdentityRepository::class)->findById($id);
+        $this->assertNotNull($account);
+
+        $claims = app(EmailClaims::class)->resolve($account, $link->id);
         $this->assertSame(['email' => 'other@example.com', 'email_verified' => true], $claims);
     }
 

@@ -65,11 +65,7 @@ class IssueServiceAccount {
         // ただし、まだ渡されていない外部IdPはここで足す。
         // 発行のあとに移行元で Google を繋いだ人を、遡って拾えるようにするため
         if ($existing !== null) {
-            foreach ($externalIdentities as $identity) {
-                $this->adoptExternal($existing->auth_identity_id, $identity);
-            }
-
-            if ($magicLink) $this->magicLinks->execute($existing->auth_identity_id);
+            $this->adoptLogins($existing->auth_identity_id, $externalIdentities, $magicLink);
 
             return $this->subjects->forServiceAccount($existing);
         }
@@ -89,17 +85,29 @@ class IssueServiceAccount {
         // これが無いと、認証手段の無いアカウントが出来上がって本人が入れない
         if ($passwordHash !== null) $this->passwords->execute($accountId, $passwordHash);
 
-        // Google だけで使っていた人は、パスワードを持っていない。
-        // 外部IdPも引き継がないと、移行の画面に選べるものが1つも出なくなる
+        $this->adoptLogins($accountId, $externalIdentities, $magicLink);
+
+        return $this->subjects->execute($client, $accountId);
+    }
+
+    /**
+     * パスワード以外のログイン手段を引き継ぐ。
+     *
+     * Google だけで使っていた人はパスワードを持っていない。外部IdPも引き継がないと、
+     * 移行の画面に選べるものが1つも出なくなる。メールリンクも有効化していないと
+     * RequestMagicLink が黙って何もしない。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @param list<string> $externalIdentities "google:123" 形式の識別子
+     * @param bool $magicLink 移行元がメールリンクでログインさせているか
+     * @return void
+     */
+    private function adoptLogins(string $accountId, array $externalIdentities, bool $magicLink): void {
         foreach ($externalIdentities as $identity) {
             $this->adoptExternal($accountId, $identity);
         }
 
-        // 移行元がメールリンクで入らせているなら、こちらでも使えるようにする。
-        // 有効化していないと RequestMagicLink が黙って何もしない
         if ($magicLink) $this->magicLinks->execute($accountId);
-
-        return $this->subjects->execute($client, $accountId);
     }
 
     /**

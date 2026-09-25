@@ -18,7 +18,7 @@ class IdentityServiceProvider extends ServiceProvider {
         $this->app->bind(AuthIdentityRepository::class, EloquentAuthIdentityRepository::class);
         $this->app->singleton(
             PlusAddress::class,
-            static fn (): PlusAddress => new PlusAddress(config('chreeid.plus_address_domains')),
+            static fn (): PlusAddress => new PlusAddress(array_values(array_filter(config()->array('chreeid.plus_address_domains'), 'is_string'))),
         );
     }
 }

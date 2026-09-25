@@ -16,35 +16,8 @@ class GenerateSigningKey extends Command {
      * @return int
      */
     public function handle(): int {
-        $config = $this->tempOpensslConfig();
-
-        try {
-            $key = openssl_pkey_new([
-                'private_key_bits' => 2048,
-                'private_key_type' => OPENSSL_KEYTYPE_RSA,
-                'config' => $config,
-            ]);
-            if ($key === false) {
-                while ($message = openssl_error_string()) $this->error($message);
-
-                return self::FAILURE;
-            }
-
-            $pem = '';
-            if (!openssl_pkey_export($key, $pem, null, ['config' => $config])) {
-                while ($message = openssl_error_string()) $this->error($message);
-
-                return self::FAILURE;
-            }
-        } finally {
-            @unlink($config);
-        }
-
-        if (!is_string($pem)) {
-            $this->error('秘密鍵を PEM として取り出せませんでした');
-
-            return self::FAILURE;
-        }
+        $pem = $this->generatePem();
+        if ($pem === null) return self::FAILURE;
 
         $encoded = base64_encode($pem);
 
@@ -64,6 +37,36 @@ class GenerateSigningKey extends Command {
         $this->info('CHREEID_SIGNING_KEY を .env に書き込みました');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return string|null 失敗したら理由を出力して null
+     */
+    private function generatePem(): ?string {
+        $config = $this->tempOpensslConfig();
+
+        try {
+            $key = openssl_pkey_new([
+                'private_key_bits' => 2048,
+                'private_key_type' => OPENSSL_KEYTYPE_RSA,
+                'config' => $config,
+            ]);
+
+            $pem = '';
+            if ($key === false || !openssl_pkey_export($key, $pem, null, ['config' => $config])) {
+                while ($message = openssl_error_string()) $this->error($message);
+
+                return null;
+            }
+        } finally {
+            @unlink($config);
+        }
+
+        if (is_string($pem)) return $pem;
+
+        $this->error('秘密鍵を PEM として取り出せませんでした');
+
+        return null;
     }
 
     /**

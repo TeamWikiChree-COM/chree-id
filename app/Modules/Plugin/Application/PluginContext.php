@@ -60,10 +60,9 @@ class PluginContext {
             ->get()
             ->toBase();
 
-        return LinkedServiceAccounts::prefer($rows)
+        return array_values(LinkedServiceAccounts::prefer($rows)
             ->map(static fn (ServiceAccountModel $row): array => ['sub' => $row->sub, 'serviceUserId' => $row->service_user_id])
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**
@@ -74,6 +73,6 @@ class PluginContext {
         /** @var Collection<int, string> $ids */
         $ids = ServiceAccountModel::query()->where('auth_identity_id', $accountId)->distinct()->pluck('client_id');
 
-        return $ids->values()->all();
+        return array_values($ids->all());
     }
 }

@@ -49,7 +49,7 @@ final class PluginMenuItem {
      * @return string そのロケールが無ければ最初に書かれたもの
      */
     public function labelFor(string $locale): string {
-        return $this->label[$locale] ?? (string) reset($this->label);
+        return $this->label[$locale] ?? array_values($this->label)[0] ?? '';
     }
 
     /**
@@ -59,6 +59,6 @@ final class PluginMenuItem {
     public function descriptionFor(string $locale): ?string {
         if ($this->description === []) return null;
 
-        return $this->description[$locale] ?? (string) reset($this->description);
+        return $this->description[$locale] ?? array_values($this->description)[0];
     }
 }

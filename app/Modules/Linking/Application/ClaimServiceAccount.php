@@ -136,14 +136,7 @@ class ClaimServiceAccount {
             throw new ClaimException(ClaimException::ALREADY_CLAIMED);
         }
 
-        // 打ち直された場合だけ変更として扱う。同じものを送り返されたときは確認だけでよい
-        $changing = $email !== null && $email !== $account->email;
-
-        // SENT 以外はどれも「そのアドレスにはできない」。$changing を通っているので
-        // SAME_AS_CURRENT にはならず、実際に起きるのは TAKEN だけ
-        if ($changing && $this->requestEmailChange->execute($account->id, (string)$email) !== EmailChangeResult::SENT) {
-            throw new ClaimException(ClaimException::EMAIL_TAKEN);
-        }
+        $changing = $this->requestChange($account->id, $account->email, $email);
 
         DB::transaction(function () use ($link, $account, $displayName, $setupCredential): void {
             $setupCredential($account->id);
@@ -163,5 +156,26 @@ class ClaimServiceAccount {
         if (!$changing) $this->requestVerification->execute($account->id);
 
         return $account->id;
+    }
+
+    /**
+     * 打ち直された場合だけ変更として扱う。同じものを送り返されたときは確認だけでよい。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @param string|null $current 今のアドレス
+     * @param string|null $email 本人が入力したアドレス
+     * @return bool 変更を申し込んだか
+     * @throws ClaimException そのアドレスにはできない場合
+     */
+    private function requestChange(string $accountId, ?string $current, ?string $email): bool {
+        if ($email === null || $email === $current) return false;
+
+        // SENT 以外はどれも「そのアドレスにはできない」。同じアドレスは上で除いているので
+        // SAME_AS_CURRENT にはならず、実際に起きるのは TAKEN だけ
+        if ($this->requestEmailChange->execute($accountId, $email) !== EmailChangeResult::SENT) {
+            throw new ClaimException(ClaimException::EMAIL_TAKEN);
+        }
+
+        return true;
     }
 }

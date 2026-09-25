@@ -35,12 +35,37 @@ class VerifyServiceUserPassword {
      * @return ServiceAuthResult
      */
     public function execute(OAuthClientModel $client, string $email, string $password): ServiceAuthResult {
-        // 同じアドレスの認証主体は複数ありうる。呼び出し元のサービスに
-        // 紐付いているものだけに絞る。これでメールが一意でなくても一意に決まるし、
-        // この口が ChreeID 全体のパスワード試行機になることも防げる
-        $link = null;
-        $account = null;
+        $link = $this->findLink($client, $email);
+        if ($link === null) return ServiceAuthResult::invalid();
 
+        $accountId = $link->auth_identity_id;
+        $factors = new VerifiedFactors();
+        $verified = $this->verify->execute(
+            $accountId,
+            CredentialType::PASSWORD,
+            ['password' => $password],
+            $factors,
+        );
+
+        if (!$verified->isSuccess()) return ServiceAuthResult::invalid();
+
+        // 2FA を有効にしているアカウントはパスワードだけでは成立しない。
+        // 2要素目をこの口では受け取れないので、ブラウザを介す OIDC へ寄せてもらう
+        if (!$this->complete->execute($accountId, $factors)) return ServiceAuthResult::secondFactorRequired();
+
+        return ServiceAuthResult::ok($this->subjects->forServiceAccount($link), $link->service_user_id);
+    }
+
+    /**
+     * 同じアドレスの認証主体は複数ありうる。呼び出し元のサービスに
+     * 紐付いているものだけに絞る。これでメールが一意でなくても一意に決まるし、
+     * この口が ChreeID 全体のパスワード試行機になることも防げる。
+     *
+     * @param OAuthClientModel $client 呼び出したサービス
+     * @param string $email 利用者が入力したアドレス
+     * @return ServiceAccountModel|null 紐付きが無ければ null
+     */
+    private function findLink(OAuthClientModel $client, string $email): ?ServiceAccountModel {
         foreach ($this->byEmail->candidates($email) as $candidate) {
             // サービスが発行した行 (service_user_id がある) を先に取る。移行で OIDC のログインだけの行が
             // 古い ID で並んでいると、識別子が空のまま返り、サービスが本人のログインとみなせなくなる
@@ -51,29 +76,9 @@ class VerifyServiceUserPassword {
                 ->orderBy('id')
                 ->first();
 
-            if ($found === null) continue;
-
-            $link = $found;
-            $account = $candidate;
-            break;
+            if ($found !== null) return $found;
         }
 
-        if ($link === null || $account === null) return ServiceAuthResult::invalid();
-
-        $factors = new VerifiedFactors();
-        $verified = $this->verify->execute(
-            $account->id,
-            CredentialType::PASSWORD,
-            ['password' => $password],
-            $factors,
-        );
-
-        if (!$verified->isSuccess()) return ServiceAuthResult::invalid();
-
-        // 2FA を有効にしているアカウントはパスワードだけでは成立しない。
-        // 2要素目をこの口では受け取れないので、ブラウザを介す OIDC へ寄せてもらう
-        if (!$this->complete->execute($account->id, $factors)) return ServiceAuthResult::secondFactorRequired();
-
-        return ServiceAuthResult::ok($this->subjects->forServiceAccount($link), $link->service_user_id);
+        return null;
     }
 }

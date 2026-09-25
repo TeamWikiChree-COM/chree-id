@@ -27,14 +27,43 @@ class HandleInertiaRequests extends Middleware {
      *
      * @see https://inertiajs.com/asset-versioning
      */
-    public function version(Request $request): ?string
-    {
+    public function version(Request $request): ?string {
         return parent::version($request);
     }
 
     /**
-     * @return bool ログイン中のアカウントが管理者か
+     * フラッシュで渡すキー。画面側の型 (resources/js/types) と揃えること。
      */
+    private const FLASH_KEYS = [
+        'recoveryCodes',
+        'passwordReset',
+        'profileSaved',
+        'verificationSent',
+        'emailVerified',
+        'emailChangeSent',
+        'emailChangeCancelled',
+        'emailChanged',
+        'accountEmail',
+        'serviceEmailSaved',
+        'serviceRevoked',
+        'accountMerged',
+        'serviceSaved',
+        'reviewRequested',
+        'issuedSecret',
+        'clientApproved',
+        'migrationOutput',
+        'prunedTokens',
+        'logCleared',
+        'accountCreated',
+        'passwordChanged',
+        'iconSaved',
+        'connectionAdded',
+        'connectionRemoved',
+        'sessionsRevoked',
+        'trustRevoked',
+        'backupTaken',
+    ];
+
     /**
      * ログイン中の本人のアイコン。
      *
@@ -49,6 +78,9 @@ class HandleInertiaRequests extends Middleware {
         return $account === null ? null : app(AccountIcons::class)->urlFor($account);
     }
 
+    /**
+     * @return bool ログイン中のアカウントが管理者か
+     */
     private function isAdmin(): bool {
         $accountId = app(ChreeSession::class)->accountId();
         if ($accountId === null) return false;
@@ -63,41 +95,11 @@ class HandleInertiaRequests extends Middleware {
      *
      * @return array<string, mixed>
      */
-    public function share(Request $request): array
-    {
+    public function share(Request $request): array {
         return [
             ...parent::share($request),
 
-            // 復旧コードの平文は発行直後の1回しか出せないので、フラッシュで渡す
-            'flash' => [
-                'recoveryCodes' => $request->session()->get('recoveryCodes'),
-                'passwordReset' => $request->session()->get('passwordReset'),
-                'profileSaved' => $request->session()->get('profileSaved'),
-                'verificationSent' => $request->session()->get('verificationSent'),
-                'emailVerified' => $request->session()->get('emailVerified'),
-                'emailChangeSent' => $request->session()->get('emailChangeSent'),
-                'emailChangeCancelled' => $request->session()->get('emailChangeCancelled'),
-                'emailChanged' => $request->session()->get('emailChanged'),
-                'accountEmail' => $request->session()->get('accountEmail'),
-                'serviceEmailSaved' => $request->session()->get('serviceEmailSaved'),
-                'serviceRevoked' => $request->session()->get('serviceRevoked'),
-                'accountMerged' => $request->session()->get('accountMerged'),
-                'serviceSaved' => $request->session()->get('serviceSaved'),
-                'reviewRequested' => $request->session()->get('reviewRequested'),
-                'issuedSecret' => $request->session()->get('issuedSecret'),
-                'clientApproved' => $request->session()->get('clientApproved'),
-                'migrationOutput' => $request->session()->get('migrationOutput'),
-                'prunedTokens' => $request->session()->get('prunedTokens'),
-                'logCleared' => $request->session()->get('logCleared'),
-                'accountCreated' => $request->session()->get('accountCreated'),
-                'passwordChanged' => $request->session()->get('passwordChanged'),
-                'iconSaved' => $request->session()->get('iconSaved'),
-                'connectionAdded' => $request->session()->get('connectionAdded'),
-                'connectionRemoved' => $request->session()->get('connectionRemoved'),
-                'sessionsRevoked' => $request->session()->get('sessionsRevoked'),
-                'trustRevoked' => $request->session()->get('trustRevoked'),
-                'backupTaken' => $request->session()->get('backupTaken'),
-            ],
+            'flash' => $this->flash($request),
 
             // 未設定なら null。フォーム側はこれを見てウィジェットを出すかどうか決める
             'turnstileSiteKey' => app(TurnstileVerifier::class)->siteKey(),
@@ -125,5 +127,16 @@ class HandleInertiaRequests extends Middleware {
             // 切り替えメニューに並べる分。config/chreeid.php の locales がそのまま来る
             'locales' => app(Locales::class)->available(),
         ];
+    }
+
+    /**
+     * 復旧コードの平文は発行直後の1回しか出せないので、フラッシュで渡す。
+     *
+     * @return array<string, mixed>
+     */
+    private function flash(Request $request): array {
+        $session = $request->session();
+
+        return array_combine(self::FLASH_KEYS, array_map(fn (string $key): mixed => $session->get($key), self::FLASH_KEYS));
     }
 }

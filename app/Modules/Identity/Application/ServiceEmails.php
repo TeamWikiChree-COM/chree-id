@@ -106,6 +106,6 @@ class ServiceEmails {
             ->pluck('email')
             ->all();
 
-        return array_values(array_merge($owned, $extra));
+        return array_values(array_merge($owned, array_filter($extra, 'is_string')));
     }
 }

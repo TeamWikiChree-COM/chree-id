@@ -71,17 +71,7 @@ class LoginController {
             $factors,
         );
 
-        if (!$verified->isSuccess()) {
-            // 本人が「誰かが試している」と気付ける唯一の手がかりになる
-            $this->audit->record(
-                AuditAction::LOGIN_FAILED,
-                $account->id,
-                ['method' => LoginMethod::PASSWORD->value],
-                succeeded: false,
-            );
-
-            throw $this->invalidCredentials();
-        }
+        if (!$verified->isSuccess()) throw $this->failed($account->id);
 
         // 2FA を有効にしているアカウントは、パスワードだけでは成立しない。
         // ただし本人が2段階目を通したうえで信頼した端末なら、そこは省く
@@ -96,6 +86,23 @@ class LoginController {
         $this->session->login($account->id, LoginMethod::PASSWORD->value);
 
         return redirect(LoginRedirect::intended());
+    }
+
+    /**
+     * 本人が「誰かが試している」と気付ける唯一の手がかりになるので、失敗を記録する。
+     *
+     * @param string $accountId アカウントID (ULID)
+     * @return ValidationException
+     */
+    private function failed(string $accountId): ValidationException {
+        $this->audit->record(
+            AuditAction::LOGIN_FAILED,
+            $accountId,
+            ['method' => LoginMethod::PASSWORD->value],
+            succeeded: false,
+        );
+
+        return $this->invalidCredentials();
     }
 
     /**

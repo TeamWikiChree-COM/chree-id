@@ -18,7 +18,7 @@ class AccountEmails {
      * @return list<array{id: string, email: string, verified: bool, pendingUntil: string|null}>
      */
     public function list(string $accountId): array {
-        return AccountEmailModel::query()
+        return array_values(AccountEmailModel::query()
             ->where('auth_identity_id', $accountId)
             ->orderBy('created_at')
             ->get()
@@ -30,8 +30,7 @@ class AccountEmails {
                     ? $row->token_expires_at->toDateTimeString()
                     : null,
             ])
-            ->values()
-            ->all();
+            ->all());
     }
 
     /**

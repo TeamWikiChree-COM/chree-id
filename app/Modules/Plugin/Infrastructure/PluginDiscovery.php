@@ -66,8 +66,25 @@ class PluginDiscovery {
             is_string($json['version'] ?? null) ? $json['version'] : '0.0.0',
             $json['provider'],
             ($json['enabled'] ?? true) === true,
-            is_array($json['title'] ?? null) ? $json['title'] : [],
-            is_array($json['description'] ?? null) ? $json['description'] : [],
+            $this->localized($json['title'] ?? null),
+            $this->localized($json['description'] ?? null),
         );
+    }
+
+    /**
+     * 手書きの JSON なので、文字列でない値が混ざっていても落とさずに捨てる。
+     *
+     * @param mixed $value ロケールをキーにした文言
+     * @return array<string, string>
+     */
+    private function localized(mixed $value): array {
+        if (!is_array($value)) return [];
+
+        $result = [];
+        foreach ($value as $locale => $text) {
+            if (is_string($locale) && is_string($text)) $result[$locale] = $text;
+        }
+
+        return $result;
     }
 }

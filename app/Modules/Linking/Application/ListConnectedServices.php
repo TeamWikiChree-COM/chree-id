@@ -45,21 +45,30 @@ class ListConnectedServices {
             // 管理画面から消されたサービスの記録が残ることがある。出しても操作できない
             if ($client === null) continue;
 
-            $result[] = [
-                'id' => $subject->id,
-                'clientId' => $client->id,
-                'serviceUserId' => $subject->service_user_id,
-                // 割り当てたアドレス。null なら主アドレスを渡している
-                'email' => $subject->email,
-                'name' => $client->displayName(),
-                'iconUrl' => $client->icon_url,
-                // サービス側の設定画面。指定が無ければ導線を出さない
-                'settingsUrl' => $client->settings_url,
-                'trust' => $client->trust->value,
-                'connectedAt' => $subject->created_at?->toDateTimeString(),
-            ];
+            $result[] = $this->present($subject, $client);
         }
 
         return $result;
+    }
+
+    /**
+     * @param ServiceAccountModel $subject 紐付け
+     * @param OAuthClientModel $client 紐付け先のサービス
+     * @return array{id: string, clientId: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, serviceUserId: string|null, email: string|null, connectedAt: string|null}
+     */
+    private function present(ServiceAccountModel $subject, OAuthClientModel $client): array {
+        return [
+            'id' => $subject->id,
+            'clientId' => $client->id,
+            'serviceUserId' => $subject->service_user_id,
+            // 割り当てたアドレス。null なら主アドレスを渡している
+            'email' => $subject->email,
+            'name' => $client->displayName(),
+            'iconUrl' => $client->icon_url,
+            // サービス側の設定画面。指定が無ければ導線を出さない
+            'settingsUrl' => $client->settings_url,
+            'trust' => $client->trust->value,
+            'connectedAt' => $subject->created_at?->toDateTimeString(),
+        ];
     }
 }
