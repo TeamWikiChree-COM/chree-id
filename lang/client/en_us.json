@@ -413,6 +413,7 @@
     "dashboard.merge.note": "These may just be separate accounts that happen to share an address. Whether to merge them is up to you — sharing an address alone never merges them automatically.",
     "dashboard.merge.service_created": "Created by a service",
     "dashboard.merged": "Accounts merged",
+    "dashboard.plugins.heading": "Available plugins",
     "dashboard.profile.email_unverified": "Unverified",
     "dashboard.profile.email_verified": "Verified",
     "dashboard.profile.no_display_name": "No display name set",

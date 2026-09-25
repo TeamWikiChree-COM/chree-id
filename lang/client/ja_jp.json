@@ -413,6 +413,7 @@
     "dashboard.merge.note": "同じアドレスを使っているだけの別のアカウントかもしれません。まとめるかどうかはご自身で決められます。アドレスが同じというだけで、こちらが勝手にまとめることはありません。",
     "dashboard.merge.service_created": "サービスから作られたアカウントです",
     "dashboard.merged": "アカウントを統合しました",
+    "dashboard.plugins.heading": "利用可能なプラグイン",
     "dashboard.profile.email_unverified": "未確認",
     "dashboard.profile.email_verified": "確認済み",
     "dashboard.profile.no_display_name": "表示名を設定していません",

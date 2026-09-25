@@ -7,6 +7,8 @@ import CredentialList from "../Components/CredentialList";
 import MergeCandidateList from "../Components/Dashboard/MergeCandidateList";
 import type { MergeCandidate } from "../Components/Dashboard/MergeCandidateList";
 import ProfileSummary from "../Components/Dashboard/ProfileSummary";
+import PluginList from "../Components/Dashboard/PluginList";
+import type { AvailablePlugin } from "../Components/Dashboard/PluginList";
 import ServiceList from "../Components/Dashboard/ServiceList";
 import Icon from "../Components/Icon";
 import SectionTitle from "../Components/SectionTitle";
@@ -18,6 +20,8 @@ interface DashboardProps {
     credentials: CredentialSummary[];
     services: ConnectedService[];
     mergeCandidates: MergeCandidate[];
+    /** 連携しているサービスで使えるプラグイン */
+    plugins: AvailablePlugin[];
 }
 
 export default function Dashboard({
@@ -25,6 +29,7 @@ export default function Dashboard({
     credentials,
     services,
     mergeCandidates,
+    plugins,
 }: DashboardProps) {
     const { flash } = usePage().props;
 
@@ -59,6 +64,15 @@ export default function Dashboard({
                 {t("dashboard.services.heading")}
             </SectionTitle>
             <ServiceList services={services} />
+
+            {plugins.length > 0 && (
+                <>
+                    <SectionTitle note={t("common.count", { count: plugins.length })}>
+                        {t("dashboard.plugins.heading")}
+                    </SectionTitle>
+                    <PluginList plugins={plugins} />
+                </>
+            )}
 
             <Stack direction="row" spacing={1} sx={{ mt: 3 }}>
                 <Button
