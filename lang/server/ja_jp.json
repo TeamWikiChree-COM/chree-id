@@ -214,5 +214,18 @@
     "settings.profile.gravatar_email_required": "Gravatar を使うにはメールアドレスが必要です",
     "settings.profile.icon_required": "画像を選んでください",
     "settings.totp.invalid_code": "コードが一致しません",
-    "settings.totp.not_started": "先に設定を開始してください"
+    "settings.totp.not_started": "先に設定を開始してください",
+    "mail.verify_account_email.subject": "ChreeID に追加したメールアドレスを確認する",
+    "mail.verify_account_email.intro": "ChreeID のアカウントに、このアドレスを追加する申し込みを受け付けました。",
+    "mail.verify_account_email.cta_html": "追加を確定するには、以下のボタンをクリックしてください：",
+    "mail.verify_account_email.cta_text": "追加を確定するには、以下のリンクをクリックしてください：",
+    "mail.verify_account_email.button_label": "メールアドレスを確認する",
+    "mail.verify_account_email.usage": "このアドレスは連携先のサービスへ渡すアドレスとして使えるようになります。ログインには使えません。",
+    "mail.verify_account_email.ttl": "このリンクは:minutes分間有効です。",
+    "settings.emails.error.not_user_account": "このアカウントでは追加のメールアドレスを使えません",
+    "settings.emails.error.already_registered": "このメールアドレスはすでに登録されています",
+    "settings.emails.error.not_found": "メールアドレスが見つかりませんでした",
+    "settings.emails.error.not_verified": "確認が済んでいないアドレスは主アドレスにできません",
+    "settings.emails.error.taken": "このメールアドレスは主アドレスにできません",
+    "settings.emails.error.not_assignable": "確認済みのアドレス (またはその + 付きのアドレス) を選んでください"
 }

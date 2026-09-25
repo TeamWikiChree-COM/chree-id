@@ -158,11 +158,29 @@ export interface ConnectedService {
     settingsUrl: string | null;
     /** サービス側での識別子。OIDC 経由でできたものは分からない */
     serviceUserId: string | null;
+    /** このサービスへ渡すと決めたアドレス。null なら主アドレスを渡している */
+    email: string | null;
     name: string;
     trust: TrustValue;
     connectedAt: string | null;
     /** 有効なアクセストークンが残っているか */
     hasActiveToken: boolean;
+}
+
+/** サービスへ渡すアドレスとして選べるもの */
+export interface EmailOption {
+    email: string;
+    /** 「+」付き版を作れるドメインか */
+    plus: boolean;
+}
+
+/** 主アドレスとは別に持つ追加のアドレス */
+export interface AccountEmail {
+    id: string;
+    email: string;
+    verified: boolean;
+    /** 確認リンクの期限。確認待ちでなければ null */
+    pendingUntil: string | null;
 }
 
 /**
@@ -189,6 +207,10 @@ declare module '@inertiajs/core' {
                 emailChangeCancelled: boolean | null;
                 /** 変更リンクを開いた直後だけ入る。false なら期限切れなど */
                 emailChanged: boolean | null;
+                /** 追加アドレスを操作した直後だけ入る */
+                accountEmail: 'added' | 'resent' | 'verified' | 'verify_failed' | 'removed' | 'promoted' | null;
+                /** サービスへ渡すアドレスを変えた直後だけ true */
+                serviceEmailSaved: boolean | null;
                 /** サービスの連携を切った直後だけ true */
                 serviceRevoked: boolean | null;
                 /** アカウントを統合した直後だけ true */

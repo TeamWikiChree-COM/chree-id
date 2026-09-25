@@ -13,11 +13,12 @@ import InertiaLink from '../../Components/InertiaLink';
 import Icon from '../../Components/Icon';
 import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
+import AccountEmailsSection from '../../Components/Settings/AccountEmailsSection';
 import IconSection from '../../Components/Settings/IconSection';
 import StickySaveBar from '../../Components/StickySaveBar';
 import { formatDateTime } from '../../lib/datetime';
 import { t } from '../../lib/i18n';
-import type { IconSourceValue } from '../../types';
+import type { AccountEmail, IconSourceValue } from '../../types';
 
 interface ProfileProps {
     /** 未設定なら null */
@@ -29,9 +30,11 @@ interface ProfileProps {
     iconUrl: string | null;
     /** 確認待ちのメールアドレス変更。無ければ null */
     pendingEmail: { email: string; expiresAt: string } | null;
+    /** 追加のアドレス。サービスアカウントは持たないので null */
+    emails: AccountEmail[] | null;
 }
 
-export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl, pendingEmail }: ProfileProps) {
+export default function Profile({ displayName, email, emailVerified, iconSource, iconUrl, pendingEmail, emails }: ProfileProps) {
     const { flash } = usePage().props;
     const { data, setData, post, processing, errors, isDirty, reset } = useForm({ display_name: displayName ?? '' });
     // 現在のアドレスは上に出ている。ここに入れておくと、そのまま送信して
@@ -171,6 +174,13 @@ export default function Profile({ displayName, email, emailVerified, iconSource,
                     </Box>
                 </Stack>
             </Paper>
+
+            {emails !== null && (
+                <>
+                    <SectionTitle>{t('settings.profile.emails.heading')}</SectionTitle>
+                    <AccountEmailsSection emails={emails} />
+                </>
+            )}
 
             <SectionTitle>{t('settings.profile.withdraw.heading')}</SectionTitle>
             <Paper variant="outlined" sx={{ p: 2 }}>

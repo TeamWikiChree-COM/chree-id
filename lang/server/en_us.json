@@ -214,5 +214,18 @@
     "settings.profile.gravatar_email_required": "An email address is required to use Gravatar.",
     "settings.profile.icon_required": "Please choose an image.",
     "settings.totp.invalid_code": "The code doesn't match.",
-    "settings.totp.not_started": "Please start setup first."
+    "settings.totp.not_started": "Please start setup first.",
+    "mail.verify_account_email.subject": "Confirm the email address added to ChreeID",
+    "mail.verify_account_email.intro": "We received a request to add this address to a ChreeID account.",
+    "mail.verify_account_email.cta_html": "Click the button below to confirm:",
+    "mail.verify_account_email.cta_text": "Click the link below to confirm:",
+    "mail.verify_account_email.button_label": "Confirm email address",
+    "mail.verify_account_email.usage": "This address can then be shared with connected services. It cannot be used to sign in.",
+    "mail.verify_account_email.ttl": "This link is valid for :minutes minutes.",
+    "settings.emails.error.not_user_account": "This account cannot use additional email addresses",
+    "settings.emails.error.already_registered": "This email address is already registered",
+    "settings.emails.error.not_found": "Email address not found",
+    "settings.emails.error.not_verified": "Only confirmed addresses can become the primary address",
+    "settings.emails.error.taken": "This email address cannot be used as the primary address",
+    "settings.emails.error.not_assignable": "Choose a confirmed address (or its + variant)"
 }
