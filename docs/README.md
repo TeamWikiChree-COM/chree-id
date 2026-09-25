@@ -11,3 +11,5 @@
 - [API](API.md)
 - [サービス接続](INTEGRATION.md)
 - [デプロイ](DEPLOY.md)
+- [プラグイン](PLUGIN.md)
+- [ドキュメントの書き方](WRITING.md)

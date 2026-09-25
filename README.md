@@ -58,4 +58,4 @@ npm run dev
 | API と OpenAPI の場所 | [docs/API.md](docs/API.md) |
 | サービス接続 | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | デプロイ | [docs/DEPLOY.md](docs/DEPLOY.md) |
-| プラグイン | [plugins/README.md](plugins/README.md) |
+| プラグイン | [docs/PLUGIN.md](docs/PLUGIN.md) |
