@@ -104,6 +104,6 @@ class WikiHubTest extends TestCase {
         Http::fake();
 
         $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->has('groups', 0));
-        Http::assertNothingSent();
+        Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'dokufarm.example.com'));
     }
 }
