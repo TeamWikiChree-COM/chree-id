@@ -1,5 +1,7 @@
 # アカウントモデル
 
+各用語の定義は [用語集](term/README.md) にまとめている。
+
 ChreeID の「アカウント」は1種類ではない。ここを取り違えると設計がねじれるので、用語をそろえておく。
 
 ## 4つの層
@@ -31,16 +33,7 @@ ServiceAccount のままでも使い続けられる。UserAccount にするか�
 
 ## 用語
 
-| 語 | 意味 |
-| --- | --- |
-| 遅延登録 | サービスへのログインを機に、裏で ServiceAccount を発行する |
-| 移行 (migrate) | ServiceAccount を本人の新しい UserAccount のものにする |
-| 統合 (merge) | ServiceAccount を本人の既にある UserAccount へ寄せる |
-| 分離 (split) | ServiceAccount を新しい AuthIdentity へ切り離す。統合の逆 |
-| 停止 (suspend) | `suspended_at` を立て、すべてのログイン経路を止める |
-| 退会 (withdraw) | `deleted_at` を立てる。猶予 (`CHREEID_ACCOUNT_PURGE_DAYS`) を過ぎたら物理削除する |
-
-コード上の「引き取り / claim」は移行と同じもの。画面や文書では「移行」と呼ぶ。
+遅延登録・移行・統合・分離・停止・退会などの意味は [用語集](term/account-operation.md) を参照。
 
 ## 移行・統合・分離で何が動くか
 

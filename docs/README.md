@@ -6,6 +6,7 @@
 - [アーキテクチャ設計](ARCHITECTURE.md)
 - [コーディング規約](CODING.md)
 - [アカウントモデル](ACCOUNTS.md)
+- [用語集](term/README.md)
 - [決定事項](DECISIONS.md)
 - [API](API.md)
 - [サービス接続](INTEGRATION.md)
