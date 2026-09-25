@@ -30,7 +30,9 @@ class WikiSourceClient {
      */
     public function fetch(WikiSource $source, ?string $sub, ?string $serviceUserId): array {
         try {
+            // Authorization は CGI 方式の PHP で落とされることがあるので、同じ鍵を独自ヘッダーでも送る
             $response = Http::withToken($source->token)
+                ->withHeaders(['X-Wiki-Hub-Token' => $source->token])
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->get($source->endpoint, array_filter(['sub' => $sub, 'service_user_id' => $serviceUserId]));

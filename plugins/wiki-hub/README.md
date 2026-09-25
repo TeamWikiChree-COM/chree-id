@@ -25,6 +25,7 @@ ChreeID 側にはハッシュしか残っていないため。
 ```
 GET {endpoint}?sub={sub}&service_user_id={service_user_id}
 Authorization: Bearer {共有の鍵}
+X-Wiki-Hub-Token: {共有の鍵}      (同じ値。Authorization が届かない環境向け。どちらか一方で受ければよい)
 Accept: application/json
 ```
 
