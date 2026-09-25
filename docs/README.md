@@ -8,6 +8,8 @@
 - [アカウントモデル](ACCOUNTS.md)
 - [用語リスト](term/README.md)
 - [決定事項](DECISIONS.md)
+- [データベース](DATABASE.md)
+- [翻訳](LANG.md)
 - [API](API.md)
 - [サービス接続](INTEGRATION.md)
 - [デプロイ](DEPLOY.md)

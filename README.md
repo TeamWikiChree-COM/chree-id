@@ -55,6 +55,8 @@ npm run dev
 | アカウントの仕組み | [docs/ACCOUNTS.md](docs/ACCOUNTS.md) |
 | 用語リスト | [docs/term/README.md](docs/term/README.md) |
 | 知らずに触ると事故になる決定 | [docs/DECISIONS.md](docs/DECISIONS.md) |
+| データベースの構造 | [docs/DATABASE.md](docs/DATABASE.md) |
+| 翻訳の仕組み | [docs/LANG.md](docs/LANG.md) |
 | API と OpenAPI の場所 | [docs/API.md](docs/API.md) |
 | サービス接続 | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | デプロイ | [docs/DEPLOY.md](docs/DEPLOY.md) |
