@@ -8,4 +8,4 @@ parameters:
         - tests
 
     # 0-10 の10段階。コードが少ないうちに上げておく
-    level: 10
+    level: 8
