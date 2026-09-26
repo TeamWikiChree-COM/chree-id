@@ -16,6 +16,7 @@
 
     // ---- 確認 ----
     "test": "php artisan test --parallel",
+    "test:dox": "vendor/bin/phpunit --testdox",
     "phpstan": "vendor/bin/phpstan analyse",
     "pint": "vendor/bin/pint",
     "pint:test": "vendor/bin/pint --test",

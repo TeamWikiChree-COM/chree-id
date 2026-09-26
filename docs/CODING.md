@@ -191,6 +191,21 @@ env('CHREEID_SIGNING_KEY') ?? env('OLD_SIGNING_KEY')
 - カードは必要な場所だけに使う
 - 作成、表示、更新、削除のうち、必要な操作は揃える
 
+## テスト
+
+新しく書くテストには `#[TestDox]` で日本語の説明を付ける。メソッド名だけでは、何を守るためのテストかが伝わりにくいため。
+
+```php
+use PHPUnit\Framework\Attributes\TestDox;
+
+#[TestDox('ログ本体は最初の描画のあとに届く')]
+public function test_deliversEntriesAfterTheFirstRender(): void {
+```
+
+既存のテストには、壊すと事故になるもの (認証、統合、退会など) から付けていく。すべてに付け直す必要はない。
+
+説明の一覧は `todo test:dox` (または `vendor/bin/phpunit --testdox`) で見られる。
+
 ## 確認
 できるだけコミット前に次を通す。
 

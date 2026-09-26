@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Concerns\LogsInAsAdmin;
 use Tests\TestCase;
@@ -11,6 +12,7 @@ class AdminLogTest extends TestCase {
     use LogsInAsAdmin;
     use RefreshDatabase;
 
+    #[TestDox('ログ本体は最初の描画のあとに届く')]
     public function test_deliversEntriesAfterTheFirstRender(): void {
         $this->loginAsAdmin();
 
