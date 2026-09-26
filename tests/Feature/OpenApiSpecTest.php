@@ -1,8 +1,8 @@
 <?php
 namespace Tests\Feature;
 
-use App\Modules\Registry\Domain\ServiceTrust;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Domain\ServiceTrust;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;

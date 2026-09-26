@@ -74,7 +74,7 @@ class WithdrawAccountTest extends TestCase {
     public function test_revokesIssuedTokens(): void {
         $accountId = $this->login();
 
-        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::create([
+        $client = \App\Modules\Client\Infrastructure\OAuthClientModel::create([
             'id' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ulid()->toString()),
             'secret_hash' => hash('sha256', 'x'),
             'name' => 'DokuFarm',

@@ -3,7 +3,7 @@ namespace App\Modules\Provider\Application;
 
 use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Domain\AuthorizeRequest;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Http\Request;
 
 /**

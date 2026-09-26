@@ -3,7 +3,7 @@ namespace Tests\Feature;
 
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Registry\Application\DatabaseMigrations;
+use App\Modules\Admin\Application\DatabaseMigrations;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;

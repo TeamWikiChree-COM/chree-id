@@ -1,8 +1,8 @@
 <?php
 namespace App\Console\Commands;
 
-use App\Modules\Registry\Application\RegisterClient;
-use App\Modules\Registry\Domain\ServiceTrust;
+use App\Modules\Client\Application\RegisterClient;
+use App\Modules\Client\Domain\ServiceTrust;
 use Illuminate\Console\Command;
 
 /**

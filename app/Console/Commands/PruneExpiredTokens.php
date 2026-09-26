@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
-use App\Modules\Registry\Application\PruneTokens;
+use App\Modules\Admin\Application\PruneTokens;
 use Illuminate\Console\Command;
 
 /**

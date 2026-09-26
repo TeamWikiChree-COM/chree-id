@@ -9,7 +9,7 @@ use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Facades\DB;
 
 /**

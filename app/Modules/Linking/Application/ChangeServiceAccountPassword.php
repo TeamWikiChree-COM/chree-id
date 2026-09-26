@@ -5,7 +5,7 @@ use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
  * サービス側でパスワードが変えられたとき、こちらにも反映する。

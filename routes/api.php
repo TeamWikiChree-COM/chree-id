@@ -3,7 +3,7 @@
 use App\Modules\ApiDocs\Http\OpenApiController;
 use App\Modules\Linking\Http\ServiceAccountController;
 use App\Modules\Linking\Http\ServiceAuthController;
-use App\Modules\Registry\Http\EnsureProvisioningClient;
+use App\Modules\Client\Http\EnsureProvisioningClient;
 use Illuminate\Support\Facades\Route;
 
 // サーバ間通信だけを置く。api グループはセッションも CSRF も通さない。

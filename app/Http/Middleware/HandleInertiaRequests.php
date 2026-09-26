@@ -6,7 +6,7 @@ use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
-use App\Modules\Registry\Domain\AdminAccess;
+use App\Modules\Admin\Domain\AdminAccess;
 use App\Support\Locale\Locales;
 use App\Support\Turnstile\TurnstileVerifier;
 use Illuminate\Http\Request;

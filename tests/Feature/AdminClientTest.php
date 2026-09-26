@@ -4,8 +4,8 @@ namespace Tests\Feature;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Registry\Domain\ServiceTrust;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Domain\ServiceTrust;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\RateLimiter;
@@ -237,7 +237,7 @@ class AdminClientTest extends TestCase {
 
     // name は運営が識別に使う名前。利用者に出すのは表示言語に合わせた名前
     public function test_showsTheNameForTheViewersLanguage(): void {
-        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::create([
+        $client = \App\Modules\Client\Infrastructure\OAuthClientModel::create([
             'id' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ulid()->toString()),
             'secret_hash' => hash('sha256', 'secret'),
             'name' => 'DokuFarm',
@@ -245,7 +245,7 @@ class AdminClientTest extends TestCase {
             'redirect_uris' => ['https://doku.example.com/callback'],
             'scopes' => 'openid',
             'is_confidential' => true,
-            'trust' => \App\Modules\Registry\Domain\ServiceTrust::OFFICIAL,
+            'trust' => \App\Modules\Client\Domain\ServiceTrust::OFFICIAL,
             'can_provision' => true,
         ]);
 
@@ -269,7 +269,7 @@ class AdminClientTest extends TestCase {
             'trust' => 'unapproved',
         ])->assertRedirect();
 
-        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::query()
+        $client = \App\Modules\Client\Infrastructure\OAuthClientModel::query()
             ->where('name', 'WikiChree')
             ->firstOrFail();
 

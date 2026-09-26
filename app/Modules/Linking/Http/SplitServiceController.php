@@ -6,7 +6,7 @@ use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

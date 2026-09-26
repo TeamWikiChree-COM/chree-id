@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Provider\Domain;
 
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
  * 検証を通った認可リクエスト。

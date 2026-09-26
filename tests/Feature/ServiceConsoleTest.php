@@ -3,8 +3,8 @@ namespace Tests\Feature;
 
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Registry\Domain\ServiceTrust;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Domain\ServiceTrust;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

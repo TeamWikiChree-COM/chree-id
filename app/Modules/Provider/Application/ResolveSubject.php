@@ -2,7 +2,7 @@
 namespace App\Modules\Provider\Application;
 
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Str;
 
 /**

@@ -81,14 +81,14 @@ class AdminAccountTest extends TestCase {
     public function test_showsWhichServicesAnAccountBelongsTo(): void {
         $this->loginAs(self::ADMIN_EMAIL);
 
-        $client = \App\Modules\Registry\Infrastructure\OAuthClientModel::create([
+        $client = \App\Modules\Client\Infrastructure\OAuthClientModel::create([
             'id' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ulid()->toString()),
             'secret_hash' => hash('sha256', 'secret'),
             'name' => 'DokuFarm',
             'redirect_uris' => ['https://doku.example.com/callback'],
             'scopes' => 'openid',
             'is_confidential' => true,
-            'trust' => \App\Modules\Registry\Domain\ServiceTrust::OFFICIAL,
+            'trust' => \App\Modules\Client\Domain\ServiceTrust::OFFICIAL,
             'can_provision' => true,
         ]);
 

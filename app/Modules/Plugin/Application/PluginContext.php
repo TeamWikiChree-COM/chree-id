@@ -5,7 +5,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Domain\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Domain\AdminAccess;
+use App\Modules\Admin\Domain\AdminAccess;
 use Illuminate\Support\Collection;
 
 /**

@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Infrastructure\ChreeSession;
-use App\Modules\Registry\Domain\AdminAccess;
+use App\Modules\Admin\Domain\AdminAccess;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

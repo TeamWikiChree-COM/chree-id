@@ -15,7 +15,7 @@ use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\MergeServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;

@@ -3,7 +3,7 @@ namespace App\Modules\Linking\Application;
 
 use App\Modules\Linking\Domain\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Support\Collection;
 
 /**

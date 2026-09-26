@@ -4,7 +4,7 @@ namespace Tests\Feature;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Registry\Application\PruneTokens;
+use App\Modules\Admin\Application\PruneTokens;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;

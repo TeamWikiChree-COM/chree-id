@@ -6,7 +6,7 @@ use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\DescribeServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
-use App\Modules\Registry\Http\EnsureProvisioningClient;
+use App\Modules\Client\Http\EnsureProvisioningClient;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

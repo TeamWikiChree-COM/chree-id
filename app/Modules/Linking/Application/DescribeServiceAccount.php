@@ -5,7 +5,7 @@ use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Provider\Application\ResolveSubject;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
  * サービスが自分の利用者の状態を聞きに来る。参照だけで副作用を持たない。

@@ -7,7 +7,7 @@ use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
  * サービスが自前のメールリンクを出すための、こちら側の裏付け。

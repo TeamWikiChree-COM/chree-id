@@ -4,7 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Linking\Application\ServiceMagicLink;
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
-use App\Modules\Registry\Http\EnsureProvisioningClient;
+use App\Modules\Client\Http\EnsureProvisioningClient;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

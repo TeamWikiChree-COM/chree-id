@@ -3,7 +3,7 @@ namespace App\Modules\Provider\Application;
 
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Registry\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
  * 引き取り前のサービスアカウントを、発行元以外のサービスへ入らせない。
