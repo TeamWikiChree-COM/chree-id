@@ -24,6 +24,21 @@ class OAuthCredentials {
     }
 
     /**
+     * 同じ外部アカウントが複数の認証主体に紐付くことはある (分離で起きる)。
+     *
+     * @param string $identifier "google:123456" の形
+     * @return list<string> 紐付いている認証主体のID。古い順
+     */
+    public function owners(string $identifier): array {
+        return array_values(CredentialModel::query()
+            ->where('type', CredentialType::OAUTH)
+            ->where('identifier', $identifier)
+            ->orderBy('id')
+            ->pluck('auth_identity_id')
+            ->all());
+    }
+
+    /**
      * @param string $accountId 認証主体のID (ULID)
      * @param string $identifier "google:123456" の形
      * @param array<string, mixed> $data provider など、画面に出すための付帯情報

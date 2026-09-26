@@ -42,19 +42,7 @@ class LinkExternalIdentity {
      * @return list<string> 紐付いている認証主体のID。古い順
      */
     public function candidates(ExternalIdentity $identity): array {
-        $found = [];
-
-        $rows = CredentialModel::query()
-            ->where('type', CredentialType::OAUTH)
-            ->where('identifier', $identity->credentialIdentifier())
-            ->orderBy('id')
-            ->get();
-
-        foreach ($rows as $row) {
-            $found[] = $row->auth_identity_id;
-        }
-
-        return $found;
+        return $this->oauth->owners($identity->credentialIdentifier());
     }
 
     /**
