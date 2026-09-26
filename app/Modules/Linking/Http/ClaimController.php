@@ -9,7 +9,7 @@ use App\Modules\Credential\Application\AccountCredentials;
 use App\Modules\Identity\Application\MergeException;
 use App\Modules\Identity\Application\TransferableCredentials;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\ClaimException;
 use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;

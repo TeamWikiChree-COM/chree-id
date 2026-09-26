@@ -4,7 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Modules\Identity\Application\ServiceEmails;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;

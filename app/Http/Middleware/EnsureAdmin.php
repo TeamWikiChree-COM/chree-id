@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Admin\Domain\AdminAccess;
 use Closure;
 use Illuminate\Http\Request;

@@ -3,7 +3,7 @@ namespace App\Modules\Linking\Http;
 
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\RevokeServiceAccess;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;

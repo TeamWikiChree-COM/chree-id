@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Middleware;
 
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Session\SignedInMarker;
 use Closure;
 use Illuminate\Http\Request;

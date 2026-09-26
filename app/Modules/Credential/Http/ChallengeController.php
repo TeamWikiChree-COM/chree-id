@@ -9,7 +9,7 @@ use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\PendingAuthentication;
 use App\Modules\Device\Application\TrustedDevices;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,15 +25,23 @@ use Symfony\Component\HttpFoundation\Cookie;
  * ここを通って AuthenticationPolicy が満たされて初めてログインになる。
  */
 class ChallengeController {
-    public function __construct(
-        private readonly PendingAuthentication $pending,
-        private readonly VerifyCredential $verify,
-        private readonly CompleteAuthentication $complete,
-        private readonly CredentialRepository $credentials,
-        private readonly ChreeSession $session,
-        private readonly TrustedDevices $trustedDevices,
-        private readonly AuditLog $audit,
-    ) {}
+    private readonly PendingAuthentication $pending;
+    private readonly VerifyCredential $verify;
+    private readonly CompleteAuthentication $complete;
+    private readonly CredentialRepository $credentials;
+    private readonly ChreeSession $session;
+    private readonly TrustedDevices $trustedDevices;
+    private readonly AuditLog $audit;
+
+    public function __construct(PendingAuthentication $pending, VerifyCredential $verify, CompleteAuthentication $complete, CredentialRepository $credentials, ChreeSession $session, TrustedDevices $trustedDevices, AuditLog $audit) {
+        $this->pending = $pending;
+        $this->verify = $verify;
+        $this->complete = $complete;
+        $this->credentials = $credentials;
+        $this->session = $session;
+        $this->trustedDevices = $trustedDevices;
+        $this->audit = $audit;
+    }
 
     /**
      * @return Response|RedirectResponse 待機中でなければログイン画面へ戻す

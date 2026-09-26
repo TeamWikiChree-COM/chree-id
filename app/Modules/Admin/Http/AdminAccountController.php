@@ -3,7 +3,7 @@ namespace App\Modules\Admin\Http;
 
 use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Admin\Application\ManageAccount;

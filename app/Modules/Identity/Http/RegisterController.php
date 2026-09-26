@@ -6,7 +6,7 @@ use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Application\CompleteRegistration;
 use App\Modules\Identity\Application\RegistrationTokenException;
 use App\Modules\Identity\Application\StartRegistration;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

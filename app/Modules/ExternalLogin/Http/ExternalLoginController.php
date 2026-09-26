@@ -11,7 +11,7 @@ use App\Modules\ExternalLogin\Domain\ExternalIdp;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\ExternalLogin\Infrastructure\ExternalLoginFlow;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
 use Illuminate\Http\Client\ConnectionException;

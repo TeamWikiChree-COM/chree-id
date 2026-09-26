@@ -6,7 +6,7 @@ use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\IconSource;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

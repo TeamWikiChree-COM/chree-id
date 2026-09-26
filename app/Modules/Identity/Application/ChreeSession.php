@@ -1,5 +1,5 @@
 <?php
-namespace App\Modules\Identity\Infrastructure;
+namespace App\Modules\Identity\Application;
 
 use App\Modules\Audit\Application\AuditLog;
 use App\Support\Session\SignedInMarker;

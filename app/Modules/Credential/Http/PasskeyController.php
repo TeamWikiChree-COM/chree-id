@@ -11,7 +11,7 @@ use App\Modules\Credential\Infrastructure\Passkey\PasskeyContext;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeyDiagnostics;
 use App\Modules\Credential\Infrastructure\Passkey\PasskeySerializer;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;

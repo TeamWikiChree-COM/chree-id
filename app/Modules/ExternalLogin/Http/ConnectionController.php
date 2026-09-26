@@ -7,7 +7,7 @@ use App\Modules\Credential\Application\RemoveCredential;
 use App\Modules\ExternalLogin\Application\ConnectedExternalAccounts;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\ExternalLogin\Infrastructure\ExternalLoginFlow;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

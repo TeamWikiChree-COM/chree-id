@@ -2,7 +2,7 @@
 namespace App\Modules\Linking\Http;
 
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Client\Application\ClientNames;

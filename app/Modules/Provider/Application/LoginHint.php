@@ -1,5 +1,5 @@
 <?php
-namespace App\Modules\Provider\Infrastructure;
+namespace App\Modules\Provider\Application;
 
 use Illuminate\Http\Request;
 

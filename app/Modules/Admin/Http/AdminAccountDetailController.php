@@ -6,7 +6,7 @@ use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Admin\Application\DetectAccountIssues;

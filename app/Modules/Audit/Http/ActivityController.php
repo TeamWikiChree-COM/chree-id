@@ -2,7 +2,7 @@
 namespace App\Modules\Audit\Http;
 
 use App\Modules\Audit\Application\AuditLog;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;

@@ -2,7 +2,7 @@
 namespace App\Modules\Plugin\Application;
 
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Admin\Domain\AdminAccess;

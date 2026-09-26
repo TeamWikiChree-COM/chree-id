@@ -8,7 +8,7 @@ use App\Modules\Identity\Application\AccountEmails;
 use App\Modules\Identity\Application\AddAccountEmail;
 use App\Modules\Identity\Application\ConfirmAccountEmail;
 use App\Modules\Identity\Application\PromoteAccountEmail;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

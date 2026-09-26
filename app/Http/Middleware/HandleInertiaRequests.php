@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\Identity\Application\AccountIcons;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Admin\Domain\AdminAccess;
 use App\Support\Locale\Locales;

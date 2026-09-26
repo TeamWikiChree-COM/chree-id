@@ -1,13 +1,13 @@
 <?php
 namespace App\Modules\Provider\Http;
 
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Provider\Application\AmbiguousServiceAccountException;
 use App\Modules\Provider\Application\IssueAuthCode;
 use App\Modules\Provider\Application\SelectServiceAccount;
 use App\Modules\Provider\Application\UnclaimedServiceAccountGuard;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
-use App\Modules\Provider\Infrastructure\LoginHint;
+use App\Modules\Provider\Application\LoginHint;
 use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Application\AuthorizeRequest;
 use Illuminate\Http\RedirectResponse;

@@ -18,10 +18,13 @@ use Symfony\Component\HttpFoundation\Response;
  * (ログイン画面でも切り替えられる必要があるため)。
  */
 class LocaleController {
-    public function __construct(
-        private readonly Locales $locales,
-        private readonly StoredLocale $stored,
-    ) {}
+    private readonly Locales $locales;
+    private readonly StoredLocale $stored;
+
+    public function __construct(Locales $locales, StoredLocale $stored) {
+        $this->locales = $locales;
+        $this->stored = $stored;
+    }
 
     /**
      * 選んだ言語に切り替える。

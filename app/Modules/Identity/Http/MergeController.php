@@ -11,7 +11,7 @@ use App\Modules\Identity\Application\MergeAccounts;
 use App\Modules\Identity\Application\MergeException;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Application\TransferableCredentials;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

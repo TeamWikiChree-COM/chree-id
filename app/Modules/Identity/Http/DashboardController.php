@@ -4,7 +4,7 @@ namespace App\Modules\Identity\Http;
 use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\ListConnectedServices;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Support\Http\LoginRedirect;

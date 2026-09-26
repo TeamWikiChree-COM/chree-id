@@ -2,7 +2,7 @@
 namespace App\Support\Locale;
 
 use App\Modules\Identity\Infrastructure\AuthIdentityModel;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use Illuminate\Http\Request;
 
 /**

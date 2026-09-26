@@ -6,7 +6,7 @@ use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Identity\Infrastructure\AuthIdentityModel;
-use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Admin\Application\DetectAccountIssues;
 use App\Modules\Admin\Application\ManageAccount;
 use Illuminate\Http\RedirectResponse;
