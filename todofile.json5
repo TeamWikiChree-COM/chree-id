@@ -27,6 +27,9 @@
         "todo test"
     ],
 
+    // ---- デプロイ ----
+    "deploy": "py tools/deploy.py",
+
     // ---- フロントエンド ----
     "front:dev": "npm run dev",
     "front:build": "npm run build",
