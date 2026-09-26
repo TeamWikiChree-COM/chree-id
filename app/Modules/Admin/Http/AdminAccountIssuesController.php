@@ -25,14 +25,7 @@ class AdminAccountIssuesController extends Controller {
     private readonly ChreeSession $session;
     private readonly AdminAccountQueries $queries;
 
-    public function __construct(
-        DetectAccountIssues $issues,
-        AdminAccountPresenter $presenter,
-        ManageAccount $manage,
-        AuditLog $audit,
-        ChreeSession $session,
-        AdminAccountQueries $queries,
-    ) {
+    public function __construct(DetectAccountIssues $issues, AdminAccountPresenter $presenter, ManageAccount $manage, AuditLog $audit, ChreeSession $session, AdminAccountQueries $queries) {
         $this->issues = $issues;
         $this->presenter = $presenter;
         $this->manage = $manage;

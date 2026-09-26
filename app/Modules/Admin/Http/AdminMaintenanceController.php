@@ -18,13 +18,19 @@ use Inertia\Response;
  * 組めていない間も、ここから手で流せるようにしておくためのもの。
  */
 class AdminMaintenanceController extends Controller {
-    public function __construct(
-        private readonly PruneTokens $prune,
-        private readonly PurgeDeletedAccounts $purge,
-        private readonly LoginSessions $sessions,
-        private readonly TrustedDevices $trustedDevices,
-        private readonly AuditLog $audit,
-    ) {}
+    private readonly PruneTokens $prune;
+    private readonly PurgeDeletedAccounts $purge;
+    private readonly LoginSessions $sessions;
+    private readonly TrustedDevices $trustedDevices;
+    private readonly AuditLog $audit;
+
+    public function __construct(PruneTokens $prune, PurgeDeletedAccounts $purge, LoginSessions $sessions, TrustedDevices $trustedDevices, AuditLog $audit) {
+        $this->prune = $prune;
+        $this->purge = $purge;
+        $this->sessions = $sessions;
+        $this->trustedDevices = $trustedDevices;
+        $this->audit = $audit;
+    }
 
     /**
      * @return Response

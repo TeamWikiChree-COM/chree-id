@@ -20,12 +20,7 @@ class ManageAccountLinks {
     private readonly SplitServiceAccount $split;
     private readonly RevokeAccessTokens $tokens;
 
-    public function __construct(
-        AdminTarget $target,
-        RemoveCredential $credentials,
-        SplitServiceAccount $split,
-        RevokeAccessTokens $tokens,
-    ) {
+    public function __construct(AdminTarget $target, RemoveCredential $credentials, SplitServiceAccount $split, RevokeAccessTokens $tokens) {
         $this->target = $target;
         $this->credentials = $credentials;
         $this->split = $split;

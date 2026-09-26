@@ -33,16 +33,7 @@ class AdminAccountDetailController extends Controller {
     private readonly ChreeSession $session;
     private readonly AdminAccountQueries $queries;
 
-    public function __construct(
-        AdminAccountPresenter $presenter,
-        ListCredentials $credentials,
-        SplitServiceAccount $split,
-        ManageAccountLinks $links,
-        DetectAccountIssues $issues,
-        AuditLog $audit,
-        ChreeSession $session,
-        AdminAccountQueries $queries,
-    ) {
+    public function __construct(AdminAccountPresenter $presenter, ListCredentials $credentials, SplitServiceAccount $split, ManageAccountLinks $links, DetectAccountIssues $issues, AuditLog $audit, ChreeSession $session, AdminAccountQueries $queries) {
         $this->presenter = $presenter;
         $this->credentials = $credentials;
         $this->split = $split;
