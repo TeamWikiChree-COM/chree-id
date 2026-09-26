@@ -9,7 +9,6 @@ namespace App\Modules\Admin\Application;
  * 疑うところが違うので、種類ごとに持つ。
  */
 class PrunedTokens {
-
     public readonly int $registrations;
     public readonly int $emailChanges;
     public readonly int $expiredTokens;

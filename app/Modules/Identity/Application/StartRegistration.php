@@ -1,7 +1,6 @@
 <?php
 namespace App\Modules\Identity\Application;
 
-use App\Modules\Credential\Application\IssueOneTimeToken;
 use App\Modules\Identity\Infrastructure\PendingRegistrationModel;
 use App\Modules\Identity\Mail\RegistrationExistsMail;
 use App\Modules\Identity\Mail\VerifyRegistrationMail;

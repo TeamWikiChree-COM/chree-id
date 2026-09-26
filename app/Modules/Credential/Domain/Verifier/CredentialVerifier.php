@@ -11,7 +11,7 @@ interface CredentialVerifier {
 
     /**
      * 入力の検証ロジック
-     * 
+     *
      * @param string $accountId アカウントID (ULID)
      * @param array<string, mixed> $input 認証方式ごとの入力値
      * @return VerificationResult

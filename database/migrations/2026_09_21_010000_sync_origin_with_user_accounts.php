@@ -19,6 +19,5 @@ return new class extends Migration {
     /**
      * どの行が service だったかは残していないので戻さない。
      */
-    public function down(): void {
-    }
+    public function down(): void {}
 };

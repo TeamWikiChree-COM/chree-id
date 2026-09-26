@@ -3,7 +3,6 @@ namespace App\Modules\Credential\Http;
 
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
-use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialRepository;

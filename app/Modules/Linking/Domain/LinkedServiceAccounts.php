@@ -15,8 +15,7 @@ use Illuminate\Support\Collection;
  * **行は消さない。** sub はサービスアカウントの持ち物で、消して作り直すと向こうから別人に見える。
  */
 final class LinkedServiceAccounts {
-    private function __construct() {
-    }
+    private function __construct() {}
 
     /**
      * @param Collection<int, ServiceAccountModel> $accounts 同じサービスの行

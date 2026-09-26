@@ -4,7 +4,6 @@ namespace App\Modules\Credential\Application;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\Totp;
-use App\Modules\Credential\Application\GenerateRecoveryCodes;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;

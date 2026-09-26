@@ -19,7 +19,6 @@ use Webauthn\PublicKeyCredentialRequestOptions;
  * 端末の所持と生体認証/PINの組み合わせで既に多要素なので、単独で認証を完了してよい。
  */
 class PasskeyVerifier extends AbstractVerifier {
-
     private readonly PasskeyCeremony $ceremony;
     private readonly PasskeyContext $context;
     private readonly PasskeyStore $store;

@@ -25,7 +25,6 @@ use Symfony\Component\HttpFoundation\Response;
  * サービスが確実に知っているのはこちらだけ。
  */
 class ServiceAccountController {
-
     private readonly IssueServiceAccount $issue;
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;

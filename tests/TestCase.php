@@ -15,8 +15,7 @@ abstract class TestCase extends BaseTestCase {
      * フロントの成果物はテストの対象ではないので、読み込み自体を差し替える。
      */
     #[\Override]
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
         parent::setUp();
 
         $this->withoutVite();

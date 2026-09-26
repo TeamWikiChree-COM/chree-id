@@ -19,25 +19,25 @@ use Illuminate\Database\Eloquent\Model;
 class OneTimeTokenModel extends Model {
     use HasUlids;
 
-    public const PURPOSE_LOGIN = "login";
-    public const PURPOSE_VERIFY_EMAIL = "verify_email";
-    public const PURPOSE_PASSWORD_RESET = "password_reset";
+    public const PURPOSE_LOGIN = 'login';
+    public const PURPOSE_VERIFY_EMAIL = 'verify_email';
+    public const PURPOSE_PASSWORD_RESET = 'password_reset';
 
     #[\Override]
-    protected $table = "one_time_tokens";
+    protected $table = 'one_time_tokens';
 
     #[\Override]
     protected $fillable = [
-        "auth_identity_id",
-        "token_hash",
-        "purpose",
-        "expires_at",
+        'auth_identity_id',
+        'token_hash',
+        'purpose',
+        'expires_at',
     ];
 
     #[\Override]
     protected $casts = [
-        "expires_at" => "datetime",
-        "used_at" => "datetime",
+        'expires_at' => 'datetime',
+        'used_at' => 'datetime',
     ];
 
     /**

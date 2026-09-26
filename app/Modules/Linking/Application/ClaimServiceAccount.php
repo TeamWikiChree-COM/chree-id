@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\DB;
  * パスキーや外部ログイン (Google 等) でもよい。
  */
 class ClaimServiceAccount {
-
     private readonly AuthIdentityRepository $accounts;
     private readonly SetPassword $passwords;
     private readonly CredentialRepository $credentials;

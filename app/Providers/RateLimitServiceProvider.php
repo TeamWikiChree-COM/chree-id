@@ -30,17 +30,14 @@ class RateLimitServiceProvider extends ServiceProvider {
         ]);
 
         // 6桁の TOTP は総当たりが現実的な桁数なので、ここは特に絞る
-        RateLimiter::for('challenge', fn (Request $request): Limit =>
-            Limit::perMinute(5)->by($request->session()->getId()));
+        RateLimiter::for('challenge', fn (Request $request): Limit => Limit::perMinute(5)->by($request->session()->getId()));
 
         // サービス経由のパスワード照会。呼び出し元はサービスのサーバなので、
         // IP で数えるとそのサービスの利用者全員が巻き添えになる。アドレスとの組で数える
-        RateLimiter::for('service-auth', fn (Request $request): Limit =>
-            Limit::perMinute(5)->by($this->clientEmailKey($request)));
+        RateLimiter::for('service-auth', fn (Request $request): Limit => Limit::perMinute(5)->by($this->clientEmailKey($request)));
 
         // 確認リンクは総当たりされうるが、正規の利用者が何度も開くことはない
-        RateLimiter::for('verify', fn (Request $request): Limit =>
-            Limit::perMinute(10)->by($request->ip() ?? 'unknown'));
+        RateLimiter::for('verify', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip() ?? 'unknown'));
     }
 
     /**

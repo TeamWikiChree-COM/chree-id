@@ -8,7 +8,6 @@ use App\Modules\Credential\Infrastructure\Passkey\PasskeyStore;
 use RuntimeException;
 use Throwable;
 use Webauthn\AuthenticatorAttestationResponse;
-use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 
 /**

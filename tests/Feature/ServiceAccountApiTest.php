@@ -300,8 +300,8 @@ class ServiceAccountApiTest extends TestCase {
             ->where('type', \App\Modules\Credential\Domain\CredentialType::PASSWORD)
             ->firstOrFail();
 
-        $this->assertTrue(password_verify('brand-new', (string)$stored->secret));
-        $this->assertFalse(password_verify('old', (string)$stored->secret));
+        $this->assertTrue(password_verify('brand-new', (string) $stored->secret));
+        $this->assertFalse(password_verify('old', (string) $stored->secret));
     }
 
     // 本人のものになっていたら、サービス経由では触らせない

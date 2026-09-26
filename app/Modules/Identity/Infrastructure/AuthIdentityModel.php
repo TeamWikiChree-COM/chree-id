@@ -28,24 +28,24 @@ class AuthIdentityModel extends Model {
     use HasUlids;
 
     #[\Override]
-    protected $table = "auth_identities";
+    protected $table = 'auth_identities';
 
     // どうやらHasUlidsくんがgetKeyTypeとかメソッドごとに
     // 書き換えてるみたいなのでここは無効にした
-    
+
     // // 主キーはULID(文字列)のため指定する、デフォルトではintなので
     // #[\Override]
     // protected $keyType = "string";
-    
+
     // #[\Override]
     // public $incrementing = false; // ULIDなので自動連番は使わない
 
     // まとめて代入してよいカラム
     #[\Override]
     protected $fillable = [
-        "email",
-        "email_verified_at",
-        "display_name",
+        'email',
+        'email_verified_at',
+        'display_name',
         'origin',
         'icon_source',
         'icon_path',
@@ -63,7 +63,7 @@ class AuthIdentityModel extends Model {
         'origin' => AccountOrigin::class,
         'icon_source' => IconSource::class,
     ];
-    
+
     // なんとなくかいとく、いらんけどこれあったほうがおちつくやろ知らんけど
     public function __construct(array $attributes = []) {
         parent::__construct($attributes);

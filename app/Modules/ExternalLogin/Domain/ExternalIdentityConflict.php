@@ -9,5 +9,4 @@ use RuntimeException;
  * 黙って2つ目のアカウントを作ると、本人が「なぜか別アカウントになる」状態に陥る。
  * 既存アカウントでログインしてから連携してもらう。
  */
-class ExternalIdentityConflict extends RuntimeException {
-}
+class ExternalIdentityConflict extends RuntimeException {}

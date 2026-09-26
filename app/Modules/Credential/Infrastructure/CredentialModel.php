@@ -26,23 +26,23 @@ class CredentialModel extends Model {
     use HasUlids;
 
     #[\Override]
-    protected $table = "credentials";
+    protected $table = 'credentials';
 
     #[\Override]
     protected $fillable = [
-        "auth_identity_id",
-        "type",
-        "identifier",
-        "secret",
-        "data",
-        "last_used_at",
+        'auth_identity_id',
+        'type',
+        'identifier',
+        'secret',
+        'data',
+        'last_used_at',
     ];
 
     // type を enum で受け渡しできるようにする (->value を書かなくて済む)
     #[\Override]
     protected $casts = [
-        "type" => CredentialType::class,
-        "data" => "array",
-        "last_used_at" => "datetime",
+        'type' => CredentialType::class,
+        'data' => 'array',
+        'last_used_at' => 'datetime',
     ];
 }

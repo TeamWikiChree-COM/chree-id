@@ -2,7 +2,6 @@
 namespace Tests\Feature;
 
 use App\Modules\Identity\Application\ResolveByEmail;
-use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Support\Turnstile\TurnstileGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;

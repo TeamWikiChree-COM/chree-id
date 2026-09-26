@@ -92,7 +92,7 @@ class AuthorizeTest extends TestCase {
         $this->assertStringNotContainsString('?do=callback?', $location);
 
         // 向こうが実際に読む形になっているか
-        parse_str((string)parse_url($location, PHP_URL_QUERY), $query);
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
         $this->assertSame('callback', $query['do'] ?? null);
         $this->assertNotEmpty($query['code'] ?? null);
     }

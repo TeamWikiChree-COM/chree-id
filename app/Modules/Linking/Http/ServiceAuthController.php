@@ -20,7 +20,6 @@ use Illuminate\Validation\ValidationException;
  * かつ呼び出し元に紐付いた利用者しか引けない (VerifyServiceUserPassword)。
  */
 class ServiceAuthController {
-
     private readonly VerifyServiceUserPassword $verify;
     private readonly ServiceMagicLink $magicLinks;
 

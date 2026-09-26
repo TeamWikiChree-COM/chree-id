@@ -18,7 +18,6 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
  * 「credentials が0件 = ログインする材料が無い」が崩れるため、有効化の行を必須にしている。
  */
 class MagicLinkVerifier extends AbstractVerifier {
-    
     private readonly AuthIdentityRepository $accounts;
 
     public function __construct(AuthIdentityRepository $accounts) {

@@ -198,7 +198,6 @@ class BackupTest extends TestCase {
 
         $this->assertSame(['old.json.enc'], $result->pruned);
 
-        Http::assertSent(fn (\Illuminate\Http\Client\Request $r): bool =>
-            $r->method() === 'DELETE' && str_ends_with($r->url(), '/files/c'));
+        Http::assertSent(fn (\Illuminate\Http\Client\Request $r): bool => $r->method() === 'DELETE' && str_ends_with($r->url(), '/files/c'));
     }
 }

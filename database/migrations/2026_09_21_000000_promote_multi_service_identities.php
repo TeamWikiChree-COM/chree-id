@@ -33,6 +33,5 @@ return new class extends Migration {
     /**
      * 昇格は戻さない。どの行がこのマイグレーションで作られたかを区別できないため。
      */
-    public function down(): void {
-    }
+    public function down(): void {}
 };

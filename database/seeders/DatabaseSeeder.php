@@ -11,8 +11,7 @@ class DatabaseSeeder extends Seeder {
     /**
      * Seed the application's database.
      */
-    public function run(): void
-    {
+    public function run(): void {
         // 何も入れない。ChreeID のアカウントは本人の登録か、サービスからの
         // 遅延発行でしか作らない。素性の分からない行を用意すると、
         // それがどちらの経路で出来たものか追えなくなる

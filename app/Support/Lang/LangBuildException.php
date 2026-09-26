@@ -7,5 +7,4 @@ namespace App\Support\Lang;
  * **実行するまで気づけない種類のバグをここで落とす**のが目的なので、
  * 握り潰さずに呼び出し元 (artisan / CI) まで通す。
  */
-final class LangBuildException extends \RuntimeException {
-}
+final class LangBuildException extends \RuntimeException {}

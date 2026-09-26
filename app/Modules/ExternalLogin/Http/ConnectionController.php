@@ -24,8 +24,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * 本人のものとして繋がせられる。
  */
 class ConnectionController {
-
-
     private readonly ChreeSession $session;
     private readonly ExternalIdpRegistry $registry;
     private readonly ExternalLoginFlow $flow;
