@@ -14,6 +14,7 @@ import { t } from '../../../lib/i18n';
 import { AccountFilters, AccountPager } from './AccountFilters';
 import AccountRow from './AccountRow';
 import type { AdminAccount, AdminAccountFilters, AdminClientOption, AdminPagination } from './types';
+import RowDivider from '../../../Components/RowDivider';
 
 interface IndexProps {
     accounts: AdminAccount[];
@@ -101,7 +102,7 @@ export default function Index({ accounts, pagination, filters, clients, selfId, 
                 </Button>
             </Stack>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {accounts.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
                             {t('admin.accounts.list.empty')}

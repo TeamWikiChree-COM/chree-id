@@ -15,6 +15,7 @@ import { useActions } from '../../lib/actions';
 import { t } from '../../lib/i18n';
 import { trustLabel } from '../../lib/services';
 import type { OwnedService } from '../../types';
+import RowDivider from '../../Components/RowDivider';
 
 interface IndexProps {
     services: OwnedService[];
@@ -76,7 +77,7 @@ export default function Index({ services }: IndexProps) {
                     </Typography>
                 )}
 
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {services.map((service) => (
                         <ListRow key={service.id} onClick={() => openActions(service)}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>

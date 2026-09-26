@@ -10,6 +10,7 @@ import { formatDateTime, formatRelative } from '../lib/datetime';
 import { credentialIcon, credentialIconFamily, credentialLabel } from '../lib/credentials';
 import { t } from '../lib/i18n';
 import type { CredentialSummary } from '../types';
+import RowDivider from './RowDivider';
 
 /**
  * 行の下に添える手がかり。
@@ -68,7 +69,7 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
 
     return (
         <Paper variant="outlined">
-            <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            <Stack divider={<RowDivider />}>
                 {credentials.length === 0 && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
                         {t('credential.list.empty')}

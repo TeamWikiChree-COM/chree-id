@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import RowDivider from '../RowDivider';
 
 interface ListSkeletonProps {
     /** 並べる行数 */
@@ -29,7 +30,7 @@ const RowSkeleton = ({ chip }: { chip: boolean }) => {
 const ListSkeleton = ({ count = 5, chip = false }: ListSkeletonProps) => {
     return (
         <Paper variant="outlined" sx={{ mb: 2 }}>
-            <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            <Stack divider={<RowDivider />}>
                 {Array.from({ length: count }, (_, i) => <RowSkeleton key={i} chip={chip} />)}
             </Stack>
         </Paper>

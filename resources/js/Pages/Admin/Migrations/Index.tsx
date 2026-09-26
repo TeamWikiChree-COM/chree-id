@@ -11,6 +11,7 @@ import { useConfirm } from '../../../lib/confirm';
 import Icon from '../../../Components/Icon';
 import SectionTitle from '../../../Components/SectionTitle';
 import { t } from '../../../lib/i18n';
+import RowDivider from '../../../Components/RowDivider';
 
 interface IndexProps {
     /** まだ適用されていないもの。古い順 */
@@ -68,7 +69,7 @@ export default function Index({ pending, applied }: IndexProps) {
                         {t('admin.migrations.pending.empty')}
                     </Typography>
                 ) : (
-                    <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    <Stack divider={<RowDivider />}>
                         {pending.map((name) => (
                             <Box key={name} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
                                 <Icon name="circle-dot" sx={{ fontSize: '0.75rem', color: 'warning.main' }} />
@@ -94,7 +95,7 @@ export default function Index({ pending, applied }: IndexProps) {
 
             <SectionTitle note={t('admin.migrations.count', { count: applied.length })}>{t('admin.migrations.applied.heading')}</SectionTitle>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {applied.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
                             {t('admin.migrations.applied.empty')}

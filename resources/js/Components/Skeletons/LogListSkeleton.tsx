@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import RowDivider from '../RowDivider';
 
 /** ログ1件分。LogEntryRow と同じ余白にして、差し替わったときに行の高さがずれないようにする */
 const LogEntrySkeleton = () => {
@@ -25,7 +26,7 @@ const LogEntrySkeleton = () => {
 const LogListSkeleton = ({ count = 8 }: { count?: number }) => {
     return (
         <Paper variant="outlined">
-            <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            <Stack divider={<RowDivider />}>
                 {Array.from({ length: count }, (_, i) => <LogEntrySkeleton key={i} />)}
             </Stack>
         </Paper>

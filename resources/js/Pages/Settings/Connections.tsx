@@ -15,6 +15,7 @@ import { formatDateTime } from '../../lib/datetime';
 import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
 import { t } from '../../lib/i18n';
 import type { ExternalConnection } from '../../types';
+import RowDivider from '../../Components/RowDivider';
 
 interface ConnectionsProps {
     connections: ExternalConnection[];
@@ -57,7 +58,7 @@ export default function Connections({ connections, providers }: ConnectionsProps
                     </Typography>
                 )}
 
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {connections.map((connection) => (
                         <Box
                             key={connection.id}

@@ -13,6 +13,7 @@ import { t } from '../../../lib/i18n';
 import AccountRow from './AccountRow';
 import IssueChips from './IssueChips';
 import type { AdminAccount, AdminAccountIssue } from './types';
+import RowDivider from '../../../Components/RowDivider';
 
 type IssueAccount = AdminAccount & { issues: AdminAccountIssue[] };
 
@@ -94,7 +95,7 @@ const IssueList = ({ accounts, selfId, graceDays }: IssueListProps) => {
             )}
 
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {accounts.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
                             {t('admin.accounts.issues.empty')}

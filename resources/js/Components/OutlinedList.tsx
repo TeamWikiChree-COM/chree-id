@@ -1,8 +1,8 @@
-import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
+import RowDivider from './RowDivider';
 
 interface OutlinedListProps {
     children: ReactNode;
@@ -16,7 +16,7 @@ interface OutlinedListProps {
 export default function OutlinedList({ children, empty }: OutlinedListProps) {
     return (
         <Paper variant="outlined">
-            <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            <Stack divider={<RowDivider />}>
                 {empty && (
                     <Typography sx={{ px: 2, py: 1.5, fontSize: '0.9375rem', color: 'text.disabled' }}>
                         {empty}

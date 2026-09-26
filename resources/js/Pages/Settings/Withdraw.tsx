@@ -14,6 +14,7 @@ import SectionTitle from '../../Components/SectionTitle';
 import ServiceIcon from '../../Components/ServiceIcon';
 import { t } from '../../lib/i18n';
 import type { ConnectedService } from '../../types';
+import RowDivider from '../../Components/RowDivider';
 
 interface WithdrawProps {
     email: string | null;
@@ -57,7 +58,7 @@ export default function Withdraw({ email, services, graceDays }: WithdrawProps) 
 
             <SectionTitle note={t('settings.withdraw.services.count', { count: services.length })}>{t('settings.withdraw.services.heading')}</SectionTitle>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {services.length === 0 && (
                         <Typography sx={{ px: 2, py: 2, fontSize: '0.9375rem', color: 'text.disabled' }}>
                             {t('settings.withdraw.services.empty')}

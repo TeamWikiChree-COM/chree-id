@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import AppLayout from '../../Components/AppLayout';
@@ -6,6 +5,7 @@ import NavRow from '../../Components/NavRow';
 import SectionTitle from '../../Components/SectionTitle';
 import StatCard from '../../Components/StatCard';
 import { t } from '../../lib/i18n';
+import RowDivider from '../../Components/RowDivider';
 
 interface AdminIndexProps {
     stats: {
@@ -32,7 +32,7 @@ export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps
 
             <SectionTitle>{t('admin.index.manage')}</SectionTitle>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     <NavRow
                         icon="users"
                         title={t('admin.index.nav.accounts.title')}

@@ -10,6 +10,7 @@ import AppLayout from '../../../Components/AppLayout';
 import { useConfirm } from '../../../lib/confirm';
 import SectionTitle from '../../../Components/SectionTitle';
 import { t } from '../../../lib/i18n';
+import RowDivider from '../../../Components/RowDivider';
 
 interface Pending {
     /** 確認されないまま期限が切れた登録申し込み */
@@ -88,7 +89,7 @@ export default function Index({ pending, keepDays, graceDays }: IndexProps) {
 
             <SectionTitle note={t('admin.maintenance.pending_count', { count: pending.total })}>{t('admin.maintenance.list.heading')}</SectionTitle>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {ROWS.map((row) => (
                         <Box
                             key={row.key}

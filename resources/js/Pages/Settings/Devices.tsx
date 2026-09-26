@@ -15,6 +15,7 @@ import { useConfirm } from '../../lib/confirm';
 import { formatDateTime, formatRelative } from '../../lib/datetime';
 import { t } from '../../lib/i18n';
 import type { LoginSessionSummary, TrustedDeviceSummary } from '../../types';
+import RowDivider from '../../Components/RowDivider';
 
 interface DevicesProps {
     sessions: LoginSessionSummary[];
@@ -58,7 +59,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
 
             <SectionTitle note={t('settings.devices.sessions.count', { count: sessions.length })}>{t('settings.devices.sessions.heading')}</SectionTitle>
             <Paper variant="outlined">
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {sessions.map((session) => (
                         <DeviceRow
                             key={session.id}
@@ -106,7 +107,7 @@ export default function Devices({ sessions, trustedDevices }: DevicesProps) {
                     </Typography>
                 )}
 
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {trustedDevices.map((device) => (
                         <DeviceRow
                             key={device.id}

@@ -1,9 +1,9 @@
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
 import LinkedText from './LinkedText';
+import OutlinedBox from './OutlinedBox';
 
 /** 引き継ぎ候補の認証手段 */
 export interface PickableCredential {
@@ -38,7 +38,7 @@ export default function CredentialPicker({ options, selected, onChange, instruct
     };
 
     return (
-        <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2 }}>
+        <OutlinedBox>
             <Typography variant="body2" sx={{ mb: 1 }}>
                 {instruction}
             </Typography>
@@ -58,7 +58,7 @@ export default function CredentialPicker({ options, selected, onChange, instruct
                     {error}
                 </Alert>
             )}
-        </Box>
+        </OutlinedBox>
     );
 }
 

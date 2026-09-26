@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import AuthLayout from "../../Components/AuthLayout";
 import { t } from "../../lib/i18n";
+import OutlinedBox from '../../Components/OutlinedBox';
 
 /** 同じ外部アカウントに紐付いている認証主体 */
 interface ChoosableIdentity {
@@ -40,10 +41,8 @@ export default function ChooseIdentity({ accounts }: ChooseIdentityProps) {
 
             <Stack spacing={1}>
                 {accounts.map((account) => (
-                    <Box
-                        key={account.id}
-                        sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, p: 2 }}
-                    >
+                    <OutlinedBox
+                        key={account.id}>
                         <Stack
                             direction="row"
                             spacing={2}
@@ -61,7 +60,7 @@ export default function ChooseIdentity({ accounts }: ChooseIdentityProps) {
                                 {t('auth.choose_identity.continue')}
                             </Button>
                         </Stack>
-                    </Box>
+                    </OutlinedBox>
                 ))}
             </Stack>
         </AuthLayout>

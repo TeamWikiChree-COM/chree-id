@@ -8,6 +8,7 @@ import { t } from '../lib/i18n';
 import type { TranslationKey } from '../lib/i18n';
 import { methodLabel } from '../lib/credentials';
 import type { AuditEventSummary } from '../types';
+import RowDivider from './RowDivider';
 
 /**
  * 行の下に添える手がかり。
@@ -57,7 +58,7 @@ export default function AuditEventList({ events, emptyText }: AuditEventListProp
                 </Typography>
             )}
 
-            <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+            <Stack divider={<RowDivider />}>
                 {events.map((event) => (
                     <Box key={event.id} sx={{ px: 2, py: 1.5 }}>
                         <Stack useFlexGap direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>

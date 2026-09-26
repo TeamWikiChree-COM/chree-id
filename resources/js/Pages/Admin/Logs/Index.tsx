@@ -1,6 +1,5 @@
 import { Deferred, router, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
@@ -14,6 +13,7 @@ import LogListSkeleton from '../../../Components/Skeletons/LogListSkeleton';
 import { useConfirm } from '../../../lib/confirm';
 import { t } from '../../../lib/i18n';
 import type { LogEntry } from '../../../types';
+import RowDivider from '../../../Components/RowDivider';
 
 interface IndexProps {
     /** 読めるログファイル。新しい順 */
@@ -128,7 +128,7 @@ const LogEntries = ({ entries }: { entries: LogEntry[] }) => {
                     </Typography>
                 )}
 
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                <Stack divider={<RowDivider />}>
                     {entries.map((entry, index) => (
                         <LogEntryRow key={`${entry.at}-${String(index)}`} entry={entry} />
                     ))}

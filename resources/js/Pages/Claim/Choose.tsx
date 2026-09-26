@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import AuthLayout from "../../Components/AuthLayout";
 import type { SignedInAccount } from "./MergePanel";
 import { t } from "../../lib/i18n";
+import { outlinedBoxSx } from "../../Components/OutlinedBox";
 
 interface ClaimChooseProps {
     /** サービスから渡された平文トークン */
@@ -39,10 +40,7 @@ export default function ClaimChoose({
                 display: "block",
                 width: "100%",
                 textAlign: "left",
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 2,
-                p: 2,
+                ...outlinedBoxSx,
                 "&:hover": {
                     borderColor: "primary.main",
                     bgcolor: "action.hover",

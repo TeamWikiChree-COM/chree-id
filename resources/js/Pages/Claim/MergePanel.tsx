@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import type { FormEvent } from "react";
 import CredentialPicker from "../../Components/CredentialPicker";
 import { t } from "../../lib/i18n";
+import OutlinedBox from '../../Components/OutlinedBox';
 
 /** ログイン中のアカウント。していなければ null */
 export interface SignedInAccount {
@@ -81,14 +82,7 @@ export default function MergePanel({
     return (
         <Box component="form" onSubmit={submit} noValidate>
             <Stack spacing={2}>
-                <Box
-                    sx={{
-                        border: "1px solid",
-                        borderColor: "divider",
-                        borderRadius: 2,
-                        p: 2,
-                    }}
-                >
+                <OutlinedBox>
                     <Typography variant="body2" color="text.secondary">
                         {t('claim.merge_panel.signed_in_as')}
                     </Typography>
@@ -103,7 +97,7 @@ export default function MergePanel({
                                 {signedInAs.email}
                             </Typography>
                         )}
-                </Box>
+                </OutlinedBox>
 
                 <Typography variant="body2" color="text.secondary">
                     {t('claim.merge_panel.description', { serviceName })}
