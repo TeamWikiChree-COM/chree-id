@@ -1,7 +1,7 @@
 <?php
 namespace Plugins\WikiHub\Application;
 
-use App\Modules\Plugin\Application\PluginContext;
+use App\Modules\Plugin\Application\PluginApi;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Plugins\WikiHub\Domain\WikiSource;
@@ -12,20 +12,20 @@ use RuntimeException;
  * 連携している各サービスから、利用者のウィキを集める。
  */
 class ListWikis {
-    private readonly PluginContext $context;
+    private readonly PluginApi $api;
     private readonly WikiSourceClient $client;
     /** @var list<WikiSource> */
     private readonly array $sources;
     private readonly int $cacheSeconds;
 
     /**
-     * @param PluginContext $context
+     * @param PluginApi $api
      * @param WikiSourceClient $client
      * @param list<WikiSource> $sources 問い合わせ先
      * @param int $cacheSeconds 取得結果を持っておく秒数
      */
-    public function __construct(PluginContext $context, WikiSourceClient $client, array $sources, int $cacheSeconds) {
-        $this->context = $context;
+    public function __construct(PluginApi $api, WikiSourceClient $client, array $sources, int $cacheSeconds) {
+        $this->api = $api;
         $this->client = $client;
         $this->sources = $sources;
         $this->cacheSeconds = $cacheSeconds;
@@ -41,7 +41,7 @@ class ListWikis {
         $groups = [];
 
         foreach ($this->sources as $source) {
-            $accounts = $this->context->serviceAccounts($accountId, $source->clientId);
+            $accounts = $this->api->serviceAccounts($accountId, $source->clientId);
             if ($accounts === []) continue;
 
             $wikis = $this->fetchAll($source, $accountId, $accounts);

@@ -2,22 +2,24 @@
 namespace App\Modules\Plugin\Infrastructure;
 
 use App\Modules\Plugin\Domain\PluginManifest;
+use App\Support\Registry\DynamicRegistry;
 use RuntimeException;
 
 /**
- * plugins/ 以下から plugin.json を持つディレクトリを探す。
+ * plugins/ 以下から plugin.json を持つディレクトリを探して束ねる。
  *
- * 置くだけで読み込まれる形にしている。本体側の一覧へ書き足す手順があると、
- * プラグインを足すたびに本体へ差分が出てしまう。
+ * @extends DynamicRegistry<PluginManifest>
  */
-class PluginDiscovery {
+class PluginRegistry extends DynamicRegistry {
     private readonly string $root;
 
     /**
      * @param string $root plugins/ のパス
+     * @throws RuntimeException plugin.json が読めない・壊れている場合
      */
     public function __construct(string $root) {
         $this->root = $root;
+        $this->load();
     }
 
     /**
@@ -29,13 +31,9 @@ class PluginDiscovery {
 
     /**
      * @return list<PluginManifest> 名前順
-     * @throws RuntimeException plugin.json が読めない・壊れている場合
      */
     public function all(): array {
-        $files = glob($this->root . '/*/plugin.json') ?: [];
-        sort($files);
-
-        return array_map(fn (string $file): PluginManifest => $this->read($file), $files);
+        return array_values($this->items());
     }
 
     /**
@@ -43,9 +41,28 @@ class PluginDiscovery {
      * @return PluginManifest|null
      */
     public function find(string $name): ?PluginManifest {
-        $file = "{$this->root}/{$name}/plugin.json";
+        return parent::find($name);
+    }
 
-        return is_file($file) ? $this->read($file) : null;
+    /**
+     * @return list<PluginManifest> 名前順
+     * @throws RuntimeException plugin.json が読めない・壊れている場合
+     */
+    #[\Override]
+    protected function discover(): iterable {
+        $files = glob($this->root . '/*/plugin.json') ?: [];
+        sort($files);
+
+        return array_map(fn (string $file): PluginManifest => $this->read($file), $files);
+    }
+
+    /**
+     * @param PluginManifest $item
+     * @return string ディレクトリ名
+     */
+    #[\Override]
+    protected function keyOf(object $item): string {
+        return $item->name;
     }
 
     /**

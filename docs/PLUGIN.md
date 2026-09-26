@@ -37,7 +37,7 @@ plugins/<name>/
 
 | 用途 | 使うもの |
 | --- | --- |
-| ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginContext` (読み取りのみ) |
+| ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` (読み取りのみ) |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` に `PluginMenuItem` を登録 |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の lang/*.json を渡す |

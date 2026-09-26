@@ -2,7 +2,7 @@
 namespace App\Providers;
 
 use App\Modules\Plugin\Domain\PluginMenu;
-use App\Modules\Plugin\Infrastructure\PluginDiscovery;
+use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -20,13 +20,13 @@ class PluginServiceProvider extends ServiceProvider {
      */
     #[\Override]
     public function register(): void {
-        $discovery = new PluginDiscovery(base_path('plugins'));
-        $this->app->instance(PluginDiscovery::class, $discovery);
+        $plugins = new PluginRegistry(base_path('plugins'));
+        $this->app->instance(PluginRegistry::class, $plugins);
         $this->app->singleton(PluginMenu::class);
 
-        $this->registerAutoloader($discovery->root());
+        $this->registerAutoloader($plugins->root());
 
-        foreach ($discovery->all() as $plugin) {
+        foreach ($plugins->all() as $plugin) {
             if ($plugin->enabled) $this->app->register($plugin->provider);
         }
     }

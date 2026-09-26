@@ -11,11 +11,11 @@ use Illuminate\Support\Collection;
 /**
  * プラグインが本体から読めるもの。
  *
- * **プラグインは本体のモデルやリポジトリを直接触らず、ここを通す。**
+ * 基本的にはプラグインは本体のモデルやリポジトリを直接触らず、ここを通す。
  * 触らせると本体の内部を変えるたびにプラグインが壊れるうえ、
  * 認証まわりのように外から触られては困るものまで届いてしまう。読み取りしか置かない。
  */
-class PluginContext {
+class PluginApi {
     private readonly ChreeSession $session;
     private readonly AuthIdentityRepository $accounts;
     private readonly AdminAccess $admin;

@@ -1,11 +1,12 @@
 <?php
 namespace Plugins\WikiHub;
 
-use App\Modules\Plugin\Application\PluginContext;
+use App\Modules\Plugin\Application\PluginApi;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Domain\PluginMenuItem;
-use App\Modules\Plugin\Infrastructure\PluginDiscovery;
+use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\ServiceProvider;
+use Override;
 use Plugins\WikiHub\Application\ListWikis;
 use Plugins\WikiHub\Domain\WikiSource;
 use Plugins\WikiHub\Infrastructure\WikiSourceClient;
@@ -17,13 +18,13 @@ class WikiHubServiceProvider extends ServiceProvider {
     /**
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function register(): void {
         $this->mergeConfigFrom(__DIR__ . '/../config.php', 'wiki-hub');
 
         // 設定は使うときに読む。起動時に固めると、差し替えた設定が効かない
         $this->app->bind(ListWikis::class, fn (): ListWikis => new ListWikis(
-            $this->app->make(PluginContext::class),
+            $this->app->make(PluginApi::class),
             new WikiSourceClient((int) config('wiki-hub.timeout')),
             $this->sources(),
             (int) config('wiki-hub.cache_seconds'),
@@ -34,7 +35,7 @@ class WikiHubServiceProvider extends ServiceProvider {
      * @param PluginMenu $menu
      * @return void
      */
-    public function boot(PluginMenu $menu, PluginDiscovery $plugins): void {
+    public function boot(PluginMenu $menu, PluginRegistry $plugins): void {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $sources = $this->sources();
