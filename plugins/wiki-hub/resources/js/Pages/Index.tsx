@@ -43,11 +43,7 @@ interface IndexProps {
  */
 const Index = ({ groups }: IndexProps) => {
     return (
-        <AppLayout
-            title={t('page.title')}
-            lead={t('page.lead')}
-            crumbs={[{ label: core('dashboard.crumb'), href: '/' }, { label: t('page.title') }]}
-        >
+        <AppLayout title={t('page.title')} lead={t('page.lead')} crumbs={[{ label: core('dashboard.crumb'), href: '/' }, { label: t('page.title') }]}>
             <Deferred data="groups" fallback={<ListSkeleton count={3} />}>
                 <WikiGroups groups={groups ?? []} />
             </Deferred>

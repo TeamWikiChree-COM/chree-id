@@ -12,11 +12,7 @@ interface IndexProps {
  */
 const Index = ({ greeting }: IndexProps) => {
     return (
-        <AppLayout
-            title={t('page.title')}
-            lead={t('page.lead')}
-            crumbs={[{ label: core('dashboard.crumb'), href: '/' }, { label: t('page.title') }]}
-        >
+        <AppLayout title={t('page.title')} lead={t('page.lead')} crumbs={[{ label: core('dashboard.crumb'), href: '/' }, { label: t('page.title') }]}>
             <Typography>{greeting}</Typography>
         </AppLayout>
     );
