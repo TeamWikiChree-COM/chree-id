@@ -5,6 +5,7 @@ use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountEmails;
 use App\Modules\Identity\Application\AccountIcons;
+use App\Modules\Identity\Application\PendingEmailChanges;
 use App\Modules\Identity\Application\ConfirmEmailChange;
 use App\Modules\Identity\Application\ConfirmEmailVerification;
 use App\Modules\Identity\Application\RequestEmailChange;
@@ -13,7 +14,6 @@ use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\EmailChangeResult;
 use App\Modules\Identity\Infrastructure\ChreeSession;
-use App\Modules\Identity\Infrastructure\PendingEmailChangeModel;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,18 +28,43 @@ use Inertia\Response;
  * 画像の出し入れは IconController が持つ。
  */
 class ProfileController {
+    private readonly AuthIdentityRepository $accounts;
+    private readonly ChreeSession $session;
+    private readonly RequestEmailVerification $requestVerification;
+    private readonly ConfirmEmailVerification $confirmVerification;
+    private readonly RequestEmailChange $requestChange;
+    private readonly ConfirmEmailChange $confirmChange;
+    private readonly AccountIcons $icons;
+    private readonly AuditLog $audit;
+    private readonly AccountEmails $emails;
+    private readonly UserAccounts $userAccounts;
+    private readonly PendingEmailChanges $pendingChanges;
+
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
-        private readonly ChreeSession $session,
-        private readonly RequestEmailVerification $requestVerification,
-        private readonly ConfirmEmailVerification $confirmVerification,
-        private readonly RequestEmailChange $requestChange,
-        private readonly ConfirmEmailChange $confirmChange,
-        private readonly AccountIcons $icons,
-        private readonly AuditLog $audit,
-        private readonly AccountEmails $emails,
-        private readonly UserAccounts $userAccounts,
-    ) {}
+        AuthIdentityRepository $accounts,
+        ChreeSession $session,
+        RequestEmailVerification $requestVerification,
+        ConfirmEmailVerification $confirmVerification,
+        RequestEmailChange $requestChange,
+        ConfirmEmailChange $confirmChange,
+        AccountIcons $icons,
+        AuditLog $audit,
+        AccountEmails $emails,
+        UserAccounts $userAccounts,
+        PendingEmailChanges $pendingChanges,
+    ) {
+        $this->accounts = $accounts;
+        $this->session = $session;
+        $this->requestVerification = $requestVerification;
+        $this->confirmVerification = $confirmVerification;
+        $this->requestChange = $requestChange;
+        $this->confirmChange = $confirmChange;
+        $this->icons = $icons;
+        $this->audit = $audit;
+        $this->emails = $emails;
+        $this->userAccounts = $userAccounts;
+        $this->pendingChanges = $pendingChanges;
+    }
 
     /**
      * @return Response|RedirectResponse
@@ -57,7 +82,7 @@ class ProfileController {
             'emailVerified' => $account->isEmailVerified(),
             'iconSource' => $account->iconSource->value,
             'iconUrl' => $this->icons->urlFor($account),
-            'pendingEmail' => $this->pendingEmailChange($accountId),
+            'pendingEmail' => $this->pendingChanges->current($accountId),
             // サービスアカウントは追加アドレスを持たない。null なら欄ごと出さない
             'emails' => $this->userAccounts->exists($accountId) ? $this->emails->list($accountId) : null,
         ]);
@@ -84,26 +109,6 @@ class ProfileController {
     }
 
     /**
-     * 確認待ちのメールアドレス変更。
-     *
-     * 出さないと、送ったきり届かなかったときに本人が何も分からない。
-     *
-     * @param string $accountId アカウントID (ULID)
-     * @return array{email: string, expiresAt: string}|null 申し込みが無ければ null
-     */
-    private function pendingEmailChange(string $accountId): ?array {
-        $pending = PendingEmailChangeModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('expires_at', '>', now())
-            ->latest('expires_at')
-            ->first();
-
-        if ($pending === null) return null;
-
-        return ['email' => $pending->new_email, 'expiresAt' => $pending->expires_at->toDateTimeString()];
-    }
-
-    /**
      * 確認待ちの変更を取り消す。
      *
      * 打ち間違えたまま期限切れを待たせない。届いたリンクもこれで無効になる。
@@ -114,7 +119,7 @@ class ProfileController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return LoginRedirect::guest();
 
-        PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();
+        $this->pendingChanges->cancel($accountId);
         $this->audit->record(AuditAction::EMAIL_CHANGE_CANCELLED, $accountId);
 
         return redirect('/settings')->with('emailChangeCancelled', true);

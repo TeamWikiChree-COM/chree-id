@@ -1,11 +1,11 @@
 <?php
 namespace App\Modules\Client\Http;
 
+use App\Modules\Client\Application\Clients;
 use App\Modules\Client\Application\RegisterClient;
 use App\Modules\Client\Application\RotateClientSecret;
 use App\Modules\Client\Application\UpdateClient;
 use App\Modules\Client\Domain\ServiceTrust;
-use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -19,12 +19,25 @@ use Inertia\Response;
  * 中身は Application 側と共有していて、コンソールコマンドと同じ経路を通る。
  */
 class AdminClientController {
+    private readonly RegisterClient $register;
+    private readonly UpdateClient $update;
+    private readonly RotateClientSecret $rotate;
+    private readonly ClientPresenter $presenter;
+    private readonly Clients $clients;
+
     public function __construct(
-        private readonly RegisterClient $register,
-        private readonly UpdateClient $update,
-        private readonly RotateClientSecret $rotate,
-        private readonly ClientPresenter $presenter,
-    ) {}
+        RegisterClient $register,
+        UpdateClient $update,
+        RotateClientSecret $rotate,
+        ClientPresenter $presenter,
+        Clients $clients,
+    ) {
+        $this->register = $register;
+        $this->update = $update;
+        $this->rotate = $rotate;
+        $this->presenter = $presenter;
+        $this->clients = $clients;
+    }
 
     /**
      * @param Request $request
@@ -80,7 +93,7 @@ class AdminClientController {
      * @return Response
      */
     public function edit(string $client): Response {
-        $model = OAuthClientModel::query()->findOrFail($client);
+        $model = $this->clients->get($client);
 
         return Inertia::render('Admin/Clients/Form', [
             'client' => $this->presenter->toArray($model),
@@ -95,7 +108,7 @@ class AdminClientController {
      * @throws ValidationException
      */
     public function updateClient(Request $request, string $client): RedirectResponse {
-        $model = OAuthClientModel::query()->findOrFail($client);
+        $model = $this->clients->get($client);
         $input = $this->validated($request);
 
         $this->update->execute(
@@ -119,7 +132,7 @@ class AdminClientController {
      * @return RedirectResponse
      */
     public function rotateSecret(string $client): RedirectResponse {
-        $model = OAuthClientModel::query()->findOrFail($client);
+        $model = $this->clients->get($client);
 
         if (!$model->is_confidential) return redirect('/admin/clients');
 
@@ -134,7 +147,7 @@ class AdminClientController {
      * @return RedirectResponse
      */
     public function destroy(string $client): RedirectResponse {
-        OAuthClientModel::query()->findOrFail($client)->delete();
+        $this->clients->delete($client);
 
         return redirect('/admin/clients');
     }
@@ -142,20 +155,11 @@ class AdminClientController {
     /**
      * 申請を承認する。
      *
-     * **信頼状態を動かせるのは運営だけ。** 申請はサービス側の意思表示にすぎない。
-     *
      * @param string $client client_id
      * @return RedirectResponse
      */
     public function approve(string $client): RedirectResponse {
-        $model = OAuthClientModel::query()->find($client);
-        if ($model === null) return redirect('/admin/clients');
-
-        $model->forceFill([
-            'trust' => ServiceTrust::APPROVED,
-            // 承認したら申請は片付ける。残すと一覧にいつまでも「承認待ち」が出る
-            'review_requested_at' => null,
-        ])->save();
+        if (!$this->clients->approve($client)) return redirect('/admin/clients');
 
         return redirect('/admin/clients')->with('clientApproved', true);
     }

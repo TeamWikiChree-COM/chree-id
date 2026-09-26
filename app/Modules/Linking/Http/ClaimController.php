@@ -5,7 +5,7 @@ use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Infrastructure\CredentialModel;
+use App\Modules\Credential\Application\AccountCredentials;
 use App\Modules\Identity\Application\MergeException;
 use App\Modules\Identity\Application\TransferableCredentials;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -15,7 +15,7 @@ use App\Modules\Linking\Application\ClaimServiceAccount;
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\MergeServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Client\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Application\ClientNames;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -45,15 +45,28 @@ class ClaimController {
         ];
     }
 
-    public function __construct(
-        private readonly ClaimTickets $tickets,
-        private readonly ClaimServiceAccount $claim,
-        private readonly MergeServiceAccount $merge,
-        private readonly TransferableCredentials $transferable,
-        private readonly AuthIdentityRepository $accounts,
-        private readonly CredentialRepository $credentials,
-        private readonly ChreeSession $session,
-    ) {}
+    private readonly ClaimTickets $tickets;
+    private readonly MergeServiceAccount $merge;
+    private readonly TransferableCredentials $transferable;
+    private readonly AuthIdentityRepository $accounts;
+    private readonly CredentialRepository $credentials;
+    private readonly ChreeSession $session;
+    private readonly AccountCredentials $accountCredentials;
+    private readonly ClientNames $clientNames;
+
+    public function __construct(ClaimTickets $tickets, MergeServiceAccount $merge, TransferableCredentials $transferable, 
+        AuthIdentityRepository $accounts, CredentialRepository $credentials, ChreeSession $session, 
+        AccountCredentials $accountCredentials, ClientNames $clientNames
+    ) {
+        $this->tickets = $tickets;
+        $this->merge = $merge;
+        $this->transferable = $transferable;
+        $this->accounts = $accounts;
+        $this->credentials = $credentials;
+        $this->session = $session;
+        $this->accountCredentials = $accountCredentials;
+        $this->clientNames = $clientNames;
+    }
 
     /**
      * 入場券の着地。まず「はじめて使う」か「持っている」かだけを聞く。
@@ -219,7 +232,7 @@ class ClaimController {
     private function carriedFor(string $accountId): array {
         $carried = [];
 
-        foreach (CredentialModel::query()->where('auth_identity_id', $accountId)->orderBy('id')->get() as $credential) {
+        foreach ($this->accountCredentials->of($accountId) as $credential) {
             // 復旧コードは TOTP に付随するので、単独では選ばせない
             if ($credential->type === CredentialType::RECOVERY_CODE) continue;
 
@@ -264,8 +277,7 @@ class ClaimController {
      * @return string 利用者に見せるサービス名
      */
     private function serviceName(ServiceAccountModel $link): string {
-        // client_id は外部キーなので、紐付けがある限り必ず引ける
-        return OAuthClientModel::query()->findOrFail($link->client_id)->displayName();
+        return $this->clientNames->of($link->client_id);
     }
 
     /**

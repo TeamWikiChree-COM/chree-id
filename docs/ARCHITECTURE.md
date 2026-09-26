@@ -115,7 +115,6 @@ $this->app->singleton(ExternalIdpRegistry::class, function (): ExternalIdpRegist
 
 | ルール | 状態 |
 | --- | --- |
-| 2. Http から Eloquent を直接使っている | 15 ファイル (管理画面に多い) |
 | 5. モジュールをまたいだ直接参照 | 未調査 |
 
 新しく書くコードはルールに従い、既存のずれはリファクタリングで順に解消する。

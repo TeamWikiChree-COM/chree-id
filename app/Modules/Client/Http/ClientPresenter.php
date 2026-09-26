@@ -1,8 +1,8 @@
 <?php
 namespace App\Modules\Client\Http;
 
-use App\Modules\Identity\Infrastructure\UserAccountModel;
-use App\Modules\Linking\Infrastructure\ServiceAccountModel;
+use App\Modules\Client\Application\Clients;
+use App\Modules\Linking\Application\ServiceAccountCounts;
 use App\Modules\Client\Domain\ServiceTrust;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 
@@ -10,12 +10,20 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
  * 管理画面に出す接続サービスの形を作る。
  */
 class ClientPresenter {
+    private readonly Clients $clients;
+    private readonly ServiceAccountCounts $counts;
+
+    public function __construct(Clients $clients, ServiceAccountCounts $counts) {
+        $this->clients = $clients;
+        $this->counts = $counts;
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
     public function all(): array {
         $result = [];
-        foreach (OAuthClientModel::query()->orderBy('name')->get() as $client) {
+        foreach ($this->clients->all() as $client) {
             $result[] = $this->toArray($client);
         }
 
@@ -42,8 +50,8 @@ class ClientPresenter {
             'reviewRequestedAt' => $client->review_requested_at?->format('Y/m/d H:i'),
             'hasOwner' => $client->owner_id !== null,
             // 移行元へ落とす経路をいつ消せるかの目安になる
-            'serviceAccounts' => $this->countServiceAccounts($client->id),
-            'migratedAccounts' => $this->countMigrated($client->id),
+            'serviceAccounts' => $this->counts->total($client->id),
+            'migratedAccounts' => $this->counts->migrated($client->id),
             'createdAt' => $client->created_at?->toDateTimeString(),
         ];
     }
@@ -58,26 +66,5 @@ class ClientPresenter {
             ['value' => ServiceTrust::UNAPPROVED->value, 'label' => __('admin.client.trust.unapproved')],
             ['value' => ServiceTrust::DISABLED->value, 'label' => __('admin.client.trust.disabled')],
         ];
-    }
-
-    /**
-     * @param string $clientId サービスの client_id
-     * @return int このサービスのサービスアカウント数
-     */
-    private function countServiceAccounts(string $clientId): int {
-        return ServiceAccountModel::query()->where('client_id', $clientId)->count();
-    }
-
-    /**
-     * 束ねる人格を持つに至った数。移行がどこまで進んでいるかの目安。
-     *
-     * @param string $clientId サービスの client_id
-     * @return int
-     */
-    private function countMigrated(string $clientId): int {
-        return ServiceAccountModel::query()
-            ->where('client_id', $clientId)
-            ->whereIn('auth_identity_id', UserAccountModel::query()->select('auth_identity_id'))
-            ->count();
     }
 }

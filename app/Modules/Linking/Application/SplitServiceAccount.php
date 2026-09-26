@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Application;
 
+use App\Modules\Credential\Application\AccountCredentials;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
@@ -39,7 +40,28 @@ class SplitServiceAccount {
      */
     private const FOLLOWS_TOTP = [CredentialType::RECOVERY_CODE];
 
-    public function __construct(private readonly AuthIdentityRepository $accounts) {}
+    private readonly AuthIdentityRepository $accounts;
+
+    private readonly AccountCredentials $credentials;
+    
+    public function __construct(AuthIdentityRepository $accounts, AccountCredentials $credentials) {
+        $this->accounts = $accounts;
+        $this->credentials = $credentials;
+    }
+
+    /**
+     * 分離の対象にするサービスアカウント。本人のものでなければ引けない。
+     *
+     * @param string $serviceAccountId サービスアカウントのID (ULID)
+     * @param string $identityId 認証主体のID (ULID)
+     * @return ServiceAccountModel|null 本人のものでなければ null
+     */
+    public function target(string $serviceAccountId, string $identityId): ?ServiceAccountModel {
+        return ServiceAccountModel::query()
+            ->whereKey($serviceAccountId)
+            ->where('auth_identity_id', $identityId)
+            ->first();
+    }
 
     /**
      * 分離できる認証手段を返す。
@@ -50,7 +72,7 @@ class SplitServiceAccount {
     public function options(string $identityId): array {
         $options = [];
 
-        foreach (CredentialModel::query()->where('auth_identity_id', $identityId)->orderBy('id')->get() as $credential) {
+        foreach ($this->credentials->of($identityId) as $credential) {
             if (in_array($credential->type, self::IMMOVABLE, true)) continue;
             if (in_array($credential->type, self::FOLLOWS_TOTP, true)) continue;
 

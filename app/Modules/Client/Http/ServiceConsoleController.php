@@ -4,6 +4,7 @@ namespace App\Modules\Client\Http;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Infrastructure\ChreeSession;
+use App\Modules\Client\Application\Clients;
 use App\Modules\Client\Application\RegisterClient;
 use App\Modules\Client\Application\UpdateClient;
 use App\Modules\Client\Domain\ServiceTrust;
@@ -37,17 +38,14 @@ class ServiceConsoleController {
     private readonly RegisterClient $register;
     private readonly UpdateClient $update;
     private readonly AuditLog $audit;
+    private readonly Clients $clients;
 
-    public function __construct(
-        ChreeSession $session,
-        RegisterClient $register,
-        UpdateClient $update,
-        AuditLog $audit,
-    ) {
+    public function __construct(ChreeSession $session, RegisterClient $register, UpdateClient $update, AuditLog $audit, Clients $clients) {
         $this->session = $session;
         $this->register = $register;
         $this->update = $update;
         $this->audit = $audit;
+        $this->clients = $clients;
     }
 
     /**
@@ -75,7 +73,7 @@ class ServiceConsoleController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        $model = $client === null ? null : $this->ownedOrNull($accountId, $client);
+        $model = $client === null ? null : $this->clients->owned($accountId, $client);
         if ($client !== null && $model === null) return redirect('/services');
 
         return Inertia::render('Services/Form', [
@@ -135,7 +133,7 @@ class ServiceConsoleController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        $model = $this->ownedOrNull($accountId, $client);
+        $model = $this->clients->owned($accountId, $client);
         if ($model === null) return redirect('/services');
 
         $input = $this->validated($request);
@@ -167,13 +165,13 @@ class ServiceConsoleController {
         $accountId = $this->session->accountId();
         if ($accountId === null) return redirect('/login');
 
-        $model = $this->ownedOrNull($accountId, $client);
+        $model = $this->clients->owned($accountId, $client);
         if ($model === null) return redirect('/services');
 
         // 承認済みのものを申請し直させない。取り下げたいときは運営に言ってもらう
         if ($model->trust !== ServiceTrust::UNAPPROVED) return redirect('/services');
 
-        $model->forceFill(['review_requested_at' => now()])->save();
+        $this->clients->requestReview($model);
 
         $this->audit->record(AuditAction::SERVICE_REVIEW_REQUESTED, $accountId, ['client' => $model->id]);
 
@@ -186,22 +184,11 @@ class ServiceConsoleController {
      */
     private function ownedBy(string $accountId): array {
         $result = [];
-        foreach (OAuthClientModel::query()->where('owner_id', $accountId)->orderBy('name')->get() as $client) {
+        foreach ($this->clients->ownedBy($accountId) as $client) {
             $result[] = $this->describe($client);
         }
 
         return $result;
-    }
-
-    /**
-     * **必ず持ち主で絞る。** client_id だけで引くと、他人のサービスを触れてしまう。
-     *
-     * @param string $accountId アカウントID (ULID)
-     * @param string $client client_id
-     * @return OAuthClientModel|null
-     */
-    private function ownedOrNull(string $accountId, string $client): ?OAuthClientModel {
-        return OAuthClientModel::query()->where('owner_id', $accountId)->find($client);
     }
 
     /**

@@ -13,10 +13,13 @@ use Illuminate\Http\Request;
  * 認可コードを ID Token とアクセストークンに交換する。
  */
 class TokenController {
-    public function __construct(
-        private readonly AuthenticateClient $clients,
-        private readonly ExchangeAuthCode $exchange,
-    ) {}
+    private readonly AuthenticateClient $clients;
+    private readonly ExchangeAuthCode $exchange;
+
+    public function __construct(AuthenticateClient $clients, ExchangeAuthCode $exchange) {
+        $this->clients = $clients;
+        $this->exchange = $exchange;
+    }
 
     /**
      * @param Request $request

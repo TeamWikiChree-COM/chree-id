@@ -11,9 +11,11 @@ use Illuminate\Http\Request;
  * アクセストークンの scope の範囲でだけクレームを返す。
  */
 class UserinfoController {
-    public function __construct(
-        private readonly ResolveUserinfo $userinfo,
-    ) {}
+    private readonly ResolveUserinfo $userinfo;
+
+    public function __construct(ResolveUserinfo $userinfo) {
+        $this->userinfo = $userinfo;
+    }
 
     /**
      * @param Request $request

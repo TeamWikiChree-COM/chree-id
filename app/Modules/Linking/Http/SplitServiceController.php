@@ -5,8 +5,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
-use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Client\Infrastructure\OAuthClientModel;
+use App\Modules\Client\Application\ClientNames;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,10 +33,15 @@ class SplitServiceController {
         ];
     }
 
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly SplitServiceAccount $split,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly SplitServiceAccount $split;
+    private readonly ClientNames $clientNames;
+
+    public function __construct(ChreeSession $session, SplitServiceAccount $split, ClientNames $clientNames) {
+        $this->session = $session;
+        $this->split = $split;
+        $this->clientNames = $clientNames;
+    }
 
     /**
      * @param string $serviceAccount サービスアカウントのID (ULID)
@@ -47,7 +51,7 @@ class SplitServiceController {
         $identityId = $this->session->accountId();
         if ($identityId === null) return LoginRedirect::guest();
 
-        $target = $this->find($serviceAccount, $identityId);
+        $target = $this->split->target($serviceAccount, $identityId);
         if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
 
         $options = [];
@@ -67,7 +71,7 @@ class SplitServiceController {
 
         return Inertia::render('Settings/SplitService', [
             'serviceAccountId' => $target->id,
-            'serviceName' => OAuthClientModel::query()->findOrFail($target->client_id)->displayName(),
+            'serviceName' => $this->clientNames->of($target->client_id),
             'serviceUserId' => $target->service_user_id,
             'options' => $options,
         ]);
@@ -91,7 +95,7 @@ class SplitServiceController {
         ]);
 
         // 本人が持っているサービスアカウントに限る。画面から来たIDは信用しない
-        $target = $this->find($request->string('service_account_id')->toString(), $identityId);
+        $target = $this->split->target($request->string('service_account_id')->toString(), $identityId);
         if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
 
         /** @var list<string> $chosen */
@@ -109,17 +113,5 @@ class SplitServiceController {
         }
 
         return redirect('/')->with('serviceSplit', true);
-    }
-
-    /**
-     * @param string $serviceAccountId サービスアカウントのID (ULID)
-     * @param string $identityId 認証主体のID (ULID)
-     * @return ServiceAccountModel|null 本人のものでなければ null
-     */
-    private function find(string $serviceAccountId, string $identityId): ?ServiceAccountModel {
-        return ServiceAccountModel::query()
-            ->whereKey($serviceAccountId)
-            ->where('auth_identity_id', $identityId)
-            ->first();
     }
 }
