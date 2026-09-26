@@ -12,7 +12,6 @@ use Override;
  * DokuFarm、WikiChree などのウィキを、利用者ごとに1画面へまとめる。
  */
 class WikiHubServiceProvider extends ServiceProvider {
-
     #[Override]
     public function register(): void {
         // 設定ファイルの登録
