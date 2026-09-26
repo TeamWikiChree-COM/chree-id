@@ -7,13 +7,13 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 
 /**
- * DokuFarm、WikiChree などのウィキを、利用者ごとに1画面へまとめる。
+ * DokuFarm、WikiChree などのウィキを、利用者ごとに1画面へまとめる
  */
 class WikiHubServiceProvider extends ServiceProvider {
     #[Override]
     public function register(): void {
         // 設定は利用時に読み込む。起動時に固めると、差し替えた設定が効かない
-        $this->app->bind(ListWikis::class, fn (): ListWikis => new ListWikis(
+        $this->app->bind(ListWikis::class, fn () => new ListWikis(
             $this->app->make(PluginApi::class),
             new WikiSourceClient((int) config('wiki-hub.timeout')),
             $this->sources(),
@@ -21,15 +21,11 @@ class WikiHubServiceProvider extends ServiceProvider {
         ));
     }
 
-    /**
-     * @param PluginMenu $menu
-     */
     public function boot(PluginMenu $menu): void {
         $sources = $this->sources();
-        // 繋いだサービスが1つも無いうちは、入口を出しても空の画面にしかならない
         if ($sources === []) return;
 
-        $menu->addPlugin('wiki-hub', PluginMenu::AREA_DASHBOARD, array_map(static fn (WikiSource $source): string => $source->clientId, $sources));
+        $menu->addPlugin('wiki-hub', PluginMenu::AREA_DASHBOARD, array_map(static fn (WikiSource $source) => $source->clientId, $sources));
     }
 
     /**

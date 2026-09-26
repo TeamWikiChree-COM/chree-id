@@ -6,9 +6,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * サービスへ「この人のウィキ一覧」を問い合わせる。
- *
- * 取り決めは plugins/wiki-hub/README.md。
+ * サービスへ「この人のウィキ一覧」を問い合わせる
  */
 class WikiSourceClient {
     private readonly int $timeout;
