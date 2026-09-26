@@ -7,7 +7,7 @@ import { t } from '../lib/i18n';
  *
  * 年は閲覧時点のものを出す。ビルド時に固定すると、年をまたいでも古いまま残る。
  */
-export default function SiteFooter() {
+const SiteFooter = () => {
     const { appName } = usePage().props;
 
     return (
@@ -18,4 +18,6 @@ export default function SiteFooter() {
             {t('common.footer.copyright', { year: new Date().getFullYear(), app: appName })}
         </Typography>
     );
-}
+};
+
+export default SiteFooter;

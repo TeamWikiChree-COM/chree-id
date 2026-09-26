@@ -11,7 +11,7 @@ interface ListSkeletonProps {
 }
 
 /** 1行分。見出しと補足の2段 */
-function RowSkeleton({ chip }: { chip: boolean }) {
+const RowSkeleton = ({ chip }: { chip: boolean }) => {
     return (
         <Box sx={{ px: 2, py: 1.25 }}>
             {chip && <Skeleton variant="rounded" width={72} height={20} sx={{ mb: 0.5 }} />}
@@ -19,14 +19,14 @@ function RowSkeleton({ chip }: { chip: boolean }) {
             <Skeleton variant="text" width={120} sx={{ fontSize: '0.75rem' }} />
         </Box>
     );
-}
+};
 
 /**
  * 枠付き一覧の読み込み中表示。
  *
  * @param props 行数とチップの有無
  */
-export default function ListSkeleton({ count = 5, chip = false }: ListSkeletonProps) {
+const ListSkeleton = ({ count = 5, chip = false }: ListSkeletonProps) => {
     return (
         <Paper variant="outlined" sx={{ mb: 2 }}>
             <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
@@ -34,4 +34,6 @@ export default function ListSkeleton({ count = 5, chip = false }: ListSkeletonPr
             </Stack>
         </Paper>
     );
-}
+};
+
+export default ListSkeleton;

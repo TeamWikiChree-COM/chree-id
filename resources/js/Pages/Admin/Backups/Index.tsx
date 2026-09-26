@@ -45,7 +45,7 @@ interface DriveListing {
 /**
  * 置き場ごとの控えの一覧。
  */
-function BackupList({ heading, files }: { heading: string; files: BackupFile[] }) {
+const BackupList = ({ heading, files }: { heading: string; files: BackupFile[] }) => {
     return (
         <>
             <SectionTitle note={t('admin.backups.count', { count: files.length })}>{heading}</SectionTitle>
@@ -78,9 +78,9 @@ function BackupList({ heading, files }: { heading: string; files: BackupFile[] }
             </Paper>
         </>
     );
-}
+};
 
-export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, drive, localBackups }: IndexProps) {
+const Index = ({ hasKey, hasDrive, hasLocal, keep, localDays, drive, localBackups }: IndexProps) => {
     const { flash, errors } = usePage().props;
     const { ask, dialog } = useConfirm();
     const [running, setRunning] = useState(false);
@@ -164,4 +164,6 @@ export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, dri
             </Deferred>
         </AppLayout>
     );
-}
+};
+
+export default Index;

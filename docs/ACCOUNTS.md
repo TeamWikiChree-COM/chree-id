@@ -44,6 +44,7 @@ ServiceAccount のままでも使い続けられる。UserAccount にするか�
 | 外部IdP (Google、GitHub) | 動かさない | 持っていける |
 | `sub` | 変わらない | 変わらない |
 
+- 外部IdP を持っていけるのは、`credentials` の一意制約が `type <> 'oauth'` の部分ユニークだから。同じ Google/GitHub のアカウントが複数の AuthIdentity に付いていてよい
 - パスキーは、認証器側に user handle が焼き込まれているので移せない。移った先で登録し直してもらう
 - `sub` は ServiceAccount に属する。`auth_identity_id` は統合で書き換わるので、`sub` を AuthIdentity から作ってはいけない
 

@@ -88,6 +88,22 @@ export default function SectionTitle({ children, note }: SectionTitleProps) {
 - PHP: 引数・戻り値・プロパティに型を宣言する。配列の中身は PHPDoc で書く (`list<string>`、`array{id: string}` など)
 - TypeScript: `any` を使わない
 
+例外として、Eloquent モデルの `$table`、`$fillable`、`$casts` などには型を付けない。親の `Model` が型なしで宣言しているので、付けると `Type of ... must be omitted to match the parent` で落ちる。代わりに `#[Override]` を付ける (`use Override;` で読み込む)。
+
+`$fillable` に無いキーは `create()` でエラーにならずに捨てられる。値が保存されないときは、まず `$fillable` を疑う。
+
+### enum の case は UPPER_SNAKE_CASE
+
+```php
+// GOOD
+case MAGIC_LINK = 'magic_link';
+
+// BAD
+case MagicLink = 'magic_link';
+```
+
+`TOTP` のような略語で `Totp` と `TOTP` のどちらにするか迷わずに済むため。DB に入るのは `value` のほうなので、case 名を変えても保存値は変わらない。
+
 ## コメント
 
 - コメントには「なぜそうしたか」だけを書く。「何をしているか」はコードで分かるので基本的には書かない (コードを見てもわかりにくいなら書く場合もある)

@@ -4,7 +4,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
 /** ログ1件分。LogEntryRow と同じ余白にして、差し替わったときに行の高さがずれないようにする */
-function LogEntrySkeleton() {
+const LogEntrySkeleton = () => {
     return (
         <Box sx={{ px: 2, py: 1.5 }}>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
@@ -15,14 +15,14 @@ function LogEntrySkeleton() {
             <Skeleton variant="text" width="85%" sx={{ mt: 0.5, fontSize: '0.875rem' }} />
         </Box>
     );
-}
+};
 
 /**
  * ログ一覧の読み込み中表示。
  *
  * @param count 並べる行数
  */
-export default function LogListSkeleton({ count = 8 }: { count?: number }) {
+const LogListSkeleton = ({ count = 8 }: { count?: number }) => {
     return (
         <Paper variant="outlined">
             <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
@@ -30,4 +30,6 @@ export default function LogListSkeleton({ count = 8 }: { count?: number }) {
             </Stack>
         </Paper>
     );
-}
+};
+
+export default LogListSkeleton;

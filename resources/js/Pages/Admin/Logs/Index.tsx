@@ -30,7 +30,7 @@ interface IndexProps {
  * 本番は共用サーバでシェルに入れないので、ここから読めないと例外の中身を
  * 確かめる手段が無い。**監査ログとは別物**（あちらは誰に何が起きたかの記録）。
  */
-export default function Index({ files, file, entries }: IndexProps) {
+const Index = ({ files, file, entries }: IndexProps) => {
     const { logCleared } = usePage().props.flash;
     const { ask, dialog } = useConfirm();
 
@@ -107,14 +107,14 @@ export default function Index({ files, file, entries }: IndexProps) {
             {dialog}
         </AppLayout>
     );
-}
+};
 
 /**
  * 読み込み済みのログ一覧。
  *
  * @param entries 新しい順の記録
  */
-function LogEntries({ entries }: { entries: LogEntry[] }) {
+const LogEntries = ({ entries }: { entries: LogEntry[] }) => {
     return (
         <>
             <SectionTitle note={t('admin.logs.count', { count: entries.length })}>
@@ -136,4 +136,6 @@ function LogEntries({ entries }: { entries: LogEntry[] }) {
             </Paper>
         </>
     );
-}
+};
+
+export default Index;

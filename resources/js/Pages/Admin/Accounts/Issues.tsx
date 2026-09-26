@@ -26,7 +26,7 @@ interface IssuesProps {
 /**
  * 種別と実体が食い違ったアカウント。どれも昇格で直るので、まとめて直せるようにしておく。
  */
-export default function Issues({ accounts, selfId, graceDays }: IssuesProps) {
+const Issues = ({ accounts, selfId, graceDays }: IssuesProps) => {
     const { errors } = usePage().props;
 
     return (
@@ -54,7 +54,7 @@ export default function Issues({ accounts, selfId, graceDays }: IssuesProps) {
             </Deferred>
         </AppLayout>
     );
-}
+};
 
 interface IssueListProps {
     accounts: IssueAccount[];
@@ -67,7 +67,7 @@ interface IssueListProps {
  *
  * @param props 一覧と表示に要る値
  */
-function IssueList({ accounts, selfId, graceDays }: IssueListProps) {
+const IssueList = ({ accounts, selfId, graceDays }: IssueListProps) => {
     const { ask, dialog } = useConfirm();
 
     const fixAll = (): void => {
@@ -114,4 +114,6 @@ function IssueList({ accounts, selfId, graceDays }: IssueListProps) {
             {dialog}
         </>
     );
-}
+};
+
+export default Issues;
