@@ -46,6 +46,7 @@ class ClaimController {
     }
 
     private readonly ClaimTickets $tickets;
+    private readonly ClaimServiceAccount $claim;
     private readonly MergeServiceAccount $merge;
     private readonly TransferableCredentials $transferable;
     private readonly AuthIdentityRepository $accounts;
@@ -54,11 +55,12 @@ class ClaimController {
     private readonly AccountCredentials $accountCredentials;
     private readonly ClientNames $clientNames;
 
-    public function __construct(ClaimTickets $tickets, MergeServiceAccount $merge, TransferableCredentials $transferable, 
+    public function __construct(ClaimTickets $tickets, ClaimServiceAccount $claim, MergeServiceAccount $merge, TransferableCredentials $transferable,
         AuthIdentityRepository $accounts, CredentialRepository $credentials, ChreeSession $session, 
         AccountCredentials $accountCredentials, ClientNames $clientNames
     ) {
         $this->tickets = $tickets;
+        $this->claim = $claim;
         $this->merge = $merge;
         $this->transferable = $transferable;
         $this->accounts = $accounts;

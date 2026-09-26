@@ -6,7 +6,7 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
- * 登録済みのクライアントを引く・片付ける。
+ * 登録済みのクライアントを引く、片付ける。
  */
 class Clients {
     /**
