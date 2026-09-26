@@ -49,7 +49,7 @@ Repository を挟まずにクエリを書いてよい。
 
 ### 2. Http は「入力の検証・Application の呼び出し・レスポンスの組み立て」だけ
 
-クエリや業務判断をコントローラに書かない。画面に渡す形への整形が大きくなったら Presenter に分ける (例: [ClientPresenter](../app/Modules/Client/Http/ClientPresenter.php))。
+コントローラは [Controller](../app/Http/Controllers/Controller.php) を継承する。基本的にはクエリや業務判断をコントローラに書かない。画面に渡す形への整形が大きくなったら Presenter に分ける (例: [ClientPresenter](../app/Modules/Client/Http/ClientPresenter.php))。
 
 ### 3. Domain は DB に依存しない
 
