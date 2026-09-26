@@ -32,6 +32,19 @@ plugins/<name>/
 
 `enabled` を `false` にすると読み込まない。
 
+### 新しく作るとき
+
+`plugins/template/` がひな形になっている。仕組みの説明をコメントに書いてあるので、読みながら書き換える。
+
+1. `plugins/template/` をコピーし、フォルダ名をプラグイン名 (kebab-case) にする
+2. plugin.json の `provider`、`title`、`description` を書き換え、`enabled` を `true` にする
+3. `src/` と `tests/` の名前空間 `Plugins\Template` を `Plugins\<StudlyName>` に、クラス名の `Template` をプラグイン名にする
+4. `'template::Index'`、`config('template.…')`、`addPlugin('template', …)` の `template` をフォルダ名にする
+
+ひな形は plugin.json で無効にしてあるので、本番では読み込まれない。ひな形自身のテスト (`plugins/template/tests/`) だけが、テストの中で読み込んで動くことを確かめている。本体の変更でひな形が動かなくなると、このテストが落ちる。
+
+本体の読み込み処理そのもののテストには、別に `tests/Fixtures/plugins/example/` を使う。実在のプラグインやひな形の都合に左右されないようにするため。
+
 ## 読み込みの流れ
 
 ```
