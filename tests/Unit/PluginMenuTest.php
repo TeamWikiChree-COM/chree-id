@@ -1,8 +1,11 @@
 <?php
 namespace Tests\Unit;
 
+use App\Modules\Plugin\Domain\PluginManifest;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Domain\PluginMenuItem;
+use LogicException;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
 // ダッシュボードには、連携しているサービスで使えるプラグインだけを出す
@@ -21,5 +24,20 @@ class PluginMenuTest extends TestCase {
 
         $this->assertSame('B', $menu->itemsFor(PluginMenu::AREA_DASHBOARD, 'en')[0]['label']);
         $this->assertSame([], $menu->itemsFor(PluginMenu::AREA_ADMIN, 'en'));
+    }
+
+    #[TestDox('addPlugin は plugin.json の名前と説明を使い、/plugins/<名前> への入口を足す')]
+    public function test_addPluginFillsFromManifest(): void {
+        $menu = new PluginMenu([new PluginManifest('wiki-hub', '0.1.0', 'Provider', true, ['ja' => 'ウィキ'], ['ja' => '説明'])]);
+        $menu->addPlugin('wiki-hub', PluginMenu::AREA_DASHBOARD);
+
+        $this->assertSame([['href' => '/plugins/wiki-hub', 'label' => 'ウィキ', 'description' => '説明']], $menu->itemsFor(PluginMenu::AREA_DASHBOARD, 'ja'));
+    }
+
+    #[TestDox('読み込まれていないプラグインの名前を addPlugin に渡すと例外になる')]
+    public function test_addPluginRejectsUnknownName(): void {
+        $this->expectException(LogicException::class);
+
+        (new PluginMenu())->addPlugin('wiki-hbu', PluginMenu::AREA_DASHBOARD);
     }
 }

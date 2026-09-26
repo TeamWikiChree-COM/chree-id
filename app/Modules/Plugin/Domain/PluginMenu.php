@@ -1,6 +1,8 @@
 <?php
 namespace App\Modules\Plugin\Domain;
 
+use LogicException;
+
 /**
  * プラグインが本体の画面へ足すリンク。
  *
@@ -17,11 +19,40 @@ final class PluginMenu {
     /** @var list<PluginMenuItem> */
     private array $items = [];
 
+    /** @var array<string, PluginManifest> 名前をキーにした、読み込んだプラグイン */
+    private readonly array $plugins;
+
     /**
+     * @param list<PluginManifest> $plugins addPlugin() で名前から引くためのもの
+     */
+    public function __construct(array $plugins = []) {
+        $byName = [];
+        foreach ($plugins as $plugin) $byName[$plugin->name] = $plugin;
+
+        $this->plugins = $byName;
+    }
+
+    /**
+     * 入口の名前や URL を自分で決めたいときに使う。ふつうは addPlugin() で足りる。
+     *
      * @param PluginMenuItem $item
      */
     public function add(PluginMenuItem $item): void {
         $this->items[] = $item;
+    }
+
+    /**
+     * プラグインの入口を足す。名前と説明は plugin.json の title と description、URL は /plugins/<名前>。
+     *
+     * @param string $name プラグインのフォルダ名
+     * @param string $area 上の AREA_* のいずれか
+     * @param list<string> $clientIds このどれかと連携している利用者にだけ出す。空なら全員
+     * @throws LogicException 読み込まれていないプラグインの名前を渡したとき (打ち間違いで入口が黙って消えないように)
+     */
+    public function addPlugin(string $name, string $area, array $clientIds = []): void {
+        $plugin = $this->plugins[$name] ?? throw new LogicException("Unknown plugin: {$name}");
+
+        $this->add(new PluginMenuItem($area, "/plugins/{$name}", $plugin->title, $plugin->description, $clientIds));
     }
 
     /**

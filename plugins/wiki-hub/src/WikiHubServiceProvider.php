@@ -3,8 +3,6 @@ namespace Plugins\WikiHub;
 
 use App\Modules\Plugin\Application\PluginApi;
 use App\Modules\Plugin\Domain\PluginMenu;
-use App\Modules\Plugin\Domain\PluginMenuItem;
-use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -14,9 +12,6 @@ use Override;
 class WikiHubServiceProvider extends ServiceProvider {
     #[Override]
     public function register(): void {
-        // 設定ファイルの登録
-        $this->mergeConfigFrom(__DIR__ . '/../config.php', 'wiki-hub');
-
         // 設定は利用時に読み込む。起動時に固めると、差し替えた設定が効かない
         $this->app->bind(ListWikis::class, fn (): ListWikis => new ListWikis(
             $this->app->make(PluginApi::class),
@@ -29,23 +24,12 @@ class WikiHubServiceProvider extends ServiceProvider {
     /**
      * @param PluginMenu $menu
      */
-    public function boot(PluginMenu $menu, PluginRegistry $plugins): void {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
-
+    public function boot(PluginMenu $menu): void {
         $sources = $this->sources();
         // 繋いだサービスが1つも無いうちは、入口を出しても空の画面にしかならない
         if ($sources === []) return;
 
-        // 名前と説明は plugin.json の1か所だけに書く
-        $manifest = $plugins->find('wiki-hub');
-
-        $menu->add(new PluginMenuItem(
-            PluginMenu::AREA_DASHBOARD,
-            '/plugins/wiki-hub',
-            $manifest->title ?? [],
-            $manifest->description ?? [],
-            array_map(static fn (WikiSource $source): string => $source->clientId, $sources),
-        ));
+        $menu->addPlugin('wiki-hub', PluginMenu::AREA_DASHBOARD, array_map(static fn (WikiSource $source): string => $source->clientId, $sources));
     }
 
     /**

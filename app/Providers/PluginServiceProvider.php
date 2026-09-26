@@ -3,6 +3,7 @@ namespace App\Providers;
 
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
 use Override;
@@ -21,13 +22,32 @@ class PluginServiceProvider extends ServiceProvider {
     public function register(): void {
         $plugins = new PluginRegistry(base_path('plugins'));
         $this->app->instance(PluginRegistry::class, $plugins);
-        $this->app->singleton(PluginMenu::class);
+        $this->app->singleton(PluginMenu::class, static fn (): PluginMenu => new PluginMenu($plugins->enabled()));
 
         $this->registerAutoloader($plugins->root());
         $this->registerPages($plugins);
 
-        foreach ($plugins->all() as $plugin) {
-            if ($plugin->enabled) $this->app->register($plugin->provider);
+        foreach ($plugins->enabled() as $plugin) {
+            $config = $plugins->path($plugin, 'config.php');
+            // プラグインの register() から設定を読めるよう、プロバイダより先に登録する
+            if (is_file($config)) $this->mergeConfigFrom($config, $plugin->name);
+
+            $this->app->register($plugin->provider);
+        }
+    }
+
+    /**
+     * プラグインの routes/web.php を、web ミドルウェアと /plugins/<名前> の接頭辞を付けて読む。
+     *
+     * 接頭辞をそろえるのは、本体の URL とぶつけないため。プラグイン側は相対の URL だけ書けばよい。
+     */
+    public function boot(): void {
+        if ($this->app->routesAreCached()) return;
+
+        $plugins = $this->app->make(PluginRegistry::class);
+        foreach ($plugins->enabled() as $plugin) {
+            $routes = $plugins->path($plugin, 'routes/web.php');
+            if (is_file($routes)) Route::middleware('web')->prefix("plugins/{$plugin->name}")->group($routes);
         }
     }
 
@@ -41,9 +61,7 @@ class PluginServiceProvider extends ServiceProvider {
      */
     private function registerPages(PluginRegistry $plugins): void {
         $this->app->extend('inertia.view-finder', static function (FileViewFinder $finder) use ($plugins): FileViewFinder {
-            foreach ($plugins->all() as $plugin) {
-                if ($plugin->enabled) $finder->addNamespace($plugin->name, $plugins->root() . "/{$plugin->name}/resources/js/Pages");
-            }
+            foreach ($plugins->enabled() as $plugin) $finder->addNamespace($plugin->name, $plugins->path($plugin, 'resources/js/Pages'));
 
             return $finder;
         });

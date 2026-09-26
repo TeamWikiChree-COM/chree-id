@@ -38,6 +38,22 @@ class PluginRegistry extends DynamicRegistry {
     }
 
     /**
+     * @return list<PluginManifest> plugin.json で有効になっているもの。名前順
+     */
+    public function enabled(): array {
+        return array_values(array_filter($this->all(), static fn (PluginManifest $plugin): bool => $plugin->enabled));
+    }
+
+    /**
+     * @param PluginManifest $plugin
+     * @param string $file プラグインのフォルダからの相対パス (例: routes/web.php)
+     * @return string
+     */
+    public function path(PluginManifest $plugin, string $file): string {
+        return "{$this->root}/{$plugin->name}/{$file}";
+    }
+
+    /**
      * @param string $key ディレクトリ名
      * @return PluginManifest|null
      */
