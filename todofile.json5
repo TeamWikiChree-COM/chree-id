@@ -1,4 +1,6 @@
 {
+    // https://github.com/Pitan76/Todofile
+
     // ---- セットアップ ----
     // 初回だけ。.env が既にあれば上書きしない
     "setup": [
