@@ -4,6 +4,7 @@ namespace App\Modules\Plugin\Infrastructure;
 use App\Modules\Plugin\Domain\PluginManifest;
 use App\Support\Registry\DynamicRegistry;
 use RuntimeException;
+use Override;
 
 /**
  * plugins/ 以下から plugin.json を持つディレクトリを探して束ねる。
@@ -37,18 +38,18 @@ class PluginRegistry extends DynamicRegistry {
     }
 
     /**
-     * @param string $name ディレクトリ名
+     * @param string $key ディレクトリ名
      * @return PluginManifest|null
      */
-    public function find(string $name): ?PluginManifest {
-        return parent::find($name);
+    public function find(string $key): ?PluginManifest {
+        return parent::find($key);
     }
 
     /**
      * @return list<PluginManifest> 名前順
      * @throws RuntimeException plugin.json が読めない・壊れている場合
      */
-    #[\Override]
+    #[Override]
     protected function discover(): iterable {
         $files = glob($this->root . '/*/plugin.json') ?: [];
         sort($files);
@@ -60,7 +61,7 @@ class PluginRegistry extends DynamicRegistry {
      * @param PluginManifest $item
      * @return string ディレクトリ名
      */
-    #[\Override]
+    #[Override]
     protected function keyOf(object $item): string {
         return $item->name;
     }
