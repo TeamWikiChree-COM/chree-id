@@ -133,6 +133,13 @@ export interface OAuthClient {
 }
 
 /** 第三者が自分で登録したサービス */
+/** サービス登録フォームの URL 群。利用者用と管理用のフォームで共有する */
+export interface ServiceUrls {
+    redirect_uris: string[];
+    icon_url: string;
+    settings_url: string;
+}
+
 export interface OwnedService {
     /** client_id */
     id: string;

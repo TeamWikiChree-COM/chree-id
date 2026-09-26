@@ -5,10 +5,10 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import type { FormEvent } from 'react';
 import AppLayout from '../../Components/AppLayout';
 import SectionTitle from '../../Components/SectionTitle';
+import ServiceUrlFields from '../../Components/Services/ServiceUrlFields';
 import { t } from '../../lib/i18n';
 import type { OwnedService } from '../../types';
 
@@ -34,10 +34,6 @@ export default function Form({ service, scopes }: FormProps) {
         icon_url: service?.iconUrl ?? '',
         settings_url: service?.settingsUrl ?? '',
     });
-
-    const setUri = (index: number, value: string): void => {
-        form.setData('redirect_uris', form.data.redirect_uris.map((uri, i) => (i === index ? value : uri)));
-    };
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -69,51 +65,10 @@ export default function Form({ service, scopes }: FormProps) {
                             required
                         />
 
-                        <Box>
-                            <Typography sx={{ fontSize: '0.875rem', mb: 1 }}>
-                                {t('services.form.redirect_uris')}
-                            </Typography>
-
-                            <Stack spacing={1}>
-                                {form.data.redirect_uris.map((uri, index) => (
-                                    <TextField
-                                        key={index}
-                                        size="small"
-                                        value={uri}
-                                        onChange={(e) => setUri(index, e.target.value)}
-                                        placeholder="https://example.com/auth/callback"
-                                    />
-                                ))}
-                            </Stack>
-
-                            <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.disabled' }}>
-                                {form.errors.redirect_uris ?? t('services.form.redirect_uris_hint')}
-                            </Typography>
-
-                            <Button
-                                size="small"
-                                color="inherit"
-                                sx={{ mt: 0.5 }}
-                                onClick={() => form.setData('redirect_uris', [...form.data.redirect_uris, ''])}
-                            >
-                                {t('services.form.redirect_add')}
-                            </Button>
-                        </Box>
-
-                        <TextField
-                            label={t('services.form.settings_url')}
-                            value={form.data.settings_url}
-                            onChange={(e) => form.setData('settings_url', e.target.value)}
-                            error={Boolean(form.errors.settings_url)}
-                            helperText={form.errors.settings_url ?? t('services.form.settings_url_hint')}
-                        />
-
-                        <TextField
-                            label={t('services.form.icon_url')}
-                            value={form.data.icon_url}
-                            onChange={(e) => form.setData('icon_url', e.target.value)}
-                            error={Boolean(form.errors.icon_url)}
-                            helperText={form.errors.icon_url}
+                        <ServiceUrlFields
+                            data={form.data}
+                            errors={form.errors}
+                            onChange={(changed) => form.setData({ ...form.data, ...changed })}
                         />
 
                         <TextField

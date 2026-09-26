@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import type { FormEvent } from "react";
 import AppLayout from "../../../Components/AppLayout";
 import SwitchField from "../../../Components/SwitchField";
+import ServiceUrlFields from "../../../Components/Services/ServiceUrlFields";
 import { localeLabel, t } from "../../../lib/i18n";
 import type { OAuthClient } from "../../../types";
 import ClientActions from "./ClientActions";
@@ -30,10 +31,10 @@ export default function Form({ client, trustOptions }: FormProps) {
     // trust は select の値なので string で持つ。妥当性はサーバ側 (ServiceTrust) で確かめる
     const { locales } = usePage().props;
 
-    const { data, setData, post, processing, errors, transform } = useForm<{
+    const { data, setData, post, processing, errors } = useForm<{
         name: string;
         names: Record<string, string>;
-        redirect_uris: string;
+        redirect_uris: string[];
         scopes: string;
         trust: string;
         icon_url: string;
@@ -44,8 +45,7 @@ export default function Form({ client, trustOptions }: FormProps) {
     }>({
         name: client?.name ?? "",
         names: client?.names ?? {},
-        // 1行1つで編集させる。配列を UI に出すより間違いが起きにくい
-        redirect_uris: (client?.redirectUris ?? []).join("\n"),
+        redirect_uris: client?.redirectUris ?? [""],
         scopes: client?.scopes ?? "openid profile email",
         trust: client?.trust ?? "unapproved",
         icon_url: client?.iconUrl ?? "",
@@ -54,15 +54,6 @@ export default function Form({ client, trustOptions }: FormProps) {
         can_provision: client?.canProvision ?? false,
         is_confidential: client?.isConfidential ?? true,
     });
-
-    // 画面では1行1つ、サーバへは配列で渡す
-    transform((form) => ({
-        ...form,
-        redirect_uris: form.redirect_uris
-            .split(/\r?\n/)
-            .map((uri) => uri.trim())
-            .filter((uri) => uri !== ""),
-    }));
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -109,20 +100,10 @@ export default function Form({ client, trustOptions }: FormProps) {
                             />
                         ))}
 
-                        <TextField
-                            label={t('admin.clients.form.fields.redirect_uris')}
-                            value={data.redirect_uris}
-                            onChange={(e) =>
-                                setData("redirect_uris", e.target.value)
-                            }
-                            error={Boolean(errors.redirect_uris)}
-                            helperText={
-                                errors.redirect_uris ??
-                                t('admin.clients.form.fields.redirect_uris_helper')
-                            }
-                            multiline
-                            minRows={3}
-                            required
+                        <ServiceUrlFields
+                            data={data}
+                            errors={errors}
+                            onChange={(changed) => setData({ ...data, ...changed })}
                         />
 
                         <TextField
@@ -132,32 +113,6 @@ export default function Form({ client, trustOptions }: FormProps) {
                             error={Boolean(errors.scopes)}
                             helperText={errors.scopes ?? t('admin.clients.form.fields.scopes_helper')}
                             required
-                        />
-
-                        <TextField
-                            label={t('admin.clients.form.fields.icon_url')}
-                            value={data.icon_url}
-                            onChange={(e) =>
-                                setData("icon_url", e.target.value)
-                            }
-                            error={Boolean(errors.icon_url)}
-                            helperText={
-                                errors.icon_url ??
-                                t('admin.clients.form.fields.icon_url_helper')
-                            }
-                        />
-
-                        <TextField
-                            label={t('admin.clients.form.settings_url')}
-                            value={data.settings_url}
-                            onChange={(e) =>
-                                setData("settings_url", e.target.value)
-                            }
-                            error={Boolean(errors.settings_url)}
-                            helperText={
-                                errors.settings_url ??
-                                t('services.form.settings_url_hint')
-                            }
                         />
 
                         <TextField
