@@ -60,7 +60,12 @@ export default function Index({ files, file, entries }: IndexProps) {
                     size="small"
                     label={t('admin.logs.file')}
                     value={file}
-                    onChange={(event) => router.get('/admin/logs', { file: event.target.value })}
+                    // ファイル一覧は切り替えても変わらないので取り直さない
+                    onChange={(event) => router.get(
+                        '/admin/logs',
+                        { file: event.target.value },
+                        { only: ['file', 'entries'], preserveState: true },
+                    )}
                     sx={{ minWidth: 280 }}
                 >
                     {files.map((name) => (
