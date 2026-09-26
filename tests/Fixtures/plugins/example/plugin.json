@@ -1,0 +1,7 @@
+{
+    "version": "0.0.0",
+    "provider": "Plugins\\Example\\ExampleServiceProvider",
+    "enabled": true,
+    "title": { "ja": "例", "en": "Example" },
+    "description": { "ja": "読み込みのテスト用", "en": "For loader tests" }
+}
