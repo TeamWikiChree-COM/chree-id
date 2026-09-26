@@ -16,7 +16,7 @@ ChreeID が外に出している口は2種類ある。
 - 本番: https://id.wikichree.com/api-docs/v1
 - ローカル: http://chreeid.test/api-docs/v1
 
-| もの | URL |
+| 内容 | URL |
 | --- | --- |
 | ドキュメント (ブラウザで読む) | `/api-docs/v1` |
 | OpenAPI の定義 (JSON) | `/api/v1/openapi.json` |

@@ -13,5 +13,15 @@
 - [API](API.md)
 - [サービス接続](INTEGRATION.md)
 - [デプロイ](DEPLOY.md)
+- [CI](CI.md)
 - [プラグイン](PLUGIN.md)
 - [ドキュメントの書き方](WRITING.md)
+
+## 生成ドキュメント
+
+自動生成で公開しているドキュメントについて
+
+| 名前 | 場所 | 備考 |
+| --- | --- | --- |
+| コードドキュメント (PHPDoc) | [GitHub Pages](https://teamwikichree-com.github.io/chree-id/) | 作られる流れは [CI](CI.md) |
+| API仕様 (OpenAPI) | [id.wikichree.com/api-docs/v1](https://id.wikichree.com/api-docs/v1) | 詳しくは [API](API.md) |

@@ -57,7 +57,9 @@ npm run dev
 | 知らずに触ると事故になる決定 | [docs/DECISIONS.md](docs/DECISIONS.md) |
 | データベースの構造 | [docs/DATABASE.md](docs/DATABASE.md) |
 | 翻訳の仕組み | [docs/LANG.md](docs/LANG.md) |
-| API と OpenAPI の場所 | [docs/API.md](docs/API.md) |
+| コードドキュメント (PHPDoc) | [teamwikichree-com.github.io/chree-id](https://teamwikichree-com.github.io/chree-id/) |
+| API仕様 (OpenAPI) | [id.wikichree.com/api-docs/v1](https://id.wikichree.com/api-docs/v1) |
 | サービス接続 | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | デプロイ | [docs/DEPLOY.md](docs/DEPLOY.md) |
+| CI (GitHub Actions) | [docs/CI.md](docs/CI.md) |
 | プラグイン | [docs/PLUGIN.md](docs/PLUGIN.md) |

@@ -72,6 +72,7 @@ composer global require pitan76/todofile   # 入れる (初回だけ)
 todo setup      # 初回のセットアップ一式
 todo check      # コミット前の確認をまとめて (書き換えはしない)
 todo lang       # php artisan lang:build
+todo phpdoc     # PHPDoc から HTML を作る (build/doctum/index.html)。公開版は https://teamwikichree-com.github.io/chree-id/
 ```
 
 ほかのタスクは `todofile.json5` を参照。
