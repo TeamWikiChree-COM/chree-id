@@ -37,7 +37,7 @@ class AdminLogController extends Controller {
         return Inertia::render('Admin/Logs/Index', [
             'files' => $files,
             'file' => $chosen,
-            'entries' => $chosen === '' ? [] : $this->logs->tail($chosen),
+            'entries' => Inertia::defer(fn (): array => $chosen === '' ? [] : $this->logs->tail($chosen)),
         ]);
     }
 

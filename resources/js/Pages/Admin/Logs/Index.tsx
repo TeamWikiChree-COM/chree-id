@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Deferred, router, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import AppLayout from '../../../Components/AppLayout';
 import LogEntryRow from '../../../Components/LogEntryRow';
 import SectionTitle from '../../../Components/SectionTitle';
+import LogListSkeleton from '../../../Components/Skeletons/LogListSkeleton';
 import { useConfirm } from '../../../lib/confirm';
 import { t } from '../../../lib/i18n';
 import type { LogEntry } from '../../../types';
@@ -19,8 +20,8 @@ interface IndexProps {
     files: string[];
     /** いま見ているファイル */
     file: string;
-    /** 新しい順の記録 */
-    entries: LogEntry[];
+    /** 新しい順の記録。ファイルが大きいと読むのに時間がかかるので後から届く */
+    entries?: LogEntry[];
 }
 
 /**
@@ -70,23 +71,17 @@ export default function Index({ files, file, entries }: IndexProps) {
                 </TextField>
             )}
 
-            <SectionTitle note={t('admin.logs.count', { count: entries.length })}>
-                {t('admin.logs.heading')}
-            </SectionTitle>
-
-            <Paper variant="outlined">
-                {entries.length === 0 && (
-                    <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
-                        {t('admin.logs.empty')}
-                    </Typography>
+            <Deferred
+                data="entries"
+                fallback={(
+                    <>
+                        <SectionTitle>{t('admin.logs.heading')}</SectionTitle>
+                        <LogListSkeleton />
+                    </>
                 )}
-
-                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
-                    {entries.map((entry, index) => (
-                        <LogEntryRow key={`${entry.at}-${String(index)}`} entry={entry} />
-                    ))}
-                </Stack>
-            </Paper>
+            >
+                <LogEntries entries={entries ?? []} />
+            </Deferred>
 
             <Stack
                 direction="row"
@@ -106,5 +101,34 @@ export default function Index({ files, file, entries }: IndexProps) {
 
             {dialog}
         </AppLayout>
+    );
+}
+
+/**
+ * 読み込み済みのログ一覧。
+ *
+ * @param entries 新しい順の記録
+ */
+function LogEntries({ entries }: { entries: LogEntry[] }) {
+    return (
+        <>
+            <SectionTitle note={t('admin.logs.count', { count: entries.length })}>
+                {t('admin.logs.heading')}
+            </SectionTitle>
+
+            <Paper variant="outlined">
+                {entries.length === 0 && (
+                    <Typography sx={{ px: 2, py: 1.5, fontSize: '0.875rem', color: 'text.secondary' }}>
+                        {t('admin.logs.empty')}
+                    </Typography>
+                )}
+
+                <Stack divider={<Box sx={{ borderBottom: '1px solid', borderColor: 'divider' }} />}>
+                    {entries.map((entry, index) => (
+                        <LogEntryRow key={`${entry.at}-${String(index)}`} entry={entry} />
+                    ))}
+                </Stack>
+            </Paper>
+        </>
     );
 }

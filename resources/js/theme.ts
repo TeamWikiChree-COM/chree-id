@@ -117,7 +117,10 @@ export function buildTheme(mode: PaletteMode): Theme {
                 },
             },
 
-            // 入力欄は小さい方を既定にする。ModParks も同じ
+            // 読み込み中表示も動かさない (UI にアニメーションを入れない方針)
+            MuiSkeleton: { defaultProps: { animation: false } },
+
+            // 入力欄は小さい方を既定にする。
             MuiTextField: { defaultProps: { size: 'small', fullWidth: true } },
             MuiFormControl: { defaultProps: { size: 'small' } },
             MuiSelect: { defaultProps: { size: 'small' } },
