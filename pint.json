@@ -1,0 +1,36 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "generated"
+    ],
+    "rules": {
+        "braces_position": {
+            "classes_opening_brace": "same_line",
+            "functions_opening_brace": "same_line",
+            "anonymous_classes_opening_brace": "same_line",
+            "anonymous_functions_opening_brace": "same_line",
+            "control_structures_opening_brace": "same_line"
+        },
+        "control_structure_braces": false,
+        "single_line_empty_body": true,
+        "not_operator_with_successor_space": false,
+        "concat_space": {
+            "spacing": "one"
+        },
+        "blank_line_after_opening_tag": false,
+        "phpdoc_align": false,
+        "no_superfluous_phpdoc_tags": false,
+        "no_empty_phpdoc": false,
+        "phpdoc_separation": false,
+        "phpdoc_trim": false,
+        "ordered_imports": false,
+        "php_unit_method_casing": false,
+        "fully_qualified_strict_types": false,
+        "class_attributes_separation": false,
+        "blank_lines_before_namespace": {
+            "min_line_breaks": 1,
+            "max_line_breaks": 2
+        },
+        "new_with_parentheses": false
+    }
+}

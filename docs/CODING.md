@@ -179,6 +179,7 @@ env('CHREEID_SIGNING_KEY') ?? env('OLD_SIGNING_KEY')
 php artisan test --parallel # PHPのテスト
 php vendor/bin/phpstan analyse # PHPの静的解析 (level 8、エラー0を保つ)
 npm run typecheck # TypeScriptの型検査
+php vendor/bin/pint # PHPの整形 (設定は pint.json。この規約に合わせてある)
 ```
 
 PHPStanのエラーは、理由がない限り、`@phpstan-ignore` やキャストで黙らせず、原因の型を直す。
