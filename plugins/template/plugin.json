@@ -2,6 +2,12 @@
     "version": "0.1.0",
     "provider": "Plugins\\Template\\TemplateServiceProvider",
     "enabled": false,
-    "title": { "ja": "テンプレート", "en": "Template" },
-    "description": { "ja": "新しいプラグインのひな形", "en": "Skeleton for a new plugin" }
+    "title": {
+        "ja": "テンプレート",
+        "en": "Template"
+    },
+    "description": {
+        "ja": "新しいプラグインのひな形",
+        "en": "Skeleton for a new plugin"
+    }
 }
