@@ -1,13 +1,13 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Admin\Application\ManageAccount;
 use App\Modules\Admin\Application\SearchAccounts;
-use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,13 +21,28 @@ use RuntimeException;
  * 登録済みアカウントの利用状況（検証状態、認証設定、停止状態など）を一覧表示する。
  */
 class AdminAccountController {
+    private readonly ManageAccount $manage;
+    private readonly SearchAccounts $search;
+    private readonly AdminAccountPresenter $presenter;
+    private readonly ChreeSession $session;
+    private readonly AuditLog $audit;
+    private readonly AdminAccountQueries $queries;
+
     public function __construct(
-        private readonly ManageAccount $manage,
-        private readonly SearchAccounts $search,
-        private readonly AdminAccountPresenter $presenter,
-        private readonly ChreeSession $session,
-        private readonly AuditLog $audit,
-    ) {}
+        ManageAccount $manage,
+        SearchAccounts $search,
+        AdminAccountPresenter $presenter,
+        ChreeSession $session,
+        AuditLog $audit,
+        AdminAccountQueries $queries,
+    ) {
+        $this->manage = $manage;
+        $this->search = $search;
+        $this->presenter = $presenter;
+        $this->session = $session;
+        $this->audit = $audit;
+        $this->queries = $queries;
+    }
 
     /**
      * @param Request $request
@@ -44,10 +59,7 @@ class AdminAccountController {
             'accounts' => $this->presenter->present(array_values($page->items())),
             'pagination' => ['page' => $page->currentPage(), 'lastPage' => $page->lastPage(), 'total' => $page->total()],
             'filters' => ['q' => $query, 'kind' => $kind ?? '', 'status' => $status ?? '', 'client' => $client],
-            'clients' => array_map(
-                fn (OAuthClientModel $c): array => ['id' => $c->id, 'name' => $c->displayName()],
-                OAuthClientModel::query()->orderBy('name')->get()->all(),
-            ),
+            'clients' => $this->queries->clientOptions(),
             // 自分の行では操作ボタンを出さない。締め出されると戻れなくなる
             'selfId' => $this->session->accountId(),
             'graceDays' => PurgeDeletedAccounts::graceDays(),

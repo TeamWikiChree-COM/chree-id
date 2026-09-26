@@ -1,11 +1,11 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
-use App\Modules\Identity\Infrastructure\AuthIdentityModel;
 use App\Modules\Identity\Infrastructure\ChreeSession;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
@@ -23,22 +23,41 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * 管理画面のアカウント詳細。認証手段・サービスアカウント・記録をまとめて見て、その場で直す。
  */
 class AdminAccountDetailController {
+    private readonly AdminAccountPresenter $presenter;
+    private readonly ListCredentials $credentials;
+    private readonly SplitServiceAccount $split;
+    private readonly ManageAccountLinks $links;
+    private readonly DetectAccountIssues $issues;
+    private readonly AuditLog $audit;
+    private readonly ChreeSession $session;
+    private readonly AdminAccountQueries $queries;
+
     public function __construct(
-        private readonly AdminAccountPresenter $presenter,
-        private readonly ListCredentials $credentials,
-        private readonly SplitServiceAccount $split,
-        private readonly ManageAccountLinks $links,
-        private readonly DetectAccountIssues $issues,
-        private readonly AuditLog $audit,
-        private readonly ChreeSession $session,
-    ) {}
+        AdminAccountPresenter $presenter,
+        ListCredentials $credentials,
+        SplitServiceAccount $split,
+        ManageAccountLinks $links,
+        DetectAccountIssues $issues,
+        AuditLog $audit,
+        ChreeSession $session,
+        AdminAccountQueries $queries,
+    ) {
+        $this->presenter = $presenter;
+        $this->credentials = $credentials;
+        $this->split = $split;
+        $this->links = $links;
+        $this->issues = $issues;
+        $this->audit = $audit;
+        $this->session = $session;
+        $this->queries = $queries;
+    }
 
     /**
      * @param string $account 対象のアカウントID
      * @return Response
      */
     public function show(string $account): Response {
-        $model = AuthIdentityModel::query()->find($account);
+        $model = $this->queries->find($account);
         if ($model === null) throw new NotFoundHttpException();
 
         return Inertia::render('Admin/Accounts/Show', [
@@ -124,10 +143,10 @@ class AdminAccountDetailController {
      * @return list<array{id: string, clientId: string, name: string, serviceUserId: string|null, sub: string|null, claimedAt: string|null, createdAt: string|null}>
      */
     private function links(string $accountId): array {
-        $rows = ServiceAccountModel::query()->where('auth_identity_id', $accountId)->orderBy('created_at')->get();
-        $names = $this->presenter->clientNames(array_values($rows->map(fn (ServiceAccountModel $row): string => $row->client_id)->all()));
+        $rows = $this->queries->serviceAccounts($accountId);
+        $names = $this->queries->clientNames(array_map(fn (ServiceAccountModel $row): string => $row->client_id, $rows));
 
-        return array_values($rows->map(fn (ServiceAccountModel $row): array => [
+        return array_map(fn (ServiceAccountModel $row): array => [
             'id' => $row->id,
             'clientId' => $row->client_id,
             'name' => $names[$row->client_id],
@@ -135,7 +154,7 @@ class AdminAccountDetailController {
             'sub' => $row->sub,
             'claimedAt' => $row->claimed_at?->toDateTimeString(),
             'createdAt' => $row->created_at?->toDateTimeString(),
-        ])->all());
+        ], $rows);
     }
 
     /**

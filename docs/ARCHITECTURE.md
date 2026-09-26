@@ -115,6 +115,8 @@ $this->app->singleton(ExternalIdpRegistry::class, function (): ExternalIdpRegist
 
 | ルール | 状態 |
 | --- | --- |
-| 5. モジュールをまたいだ直接参照 | 未調査 |
+| 2. Http でクエリを書いている | 0 ファイル |
+| 3. Domain から Infrastructure を参照している | 0 ファイル |
+| 5. 他のモジュールの Infrastructure を直接参照している | 54 ファイル、76 か所 |
 
 新しく書くコードはルールに従い、既存のずれはリファクタリングで順に解消する。

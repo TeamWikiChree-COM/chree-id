@@ -1,9 +1,8 @@
 <?php
 namespace App\Modules\Admin\Http;
 
-use App\Modules\Identity\Infrastructure\AuthIdentityModel;
+use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Admin\Application\DatabaseMigrations;
-use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,18 +13,20 @@ use Inertia\Response;
  * ここに置くのは運営としての操作だけ。
  */
 class AdminController {
-    public function __construct(private readonly DatabaseMigrations $migrations) {}
+    private readonly DatabaseMigrations $migrations;
+    private readonly AdminAccountQueries $queries;
+
+    public function __construct(DatabaseMigrations $migrations, AdminAccountQueries $queries) {
+        $this->migrations = $migrations;
+        $this->queries = $queries;
+    }
 
     /**
      * @return Response
      */
     public function __invoke(): Response {
         return Inertia::render('Admin/Index', [
-            'stats' => [
-                'clients' => OAuthClientModel::query()->count(),
-                'accounts' => AuthIdentityModel::query()->whereNull('deleted_at')->count(),
-                'suspended' => AuthIdentityModel::query()->whereNotNull('suspended_at')->count(),
-            ],
+            'stats' => $this->queries->stats(),
 
             // デプロイ直後は構造が置き去りになる。トップで気付けるようにしておく
             'pendingMigrations' => count($this->migrations->pending()),

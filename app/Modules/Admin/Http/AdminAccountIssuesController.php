@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
@@ -16,20 +17,35 @@ use Inertia\Response;
  * 種別と実体が食い違ったアカウントの一覧。まとめて直せるようにしておく。
  */
 class AdminAccountIssuesController {
+    private readonly DetectAccountIssues $issues;
+    private readonly AdminAccountPresenter $presenter;
+    private readonly ManageAccount $manage;
+    private readonly AuditLog $audit;
+    private readonly ChreeSession $session;
+    private readonly AdminAccountQueries $queries;
+
     public function __construct(
-        private readonly DetectAccountIssues $issues,
-        private readonly AdminAccountPresenter $presenter,
-        private readonly ManageAccount $manage,
-        private readonly AuditLog $audit,
-        private readonly ChreeSession $session,
-    ) {}
+        DetectAccountIssues $issues,
+        AdminAccountPresenter $presenter,
+        ManageAccount $manage,
+        AuditLog $audit,
+        ChreeSession $session,
+        AdminAccountQueries $queries,
+    ) {
+        $this->issues = $issues;
+        $this->presenter = $presenter;
+        $this->manage = $manage;
+        $this->audit = $audit;
+        $this->session = $session;
+        $this->queries = $queries;
+    }
 
     /**
      * @return Response
      */
     public function index(): Response {
         $issues = $this->issues->execute();
-        $models = array_values(AuthIdentityModel::query()->whereIn('id', array_keys($issues))->orderByDesc('created_at')->get()->all());
+        $models = $this->queries->findMany(array_keys($issues));
 
         return Inertia::render('Admin/Accounts/Issues', [
             // present は並びを保つので、同じ位置のモデルから問題を引く
