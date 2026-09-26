@@ -1,0 +1,54 @@
+name: Docs
+
+# PHPDoc から Doctum で HTML を作り、GitHub Pages に公開する
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 公開が重なったら新しい方だけ残す
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+          tools: none
+
+      # Doctum はソースを読むだけなので composer install は要らない
+      - name: Download Doctum
+        run: curl -sSL -o tools/doctum.phar https://doctum.long-term.support/releases/latest/doctum.phar
+
+      - name: Build
+        run: php tools/doctum.phar update doctum.php --no-progress
+
+      - name: Upload
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/doctum
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

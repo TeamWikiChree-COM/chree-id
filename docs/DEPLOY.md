@@ -48,7 +48,13 @@ CHREEID_SIGNING_KEY=  # 本番用に別に生成する
 ## サーバ側の準備
 
 - `storage/` と `bootstrap/cache/` を書き込めるようにする
-- cron で `php artisan schedule:run` を毎分動かす。期限切れトークンの掃除 (`chreeid:prune-tokens`、毎日 4:00) はこれで動く。登録申し込みにはパスワードハッシュが入るので、放置しない
+- cron で `php artisan chreeid:prune-tokens` を毎日動かす。期限切れのトークンと、猶予を過ぎた退会アカウントを消すのはこのコマンドで、登録するまで退会済みの行は残り続ける。登録申し込みにはパスワードハッシュが入るので、放置しない
+
+  ```
+  0 4 * * * cd <ChreeID を置いた場所> && <PHP 8.5 以上のパス> artisan chreeid:prune-tokens
+  ```
+
+  既定の `php` が古いと、composer の platform_check で落ちるので、PHP のパスを明示する
 
 ### 公開ディレクトリ
 
