@@ -27,6 +27,7 @@ class WikiController {
         $accountId = $this->api->accountId();
         if ($accountId === null) return LoginRedirect::guest();
 
-        return Inertia::render('wiki-hub::Index', ['groups' => $this->wikis->execute($accountId)]);
+        // 各サービスへの問い合わせは遅いので、画面を先に出して後から届ける
+        return Inertia::render('wiki-hub::Index', ['groups' => Inertia::defer(fn (): array => $this->wikis->execute($accountId))]);
     }
 }

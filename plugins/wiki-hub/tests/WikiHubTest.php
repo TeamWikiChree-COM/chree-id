@@ -74,10 +74,10 @@ class WikiHubTest extends TestCase {
             ['name' => 'テスト', 'url' => 'https://a.example.com', 'settings_url' => null, 'views' => 12],
         ]])]);
 
-        $this->get('/plugins/wiki-hub')->assertOk()->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+        $this->get('/plugins/wiki-hub')->assertOk()->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
             ->where('groups.0.label', 'dokufarm')
             ->where('groups.0.wikis.0.name', 'テスト')
-            ->where('groups.0.wikis.0.views', 12));
+            ->where('groups.0.wikis.0.views', 12)));
 
         Http::assertSent(fn ($request): bool => $request->hasHeader('Authorization', 'Bearer secret')
             && str_contains($request->url(), 'sub=sub-dokufarm'));
@@ -93,9 +93,9 @@ class WikiHubTest extends TestCase {
             'wikichree.example.com/*' => Http::response(['wikis' => []]),
         ]);
 
-        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
             ->where('groups.0.failed', true)
-            ->where('groups.1.failed', false));
+            ->where('groups.1.failed', false)));
     }
 
     public function test_skipsServicesNotConnected(): void {
@@ -103,7 +103,7 @@ class WikiHubTest extends TestCase {
         $this->source('dokufarm', null);
         Http::fake();
 
-        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->has('groups', 0));
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload->has('groups', 0)));
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), 'dokufarm.example.com'));
     }
 
@@ -113,8 +113,8 @@ class WikiHubTest extends TestCase {
         $this->source('wikichree', $id);
         Http::fake(['wikichree.example.com/*' => Http::response('<html>404</html>', 404)]);
 
-        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
-            ->where('groups.0.failed', true));
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
+            ->where('groups.0.failed', true)));
     }
 
     public function test_unknownUserIsEmptyNotFailure(): void {
@@ -122,8 +122,8 @@ class WikiHubTest extends TestCase {
         $this->source('wikichree', $id);
         Http::fake(['wikichree.example.com/*' => Http::response(['error' => 'user_not_found'], 404)]);
 
-        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
             ->where('groups.0.failed', false)
-            ->has('groups.0.wikis', 0));
+            ->has('groups.0.wikis', 0)));
     }
 }

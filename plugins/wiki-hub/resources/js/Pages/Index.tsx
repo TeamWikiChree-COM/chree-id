@@ -1,3 +1,4 @@
+import { Deferred } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,6 +8,7 @@ import OutlinedList from '@/Components/OutlinedList';
 import RowAction from '@/Components/RowAction';
 import SectionTitle from '@/Components/SectionTitle';
 import ServiceIcon from '@/Components/ServiceIcon';
+import ListSkeleton from '@/Components/Skeletons/ListSkeleton';
 import { formatDateTime } from '@/lib/datetime';
 import { t as core } from '@/lib/i18n';
 import { t } from '../lib/i18n';
@@ -32,19 +34,35 @@ interface WikiGroup {
 }
 
 interface IndexProps {
-    groups: WikiGroup[];
+    /** 各サービスへ問い合わせるので後から届く */
+    groups?: WikiGroup[];
 }
 
 /**
  * 連携しているサービスのウィキを、サービスごとにまとめて出す。
  */
-export default function Index({ groups }: IndexProps) {
+const Index = ({ groups }: IndexProps) => {
     return (
         <AppLayout
             title={t('page.title')}
             lead={t('page.lead')}
             crumbs={[{ label: core('dashboard.crumb'), href: '/' }, { label: t('page.title') }]}
         >
+            <Deferred data="groups" fallback={<ListSkeleton count={3} />}>
+                <WikiGroups groups={groups ?? []} />
+            </Deferred>
+        </AppLayout>
+    );
+};
+
+/**
+ * サービスごとのウィキ一覧。取れなかったサービスは警告だけ出す。
+ *
+ * @param groups サービスごとのまとまり
+ */
+const WikiGroups = ({ groups }: { groups: WikiGroup[] }) => {
+    return (
+        <>
             {groups.length === 0 && <Typography sx={{ color: 'text.secondary' }}>{t('page.no_sources')}</Typography>}
 
             {groups.map((group) => (
@@ -67,11 +85,11 @@ export default function Index({ groups }: IndexProps) {
                         )}
                 </Box>
             ))}
-        </AppLayout>
+        </>
     );
-}
+};
 
-function WikiSummary({ wiki }: { wiki: Wiki }) {
+const WikiSummary = ({ wiki }: { wiki: Wiki }) => {
     const updated = formatDateTime(wiki.updatedAt);
     const meta = [
         wiki.views !== null && t('page.views', { count: wiki.views.toLocaleString() }),
@@ -88,7 +106,7 @@ function WikiSummary({ wiki }: { wiki: Wiki }) {
             </Box>
         </Box>
     );
-}
+};
 
 /**
  * @param url 開く先
@@ -100,11 +118,13 @@ function openInNewTab(url: string): void {
 /**
  * 行そのものはウィキを開く。設定画面だけは行の右に置く (操作が1つだけなのでダイアログにしない)。
  */
-function SettingsAction({ url }: { url: string }) {
+const SettingsAction = ({ url }: { url: string }) => {
     return (
         // 行の onClick まで伝わると、設定と一緒にウィキも開いてしまう
         <Box onClick={(event) => event.stopPropagation()} sx={{ flexShrink: 0 }}>
             <RowAction onClick={() => openInNewTab(url)}>{t('action.settings')}</RowAction>
         </Box>
     );
-}
+};
+
+export default Index;

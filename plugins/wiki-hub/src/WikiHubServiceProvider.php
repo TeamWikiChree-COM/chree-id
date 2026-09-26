@@ -48,8 +48,8 @@ class WikiHubServiceProvider extends ServiceProvider {
         $menu->add(new PluginMenuItem(
             PluginMenu::AREA_DASHBOARD,
             '/plugins/wiki-hub',
-            $manifest?->title ?? [],
-            $manifest?->description ?? [],
+            $manifest->title ?? [],
+            $manifest->description ?? [],
             array_map(static fn (WikiSource $source): string => $source->clientId, $sources),
         ));
     }

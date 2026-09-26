@@ -4,6 +4,8 @@ namespace App\Providers;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\FileViewFinder;
+use Override;
 
 /**
  * plugins/ に置いたプラグインを読み込む。
@@ -18,17 +20,37 @@ class PluginServiceProvider extends ServiceProvider {
     /**
      * @return void
      */
-    #[\Override]
+    #[Override]
     public function register(): void {
         $plugins = new PluginRegistry(base_path('plugins'));
         $this->app->instance(PluginRegistry::class, $plugins);
         $this->app->singleton(PluginMenu::class);
 
         $this->registerAutoloader($plugins->root());
+        $this->registerPages($plugins);
 
         foreach ($plugins->all() as $plugin) {
             if ($plugin->enabled) $this->app->register($plugin->provider);
         }
+    }
+
+    /**
+     * プラグインの画面 (`<プラグイン名>::<画面名>`) の置き場を Inertia に教える。
+     *
+     * 教えないと、画面が実在するかの確認 (テストの読み直しなど) で見つからずに落ちる。
+     * finder は解決のたびに作り直されるので、登録ではなく extend で足す。
+     *
+     * @param PluginRegistry $plugins
+     * @return void
+     */
+    private function registerPages(PluginRegistry $plugins): void {
+        $this->app->extend('inertia.view-finder', static function (FileViewFinder $finder) use ($plugins): FileViewFinder {
+            foreach ($plugins->all() as $plugin) {
+                if ($plugin->enabled) $finder->addNamespace($plugin->name, $plugins->root() . "/{$plugin->name}/resources/js/Pages");
+            }
+
+            return $finder;
+        });
     }
 
     /**
