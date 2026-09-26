@@ -15,7 +15,7 @@ foreach (['LangBuildException', 'LangBuildResult', 'LangSource', 'LangValidator'
 }
 
 try {
-    $result = (new App\Support\Lang\LangBuild())->execute($root . '/resources/lang', $root . '/generated/lang');
+    $result = (new App\Support\Lang\LangBuild())->execute($root . '/resources/lang', $root . '/bootstrap/cache/lang');
 } catch (App\Support\Lang\LangBuildException $e) {
     fwrite(STDERR, $e->getMessage() . "\n");
 

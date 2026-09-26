@@ -33,9 +33,9 @@ php artisan lang:build
 やっていることは2つ。
 
 1. 検証: ロケールごとにキーの過不足が無いか、`:name` の差し込みがそろっているかを確かめる。欠けていれば失敗する
-2. 生成: `resources/lang/server/*.json` から、Laravel が読む PHP の配列を `generated/lang/` に書き出す
+2. 生成: `resources/lang/server/*.json` から、Laravel が読む PHP の配列を `bootstrap/cache/lang/` に書き出す
 
-PHP に変換しているのは、OPcache に載せて毎回の JSON の読み込みを省くため。`generated/` は git に入れない。
+PHP に変換しているのは、OPcache に載せて毎回の JSON の読み込みを省くため。生成物は git に入れない。
 
 ### いつ実行するか
 

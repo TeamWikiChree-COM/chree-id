@@ -11,7 +11,7 @@ namespace App\Support\Lang;
 final class LangCompiler {
     /**
      * @param array<string, array<string, string>> $locales ロケール => キー => 文言
-     * @param string $outDir generated/lang のパス
+     * @param string $outDir bootstrap/cache/lang のパス
      * @return int 書き出したファイル数
      * @throws LangBuildException 書き出せない
      */

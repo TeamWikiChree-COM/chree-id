@@ -9,4 +9,4 @@
 public/build/
 
 # 翻訳。正は resources/lang/*.json で、読むのは CI が生成した PHP (ARCHITECTURE.md 10章)
-generated/lang/
+bootstrap/cache/lang/

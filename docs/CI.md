@@ -41,5 +41,5 @@ push ─→ Test ─(成功)─→ Deploy to server
 ## 注意
 
 - コミットメッセージに `[skip ci]` を書かない。Test が飛ぶとデプロイも黙って飛ぶ。詳しくは [デプロイ](DEPLOY.md)
-- ビルド済みのフロントエンドのアセット (`public/build/`) と翻訳の生成物 (`generated/`) はコミットしない。Deploy が毎回作る
+- ビルド済みのフロントエンドのアセット (`public/build/`) と翻訳の生成物 (`bootstrap/cache/lang/`) はコミットしない。Deploy が毎回作る
 - Docs を初めて動かすときは、リポジトリの Settings → Pages で Source を「GitHub Actions」にしておく

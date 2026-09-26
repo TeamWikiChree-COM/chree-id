@@ -55,6 +55,6 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
 // 翻訳の正は lang/*.json で、読むのはそこから生成した PHP (ARCHITECTURE.md 10章)。
 // 生成物は履歴に入れず CI が作るので、既定の lang/ とは別の場所を見せる
-$app->useLangPath(dirname(__DIR__) . '/generated/lang');
+$app->useLangPath(__DIR__ . '/cache/lang');
 
 return $app;
