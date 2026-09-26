@@ -8,7 +8,8 @@
         "php artisan key:generate",
         "php artisan chreeid:generate-key",
         "php artisan migrate",
-        "php artisan lang:build"
+        "php artisan lang:build",
+        "todo phpdoc:install"
     ],
     "migrate": "php artisan migrate",
     "lang": "php artisan lang:build",
@@ -26,6 +27,12 @@
         "todo front:tsc",
         "todo test"
     ],
+
+    // ---- ドキュメント ----
+    // PHPDoc から HTML を作る。build/phpdoc/index.html を開く
+    "phpdoc": "php tools/phpDocumentor.phar run -d app -t build/phpdoc --title ChreeID",
+    // phar は大きいので git に入れず、無ければ取ってくる
+    "phpdoc:install": "php -r \"file_exists('tools/phpDocumentor.phar') || copy('https://phpdoc.org/phpDocumentor.phar', 'tools/phpDocumentor.phar');\"",
 
     // ---- デプロイ ----
     "deploy": "py tools/deploy.py",

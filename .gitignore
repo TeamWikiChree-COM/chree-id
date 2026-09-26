@@ -32,3 +32,6 @@ Thumbs.db
 /.deploy-state
 /tools/.deploy-env
 *.pyc
+/tools/phpDocumentor.phar
+/build/phpdoc
+/.phpdoc
