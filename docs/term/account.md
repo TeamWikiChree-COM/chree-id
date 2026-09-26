@@ -4,7 +4,7 @@
 
 | 語 | 意味 | 利用者に見えるか |
 | --- | --- | --- |
-| AuthIdentity (認証主体) | 認証手段の持ち主。アカウントではない。旧名 `ChreeAccount`、DB では `auth_identities` / `auth_identity_id` | 見えない |
+| AuthIdentity (認証主体) | 認証手段の持ち主。アカウントではない。DB では `auth_identities` / `auth_identity_id` | 見えない |
 | UserAccount (ユーザーアカウント) | 複数の ServiceAccount を束ねる人格。望む人だけが持つ | 見える |
 | ServiceAccount (サービスアカウント) | サービス上の人格。サービスに渡す `sub` を持つ | 見える |
 | Credential (認証手段) | AuthIdentity に属する認証の手段。種類は [認証](auth.md) を参照 | 見える |

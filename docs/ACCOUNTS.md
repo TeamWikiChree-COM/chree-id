@@ -21,7 +21,7 @@ AuthIdentity ─┬─ Credential      (N)
 
 AuthIdentity はアカウントではない。利用者に「アカウント」として見せるのは UserAccount と ServiceAccount の2つだけ。
 
-コード上は旧名の `ChreeAccount` や、DB の `auth_identities` / `auth_identity_id` として残っている。
+DB では `auth_identities` テーブル、他のテーブルからは `auth_identity_id` で参照する。
 
 ## 典型的な流れ
 
