@@ -35,9 +35,6 @@ class AdminBackupController extends Controller {
         $hasDrive = $this->drive->isConfigured();
         $hasLocal = $this->local->isEnabled();
 
-        // 引くのは1回だけ。一覧用と理由用で別々に叩くと、通信も判定も二重になる
-        $listed = $hasKey && $hasDrive ? $this->list() : ['backups' => [], 'error' => null];
-
         return Inertia::render('Admin/Backups/Index', [
             // 何が足りないかを分けて出す。どちらも「使えません」に潰すと直しようがない
             'hasKey' => $hasKey,
@@ -45,9 +42,10 @@ class AdminBackupController extends Controller {
             'hasLocal' => $hasLocal,
             'keep' => $this->settings->keep(),
             'localDays' => $this->settings->localDays(),
-            'backups' => $listed['backups'],
+            // Drive への問い合わせは遅いので、画面を先に出して後から届ける。
+            // 一覧と理由は1回の問い合わせで決まるので、別々の prop にすると二重に叩く
+            'drive' => Inertia::defer(fn (): array => $hasKey && $hasDrive ? $this->list() : ['backups' => [], 'error' => null]),
             'localBackups' => $hasLocal ? $this->local->list() : [],
-            'listError' => $listed['error'],
         ]);
     }
 

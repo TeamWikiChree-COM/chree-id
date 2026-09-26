@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import AppHeader from './AppHeader';
+import SiteFooter from './SiteFooter';
 
 interface AuthLayoutProps {
     /** ブラウザのタイトル */
@@ -59,6 +60,7 @@ export default function AuthLayout({ title, heading, children, footer }: AuthLay
                     <Box sx={{ mt: 2.5, textAlign: 'center', fontSize: '0.875rem' }}>{footer}</Box>
                 )}
             </Container>
+            <SiteFooter />
         </>
     );
 }

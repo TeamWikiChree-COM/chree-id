@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { Deferred, router, usePage } from '@inertiajs/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import AppLayout from '../../../Components/AppLayout';
 import Icon from '../../../Components/Icon';
 import SectionTitle from '../../../Components/SectionTitle';
+import ListSkeleton from '../../../Components/Skeletons/ListSkeleton';
 import { useConfirm } from '../../../lib/confirm';
 import { formatDateTime } from '../../../lib/datetime';
 import { t } from '../../../lib/i18n';
@@ -30,10 +31,15 @@ interface IndexProps {
     keep: number;
     /** サーバ内に残す日数 */
     localDays: number;
-    backups: BackupFile[];
+    /** Drive の一覧。問い合わせが遅いので後から届く */
+    drive?: DriveListing;
     localBackups: BackupFile[];
+}
+
+interface DriveListing {
+    backups: BackupFile[];
     /** 一覧を引けなかった理由。引けていれば null */
-    listError: string | null;
+    error: string | null;
 }
 
 /**
@@ -74,7 +80,7 @@ function BackupList({ heading, files }: { heading: string; files: BackupFile[] }
     );
 }
 
-export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, backups, localBackups, listError }: IndexProps) {
+export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, drive, localBackups }: IndexProps) {
     const { flash, errors } = usePage().props;
     const { ask, dialog } = useConfirm();
     const [running, setRunning] = useState(false);
@@ -121,7 +127,6 @@ export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, bac
             {!hasKey && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_key')}</Alert>}
             {!hasDrive && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_drive')}</Alert>}
             {!hasLocal && <Alert severity="warning" sx={{ mb: 1.5 }}>{t('admin.backups.no_local')}</Alert>}
-            {listError !== null && <Alert severity="error" sx={{ mb: 1.5 }}>{listError}</Alert>}
 
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
                 <Stack spacing={1.5} sx={{ alignItems: 'flex-start' }}>
@@ -145,7 +150,18 @@ export default function Index({ hasKey, hasDrive, hasLocal, keep, localDays, bac
             {dialog}
 
             {hasLocal && <BackupList heading={t('admin.backups.local_list.heading')} files={localBackups} />}
-            <BackupList heading={t('admin.backups.list.heading')} files={backups} />
+            <Deferred
+                data="drive"
+                fallback={(
+                    <>
+                        <SectionTitle>{t('admin.backups.list.heading')}</SectionTitle>
+                        <ListSkeleton count={3} />
+                    </>
+                )}
+            >
+                {drive?.error != null && <Alert severity="error" sx={{ mb: 1.5 }}>{drive.error}</Alert>}
+                <BackupList heading={t('admin.backups.list.heading')} files={drive?.backups ?? []} />
+            </Deferred>
         </AppLayout>
     );
 }

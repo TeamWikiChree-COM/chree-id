@@ -4,6 +4,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import AppHeader from './AppHeader';
+import SiteFooter from './SiteFooter';
 import Breadcrumbs from './Breadcrumbs';
 import type { Crumb } from './Breadcrumbs';
 
@@ -56,6 +57,7 @@ export default function AppLayout({ title, lead, crumbs, children }: AppLayoutPr
                 )}
                 <Box>{children}</Box>
             </Container>
+            <SiteFooter />
         </>
     );
 }

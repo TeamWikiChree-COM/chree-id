@@ -38,19 +38,29 @@ class AdminAccountIssuesController extends Controller {
      * @return Response
      */
     public function index(): Response {
-        $issues = $this->issues->execute();
-        $models = $this->queries->findMany(array_keys($issues));
-
         return Inertia::render('Admin/Accounts/Issues', [
-            // present は並びを保つので、同じ位置のモデルから問題を引く
-            'accounts' => array_map(
-                fn (array $row, AuthIdentityModel $model): array => $row + ['issues' => $issues[$model->id]],
-                $this->presenter->present($models),
-                $models,
-            ),
+            // 全アカウントを検査するので遅い。画面を先に出して後から届ける
+            'accounts' => Inertia::defer(fn (): array => $this->withIssues()),
             'selfId' => $this->session->accountId(),
             'graceDays' => PurgeDeletedAccounts::graceDays(),
         ]);
+    }
+
+    /**
+     * 問題のあるアカウントを、問題の種類を添えて並べる。
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function withIssues(): array {
+        $issues = $this->issues->execute();
+        $models = $this->queries->findMany(array_keys($issues));
+
+        // present は並びを保つので、同じ位置のモデルから問題を引く
+        return array_map(
+            fn (array $row, AuthIdentityModel $model): array => $row + ['issues' => $issues[$model->id]],
+            $this->presenter->present($models),
+            $models,
+        );
     }
 
     /**

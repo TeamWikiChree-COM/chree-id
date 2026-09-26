@@ -145,12 +145,15 @@ class AdminAccountDetailTest extends TestCase {
         $this->link($id, 'wikichree', 'uuid-1');
 
         $this->get('/admin/accounts/issues')->assertInertia(fn (Assert $page) => $page
-            ->has('accounts', 1)
-            ->where('accounts.0.issues', ['multi_service']));
+            ->missing('accounts')
+            ->loadDeferredProps(fn (Assert $reload) => $reload
+                ->has('accounts', 1)
+                ->where('accounts.0.issues', ['multi_service'])));
 
         $this->post('/admin/accounts/issues/fix')->assertRedirect('/admin/accounts/issues');
 
         $this->assertTrue(app(UserAccounts::class)->exists($id));
-        $this->get('/admin/accounts/issues')->assertInertia(fn (Assert $page) => $page->has('accounts', 0));
+        $this->get('/admin/accounts/issues')->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $reload) => $reload->has('accounts', 0)));
     }
 }

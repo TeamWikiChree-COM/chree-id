@@ -6,12 +6,36 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Identity\Domain\IconSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 // アカウントのアイコン
 class AccountIconTest extends TestCase {
     use RefreshDatabase;
+
+    /** このテストで使った置き場。後片付けで消す */
+    private ?string $diskRoot = null;
+
+    #[\Override]
+    protected function tearDown(): void {
+        if ($this->diskRoot !== null) File::deleteDirectory($this->diskRoot);
+
+        parent::tearDown();
+    }
+
+    /**
+     * 毎回まっさらな置き場に差し替える。
+     *
+     * Storage::fake は同じフォルダを消してすぐ作り直すが、Windows は削除を遅れて終えることがあり、
+     * その間は同じ名前で作れず UnableToCreateDirectory になる。名前を毎回変えて取り合わないようにする。
+     *
+     * @return void
+     */
+    private function fakeLocalDisk(): void {
+        $this->diskRoot = storage_path('framework/testing/disks/icon-' . bin2hex(random_bytes(6)));
+        Storage::set('local', Storage::createLocalDriver(['root' => $this->diskRoot]));
+    }
 
     /**
      * @param string|null $email 連絡先。Gravatar を選べるかに関わる
@@ -48,7 +72,7 @@ class AccountIconTest extends TestCase {
     }
 
     public function test_uploadsImage(): void {
-        Storage::fake('local');
+        $this->fakeLocalDisk();
         $accountId = $this->login();
 
         $this->post('/profile/icon', [
@@ -70,7 +94,7 @@ class AccountIconTest extends TestCase {
     }
 
     public function test_clearsIcon(): void {
-        Storage::fake('local');
+        $this->fakeLocalDisk();
         $accountId = $this->login();
         $this->post('/profile/icon', ['source' => 'upload', 'icon' => UploadedFile::fake()->image('me.png')]);
 
@@ -88,7 +112,7 @@ class AccountIconTest extends TestCase {
     }
 
     public function test_servesUploadedImage(): void {
-        Storage::fake('local');
+        $this->fakeLocalDisk();
         $accountId = $this->login();
         $this->post('/profile/icon', ['source' => 'upload', 'icon' => UploadedFile::fake()->image('me.png')]);
 
@@ -99,7 +123,7 @@ class AccountIconTest extends TestCase {
      * 行だけ消して画像を残すと、誰のものでもないファイルが溜まる
      */
     public function test_deletesFileWhenAccountIsPurged(): void {
-        Storage::fake('local');
+        $this->fakeLocalDisk();
         $accountId = $this->login();
         $this->post('/profile/icon', ['source' => 'upload', 'icon' => UploadedFile::fake()->image('me.png')]);
 

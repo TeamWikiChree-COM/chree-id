@@ -1,4 +1,4 @@
-﻿import Box from '@mui/material/Box';
+import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';

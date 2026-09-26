@@ -366,6 +366,7 @@
     "claim.show.title": "ChreeID を作成",
     "common.action.edit": "編集",
     "common.breadcrumbs.aria": "パンくず",
+    "common.footer.copyright": "© :year :app by Team WikiChree.COM (Powered by PHP)",
     "common.confirm.cancel": "やめる",
     "common.confirm.remove": "削除する",
     "common.confirm.type_to_continue.prefix": "続けるには",

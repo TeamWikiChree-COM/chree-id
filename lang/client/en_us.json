@@ -366,6 +366,7 @@
     "claim.show.title": "Create your ChreeID",
     "common.action.edit": "Edit",
     "common.breadcrumbs.aria": "Breadcrumbs",
+    "common.footer.copyright": "© :year :app by Team WikiChree.COM (Powered by PHP)",
     "common.confirm.cancel": "Cancel",
     "common.confirm.remove": "Delete",
     "common.confirm.type_to_continue.prefix": "Type",
