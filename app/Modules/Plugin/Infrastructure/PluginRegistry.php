@@ -16,7 +16,7 @@ class PluginRegistry extends DynamicRegistry {
 
     /**
      * @param string $root plugins/ のパス
-     * @throws RuntimeException plugin.json が読めない・壊れている場合
+     * @throws RuntimeException plugin.json が読めない、壊れている場合
      */
     public function __construct(string $root) {
         $this->root = $root;
@@ -74,7 +74,6 @@ class PluginRegistry extends DynamicRegistry {
     private function read(string $file): PluginManifest {
         $json = json_decode((string) file_get_contents($file), true);
 
-        // 黙って飛ばすと「置いたのに出てこない」の原因が分からない
         if (!is_array($json) || !is_string($json['provider'] ?? null)) {
             throw new RuntimeException("plugin.json が読めません: {$file}");
         }
