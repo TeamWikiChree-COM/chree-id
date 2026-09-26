@@ -71,19 +71,26 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 実際に実装が複数あるところだけに置く。新しい実装は、クラスを1つ書いてレジストリに1行登録するだけで足せる形を保つ。
 
 #### レジストリ
-差し替え口ごとに、実装を束ねておく入れ物を1つ置いている。これをレジストリと呼ぶ (名前は `〜Registry`)。各モジュールの `Domain/` に置いている。
+差し替え口ごとに、実装を束ねておく入れ物を1つ置いている。これをレジストリと呼ぶ (名前は `〜Registry`)。各モジュールの `Domain/` に置く。ファイルを読んで中身を集めるもの (`PluginRegistry`) は I/O なので `Infrastructure/` に置く。
 
 - レジストリは [Registry](../app/Support/Registry/Registry.php) を継承する。登録、二重登録の検出、取り出しを定義する。
-- 起動時に ServiceProvider で実装を登録し、アプリ全体で1つだけ持つ (singleton)
+- 起動時に中身を揃え、アプリ全体で1つだけ持つ (singleton)
 - 使う側はレジストリから実装を引く。具体的な実装クラスを直接知らない
 - 同じキーを二重に登録すると起動時に例外で止まる。黙って上書きされると、認証方式が意図せず差し替わっても気付けないため
+
+中身の入れ方は2通りある。
+
+| 種類 | 中身の入れ方 | 例 |
+| --- | --- | --- |
+| [Registry](../app/Support/Registry/Registry.php) | ServiceProvider が1件ずつ登録する | 認証方式、外部IdP、scope |
+| [DynamicRegistry](../app/Support/Registry/DynamicRegistry.php) | 決まった場所を自分で探して集める。置くだけで読み込まれる | プラグイン |
 
 | 差し替え口 | インターフェース | レジストリ | 登録する場所 |
 | --- | --- | --- | --- |
 | 認証方式 (パスワード、TOTP、パスキーなど) | [CredentialVerifier](../app/Modules/Credential/Domain/Verifier/CredentialVerifier.php) | [CredentialRegistry](../app/Modules/Credential/Domain/CredentialRegistry.php) | [CredentialServiceProvider](../app/Providers/CredentialServiceProvider.php) |
 | 外部IdP (Google、GitHub) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | [ExternalLoginServiceProvider](../app/Providers/ExternalLoginServiceProvider.php) |
 | OIDC の scope | [ClaimsResolver](../app/Modules/Provider/Domain/Claims/ClaimsResolver.php) | [ScopeRegistry](../app/Modules/Provider/Domain/Claims/ScopeRegistry.php) | [OidcServiceProvider](../app/Providers/OidcServiceProvider.php) |
-| プラグイン | `plugins/<名前>/plugin.json` | なし | 置けば自動で読み込まれる ([プラグイン](PLUGIN.md)) |
+| プラグイン | `plugins/<名前>/plugin.json` | [PluginRegistry](../app/Modules/Plugin/Infrastructure/PluginRegistry.php) | 登録しない。`plugins/` に置けば見つけて読み込む ([プラグイン](PLUGIN.md)) |
 
 たとえば外部IdP を足すときは、`ExternalIdp` を実装したクラスを書き、`ExternalLoginServiceProvider` に1行足す。
 

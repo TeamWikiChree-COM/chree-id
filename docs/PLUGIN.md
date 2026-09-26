@@ -32,12 +32,22 @@ plugins/<name>/
 
 ## 本体とのつなぎ目
 
-プラグインから触ってよいのは次のものだけ。 本体のモデルやリポジトリを直接使うと、
-本体の内部を変えるたびにプラグインが壊れる。
+プラグインは本体と同じプロセスで動くので、本体のクラスも Laravel の機能も使える。
+ただし本体の内部は変わることがある。
+
+| 使うもの | 扱い |
+| --- | --- |
+| `App\Modules\Plugin\Application\PluginApi` | 本体を変えても壊さないと約束する範囲。できるだけこれを使う |
+| Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
+| 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
+
+プラグインが同じものを何度も必要とするようになったら、`PluginApi` に足す。
+
+主な用途は次のとおり。
 
 | 用途 | 使うもの |
 | --- | --- |
-| ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` (読み取りのみ) |
+| ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` に `PluginMenuItem` を登録 |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の lang/*.json を渡す |
