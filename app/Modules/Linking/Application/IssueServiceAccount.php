@@ -4,7 +4,6 @@ namespace App\Modules\Linking\Application;
 use App\Modules\Credential\Application\OAuthCredentials;
 use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Credential\Application\EnableMagicLink;
-use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;

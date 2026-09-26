@@ -57,7 +57,7 @@ class ClaimController extends Controller {
     private readonly ClientNames $clientNames;
 
     public function __construct(ClaimTickets $tickets, ClaimServiceAccount $claim, MergeServiceAccount $merge, TransferableCredentials $transferable,
-        AuthIdentityRepository $accounts, CredentialRepository $credentials, ChreeSession $session, 
+        AuthIdentityRepository $accounts, CredentialRepository $credentials, ChreeSession $session,
         AccountCredentials $accountCredentials, ClientNames $clientNames
     ) {
         $this->tickets = $tickets;

@@ -43,7 +43,7 @@ class SplitServiceAccount {
     private readonly AuthIdentityRepository $accounts;
 
     private readonly AccountCredentials $credentials;
-    
+
     public function __construct(AuthIdentityRepository $accounts, AccountCredentials $credentials) {
         $this->accounts = $accounts;
         $this->credentials = $credentials;

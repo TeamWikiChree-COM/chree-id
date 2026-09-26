@@ -2,7 +2,6 @@
 namespace App\Modules\ExternalLogin\Application;
 
 use App\Modules\Credential\Application\OAuthCredentials;
-use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
 use App\Modules\Identity\Application\ResolveByEmail;
@@ -25,7 +24,12 @@ class LinkExternalIdentity {
     private readonly ResolveByEmail $byEmail;
     private readonly OAuthCredentials $oauth;
 
-    public function __construct(AuthIdentityRepository $accounts, UserAccounts $userAccounts, ResolveByEmail $byEmail, OAuthCredentials $oauth) {
+    public function __construct(
+        AuthIdentityRepository $accounts,
+        UserAccounts $userAccounts,
+        ResolveByEmail $byEmail,
+        OAuthCredentials $oauth,
+    ) {
         $this->accounts = $accounts;
         $this->userAccounts = $userAccounts;
         $this->byEmail = $byEmail;
