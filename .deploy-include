@@ -8,5 +8,5 @@
 # ここに挙げたものは毎回まるごと送られる。
 public/build/
 
-# 翻訳。正は lang/*.json で、読むのは CI が生成した PHP (ARCHITECTURE.md 10章)
+# 翻訳。正は resources/lang/*.json で、読むのは CI が生成した PHP (ARCHITECTURE.md 10章)
 generated/lang/

@@ -95,7 +95,7 @@ final class LangCompiler {
      * @throws LangBuildException
      */
     private function write(string $path, string $locale, array $tree): void {
-        $body = "<?php\n\n// 自動生成。編集しないこと。正は lang/{$locale}.json\nreturn "
+        $body = "<?php\n\n// 自動生成。編集しないこと。正は resources/lang/server/{$locale}.json\nreturn "
             . var_export($tree, true) . ";\n";
 
         if (file_put_contents($path, $body) === false) {

@@ -11,7 +11,7 @@ plugins/<name>/
   src/                        名前空間 Plugins\<StudlyName>\  (例: wiki-hub → Plugins\WikiHub\)
     <StudlyName>ServiceProvider.php
   routes/web.php              URL は /plugins/<name>/… にそろえる
-  lang/ja_jp.json, en_us.json 画面の文言。本体の lang/ には混ぜない
+  resources/lang/*.json       画面の文言 (ja_jp.json、en_us.json)。本体の resources/lang/ には混ぜない
   resources/js/Pages/*.tsx    画面。Inertia::render('<name>::<Page>') で出す
   tests/*Test.php             php artisan test で一緒に流れる
 ```
@@ -50,7 +50,7 @@ plugins/<name>/
 | ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` に `PluginMenuItem` を登録 |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
-| 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の lang/*.json を渡す |
+| 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 
 ダッシュボードの「利用可能なプラグイン」には、`PluginMenuItem` に渡した client_id の
 どれかと連携している利用者にだけ出る (空なら全員)。

@@ -25,7 +25,7 @@ class BuildLang extends Command {
      */
     public function handle(LangBuild $build): int {
         try {
-            $result = $build->execute(base_path('lang'), base_path('generated/lang'));
+            $result = $build->execute(resource_path('lang'), base_path('generated/lang'));
         } catch (LangBuildException $e) {
             $this->error($e->getMessage());
 

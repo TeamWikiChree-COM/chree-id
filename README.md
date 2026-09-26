@@ -43,7 +43,7 @@ npm run dev
 
 ## コードの場所
 機能ごとに `app/Modules/<モジュール>/` に分かれている。各モジュールの中は `Domain` / `Application` / `Infrastructure` / `Http`。
-画面は `resources/js/Pages/`、翻訳は `lang/`。
+画面は `resources/js/Pages/`、翻訳は `resources/lang/`。
 
 どこに何を書くかは [アーキテクチャ](docs/ARCHITECTURE.md)、書き方は [コーディング規約](docs/CODING.md)。
 

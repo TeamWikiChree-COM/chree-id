@@ -20,7 +20,7 @@ final class LangBuild {
     ) {}
 
     /**
-     * @param string $langDir lang/ のパス (client/ と server/ を持つ)
+     * @param string $langDir resources/lang/ のパス (client/ と server/ を持つ)
      * @param string $outDir generated/lang のパス
      * @return LangBuildResult
      * @throws LangBuildException 落とすべき食い違いがあった

@@ -13,7 +13,7 @@ final class LangSource {
     public const BASE = 'ja_jp';
 
     /**
-     * @param string $dir lang/ のパス
+     * @param string $dir resources/lang/ のパス
      * @return array<string, array<string, string>> ロケール => キー => 文言
      * @throws LangBuildException 読めない、または JSON として壊れている
      */

@@ -1,5 +1,5 @@
-import ja from '../../../lang/client/ja_jp.json';
-import en from '../../../lang/client/en_us.json';
+import ja from '../../lang/client/ja_jp.json';
+import en from '../../lang/client/en_us.json';
 
 /**
  * 画面の文言。

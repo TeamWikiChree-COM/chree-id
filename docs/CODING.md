@@ -164,8 +164,8 @@ try {
 
 | 場所 | 辞書 | 呼び出し |
 | --- | --- | --- |
-| PHP | `lang/server/<ロケール>.json` | `__('admin.backups.title')` |
-| React | `lang/client/<ロケール>.json` | `t('...')` (`resources/js/lib/i18n.ts`) |
+| PHP | `resources/lang/server/<ロケール>.json` | `__('admin.backups.title')` |
+| React | `resources/lang/client/<ロケール>.json` | `t('...')` (`resources/js/lib/i18n.ts`) |
 
 - 辞書を変えたら `php artisan lang:build` を実行する (キーの過不足を検証し、PHP 側の配列を生成する)
 - キーは全ロケールに揃える
