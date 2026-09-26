@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use App\Modules\Plugin\Domain\PluginManifest;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\Facades\Route;
@@ -18,37 +19,59 @@ use Override;
  * 本番でも dump-autoload が要るが、本番は差分のアップロードしかしていない。
  */
 class PluginServiceProvider extends ServiceProvider {
+    /** @var array<string, true> 自動読み込みを登録済みの置き場。同じ置き場を二重に登録しない */
+    private static array $autoloadedRoots = [];
+
     #[Override]
     public function register(): void {
         $plugins = new PluginRegistry(base_path('plugins'));
         $this->app->instance(PluginRegistry::class, $plugins);
-        $this->app->singleton(PluginMenu::class, static fn (): PluginMenu => new PluginMenu($plugins->enabled()));
+        $this->app->singleton(PluginMenu::class);
 
-        $this->registerAutoloader($plugins->root());
-        $this->registerPages($plugins);
-
-        foreach ($plugins->enabled() as $plugin) {
-            $config = $plugins->path($plugin, 'config.php');
-            // プラグインの register() から設定を読めるよう、プロバイダより先に登録する
-            if (is_file($config)) $this->mergeConfigFrom($config, $plugin->name);
-
-            $this->app->register($plugin->provider);
-        }
+        foreach ($plugins->enabled() as $plugin) $this->load($plugins, $plugin);
     }
 
     /**
-     * プラグインの routes/web.php を、web ミドルウェアと /plugins/<名前> の接頭辞を付けて読む。
-     *
-     * 接頭辞をそろえるのは、本体の URL とぶつけないため。プラグイン側は相対の URL だけ書けばよい。
+     * 有効なプラグインのルートを読む。ほかのプロバイダがそろってから読むので boot に置く。
      */
     public function boot(): void {
+        $plugins = $this->app->make(PluginRegistry::class);
+        foreach ($plugins->enabled() as $plugin) $this->loadRoutes($plugins, $plugin);
+    }
+
+    /**
+     * プラグインを1つ読み込む。設定、画面の置き場、ServiceProvider の登録まで。
+     *
+     * テストで plugins/ の外にあるプラグインや、無効にしてあるプラグインを読むときにも使う。
+     *
+     * @param PluginRegistry $plugins そのプラグインを見つけた置き場
+     * @param PluginManifest $plugin
+     */
+    public function load(PluginRegistry $plugins, PluginManifest $plugin): void {
+        $this->registerAutoloader($plugins->root());
+        $this->registerPages($plugins, $plugin);
+        $this->app->make(PluginMenu::class)->registerPlugin($plugin);
+
+        $config = $plugins->path($plugin, 'config.php');
+        // プラグインの register() から設定を読めるよう、プロバイダより先に登録する
+        if (is_file($config)) $this->mergeConfigFrom($config, $plugin->name);
+
+        $this->app->register($plugin->provider);
+    }
+
+    /**
+     * routes/web.php を、web ミドルウェアと /plugins/<名前> の接頭辞を付けて読む。
+     *
+     * 接頭辞をそろえるのは、本体の URL とぶつけないため。プラグイン側は相対の URL だけ書けばよい。
+     *
+     * @param PluginRegistry $plugins そのプラグインを見つけた置き場
+     * @param PluginManifest $plugin
+     */
+    public function loadRoutes(PluginRegistry $plugins, PluginManifest $plugin): void {
         if ($this->app->routesAreCached()) return;
 
-        $plugins = $this->app->make(PluginRegistry::class);
-        foreach ($plugins->enabled() as $plugin) {
-            $routes = $plugins->path($plugin, 'routes/web.php');
-            if (is_file($routes)) Route::middleware('web')->prefix("plugins/{$plugin->name}")->group($routes);
-        }
+        $routes = $plugins->path($plugin, 'routes/web.php');
+        if (is_file($routes)) Route::middleware('web')->prefix("plugins/{$plugin->name}")->group($routes);
     }
 
     /**
@@ -58,21 +81,27 @@ class PluginServiceProvider extends ServiceProvider {
      * finder は解決のたびに作り直されるので、登録ではなく extend で足す。
      *
      * @param PluginRegistry $plugins
+     * @param PluginManifest $plugin
      */
-    private function registerPages(PluginRegistry $plugins): void {
-        $this->app->extend('inertia.view-finder', static function (FileViewFinder $finder) use ($plugins): FileViewFinder {
-            foreach ($plugins->enabled() as $plugin) $finder->addNamespace($plugin->name, $plugins->path($plugin, 'resources/js/Pages'));
+    private function registerPages(PluginRegistry $plugins, PluginManifest $plugin): void {
+        $pages = $plugins->path($plugin, 'resources/js/Pages');
+
+        $this->app->extend('inertia.view-finder', static function (FileViewFinder $finder) use ($plugin, $pages): FileViewFinder {
+            $finder->addNamespace($plugin->name, $pages);
 
             return $finder;
         });
     }
 
     /**
-     * Plugins\<Studly>\Foo を plugins/<kebab>/src/Foo.php から読む。
+     * Plugins\<Studly>\Foo を <置き場>/<kebab>/src/Foo.php から読む。
      *
-     * @param string $root plugins/ のパス
+     * @param string $root プラグインの置き場 (ふつうは plugins/)
      */
     private function registerAutoloader(string $root): void {
+        if (isset(self::$autoloadedRoots[$root])) return;
+        self::$autoloadedRoots[$root] = true;
+
         spl_autoload_register(static function (string $class) use ($root): void {
             if (!str_starts_with($class, 'Plugins\\')) return;
 

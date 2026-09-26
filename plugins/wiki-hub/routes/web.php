@@ -3,5 +3,5 @@
 use Illuminate\Support\Facades\Route;
 use Plugins\WikiHub\WikiController;
 
-// 本体が web ミドルウェアと /plugins/wiki-hub の接頭辞を付けて読む
+// 連携サービスにある自分のウィキを一元で表示する画面
 Route::get('/', [WikiController::class, 'index']);

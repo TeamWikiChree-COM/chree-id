@@ -28,16 +28,17 @@ class PluginMenuTest extends TestCase {
 
     #[TestDox('addPlugin は plugin.json の名前と説明を使い、/plugins/<名前> への入口を足す')]
     public function test_addPluginFillsFromManifest(): void {
-        $menu = new PluginMenu([new PluginManifest('wiki-hub', '0.1.0', 'Provider', true, ['ja' => 'ウィキ'], ['ja' => '説明'])]);
-        $menu->addPlugin('wiki-hub', PluginMenu::AREA_DASHBOARD);
+        $menu = new PluginMenu();
+        $menu->registerPlugin(new PluginManifest('example', '0.1.0', 'Provider', true, ['ja' => '例'], ['ja' => '説明']));
+        $menu->addPlugin('example', PluginMenu::AREA_DASHBOARD);
 
-        $this->assertSame([['href' => '/plugins/wiki-hub', 'label' => 'ウィキ', 'description' => '説明']], $menu->itemsFor(PluginMenu::AREA_DASHBOARD, 'ja'));
+        $this->assertSame([['href' => '/plugins/example', 'label' => '例', 'description' => '説明']], $menu->itemsFor(PluginMenu::AREA_DASHBOARD, 'ja'));
     }
 
     #[TestDox('読み込まれていないプラグインの名前を addPlugin に渡すと例外になる')]
     public function test_addPluginRejectsUnknownName(): void {
         $this->expectException(LogicException::class);
 
-        (new PluginMenu())->addPlugin('wiki-hbu', PluginMenu::AREA_DASHBOARD);
+        (new PluginMenu())->addPlugin('exmaple', PluginMenu::AREA_DASHBOARD);
     }
 }

@@ -19,17 +19,16 @@ final class PluginMenu {
     /** @var list<PluginMenuItem> */
     private array $items = [];
 
-    /** @var array<string, PluginManifest> 名前をキーにした、読み込んだプラグイン */
-    private readonly array $plugins;
+    /** @var array<string, PluginManifest> 名前をキーにした、読み込んだプラグイン。addPlugin() で名前から引く */
+    private array $plugins = [];
 
     /**
-     * @param list<PluginManifest> $plugins addPlugin() で名前から引くためのもの
+     * 読み込んだプラグインを教える。本体の読み込み処理が呼ぶ。
+     *
+     * @param PluginManifest $plugin
      */
-    public function __construct(array $plugins = []) {
-        $byName = [];
-        foreach ($plugins as $plugin) $byName[$plugin->name] = $plugin;
-
-        $this->plugins = $byName;
+    public function registerPlugin(PluginManifest $plugin): void {
+        $this->plugins[$plugin->name] = $plugin;
     }
 
     /**
