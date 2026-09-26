@@ -10,9 +10,6 @@ use Illuminate\Support\ServiceProvider;
  * Identity モジュールの配線
  */
 class IdentityServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
     #[\Override]
     public function register(): void {
         $this->app->bind(AuthIdentityRepository::class, EloquentAuthIdentityRepository::class);

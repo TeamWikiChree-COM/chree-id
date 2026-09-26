@@ -98,7 +98,6 @@ class ExternalLoginFlow {
      *
      * @param list<string> $candidates 紐付いている認証主体のID
      * @param string|null $claimToken 引き取り中ならそのトークン
-     * @return void
      */
     public function keepCandidates(array $candidates, ?string $claimToken): void {
         $this->request->session()->put(self::CANDIDATES, $candidates);
@@ -115,9 +114,6 @@ class ExternalLoginFlow {
         return array_values(array_filter($candidates, is_string(...)));
     }
 
-    /**
-     * @return void
-     */
     public function forgetCandidates(): void {
         $this->request->session()->forget(self::CANDIDATES);
     }

@@ -14,9 +14,6 @@ use Illuminate\Support\ServiceProvider;
  * IP だけで数えるとメール総当たりを見逃すため、メールアドレスとの組でも数える。
  */
 class RateLimitServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
     public function boot(): void {
         RateLimiter::for('login', fn (Request $request): array => [
             Limit::perMinute(5)->by($this->emailKey($request)),

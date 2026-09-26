@@ -10,9 +10,6 @@ use Illuminate\Support\ServiceProvider;
  * ExternalLogin モジュールの配線 (ChreeID が RP 側)
  */
 class ExternalLoginServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
     #[\Override]
     public function register(): void {
         $this->app->singleton(ExternalIdpRegistry::class, function (): ExternalIdpRegistry {

@@ -10,9 +10,6 @@ use Illuminate\Support\ServiceProvider;
  * OIDC (Provider モジュール) の配線
  */
 class OidcServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
     #[\Override]
     public function register(): void {
         $this->app->singleton(ScopeRegistry::class, function (): ScopeRegistry {

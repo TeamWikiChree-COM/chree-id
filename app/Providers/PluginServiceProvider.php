@@ -17,9 +17,6 @@ use Override;
  * 本番でも dump-autoload が要るが、本番は差分のアップロードしかしていない。
  */
 class PluginServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
     #[Override]
     public function register(): void {
         $plugins = new PluginRegistry(base_path('plugins'));
@@ -41,7 +38,6 @@ class PluginServiceProvider extends ServiceProvider {
      * finder は解決のたびに作り直されるので、登録ではなく extend で足す。
      *
      * @param PluginRegistry $plugins
-     * @return void
      */
     private function registerPages(PluginRegistry $plugins): void {
         $this->app->extend('inertia.view-finder', static function (FileViewFinder $finder) use ($plugins): FileViewFinder {
@@ -57,7 +53,6 @@ class PluginServiceProvider extends ServiceProvider {
      * Plugins\<Studly>\Foo を plugins/<kebab>/src/Foo.php から読む。
      *
      * @param string $root plugins/ のパス
-     * @return void
      */
     private function registerAutoloader(string $root): void {
         spl_autoload_register(static function (string $class) use ($root): void {

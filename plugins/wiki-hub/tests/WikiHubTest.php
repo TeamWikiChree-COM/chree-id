@@ -12,13 +12,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
+use Override;
 use Tests\TestCase;
 
 // 連携している各サービスからウィキを集めて1画面に出す
 class WikiHubTest extends TestCase {
     use RefreshDatabase;
 
-    #[\Override]
+    #[Override]
     protected function setUp(): void {
         parent::setUp();
         RateLimiter::clear('login');

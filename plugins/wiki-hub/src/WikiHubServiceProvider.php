@@ -9,17 +9,16 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 
 /**
- * DokuFarm・WikiChree などのウィキを、利用者ごとに1画面へまとめる。
+ * DokuFarm、WikiChree などのウィキを、利用者ごとに1画面へまとめる。
  */
 class WikiHubServiceProvider extends ServiceProvider {
-    /**
-     * @return void
-     */
+
     #[Override]
     public function register(): void {
+        // 設定ファイルの登録
         $this->mergeConfigFrom(__DIR__ . '/../config.php', 'wiki-hub');
 
-        // 設定は使うときに読む。起動時に固めると、差し替えた設定が効かない
+        // 設定は利用時に読み込む。起動時に固めると、差し替えた設定が効かない
         $this->app->bind(ListWikis::class, fn (): ListWikis => new ListWikis(
             $this->app->make(PluginApi::class),
             new WikiSourceClient((int) config('wiki-hub.timeout')),
@@ -30,7 +29,6 @@ class WikiHubServiceProvider extends ServiceProvider {
 
     /**
      * @param PluginMenu $menu
-     * @return void
      */
     public function boot(PluginMenu $menu, PluginRegistry $plugins): void {
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');

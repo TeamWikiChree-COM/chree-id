@@ -20,9 +20,6 @@ class TurnstileTest extends TestCase {
         Mail::fake();
     }
 
-    /**
-     * @return void
-     */
     private function configureTurnstile(): void {
         Config::set('chreeid.turnstile.site_key', 'site-key');
         Config::set('chreeid.turnstile.secret_key', 'secret-key');

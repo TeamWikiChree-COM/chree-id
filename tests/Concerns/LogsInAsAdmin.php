@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Config;
  * 管理画面のテストで、管理者としてログインした状態を作る。
  */
 trait LogsInAsAdmin {
-    /**
-     * @return void
-     */
     private function loginAsAdmin(): void {
         $email = 'admin@example.com';
         Config::set('chreeid.admin_emails', [$email]);

@@ -25,7 +25,6 @@ class PendingAuthentication {
      *
      * @param string $accountId アカウントID (ULID)
      * @param VerifiedFactors $factors ここまでに検証できた要素
-     * @return void
      */
     public function start(string $accountId, VerifiedFactors $factors): void {
         $this->request->session()->put(self::KEY, [
@@ -63,9 +62,6 @@ class PendingAuthentication {
         return $factors;
     }
 
-    /**
-     * @return void
-     */
     public function forget(): void {
         $this->request->session()->forget(self::KEY);
     }

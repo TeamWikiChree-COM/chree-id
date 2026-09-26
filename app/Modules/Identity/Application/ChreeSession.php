@@ -39,7 +39,6 @@ class ChreeSession {
      *
      * @param string $accountId アカウントID (ULID)
      * @param string $method どう入ったか。LoginMethod の値
-     * @return void
      */
     public function login(string $accountId, string $method): void {
         $this->request->session()->regenerate(destroy: true);
@@ -48,9 +47,6 @@ class ChreeSession {
         $this->audit->record(AuditAction::LOGIN_SUCCEEDED, $accountId, ['method' => $method]);
     }
 
-    /**
-     * @return void
-     */
     public function logout(): void {
         $this->request->session()->forget(self::KEY);
 
