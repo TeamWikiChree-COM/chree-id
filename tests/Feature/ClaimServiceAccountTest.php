@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 裏で発行したアカウントを本人が引き取る (claim) 流れ
@@ -283,6 +284,7 @@ class ClaimServiceAccountTest extends TestCase {
         Mail::assertSentCount(1);
     }
 
+    #[TestDox('移行時に他人が使っているアドレスを指定すると断る')]
     public function test_rejectsAnAddressThatBelongsToSomeoneElse(): void {
         app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '別人');
 

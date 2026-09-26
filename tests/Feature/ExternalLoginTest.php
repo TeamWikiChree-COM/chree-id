@@ -10,6 +10,7 @@ use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 外部 IdP との紐付け (ChreeID が RP 側)
@@ -47,6 +48,7 @@ class ExternalLoginTest extends TestCase {
     /**
      * IdP 側でメールが検証済みなら、既存アカウントに紐付ける
      */
+    #[TestDox('外部IdP のメールが検証済みなら、既存アカウントに紐付ける')]
     public function test_linksToExistingAccountWhenEmailVerified(): void {
         $account = app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 
@@ -59,6 +61,7 @@ class ExternalLoginTest extends TestCase {
      * 未検証のメールで自動紐付けすると、被害者のメールで作った IdP アカウントから乗っ取れる。
      * かといって黙って2つ目を作らず、明示的に断る
      */
+    #[TestDox('外部IdP のメールが未検証なら、同じアドレスの既存アカウントに紐付けずに断る')]
     public function test_refusesToLinkWhenEmailIsUnverified(): void {
         app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'user@example.com', '既存');
 

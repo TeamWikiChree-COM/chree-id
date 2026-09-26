@@ -9,6 +9,7 @@ use App\Modules\Provider\Infrastructure\AccessTokenModel;
 use App\Modules\Client\Domain\ServiceTrust;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 認可コードの交換と userinfo
@@ -125,6 +126,7 @@ class TokenTest extends TestCase {
             ->assertJsonPath('error', 'invalid_client');
     }
 
+    #[TestDox('認可時と違う redirect_uri ではトークンを出さない')]
     public function test_rejectsMismatchedRedirectUri(): void {
         $client = $this->makeClient();
         $code = $this->obtainCode($client);
@@ -137,6 +139,7 @@ class TokenTest extends TestCase {
     /**
      * 再利用されたコードから出たトークンはまとめて失効させる (RFC 6749 4.1.2)
      */
+    #[TestDox('認可コードが再利用されたら、そのコードから出たトークンを失効させる')]
     public function test_revokesTokensWhenCodeIsReused(): void {
         $client = $this->makeClient();
         $code = $this->obtainCode($client);
@@ -153,6 +156,7 @@ class TokenTest extends TestCase {
         $this->assertNotNull($stored->revoked_at);
     }
 
+    #[TestDox('PKCE の code_verifier が違えばトークンを出さない')]
     public function test_verifiesPkce(): void {
         $client = $this->makeClient();
         $code = $this->obtainCode($client, true);

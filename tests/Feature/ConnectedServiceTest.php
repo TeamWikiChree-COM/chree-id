@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 利用者から見た「連携しているサービス」。管理画面の接続サービスとは別物
@@ -104,6 +105,7 @@ class ConnectedServiceTest extends TestCase {
     }
 
     // sub を消すと、繋ぎ直したとき向こうから別人に見える
+    #[TestDox('連携を解除しても sub は残り、繋ぎ直すと同じ人になる')]
     public function test_keepsTheSubjectSoReconnectingIsTheSameUser(): void {
         $accountId = $this->login();
         $clientId = $this->connect($accountId);

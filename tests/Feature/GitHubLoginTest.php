@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // GitHub ログイン (ChreeID が RP 側)。GitHub は OIDC ではないので API を叩いて本人を知る
@@ -102,6 +103,7 @@ class GitHubLoginTest extends TestCase {
     }
 
     // 未検証のものを掴まない
+    #[TestDox('GitHub の未検証のメインアドレスを検証済みとして扱わない')]
     public function test_ignoresAnUnverifiedPrimaryAddress(): void {
         $this->fakeGitHub(
             user: ['id' => 1, 'login' => 'octocat', 'name' => null],

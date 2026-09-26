@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // メールアドレスの確認と変更。
@@ -138,6 +139,7 @@ class EmailVerificationTest extends TestCase {
         $this->assertTrue($account->isEmailVerified());
     }
 
+    #[TestDox('他人が使っているアドレスへは変更できず、確認メールも送らない')]
     public function test_rejectsAddressUsedByAnotherAccount(): void {
         app(AuthIdentityRepository::class)->create(AccountOrigin::USER, 'taken@example.com', '他人');
         $this->login();

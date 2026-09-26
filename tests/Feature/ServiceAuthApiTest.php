@@ -13,6 +13,7 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // サービスが自前のログインフォームのまま、照合だけこちらに任せる口
@@ -157,6 +158,7 @@ class ServiceAuthApiTest extends TestCase {
     }
 
     // 他所のサービスに紐付いた利用者も引けない
+    #[TestDox('別のサービスに紐付いた利用者は認証できない')]
     public function test_refusesAnAccountLinkedToAnotherService(): void {
         $other = $this->client();
         $this->account($other);
@@ -180,6 +182,7 @@ class ServiceAuthApiTest extends TestCase {
             ->assertJsonMissing(['sub' => $accountId]);
     }
 
+    #[TestDox('停止したアカウントはサービス経由でも認証できない')]
     public function test_refusesASuspendedAccount(): void {
         $client = $this->client();
         $accountId = $this->account($client);
@@ -288,6 +291,7 @@ class ServiceAuthApiTest extends TestCase {
     }
 
     // 他所のサービスが出した合図は使えない
+    #[TestDox('別のサービスが発行したマジックリンクのトークンは使えない')]
     public function test_refusesATokenFromAnotherService(): void {
         $client = $this->client();
         $accountId = $this->account($client);

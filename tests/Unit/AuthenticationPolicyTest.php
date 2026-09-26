@@ -5,6 +5,7 @@ use App\Modules\Credential\Domain\AuthenticationPolicy;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactor;
 use App\Modules\Credential\Domain\VerifiedFactors;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 
 // 認証成立の判定に関する単体テスト
@@ -19,6 +20,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 2FA を有効にしていなければパスワード1つで通る
      */
+    #[TestDox('2段階認証が無効ならパスワードだけで認証が成立する')]
     public function test_singleFactorSatisfiesWhenSecondFactorNotRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
@@ -29,6 +31,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * 2FA が有効なら1要素では足りない
      */
+    #[TestDox('2段階認証が有効ならパスワードだけでは成立しない')]
     public function test_singleFactorFailsWhenSecondFactorRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));
@@ -39,6 +42,7 @@ class AuthenticationPolicyTest extends TestCase {
     /**
      * パスワード + TOTP で2要素を満たす
      */
+    #[TestDox('2段階認証が有効ならパスワードと TOTP で成立する')]
     public function test_twoFactorsSatisfyWhenSecondFactorRequired(): void {
         $factors = new VerifiedFactors();
         $factors->add(new VerifiedFactor(CredentialType::PASSWORD, false));

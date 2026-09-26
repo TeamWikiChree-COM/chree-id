@@ -15,6 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 既に ChreeID を持っている人が、サービスアカウントをそちらへ寄せる (統合)
@@ -106,6 +107,7 @@ class MergeServiceAccountTest extends TestCase {
     }
 
     // 統合しても sub は付け替えない。指す先だけ差し替える (ARCHITECTURE 8.6)
+    #[TestDox('統合しても sub は変わらない')]
     public function test_keepsTheSubAndOnlyRepointsIt(): void {
         $client = $this->client();
         $service = $this->serviceAccount($client);
@@ -119,6 +121,7 @@ class MergeServiceAccountTest extends TestCase {
     }
 
     // 寄せ元は残すが、以後どの経路でも入れない
+    #[TestDox('統合で寄せた元のアカウントは停止される')]
     public function test_suspendsTheAccountThatDisappears(): void {
         $client = $this->client();
         $service = $this->serviceAccount($client);

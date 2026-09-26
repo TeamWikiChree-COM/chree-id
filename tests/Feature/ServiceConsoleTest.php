@@ -6,6 +6,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Client\Domain\ServiceTrust;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 第三者が自分のサービスを登録する導線
@@ -99,6 +100,7 @@ class ServiceConsoleTest extends TestCase {
     /**
      * 他人のサービスは触れない
      */
+    #[TestDox('他人が登録したサービスは編集できない')]
     public function test_cannotEditSomeoneElsesService(): void {
         $other = $this->login('other@example.com');
         $service = $this->service($other);

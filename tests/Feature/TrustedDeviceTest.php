@@ -10,6 +10,7 @@ use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 2段階目を通した端末を覚えて、次回は省略する
@@ -96,6 +97,7 @@ class TrustedDeviceTest extends TestCase {
     /**
      * 別の端末 (トークンを持たない) は、いつも通り2段階目を求められる
      */
+    #[TestDox('信頼していない別の端末では2段階目を求める')]
     public function test_stillChallengesOtherDevices(): void {
         $account = $this->account();
         $this->trustThisDevice($account);
@@ -106,6 +108,7 @@ class TrustedDeviceTest extends TestCase {
             ->assertRedirect('/login/challenge');
     }
 
+    #[TestDox('信頼の期限が切れた端末では2段階目を省かない')]
     public function test_expiredTrustDoesNotSkip(): void {
         $account = $this->account();
         $token = $this->trustThisDevice($account);
@@ -118,6 +121,7 @@ class TrustedDeviceTest extends TestCase {
             ->assertRedirect('/login/challenge');
     }
 
+    #[TestDox('信頼を取り消した端末では2段階目を省かない')]
     public function test_revokedTrustDoesNotSkip(): void {
         $account = $this->account();
         $token = $this->trustThisDevice($account);

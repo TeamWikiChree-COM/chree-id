@@ -8,6 +8,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 管理画面からのアカウント操作
@@ -114,6 +115,7 @@ class AdminAccountManageTest extends TestCase {
     }
 
     // 解除しても deleted_at が残り、中途半端な状態になる
+    #[TestDox('退会したアカウントは停止を解除できない')]
     public function test_refusesToReleaseAWithdrawnAccount(): void {
         $this->loginAsAdmin();
         $id = $this->target();

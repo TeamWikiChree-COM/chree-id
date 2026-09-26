@@ -5,6 +5,7 @@ use App\Modules\Client\Domain\ServiceTrust;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\PendingCommand;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // サービス登録と、リダイレクト先・スコープの照合
@@ -74,6 +75,7 @@ class OAuthClientTest extends TestCase {
         $this->assertTrue($client->requiresPkce());
     }
 
+    #[TestDox('redirect_uri は完全一致でしか許さない')]
     public function test_matchesRedirectUriExactly(): void {
         $client = $this->makeClient();
 

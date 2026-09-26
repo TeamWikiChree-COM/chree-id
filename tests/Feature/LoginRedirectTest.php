@@ -6,6 +6,7 @@ use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 /**
@@ -78,6 +79,7 @@ class LoginRedirectTest extends TestCase {
     }
 
     // 出口でも確かめる。覚える経路が増えたときに素通りさせないため
+    #[TestDox('ログイン後の戻り先が別ホストなら、そこへは飛ばさない')]
     public function test_refusesAnIntendedUrlOnAnotherHost(): void {
         $this->makeAccount();
 

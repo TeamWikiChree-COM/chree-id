@@ -15,6 +15,7 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // サービスアカウントの遅延登録。利用者に登録させず、サービス利用を機に裏で発行する
@@ -110,6 +111,7 @@ class ServiceAccountApiTest extends TestCase {
     }
 
     // ここが崩れると、後で OIDC ログインしたとき向こうから別人に見える
+    #[TestDox('サービスアカウント発行 API の sub が OIDC の sub と一致する')]
     public function test_subMatchesTheOidcSubject(): void {
         $client = $this->client();
         $sub = $this->issue($client)->json('sub');
@@ -398,6 +400,7 @@ class ServiceAccountApiTest extends TestCase {
         $this->assertTrue($account->isEmailVerified());
     }
 
+    #[TestDox('サービスが未検証として渡したアドレスは未検証のまま保存する')]
     public function test_keepsAnUnverifiedAddressUnverified(): void {
         $client = $this->client();
         $this->issue($client, ['email' => 'new@example.com', 'email_verified' => false]);

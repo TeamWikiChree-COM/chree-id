@@ -7,6 +7,7 @@ use App\Modules\Identity\Domain\AuthIdentity;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\ViewErrorBag;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // パスワードによるログイン
@@ -73,6 +74,7 @@ class LoginTest extends TestCase {
      * 未登録のメールでも、間違ったパスワードと同じ文言を返す。
      * 出し分けるとアカウントの存在を総当たりで調べられる。
      */
+    #[TestDox('未登録のメールでも、パスワード違いと同じ文言を返す')]
     public function test_doesNotRevealWhetherAccountExists(): void {
         $this->makeAccountWithPassword();
 

@@ -10,6 +10,7 @@ use App\Modules\Provider\Infrastructure\AuthCodeModel;
 use App\Modules\Client\Domain\ServiceTrust;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // OIDC の認可エンドポイント
@@ -128,6 +129,7 @@ class AuthorizeTest extends TestCase {
     /**
      * 未登録のリダイレクト先へは飛ばさない。飛ばすとオープンリダイレクタになる。
      */
+    #[TestDox('登録されていないリダイレクト先へは飛ばさない')]
     public function test_doesNotRedirectToUnregisteredUri(): void {
         $client = $this->makeClient();
         $this->loginAccount();
@@ -194,6 +196,7 @@ class AuthorizeTest extends TestCase {
             ->assertRedirectContains('error=unsupported_response_type');
     }
 
+    #[TestDox('公開クライアントには PKCE を必須にする')]
     public function test_requiresPkceForPublicClient(): void {
         $client = $this->makeClient(ServiceTrust::OFFICIAL, false);
         $this->loginAccount();

@@ -9,6 +9,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // ログイン中の端末の一覧と失効
@@ -123,6 +124,7 @@ class LoginSessionTest extends TestCase {
     /**
      * 他人のセッションを切れてはいけない
      */
+    #[TestDox('他人のログインセッションは切れない')]
     public function test_cannotRevokeSessionOfAnotherAccount(): void {
         $this->login();
 

@@ -12,6 +12,7 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 管理画面の検索・詳細・不整合の修正
@@ -106,6 +107,7 @@ class AdminAccountDetailTest extends TestCase {
     }
 
     // 分離しても sub は変わらない
+    #[TestDox('分離しても sub は変わらない')]
     public function test_splitsAServiceAccountKeepingItsSub(): void {
         $id = $this->serviceAccount('svc@example.com');
         $this->link($id, 'dokufarm', '248');

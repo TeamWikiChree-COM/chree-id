@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // パスワード再設定。再設定してもログインはさせない
@@ -142,6 +143,7 @@ class PasswordResetTest extends TestCase {
     }
 
     // 再設定で 2FA を迂回できてはいけない
+    #[TestDox('パスワードを再設定しても2段階目は求められる')]
     public function test_doesNotBypassSecondFactor(): void {
         $accountId = $this->account();
         $secret = app(EnableTotp::class)->generateSecret();

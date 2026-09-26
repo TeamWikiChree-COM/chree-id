@@ -9,6 +9,7 @@ use App\Modules\Identity\Domain\AuthIdentityRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 統合候補の提示。挙げるだけで、勝手には統合しない (ARCHITECTURE 8.7)
@@ -76,6 +77,7 @@ class MergeCandidateTest extends TestCase {
     }
 
     // 停止済みは挙げない
+    #[TestDox('停止中のアカウントは統合の候補に出さない')]
     public function test_doesNotSuggestASuspendedAccount(): void {
         $mine = $this->signIn();
         $other = $this->identity('me@example.com');

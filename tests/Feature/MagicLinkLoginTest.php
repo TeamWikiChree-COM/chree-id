@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // メールだけでログインする経路
@@ -126,6 +127,7 @@ class MagicLinkLoginTest extends TestCase {
     }
 
     // メールを開けただけでは1要素。2FA を迂回できてはいけない
+    #[TestDox('マジックリンクでログインしても2段階目は求められる')]
     public function test_doesNotBypassSecondFactor(): void {
         $accountId = $this->account();
         $secret = app(EnableTotp::class)->generateSecret();
