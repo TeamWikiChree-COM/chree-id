@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\WikiHub\Http;
+namespace Plugins\WikiHub;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Plugin\Application\PluginApi;
@@ -7,7 +7,6 @@ use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Plugins\WikiHub\Application\ListWikis;
 
 /**
  * 利用者が自分のウィキを横断して見る画面。

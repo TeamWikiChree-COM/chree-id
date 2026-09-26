@@ -1,11 +1,9 @@
 <?php
-namespace Plugins\WikiHub\Application;
+namespace Plugins\WikiHub;
 
 use App\Modules\Plugin\Application\PluginApi;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Plugins\WikiHub\Domain\WikiSource;
-use Plugins\WikiHub\Infrastructure\WikiSourceClient;
 use RuntimeException;
 
 /**

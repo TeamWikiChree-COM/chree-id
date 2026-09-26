@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\WikiHub\Domain;
+namespace Plugins\WikiHub;
 
 /**
  * ウィキ一覧を問い合わせるサービス1つ。

@@ -1,8 +1,7 @@
 <?php
-namespace Plugins\WikiHub\Infrastructure;
+namespace Plugins\WikiHub;
 
 use Illuminate\Support\Facades\Http;
-use Plugins\WikiHub\Domain\WikiSource;
 use RuntimeException;
 use Throwable;
 

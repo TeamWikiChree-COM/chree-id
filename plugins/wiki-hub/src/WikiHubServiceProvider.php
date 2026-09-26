@@ -7,9 +7,6 @@ use App\Modules\Plugin\Domain\PluginMenuItem;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\ServiceProvider;
 use Override;
-use Plugins\WikiHub\Application\ListWikis;
-use Plugins\WikiHub\Domain\WikiSource;
-use Plugins\WikiHub\Infrastructure\WikiSourceClient;
 
 /**
  * DokuFarm・WikiChree などのウィキを、利用者ごとに1画面へまとめる。
