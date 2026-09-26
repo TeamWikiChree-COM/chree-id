@@ -8,16 +8,17 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Override;
 use Tests\TestCase;
 
 // アカウントのアイコン
 class AccountIconTest extends TestCase {
     use RefreshDatabase;
 
-    /** このテストで使った置き場。後片付けで消す */
+    /** このテストで使った置き場。消し損ねても OS の一時フォルダなので溜まり続けない */
     private ?string $diskRoot = null;
 
-    #[\Override]
+    #[Override]
     protected function tearDown(): void {
         if ($this->diskRoot !== null) File::deleteDirectory($this->diskRoot);
 
@@ -33,7 +34,7 @@ class AccountIconTest extends TestCase {
      * @return void
      */
     private function fakeLocalDisk(): void {
-        $this->diskRoot = storage_path('framework/testing/disks/icon-' . bin2hex(random_bytes(6)));
+        $this->diskRoot = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'chreeid-icon-' . bin2hex(random_bytes(6));
         Storage::set('local', Storage::createLocalDriver(['root' => $this->diskRoot]));
     }
 
