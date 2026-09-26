@@ -1,6 +1,7 @@
 <?php
 namespace Plugins\WikiHub\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Plugin\Application\PluginApi;
 use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
@@ -11,7 +12,7 @@ use Plugins\WikiHub\Application\ListWikis;
 /**
  * 利用者が自分のウィキを横断して見る画面。
  */
-class WikiController {
+class WikiController extends Controller {
     private readonly PluginApi $api;
     private readonly ListWikis $wikis;
 

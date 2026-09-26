@@ -37,7 +37,7 @@ plugins/<name>/
 
 | 使うもの | 扱い |
 | --- | --- |
-| `App\Modules\Plugin\Application\PluginApi` | 本体を変えても壊さないと約束する範囲。できるだけこれを使う |
+| `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
