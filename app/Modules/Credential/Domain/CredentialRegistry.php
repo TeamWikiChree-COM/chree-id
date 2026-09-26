@@ -2,42 +2,38 @@
 namespace App\Modules\Credential\Domain;
 
 use App\Modules\Credential\Domain\Verifier\CredentialVerifier;
-use LogicException;
+use App\Support\Registry\Registry;
 
-class CredentialRegistry {
-    /** @var array<string, CredentialVerifier> */
-    private array $verifiers = [];
-
+/**
+ * 使える認証方式の一覧。
+ *
+ * @extends Registry<CredentialVerifier>
+ */
+class CredentialRegistry extends Registry {
     /**
-     * 二重登録は黙って上書きされると気づけないので、起動時に落とす。
-     * 認証方式が意図せず差し替わるのは事故なので、動く前に止める。
-     * 
      * @param CredentialVerifier $verifier 登録する認証方式の検証ロジッククラス
      * @return void
      */
     public function register(CredentialVerifier $verifier): void {
-        $key = $verifier->type()->value;
-        if (isset($this->verifiers[$key])) throw new LogicException("{$key} は既に登録されています");
-
-        $this->verifiers[$key] = $verifier;
+        $this->add($verifier->type()->value, $verifier);
     }
 
     /**
      * 指定した方式に対応する検証ロジッククラスを取得する
-     * 
+     *
      * @param CredentialType $type 取得したい認証方式
      * @return CredentialVerifier|null 検証ロジッククラス。未登録なら null
      */
     public function get(CredentialType $type): ?CredentialVerifier {
-        return $this->verifiers[$type->value] ?? null;
+        return $this->find($type->value);
     }
 
     /**
      * 登録されている認証方式をすべて取得する
-     * 
+     *
      * @return array<string, CredentialVerifier> 登録されている認証方式の検証ロジッククラスをキーで引ける配列
      */
     public function all(): array {
-        return $this->verifiers;
+        return $this->items();
     }
 }

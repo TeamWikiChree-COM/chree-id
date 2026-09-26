@@ -1,26 +1,20 @@
 <?php
 namespace App\Modules\ExternalLogin\Domain;
 
-use LogicException;
+use App\Support\Registry\Registry;
 
 /**
  * 使える外部 IdP の一覧。
  *
- * 増やすときは ExternalIdp の実装を1つ書いて、ここに1行足す。
+ * @extends Registry<ExternalIdp>
  */
-class ExternalIdpRegistry {
-    /** @var array<string, ExternalIdp> */
-    private array $providers = [];
-
+class ExternalIdpRegistry extends Registry {
     /**
      * @param ExternalIdp $provider
      * @return void
      */
     public function register(ExternalIdp $provider): void {
-        $name = $provider->name();
-        if (isset($this->providers[$name])) throw new LogicException("{$name} は既に登録されています");
-
-        $this->providers[$name] = $provider;
+        $this->add($provider->name(), $provider);
     }
 
     /**
@@ -28,14 +22,14 @@ class ExternalIdpRegistry {
      * @return ExternalIdp|null
      */
     public function get(string $name): ?ExternalIdp {
-        return $this->providers[$name] ?? null;
+        return $this->find($name);
     }
 
     /**
      * @return list<string>
      */
     public function names(): array {
-        return array_keys($this->providers);
+        return $this->keys();
     }
 
     /**
@@ -45,7 +39,7 @@ class ExternalIdpRegistry {
      */
     public function usableNames(): array {
         $names = [];
-        foreach ($this->providers as $name => $provider) {
+        foreach ($this->items() as $name => $provider) {
             if ($provider->isConfigured()) $names[] = $name;
         }
 

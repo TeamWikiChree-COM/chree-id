@@ -2,26 +2,22 @@
 namespace App\Modules\Provider\Domain\Claims;
 
 use App\Modules\Identity\Domain\AuthIdentity;
-use LogicException;
+use App\Support\Registry\Registry;
 
 /**
  * scope とクレームの対応表。
  *
  * どの scope で何が渡るかを1箇所で一覧できるようにしている (プライバシー要件の監査のため)。
+ *
+ * @extends Registry<ClaimsResolver>
  */
-class ScopeRegistry {
-    /** @var array<string, ClaimsResolver> */
-    private array $resolvers = [];
-
+class ScopeRegistry extends Registry {
     /**
      * @param ClaimsResolver $resolver
      * @return void
      */
     public function register(ClaimsResolver $resolver): void {
-        $scope = $resolver->scope();
-        if (isset($this->resolvers[$scope])) throw new LogicException("{$scope} は既に登録されています");
-
-        $this->resolvers[$scope] = $resolver;
+        $this->add($resolver->scope(), $resolver);
     }
 
     /**
@@ -35,7 +31,7 @@ class ScopeRegistry {
     public function claimsFor(AuthIdentity $account, array $scopes, ?string $serviceAccountId = null): array {
         $claims = [];
         foreach ($scopes as $scope) {
-            $resolver = $this->resolvers[$scope] ?? null;
+            $resolver = $this->find($scope);
             if ($resolver === null) continue;
 
             $claims = array_merge($claims, $resolver->resolve($account, $serviceAccountId));
