@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\ChreeSession;
@@ -14,7 +15,7 @@ use Illuminate\Http\RedirectResponse;
  * 管理画面の「接続サービス」(サービスそのものの登録) とは別物。
  * こちらは自分のアカウントとサービスの結び付きだけを扱う。
  */
-class ConnectedServiceController {
+class ConnectedServiceController extends Controller {
     public function __construct(
         private readonly ChreeSession $session,
         private readonly RevokeServiceAccess $revoke,

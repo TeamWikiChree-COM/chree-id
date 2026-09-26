@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
@@ -19,21 +20,31 @@ use RuntimeException;
 /**
  * パスキーの登録 (ブラウザとやり取りするので JSON で返す)
  */
-class PasskeyController {
+class PasskeyController extends Controller {
     /** 発行したチャレンジの引換券。応答の検証には発行時と同じ options が要る */
     private const PENDING_OPTIONS = 'passkey.challenge_handle';
 
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly AuthIdentityRepository $accounts,
-        private readonly StartPasskeyRegistration $start,
-        private readonly CompletePasskeyRegistration $complete,
-        private readonly PasskeySerializer $serializer,
-        private readonly AuditLog $audit,
-        private readonly PasskeyContext $context,
-        private readonly PasskeyDiagnostics $diagnostics,
-        private readonly PasskeyChallenges $challenges,
-    ) {}
+    private readonly ChreeSession $session;
+    private readonly AuthIdentityRepository $accounts;
+    private readonly StartPasskeyRegistration $start;
+    private readonly CompletePasskeyRegistration $complete;
+    private readonly PasskeySerializer $serializer;
+    private readonly AuditLog $audit;
+    private readonly PasskeyContext $context;
+    private readonly PasskeyDiagnostics $diagnostics;
+    private readonly PasskeyChallenges $challenges;
+
+    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, StartPasskeyRegistration $start, CompletePasskeyRegistration $complete, PasskeySerializer $serializer, AuditLog $audit, PasskeyContext $context, PasskeyDiagnostics $diagnostics, PasskeyChallenges $challenges) {
+        $this->session = $session;
+        $this->accounts = $accounts;
+        $this->start = $start;
+        $this->complete = $complete;
+        $this->serializer = $serializer;
+        $this->audit = $audit;
+        $this->context = $context;
+        $this->diagnostics = $diagnostics;
+        $this->challenges = $challenges;
+    }
 
     /**
      * @param Request $request

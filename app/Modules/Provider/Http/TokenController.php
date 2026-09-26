@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Client\Application\AuthenticateClient;
 use App\Modules\Provider\Application\ExchangeAuthCode;
 use App\Modules\Provider\Application\TokenException;
@@ -12,7 +13,7 @@ use Illuminate\Http\Request;
  *
  * 認可コードを ID Token とアクセストークンに交換する。
  */
-class TokenController {
+class TokenController extends Controller {
     private readonly AuthenticateClient $clients;
     private readonly ExchangeAuthCode $exchange;
 

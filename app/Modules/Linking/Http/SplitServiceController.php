@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
@@ -19,7 +20,7 @@ use Inertia\Response;
  * 「ChreeID にまとめるのはやめたいが、そのサービスは使い続けたい」ための入口。
  * サービスから見た識別子 (`sub`) は変わらないので、向こうは何も気付かない。
  */
-class SplitServiceController {
+class SplitServiceController extends Controller {
     /**
      * 理由ごとの表示。内部の理由コードはそのまま出さない
      *

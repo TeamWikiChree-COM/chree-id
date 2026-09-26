@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Linking\Application\ServiceMagicLink;
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
@@ -19,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  * **平文のパスワードが流れる。** 呼べるのは発行を許したクライアントだけで、
  * かつ呼び出し元に紐付いた利用者しか引けない (VerifyServiceUserPassword)。
  */
-class ServiceAuthController {
+class ServiceAuthController extends Controller {
     private readonly VerifyServiceUserPassword $verify;
     private readonly ServiceMagicLink $magicLinks;
 

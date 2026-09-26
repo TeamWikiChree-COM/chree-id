@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\SetPassword;
@@ -21,7 +22,7 @@ use InvalidArgumentException;
  * こちらは**いまのパスワードを知っていること**が裏付けになる。
  * まだ持っていないアカウントは、ログイン中であること自体を裏付けとして新規設定する。
  */
-class PasswordController {
+class PasswordController extends Controller {
     private readonly ChreeSession $session;
     private readonly CredentialRepository $credentials;
     private readonly PasswordVerifier $verifier;

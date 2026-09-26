@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
@@ -21,7 +22,7 @@ use Inertia\Response;
  * 取り返しがつかない操作なので、設定画面には混ぜず専用の画面に分けている。
  * 何を失うのかを見せてから確かめる。
  */
-class WithdrawalController {
+class WithdrawalController extends Controller {
     public function __construct(
         private readonly AuthIdentityRepository $accounts,
         private readonly ChreeSession $session,

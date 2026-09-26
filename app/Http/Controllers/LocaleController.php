@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * 端末を越えて付いてくるようにし、未ログインは Cookie に置く
  * (ログイン画面でも切り替えられる必要があるため)。
  */
-class LocaleController {
+class LocaleController extends Controller {
     private readonly Locales $locales;
     private readonly StoredLocale $stored;
 

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\ExternalLogin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Audit\Domain\LoginMethod;
@@ -29,7 +30,7 @@ use Throwable;
  * 設定画面から後付けで連携する入口は ConnectionController。IdP からの着地は
  * どちらもここに来る (1か所にまとめないと state の扱いが分かれる)。
  */
-class ExternalLoginController {
+class ExternalLoginController extends Controller {
     public function __construct(
         private readonly ExternalIdpRegistry $registry,
         private readonly LinkExternalIdentity $link,

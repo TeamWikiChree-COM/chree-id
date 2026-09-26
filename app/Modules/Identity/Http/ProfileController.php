@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountEmails;
@@ -27,7 +28,7 @@ use Inertia\Response;
  * 表示名・メールアドレス・アイコンを扱う。アイコンの中身そのものは AccountIcons、
  * 画像の出し入れは IconController が持つ。
  */
-class ProfileController {
+class ProfileController extends Controller {
     private readonly AuthIdentityRepository $accounts;
     private readonly ChreeSession $session;
     private readonly RequestEmailVerification $requestVerification;

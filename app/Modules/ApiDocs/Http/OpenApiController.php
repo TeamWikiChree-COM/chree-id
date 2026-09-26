@@ -1,13 +1,14 @@
 <?php
 namespace App\Modules\ApiDocs\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\ApiDocs\Application\OpenApiSpec;
 use Illuminate\Http\JsonResponse;
 
 /**
  * OpenAPI 仕様 (/api/v1/openapi.json) を配る。認証は要らない。
  */
-class OpenApiController {
+class OpenApiController extends Controller {
     private readonly OpenApiSpec $spec;
 
     public function __construct(OpenApiSpec $spec) {

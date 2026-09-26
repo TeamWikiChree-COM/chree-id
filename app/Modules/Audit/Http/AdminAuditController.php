@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Audit\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -10,7 +11,7 @@ use Inertia\Response;
  *
  * 全アカウント分が並ぶ。入口は EnsureAdmin の内側にしか置かないこと。
  */
-class AdminAuditController {
+class AdminAuditController extends Controller {
     /** 一覧に出す件数。絞り込みはまだ無いので、直近だけ出す */
     private const LIMIT = 200;
 

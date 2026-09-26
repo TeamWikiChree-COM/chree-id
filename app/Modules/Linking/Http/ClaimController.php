@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Credential\Domain\CredentialRepository;
@@ -28,7 +29,7 @@ use Inertia\Response;
  * 利用者から見ると「ChreeID を作成」だが、実際には既にあるものを
  * 自分のものにする操作。サービス側で使ってきた分がそのまま残る。
  */
-class ClaimController {
+class ClaimController extends Controller {
     /**
      * 理由ごとの表示。内部の理由コードはそのまま出さない
      *

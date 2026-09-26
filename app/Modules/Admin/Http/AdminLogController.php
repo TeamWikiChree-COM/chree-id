@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Admin\Infrastructure\LogFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Inertia\Response;
  * **監査ログ (AdminAuditController) とは別物。** あちらは「誰に何が起きたか」の
  * 記録で、こちらは「どこで壊れたか」の記録。混ぜると読む目的が濁る。
  */
-class AdminLogController {
+class AdminLogController extends Controller {
     private readonly LogFile $logs;
 
     public function __construct(LogFile $logs) {

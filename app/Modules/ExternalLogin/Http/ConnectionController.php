@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\ExternalLogin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\RemoveCredential;
@@ -23,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * GET で始められると、細工したリンクを踏ませて第三者のアカウントを
  * 本人のものとして繋がせられる。
  */
-class ConnectionController {
+class ConnectionController extends Controller {
     private readonly ChreeSession $session;
     private readonly ExternalIdpRegistry $registry;
     private readonly ExternalLoginFlow $flow;

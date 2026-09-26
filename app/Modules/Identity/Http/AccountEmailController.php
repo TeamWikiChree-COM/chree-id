@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountEmailException;
@@ -19,7 +20,7 @@ use Illuminate\Validation\ValidationException;
  *
  * 追加アドレスはサービスへ渡すための選択肢で、ログインやパスワード再設定には使わない。
  */
-class AccountEmailController {
+class AccountEmailController extends Controller {
     private readonly ChreeSession $session;
     private readonly AddAccountEmail $add;
     private readonly ConfirmAccountEmail $confirm;

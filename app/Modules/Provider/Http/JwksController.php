@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Provider\Infrastructure\SigningKey;
 use Illuminate\Http\JsonResponse;
 
@@ -10,7 +11,7 @@ use Illuminate\Http\JsonResponse;
  * RP はここの公開鍵で ID Token を検証する。
  * 鍵をローテーションするときは、古い鍵をしばらく残しておく必要がある。
  */
-class JwksController {
+class JwksController extends Controller {
     public function __construct(private readonly SigningKey $key) {}
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountEmailException;
@@ -14,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * 連携しているサービスへ渡すメールアドレスを選ぶ。
  */
-class ServiceEmailController {
+class ServiceEmailController extends Controller {
     private readonly ChreeSession $session;
     private readonly ServiceEmails $serviceEmails;
     private readonly AuditLog $audit;

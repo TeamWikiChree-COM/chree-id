@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Identity\Application\ServiceEmails;
 use App\Modules\Identity\Application\UserAccounts;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -17,7 +18,7 @@ use Inertia\Response;
  * 渡すメールアドレスの選択・サービス側の設定・分離・ログアウトをここにまとめる。
  * 一覧の行に並べると、押し間違えやすいうえ狭い画面で行の中身が潰れるため。
  */
-class ConnectedServicePageController {
+class ConnectedServicePageController extends Controller {
     private readonly ChreeSession $session;
     private readonly AuthIdentityRepository $accounts;
     private readonly ListConnectedServices $services;

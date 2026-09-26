@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Credential\Application\PasswordResetTokenException;
 use App\Modules\Credential\Application\RequestPasswordReset;
 use App\Modules\Credential\Application\ResetPassword;
@@ -18,11 +19,14 @@ use Inertia\Response;
  * 送信の応答はアドレスの登録有無で変わらないので、存在確認には使えない。
  * 再設定してもログインはさせない。リンクを踏んだのが本人とは限らないため。
  */
-class PasswordResetController {
-    public function __construct(
-        private readonly RequestPasswordReset $requestReset,
-        private readonly ResetPassword $reset,
-    ) {}
+class PasswordResetController extends Controller {
+    private readonly RequestPasswordReset $requestReset;
+    private readonly ResetPassword $reset;
+
+    public function __construct(RequestPasswordReset $requestReset, ResetPassword $reset) {
+        $this->requestReset = $requestReset;
+        $this->reset = $reset;
+    }
 
     /**
      * @return Response

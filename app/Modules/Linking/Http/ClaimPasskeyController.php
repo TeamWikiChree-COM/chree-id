@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Credential\Application\CompletePasskeyRegistration;
 use App\Modules\Device\Domain\DeviceLabel;
 use App\Modules\Credential\Application\StartPasskeyRegistration;
@@ -19,7 +20,7 @@ use RuntimeException;
  * 対象アカウントを特定する。トークン自体の要求元・有効期限は
  * ClaimTickets が保証する。
  */
-class ClaimPasskeyController {
+class ClaimPasskeyController extends Controller {
     /** 応答の検証に、発行時と同じ options を使う。使い回すとリプレイを許す */
     private const PENDING_OPTIONS = 'claim.passkey.challenge_handle';
 

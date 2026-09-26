@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Audit\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Identity\Application\ChreeSession;
 use App\Support\Http\LoginRedirect;
@@ -14,7 +15,7 @@ use Inertia\Response;
  * **運営向けの一覧 (AdminAuditController) とは出す範囲が違う。**
  * ここは自分についての行だけ。他人の記録が混ざると、それ自体が漏洩になる。
  */
-class ActivityController {
+class ActivityController extends Controller {
     private readonly ChreeSession $session;
     private readonly AuditLog $audit;
 

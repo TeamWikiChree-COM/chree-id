@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Linking\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Linking\Application\ChangeServiceAccountPassword;
 use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
@@ -24,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
  * 利用者はサービス側の識別子で指す。ChreeID の sub はサービスごとに違うので、
  * サービスが確実に知っているのはこちらだけ。
  */
-class ServiceAccountController {
+class ServiceAccountController extends Controller {
     private readonly IssueServiceAccount $issue;
     private readonly ClaimTickets $tickets;
     private readonly DeactivateServiceAccount $deactivate;

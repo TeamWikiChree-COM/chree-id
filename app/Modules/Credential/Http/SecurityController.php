@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\EnableMagicLink;
@@ -24,22 +25,32 @@ use RuntimeException;
 /**
  * 認証方法の管理画面
  */
-class SecurityController {
+class SecurityController extends Controller {
     /** 有効化を確認するまで秘密鍵をセッションに置く */
     private const PENDING_TOTP = 'security.pending_totp';
+    private readonly ChreeSession $session;
+    private readonly EnableTotp $enableTotp;
+    private readonly Totp $totp;
+    private readonly GenerateRecoveryCodes $recoveryCodes;
+    private readonly RemoveCredential $remove;
+    private readonly EnableMagicLink $enableMagicLink;
+    private readonly ListCredentials $credentials;
+    private readonly CredentialRepository $repository;
+    private readonly RenameCredential $rename;
+    private readonly AuditLog $audit;
 
-    public function __construct(
-        private readonly ChreeSession $session,
-        private readonly EnableTotp $enableTotp,
-        private readonly Totp $totp,
-        private readonly GenerateRecoveryCodes $recoveryCodes,
-        private readonly RemoveCredential $remove,
-        private readonly EnableMagicLink $enableMagicLink,
-        private readonly ListCredentials $credentials,
-        private readonly CredentialRepository $repository,
-        private readonly RenameCredential $rename,
-        private readonly AuditLog $audit,
-    ) {}
+    public function __construct(ChreeSession $session, EnableTotp $enableTotp, Totp $totp, GenerateRecoveryCodes $recoveryCodes, RemoveCredential $remove, EnableMagicLink $enableMagicLink, ListCredentials $credentials, CredentialRepository $repository, RenameCredential $rename, AuditLog $audit) {
+        $this->session = $session;
+        $this->enableTotp = $enableTotp;
+        $this->totp = $totp;
+        $this->recoveryCodes = $recoveryCodes;
+        $this->remove = $remove;
+        $this->enableMagicLink = $enableMagicLink;
+        $this->credentials = $credentials;
+        $this->repository = $repository;
+        $this->rename = $rename;
+        $this->audit = $audit;
+    }
 
     /**
      * @param Request $request

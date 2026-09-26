@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Provider\Application\ResolveUserinfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ use Illuminate\Http\Request;
  *
  * アクセストークンの scope の範囲でだけクレームを返す。
  */
-class UserinfoController {
+class UserinfoController extends Controller {
     private readonly ResolveUserinfo $userinfo;
 
     public function __construct(ResolveUserinfo $userinfo) {

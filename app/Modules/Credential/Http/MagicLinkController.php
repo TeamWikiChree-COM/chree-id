@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\CompleteAuthentication;
 use App\Modules\Credential\Application\ConsumeMagicLink;
@@ -24,16 +25,24 @@ use Inertia\Response;
  * 送信の応答はアドレスの登録有無で変わらないので、存在確認には使えない。
  * リンクは一要素でしかないので、2FA を設定していれば二要素目の入力に進む。
  */
-class MagicLinkController {
-    public function __construct(
-        private readonly RequestMagicLink $requestLink,
-        private readonly ConsumeMagicLink $consume,
-        private readonly CompleteAuthentication $complete,
-        private readonly PendingAuthentication $pending,
-        private readonly ChreeSession $session,
-        private readonly LoginHint $loginHint,
-        private readonly TrustedDevices $trustedDevices,
-    ) {}
+class MagicLinkController extends Controller {
+    private readonly RequestMagicLink $requestLink;
+    private readonly ConsumeMagicLink $consume;
+    private readonly CompleteAuthentication $complete;
+    private readonly PendingAuthentication $pending;
+    private readonly ChreeSession $session;
+    private readonly LoginHint $loginHint;
+    private readonly TrustedDevices $trustedDevices;
+
+    public function __construct(RequestMagicLink $requestLink, ConsumeMagicLink $consume, CompleteAuthentication $complete, PendingAuthentication $pending, ChreeSession $session, LoginHint $loginHint, TrustedDevices $trustedDevices) {
+        $this->requestLink = $requestLink;
+        $this->consume = $consume;
+        $this->complete = $complete;
+        $this->pending = $pending;
+        $this->session = $session;
+        $this->loginHint = $loginHint;
+        $this->trustedDevices = $trustedDevices;
+    }
 
     /**
      * @return Response

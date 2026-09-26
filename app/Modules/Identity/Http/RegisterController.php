@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Domain\LoginMethod;
 use App\Modules\Credential\Application\SetPassword;
 use App\Modules\Identity\Application\CompleteRegistration;
@@ -21,7 +22,7 @@ use Inertia\Response;
  * 確認メールのリンクを踏むまでアカウントは作られないので、
  * store() の応答はアドレスの登録有無で変わらず、存在確認には使えない。
  */
-class RegisterController {
+class RegisterController extends Controller {
     /**
      * 理由ごとの画面表示。内部の理由コードをそのまま出さないための対応表
      *

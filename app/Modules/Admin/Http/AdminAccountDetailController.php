@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
@@ -22,7 +23,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * 管理画面のアカウント詳細。認証手段・サービスアカウント・記録をまとめて見て、その場で直す。
  */
-class AdminAccountDetailController {
+class AdminAccountDetailController extends Controller {
     private readonly AdminAccountPresenter $presenter;
     private readonly ListCredentials $credentials;
     private readonly SplitServiceAccount $split;

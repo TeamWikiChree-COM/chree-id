@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Audit\Domain\LoginMethod;
@@ -25,18 +26,28 @@ use Inertia\Response;
 /**
  * パスワードによるログイン
  */
-class LoginController {
-    public function __construct(
-        private readonly ResolveByEmail $byEmail,
-        private readonly VerifyCredential $verify,
-        private readonly CompleteAuthentication $complete,
-        private readonly PendingAuthentication $pending,
-        private readonly ChreeSession $session,
-        private readonly LoginHint $loginHint,
-        private readonly TrustedDevices $trustedDevices,
-        private readonly LoginSessions $sessions,
-        private readonly AuditLog $audit,
-    ) {}
+class LoginController extends Controller {
+    private readonly ResolveByEmail $byEmail;
+    private readonly VerifyCredential $verify;
+    private readonly CompleteAuthentication $complete;
+    private readonly PendingAuthentication $pending;
+    private readonly ChreeSession $session;
+    private readonly LoginHint $loginHint;
+    private readonly TrustedDevices $trustedDevices;
+    private readonly LoginSessions $sessions;
+    private readonly AuditLog $audit;
+
+    public function __construct(ResolveByEmail $byEmail, VerifyCredential $verify, CompleteAuthentication $complete, PendingAuthentication $pending, ChreeSession $session, LoginHint $loginHint, TrustedDevices $trustedDevices, LoginSessions $sessions, AuditLog $audit) {
+        $this->byEmail = $byEmail;
+        $this->verify = $verify;
+        $this->complete = $complete;
+        $this->pending = $pending;
+        $this->session = $session;
+        $this->loginHint = $loginHint;
+        $this->trustedDevices = $trustedDevices;
+        $this->sessions = $sessions;
+        $this->audit = $audit;
+    }
 
     /**
      * @return Response

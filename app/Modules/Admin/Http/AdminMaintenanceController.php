@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Device\Application\LoginSessions;
 use App\Modules\Device\Application\TrustedDevices;
@@ -16,7 +17,7 @@ use Inertia\Response;
  * 日次の `chreeid:prune-tokens` と同じ処理を呼ぶ。共用サーバで cron を
  * 組めていない間も、ここから手で流せるようにしておくためのもの。
  */
-class AdminMaintenanceController {
+class AdminMaintenanceController extends Controller {
     public function __construct(
         private readonly PruneTokens $prune,
         private readonly PurgeDeletedAccounts $purge,

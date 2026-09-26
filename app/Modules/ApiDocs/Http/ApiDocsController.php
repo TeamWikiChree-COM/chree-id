@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\ApiDocs\Http;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 
 /**
@@ -9,7 +10,7 @@ use Illuminate\Contracts\View\View;
  * 画面は Scalar に任せ、こちらは仕様の URL を渡すだけにする。
  * 仕様は OpenApiSpec が組み立てるので、この画面に説明を書き足さないこと。
  */
-class ApiDocsController {
+class ApiDocsController extends Controller {
     /** 仕様を出している版 */
     private const VERSIONS = ['v1'];
 

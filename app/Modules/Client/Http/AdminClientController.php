@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Client\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Client\Application\Clients;
 use App\Modules\Client\Application\RegisterClient;
 use App\Modules\Client\Application\RotateClientSecret;
@@ -18,7 +19,7 @@ use Inertia\Response;
  * 本番サーバでコマンドを叩きにくいので、登録と修正を画面から行えるようにしてある。
  * 中身は Application 側と共有していて、コンソールコマンドと同じ経路を通る。
  */
-class AdminClientController {
+class AdminClientController extends Controller {
     private readonly RegisterClient $register;
     private readonly UpdateClient $update;
     private readonly RotateClientSecret $rotate;

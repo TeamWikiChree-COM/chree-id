@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\VerifyCredential;
@@ -29,7 +30,7 @@ use Inertia\Response;
  * 相手側は**その認証手段を通せること**で示す。**メールの一致は証明にならない。**
  * 候補は同じアドレスのアカウントなので、メールに送っても同じ受信箱に届く。
  */
-class MergeController {
+class MergeController extends Controller {
     /** 相手側の証明に使える方式。パスキーは儀式がブラウザ側に要るので、ここでは扱わない */
     private const PROOFS = [CredentialType::PASSWORD, CredentialType::TOTP];
 

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Provider\Application\AmbiguousServiceAccountException;
 use App\Modules\Provider\Application\IssueAuthCode;
@@ -20,7 +21,7 @@ use Inertia\Response as InertiaResponse;
  *
  * ここは画面ではなくプロトコルなので、Inertia を通さず直接リダイレクトを返す。
  */
-class AuthorizeController {
+class AuthorizeController extends Controller {
     public function __construct(
         private readonly ValidateAuthorizeRequest $validate,
         private readonly IssueAuthCode $issue,

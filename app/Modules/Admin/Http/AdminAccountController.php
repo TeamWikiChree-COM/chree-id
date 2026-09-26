@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Identity\Application\PurgeDeletedAccounts;
 use App\Modules\Identity\Application\ChreeSession;
@@ -20,7 +21,7 @@ use RuntimeException;
  *
  * 登録済みアカウントの利用状況（検証状態、認証設定、停止状態など）を一覧表示する。
  */
-class AdminAccountController {
+class AdminAccountController extends Controller {
     private readonly ManageAccount $manage;
     private readonly SearchAccounts $search;
     private readonly AdminAccountPresenter $presenter;

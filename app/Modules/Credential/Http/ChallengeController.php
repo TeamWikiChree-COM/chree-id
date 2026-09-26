@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Credential\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Credential\Application\CompleteAuthentication;
@@ -24,7 +25,7 @@ use Symfony\Component\HttpFoundation\Cookie;
  * 一次認証を通っただけでは PendingAuthentication に載るだけで、
  * ここを通って AuthenticationPolicy が満たされて初めてログインになる。
  */
-class ChallengeController {
+class ChallengeController extends Controller {
     private readonly PendingAuthentication $pending;
     private readonly VerifyCredential $verify;
     private readonly CompleteAuthentication $complete;

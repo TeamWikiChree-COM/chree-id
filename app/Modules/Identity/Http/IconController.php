@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\AccountIcons;
@@ -20,7 +21,7 @@ use Illuminate\Validation\ValidationException;
  * 表示は誰でも引ける。アイコンは同意画面や連携先にも出る前提のもので、
  * ログインしていないと見えないと、そちらで出せなくなる。
  */
-class IconController {
+class IconController extends Controller {
     /** 受け取る画像の上限 (KB) */
     private const MAX_KILOBYTES = 2048;
 

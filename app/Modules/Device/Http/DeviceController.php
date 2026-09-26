@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Device\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Device\Application\LoginSessions;
@@ -18,7 +19,7 @@ use Inertia\Response;
  * ログイン中のセッションと、2段階目を省略してよい端末の2つを扱う。
  * 似ているが別物で、ログアウトしても信頼は残る。混ぜないこと。
  */
-class DeviceController {
+class DeviceController extends Controller {
     private readonly ChreeSession $session;
     private readonly LoginSessions $sessions;
     private readonly TrustedDevices $trustedDevices;

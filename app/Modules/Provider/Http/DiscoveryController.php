@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Provider\Http;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -9,7 +10,7 @@ use Illuminate\Http\JsonResponse;
  * RP はここを読んで各エンドポイントを自動設定する。仕様で場所が決まっているので
  * パスを変えてはいけない (OpenID Connect Discovery 1.0)。
  */
-class DiscoveryController {
+class DiscoveryController extends Controller {
     /**
      * @return JsonResponse
      */

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Admin\Application\AdminAccountQueries;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
@@ -16,7 +17,7 @@ use Inertia\Response;
 /**
  * 種別と実体が食い違ったアカウントの一覧。まとめて直せるようにしておく。
  */
-class AdminAccountIssuesController {
+class AdminAccountIssuesController extends Controller {
     private readonly DetectAccountIssues $issues;
     private readonly AdminAccountPresenter $presenter;
     private readonly ManageAccount $manage;

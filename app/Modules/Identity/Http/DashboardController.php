@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Identity\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Credential\Application\ListCredentials;
 use App\Modules\Identity\Application\SuggestMergeCandidates;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
@@ -15,7 +16,7 @@ use Inertia\Response;
 /**
  * ログイン後のトップ。今の状態を確かめるための画面
  */
-class DashboardController {
+class DashboardController extends Controller {
     public function __construct(
         private readonly AuthIdentityRepository $accounts,
         private readonly ChreeSession $session,

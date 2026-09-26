@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Backup\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Backup\Application\BackupCipher;
 use App\Modules\Backup\Application\RunBackup;
 use App\Modules\Backup\Domain\BackupSettings;
@@ -17,7 +18,7 @@ use RuntimeException;
  * 日次の `chreeid:backup` と同じ処理を呼ぶ。**本番では artisan を叩けない**ので、
  * cron を組めていない間もここから流せるようにしておく (掃除の画面と同じ考え方)。
  */
-class AdminBackupController {
+class AdminBackupController extends Controller {
     public function __construct(
         private readonly RunBackup $backup,
         private readonly BackupCipher $cipher,

@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Client\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Audit\Application\AuditLog;
 use App\Modules\Audit\Domain\AuditAction;
 use App\Modules\Identity\Application\ChreeSession;
@@ -25,7 +26,7 @@ use Inertia\Response;
  * 管理画面 (AdminClientController) とは扱えるものが違う。混ぜると、自分のサービスを
  * 触っているつもりで他人のサービスの設定を変えてしまう。
  */
-class ServiceConsoleController {
+class ServiceConsoleController extends Controller {
     /**
      * 第三者に渡すスコープ。
      *

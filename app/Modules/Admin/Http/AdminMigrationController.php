@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Admin\Http;
 
+use App\Http\Controllers\Controller;
 use App\Modules\Admin\Application\DatabaseMigrations;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -13,7 +14,7 @@ use Inertia\Response;
  * 置いた直後は新しいコードと古い表が噛み合っていないので、
  * ここから適用して追いつかせる。
  */
-class AdminMigrationController {
+class AdminMigrationController extends Controller {
     public function __construct(private readonly DatabaseMigrations $migrations) {}
 
     /**
