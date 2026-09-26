@@ -112,7 +112,6 @@ class IssueServiceAccount {
      * @param string $accountId アカウントID (ULID)
      * @param list<string> $externalIdentities "google:123" 形式の識別子
      * @param bool $magicLink 移行元がメールリンクでログインさせているか
-     * @return void
      */
     private function adoptLogins(string $accountId, array $externalIdentities, bool $magicLink): void {
         foreach ($externalIdentities as $identity) {
@@ -130,7 +129,6 @@ class IssueServiceAccount {
      *
      * @param string $accountId アカウントID (ULID)
      * @param string $identity "google:123456" の形
-     * @return void
      */
     private function adoptExternal(string $accountId, string $identity): void {
         // provider と subject が揃っていないものは受け取らない

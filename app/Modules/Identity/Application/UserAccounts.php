@@ -30,7 +30,6 @@ class UserAccounts {
      * 冪等。既にあれば何もしない。
      *
      * @param string $authIdentityId 認証主体のID (ULID)
-     * @return void
      */
     public function ensure(string $authIdentityId): void {
         // 引き取り・統合で昇格したのに service のまま残ると、種別が実体と食い違う

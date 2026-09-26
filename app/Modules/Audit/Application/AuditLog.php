@@ -36,7 +36,6 @@ class AuditLog {
      * @param array<string, mixed> $context 方式や件数など、行ごとに形の違う付随情報
      * @param bool $succeeded 失敗の記録なら false
      * @param string|null $actorId 実行者。省略すると本人の操作として扱う
-     * @return void
      */
     public function record(
         AuditAction $action,

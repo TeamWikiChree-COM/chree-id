@@ -69,7 +69,6 @@ return new class extends Migration {
      *
      * @param string $from 現在の名前
      * @param string $to 新しい名前
-     * @return void
      */
     private function renameTable(string $from, string $to): void {
         if (!Schema::hasTable($from) || Schema::hasTable($to)) return;
@@ -81,7 +80,6 @@ return new class extends Migration {
      * @param string $table 対象のテーブル
      * @param string $from 現在の列名
      * @param string $to 新しい列名
-     * @return void
      */
     private function renameColumn(string $table, string $from, string $to): void {
         if (!Schema::hasTable($table)) return;

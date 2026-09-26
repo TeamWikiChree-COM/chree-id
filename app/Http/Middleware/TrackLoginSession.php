@@ -37,7 +37,6 @@ class TrackLoginSession {
     /**
      * @param Request $request
      * @param Response $response
-     * @return void
      */
     public function terminate(Request $request, Response $response): void {
         $accountId = $this->session->accountId();

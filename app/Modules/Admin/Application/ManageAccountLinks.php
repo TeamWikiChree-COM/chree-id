@@ -33,7 +33,6 @@ class ManageAccountLinks {
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $accountId 対象のアカウントID
      * @param string $credentialId 消す認証手段のID
-     * @return void
      * @throws RuntimeException
      */
     public function removeCredential(string $actorId, string $accountId, string $credentialId): void {
@@ -71,7 +70,6 @@ class ManageAccountLinks {
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $accountId 対象のアカウントID
      * @param string $linkId 消すサービスアカウントのID
-     * @return void
      * @throws RuntimeException
      */
     public function unlink(string $actorId, string $accountId, string $linkId): void {

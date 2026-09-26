@@ -19,7 +19,6 @@ final class PluginMenu {
 
     /**
      * @param PluginMenuItem $item
-     * @return void
      */
     public function add(PluginMenuItem $item): void {
         $this->items[] = $item;

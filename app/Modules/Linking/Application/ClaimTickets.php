@@ -65,7 +65,6 @@ class ClaimTickets {
      * 使い終わった券を捨てる。
      *
      * @param ServiceAccountModel $link 対象の紐付け
-     * @return void
      */
     public function consume(ServiceAccountModel $link): void {
         $link->forceFill(['claim_token_hash' => null, 'claim_expires_at' => null])->save();

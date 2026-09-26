@@ -29,7 +29,6 @@ final class StoredLocale {
 
     /**
      * @param string|null $locale 選んだ言語。null で「選んでいない」に戻す
-     * @return void
      */
     public function remember(?string $locale): void {
         $this->account()?->forceFill(['locale' => $locale])->save();

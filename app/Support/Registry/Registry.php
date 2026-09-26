@@ -21,7 +21,6 @@ abstract class Registry {
      *
      * @param string $key 引くときのキー
      * @param T $item 登録する実装
-     * @return void
      * @throws LogicException 同じキーが既に登録されている場合
      */
     protected function add(string $key, object $item): void {

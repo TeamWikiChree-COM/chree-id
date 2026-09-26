@@ -42,7 +42,6 @@ class OAuthCredentials {
      * @param string $accountId 認証主体のID (ULID)
      * @param string $identifier "google:123456" の形
      * @param array<string, mixed> $data provider など、画面に出すための付帯情報
-     * @return void
      */
     public function add(string $accountId, string $identifier, array $data): void {
         CredentialModel::create([

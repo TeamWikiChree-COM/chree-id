@@ -19,7 +19,6 @@ class RenameCredential {
      * @param string $accountId アカウントID (ULID)
      * @param string $credentialId 認証手段のID (ULID)
      * @param string $label 新しい名前
-     * @return void
      * @throws RuntimeException 見つからない、名前を持てない種別、名前が空の場合
      */
     public function execute(string $accountId, string $credentialId, string $label): void {

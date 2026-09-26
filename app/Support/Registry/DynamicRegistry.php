@@ -30,7 +30,6 @@ abstract class DynamicRegistry extends Registry {
     /**
      * 探して登録する。2回目以降は何もしない。
      *
-     * @return void
      */
     protected function load(): void {
         if ($this->loaded) return;

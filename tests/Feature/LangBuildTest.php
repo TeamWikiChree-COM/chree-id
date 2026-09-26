@@ -26,7 +26,6 @@ class LangBuildTest extends \Tests\TestCase {
 
     /**
      * @param string $path 消す対象
-     * @return void
      */
     private function removeTree(string $path): void {
         if (!is_dir($path)) {

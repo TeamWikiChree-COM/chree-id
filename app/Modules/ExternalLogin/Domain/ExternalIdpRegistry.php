@@ -11,7 +11,6 @@ use App\Support\Registry\Registry;
 class ExternalIdpRegistry extends Registry {
     /**
      * @param ExternalIdp $provider
-     * @return void
      */
     public function register(ExternalIdp $provider): void {
         $this->add($provider->name(), $provider);

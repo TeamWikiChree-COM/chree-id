@@ -19,7 +19,6 @@ class LoginHint {
     /**
      * 認可リクエストに付いていれば覚えておく。
      *
-     * @return void
      */
     public function remember(): void {
         $hint = $this->request->string('login_hint')->trim()->toString();

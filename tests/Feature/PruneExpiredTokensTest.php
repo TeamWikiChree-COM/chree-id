@@ -17,7 +17,6 @@ class PruneExpiredTokensTest extends TestCase {
 
     /**
      * @param \Illuminate\Support\Carbon $expiresAt 失効日時
-     * @return void
      */
     private function pendingRegistration(\Illuminate\Support\Carbon $expiresAt): void {
         PendingRegistrationModel::create([
@@ -33,7 +32,6 @@ class PruneExpiredTokensTest extends TestCase {
      * @param string $accountId アカウントID (ULID)
      * @param \Illuminate\Support\Carbon $expiresAt 失効日時
      * @param \Illuminate\Support\Carbon|null $usedAt 使用日時
-     * @return void
      */
     private function token(string $accountId, \Illuminate\Support\Carbon $expiresAt, ?\Illuminate\Support\Carbon $usedAt = null): void {
         $row = OneTimeTokenModel::create([
@@ -50,7 +48,6 @@ class PruneExpiredTokensTest extends TestCase {
      * artisan() は PendingCommand|int を返すので、コマンドとして扱えることを確かめてから実行する。
      *
      * @param int|null $days --days に渡す値
-     * @return void
      */
     private function prune(?int $days = null): void {
         $command = $days === null

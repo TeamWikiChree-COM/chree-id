@@ -22,7 +22,6 @@ class StartRegistration {
 
     /**
      * @param string $email メールアドレス
-     * @return void
      */
     public function execute(string $email): void {
         // 既に持っている人には、新規登録ではなくログインへの案内を送る。

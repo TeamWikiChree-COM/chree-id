@@ -23,7 +23,6 @@ class RequestPasswordReset {
 
     /**
      * @param string $email メールアドレス
-     * @return void
      */
     public function execute(string $email): void {
         $account = $this->byEmail->primary($email);

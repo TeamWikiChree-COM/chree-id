@@ -49,7 +49,6 @@ class SearchAccounts {
      *
      * @param Builder<AuthIdentityModel> $builder
      * @param string $query
-     * @return void
      */
     private function matchText(Builder $builder, string $query): void {
         $like = '%' . addcslashes(mb_strtolower($query), '%_\\') . '%';
@@ -66,7 +65,6 @@ class SearchAccounts {
     /**
      * @param Builder<AuthIdentityModel> $builder
      * @param string $status
-     * @return void
      */
     private function matchStatus(Builder $builder, string $status): void {
         match ($status) {

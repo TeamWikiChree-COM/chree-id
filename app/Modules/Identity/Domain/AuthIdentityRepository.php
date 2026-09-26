@@ -39,7 +39,6 @@ interface AuthIdentityRepository {
      * メールアドレスの到達性が確認できたことを記録する。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function markEmailVerified(string $id): void;
 
@@ -48,7 +47,6 @@ interface AuthIdentityRepository {
      *
      * @param string $id アカウントID (ULID)
      * @param string|null $displayName 未設定に戻す場合は null
-     * @return void
      */
     public function updateDisplayName(string $id, ?string $displayName): void;
 
@@ -60,7 +58,6 @@ interface AuthIdentityRepository {
      * @param string $id アカウントID (ULID)
      * @param IconSource $source アイコンの出どころ
      * @param string|null $path アップロードした画像の保管先。UPLOAD 以外では null
-     * @return void
      */
     public function updateIcon(string $id, IconSource $source, ?string $path): void;
 
@@ -71,7 +68,6 @@ interface AuthIdentityRepository {
      *
      * @param string $id アカウントID (ULID)
      * @param AccountOrigin $origin 新しい発行経路
-     * @return void
      */
     public function changeOrigin(string $id, AccountOrigin $origin): void;
 
@@ -82,7 +78,6 @@ interface AuthIdentityRepository {
      *
      * @param string $id アカウントID (ULID)
      * @param string $email 新しいメールアドレス
-     * @return void
      */
     public function updateEmail(string $id, string $email): void;
 
@@ -93,7 +88,6 @@ interface AuthIdentityRepository {
      * 物理削除せずに済ませたいときに使う。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function suspend(string $id): void;
 
@@ -104,7 +98,6 @@ interface AuthIdentityRepository {
      * 退会済みのまま停止だけ解けてしまう。そちらは `restore()`。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function unsuspend(string $id): void;
 
@@ -119,7 +112,6 @@ interface AuthIdentityRepository {
      * 巻き添えにする。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function delete(string $id): void;
 
@@ -131,7 +123,6 @@ interface AuthIdentityRepository {
      * 退会用の判定を別に足すと、新しい経路で見落とす。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function softDelete(string $id): void;
 
@@ -139,7 +130,6 @@ interface AuthIdentityRepository {
      * 退会を取り消す。猶予のあいだだけ間に合う。
      *
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function restore(string $id): void;
 

@@ -12,7 +12,6 @@ use App\Support\Registry\Registry;
 class CredentialRegistry extends Registry {
     /**
      * @param CredentialVerifier $verifier 登録する認証方式の検証ロジッククラス
-     * @return void
      */
     public function register(CredentialVerifier $verifier): void {
         $this->add($verifier->type()->value, $verifier);

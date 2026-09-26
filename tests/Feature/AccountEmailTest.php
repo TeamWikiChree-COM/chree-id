@@ -64,7 +64,6 @@ class AccountEmailTest extends TestCase {
 
     /**
      * @param string $email 追加して確認まで済ませるアドレス
-     * @return void
      */
     private function addVerified(string $email): void {
         $this->post('/profile/emails', ['email' => $email])->assertSessionHasNoErrors();

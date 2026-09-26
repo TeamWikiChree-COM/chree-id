@@ -48,7 +48,6 @@ class ManageAccount {
      * @param string $targetId 対象のアカウントID
      * @param string|null $displayName 表示名
      * @param string|null $email 連絡先。null なら変えない
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function update(string $actorId, string $targetId, ?string $displayName, ?string $email): void {
@@ -65,7 +64,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function withdraw(string $actorId, string $targetId): void {
@@ -79,7 +77,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function suspend(string $actorId, string $targetId): void {
@@ -93,7 +90,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身、または退会済みを対象にした場合
      */
     public function unsuspend(string $actorId, string $targetId): void {
@@ -112,7 +108,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function restore(string $actorId, string $targetId): void {
@@ -129,7 +124,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function promote(string $actorId, string $targetId): void {
@@ -143,7 +137,6 @@ class ManageAccount {
      *
      * @param string $actorId 操作している管理者のアカウントID
      * @param string $targetId 対象のアカウントID
-     * @return void
      * @throws RuntimeException 自分自身を操作しようとした場合
      */
     public function purge(string $actorId, string $targetId): void {

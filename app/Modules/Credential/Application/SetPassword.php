@@ -15,7 +15,6 @@ class SetPassword {
     /**
      * @param string $accountId アカウントID (ULID)
      * @param string $password 平文パスワード
-     * @return void
      * @throws InvalidArgumentException 長さが足りない場合
      */
     public function execute(string $accountId, string $password): void {
@@ -29,7 +28,6 @@ class SetPassword {
      *
      * @param string $accountId アカウントID (ULID)
      * @param string $hash hash() が返したハッシュ
-     * @return void
      */
     public function executeHashed(string $accountId, string $hash): void {
         CredentialModel::query()->updateOrCreate(

@@ -36,7 +36,6 @@ class GitHubLoginTest extends TestCase {
      * @param array<mixed> $user /user の応答
      * @param array<mixed>|null $emails /user/emails の応答。null なら 404 を返す
      * @param array<mixed>|null $token トークン交換の応答
-     * @return void
      */
     private function fakeGitHub(array $user, ?array $emails = null, ?array $token = null): void {
         Http::fake([

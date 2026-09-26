@@ -117,7 +117,6 @@ class GoogleIdp implements ExternalIdp {
     /**
      * @param array<mixed> $claims
      * @param string $nonce
-     * @return void
      * @throws RuntimeException
      */
     private function assertClaims(array $claims, string $nonce): void {

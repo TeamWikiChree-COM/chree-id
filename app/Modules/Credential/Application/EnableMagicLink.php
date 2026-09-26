@@ -13,7 +13,6 @@ use App\Modules\Credential\Infrastructure\CredentialModel;
 class EnableMagicLink {
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     public function execute(string $accountId): void {
         CredentialModel::query()->firstOrCreate([

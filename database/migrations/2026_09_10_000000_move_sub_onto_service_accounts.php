@@ -38,7 +38,6 @@ return new class extends Migration {
     /**
      * 既存の sub を移す。紐付けが無いものは、その sub のためのサービスアカウントを起こす。
      *
-     * @return void
      */
     private function backfill(): void {
         foreach (DB::table('service_subject_ids')->get() as $subject) {

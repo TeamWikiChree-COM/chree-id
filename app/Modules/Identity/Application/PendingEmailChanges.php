@@ -29,7 +29,6 @@ class PendingEmailChanges {
      * 打ち間違えたまま期限切れを待たせない。届いたリンクもこれで無効になる。
      *
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     public function cancel(string $accountId): void {
         PendingEmailChangeModel::query()->where('auth_identity_id', $accountId)->delete();

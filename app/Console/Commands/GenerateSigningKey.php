@@ -87,7 +87,6 @@ class GenerateSigningKey extends Command {
 
     /**
      * @param string $encoded base64 化した PEM
-     * @return void
      * @throws RuntimeException .env を読み書きできない場合
      */
     private function writeToEnv(string $encoded): void {

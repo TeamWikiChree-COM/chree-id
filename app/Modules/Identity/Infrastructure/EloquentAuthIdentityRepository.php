@@ -52,7 +52,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
 
     /**
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function markEmailVerified(string $id): void {
         AuthIdentityModel::query()->whereKey($id)->update(['email_verified_at' => now()]);
@@ -61,7 +60,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
     /**
      * @param string $id アカウントID (ULID)
      * @param string|null $displayName 表示名
-     * @return void
      */
     public function updateDisplayName(string $id, ?string $displayName): void {
         AuthIdentityModel::query()->whereKey($id)->update(['display_name' => $displayName]);
@@ -71,7 +69,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
      * @param string $id アカウントID (ULID)
      * @param IconSource $source アイコンの出どころ
      * @param string|null $path アップロードした画像の保管先。UPLOAD 以外では null
-     * @return void
      */
     public function updateIcon(string $id, IconSource $source, ?string $path): void {
         AuthIdentityModel::query()->whereKey($id)->update([
@@ -83,7 +80,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
     /**
      * @param string $id アカウントID (ULID)
      * @param AccountOrigin $origin 新しい発行経路
-     * @return void
      */
     public function changeOrigin(string $id, AccountOrigin $origin): void {
         AuthIdentityModel::query()->whereKey($id)->update(['origin' => $origin]);
@@ -92,7 +88,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
     /**
      * @param string $id アカウントID (ULID)
      * @param string $email 新しいメールアドレス
-     * @return void
      */
     public function updateEmail(string $id, string $email): void {
         AuthIdentityModel::query()->whereKey($id)->update(['email' => $email]);
@@ -100,7 +95,6 @@ class EloquentAuthIdentityRepository implements AuthIdentityRepository {
 
     /**
      * @param string $id アカウントID (ULID)
-     * @return void
      */
     public function suspend(string $id): void {
         AuthIdentityModel::query()->whereKey($id)->update(['suspended_at' => now()]);

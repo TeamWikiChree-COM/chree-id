@@ -12,7 +12,6 @@ class VerifiedFactors {
 
     /**
      * @param VerifiedFactor $factor
-     * @return void
      */
     public function add(VerifiedFactor $factor): void {
         $this->factors[$factor->type->value] = $factor;

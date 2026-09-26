@@ -19,7 +19,6 @@ final class SignedInMarker {
      * 印を付ける。既に付いていれば何もしない。
      *
      * @param Request $request 来ている要求
-     * @return void
      */
     public function mark(Request $request): void {
         if ($this->isMarked($request)) return;
@@ -31,7 +30,6 @@ final class SignedInMarker {
      * 印を外す。**意図したログアウトのときは必ず外すこと。**
      * 外し忘れると、次の要求が「勝手にログアウトされた」と誤検知される。
      *
-     * @return void
      */
     public function forget(): void {
         Cookie::queue(Cookie::forget(self::COOKIE));

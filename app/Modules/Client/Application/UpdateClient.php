@@ -22,7 +22,6 @@ class UpdateClient {
      * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定
      * @param string|null $iconUrl アイコンの URL
      * @param string|null $settingsUrl 利用者に案内する設定画面の場所
-     * @return void
      */
     public function execute(
         OAuthClientModel $client,

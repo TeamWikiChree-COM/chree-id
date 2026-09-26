@@ -31,7 +31,6 @@ class AccountIconTest extends TestCase {
      * Storage::fake は同じフォルダを消してすぐ作り直すが、Windows は削除を遅れて終えることがあり、
      * その間は同じ名前で作れず UnableToCreateDirectory になる。名前を毎回変えて取り合わないようにする。
      *
-     * @return void
      */
     private function fakeLocalDisk(): void {
         $this->diskRoot = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'chreeid-icon-' . bin2hex(random_bytes(6));

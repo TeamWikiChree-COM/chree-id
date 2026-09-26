@@ -116,7 +116,6 @@ class LinkExternalIdentity {
      *
      * @param string $accountId 連携先のアカウントID (ULID)
      * @param ExternalIdentity $identity IdP が主張してきた内容
-     * @return void
      * @throws ExternalIdentityConflict 既に同じアカウントへ連携済みの場合
      */
     public function linkTo(string $accountId, ExternalIdentity $identity): void {
@@ -130,7 +129,6 @@ class LinkExternalIdentity {
     /**
      * @param string $accountId アカウントID (ULID)
      * @param ExternalIdentity $identity
-     * @return void
      */
     private function link(string $accountId, ExternalIdentity $identity): void {
         $this->oauth->add($accountId, $identity->credentialIdentifier(), [

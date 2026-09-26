@@ -69,7 +69,6 @@ class PasswordController extends Controller {
     /**
      * @param string $accountId アカウントID (ULID)
      * @param string $current 入力された現在のパスワード
-     * @return void
      * @throws ValidationException 一致しない場合
      */
     private function assertCurrentPassword(string $accountId, string $current): void {

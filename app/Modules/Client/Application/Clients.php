@@ -27,7 +27,6 @@ class Clients {
 
     /**
      * @param string $clientId client_id
-     * @return void
      * @throws ModelNotFoundException 無い場合
      */
     public function delete(string $clientId): void {
@@ -74,7 +73,6 @@ class Clients {
 
     /**
      * @param OAuthClientModel $client 審査を申し込むクライアント
-     * @return void
      */
     public function requestReview(OAuthClientModel $client): void {
         $client->forceFill(['review_requested_at' => now()])->save();

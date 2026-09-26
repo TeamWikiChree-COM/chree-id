@@ -187,7 +187,6 @@ class ServiceAccountController extends Controller {
      * @param Request $request
      * @param string $serviceUserId サービス側での利用者の識別子
      * @param array<string, list<string>> $rules 操作に固有の規則
-     * @return void
      * @throws ValidationException
      */
     private function validateFor(Request $request, string $serviceUserId, array $rules = []): void {

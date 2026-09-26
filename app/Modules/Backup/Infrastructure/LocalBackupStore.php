@@ -30,7 +30,6 @@ class LocalBackupStore {
     /**
      * @param string $name 置くファイル名
      * @param string $content 中身 (暗号化済み)
-     * @return void
      * @throws RuntimeException 書けなかった
      */
     public function put(string $name, string $content): void {

@@ -21,7 +21,6 @@ class LoginSessions {
      *
      * @param Request $request
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     public function track(Request $request, string $accountId): void {
         LoginSessionModel::query()->updateOrCreate(
@@ -117,7 +116,6 @@ class LoginSessions {
      * 控えと実体をまとめて消す。
      *
      * @param string $sessionId セッションID
-     * @return void
      */
     public function forget(string $sessionId): void {
         DB::table('sessions')->where('id', $sessionId)->delete();

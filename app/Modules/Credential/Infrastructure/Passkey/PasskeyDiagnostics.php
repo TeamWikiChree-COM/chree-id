@@ -33,7 +33,6 @@ class PasskeyDiagnostics {
      *
      * @param string $step どの往復で起きたか ('options' / 'register')
      * @param Request $request 来ている要求
-     * @return void
      */
     public function reportMissingSession(string $step, Request $request): void {
         report(new RuntimeException(

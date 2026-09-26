@@ -31,7 +31,6 @@ class AddAccountEmail {
     /**
      * @param string $accountId アカウントID (ULID)
      * @param string $email 追加するアドレス
-     * @return void
      * @throws AccountEmailException
      */
     public function execute(string $accountId, string $email): void {
@@ -47,7 +46,6 @@ class AddAccountEmail {
      *
      * @param string $accountId アカウントID (ULID)
      * @param string $emailId 追加アドレスのID (ULID)
-     * @return void
      * @throws AccountEmailException
      */
     public function resend(string $accountId, string $emailId): void {
@@ -75,7 +73,6 @@ class AddAccountEmail {
 
     /**
      * @param AccountEmailModel $row 確認待ちの行
-     * @return void
      */
     private function send(AccountEmailModel $row): void {
         $token = Str::random(64);

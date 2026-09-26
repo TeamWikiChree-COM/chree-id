@@ -99,7 +99,6 @@ class ClaimServiceAccount {
      *
      * @param string $accountId アカウントID (ULID)
      * @param list<string> $keepIds 残すものとして選ばれたID
-     * @return void
      */
     private function dropUnchosen(string $accountId, array $keepIds): void {
         $rows = CredentialModel::query()->where('auth_identity_id', $accountId)->get();

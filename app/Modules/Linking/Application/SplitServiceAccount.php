@@ -168,7 +168,6 @@ class SplitServiceAccount {
      *
      * @param string $identityId 新しい認証主体のID (ULID)
      * @param CredentialModel $credential 複製元
-     * @return void
      */
     private function copyTo(string $identityId, CredentialModel $credential): void {
         CredentialModel::create([

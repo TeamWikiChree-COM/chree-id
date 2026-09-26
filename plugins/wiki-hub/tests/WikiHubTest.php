@@ -40,7 +40,6 @@ class WikiHubTest extends TestCase {
     /**
      * @param string $key 設定上の名前
      * @param string|null $accountId 連携させるなら持ち主のアカウントID
-     * @return void
      */
     private function source(string $key, ?string $accountId): void {
         $client = OAuthClientModel::create([

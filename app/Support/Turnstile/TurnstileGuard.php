@@ -19,7 +19,6 @@ class TurnstileGuard {
 
     /**
      * @param Request $request 検証対象のリクエスト
-     * @return void
      * @throws ValidationException 人間と確認できなかった場合、または Cloudflare に到達できなかった場合
      */
     public function check(Request $request): void {

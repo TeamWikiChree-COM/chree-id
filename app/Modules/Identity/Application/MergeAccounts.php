@@ -27,7 +27,6 @@ class MergeAccounts {
      * @param string $sourceId 消える側のアカウントID (ULID)
      * @param string $targetId 生き残る側のアカウントID (ULID)
      * @param list<string> $credentialIds 寄せ先へ持っていく認証手段のID
-     * @return void
      * @throws MergeException 寄せ先と寄せ元が同じ場合
      */
     public function execute(string $sourceId, string $targetId, array $credentialIds = []): void {

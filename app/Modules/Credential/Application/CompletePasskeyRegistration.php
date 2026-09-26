@@ -26,7 +26,6 @@ class CompletePasskeyRegistration {
      * @param PublicKeyCredentialCreationOptions $options 発行時に保存しておいたもの
      * @param string $json ブラウザが返した credential の JSON
      * @param string|null $label 端末名
-     * @return void
      * @throws RuntimeException 検証に失敗した場合
      */
     public function execute(string $accountId, PublicKeyCredentialCreationOptions $options, string $json, ?string $label = null): void {

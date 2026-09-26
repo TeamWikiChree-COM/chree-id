@@ -43,7 +43,6 @@ class ServiceEmails {
      * @param string $accountId アカウントID (ULID)
      * @param string $serviceAccountId サービスアカウントのID (ULID)
      * @param string|null $email 割り当てるアドレス。null なら主アドレスに戻す
-     * @return void
      * @throws AccountEmailException
      */
     public function assign(string $accountId, string $serviceAccountId, ?string $email): void {
@@ -64,7 +63,6 @@ class ServiceEmails {
      * 残すと、本人がもう受け取れないアドレスを確認済みとしてサービスへ渡し続けてしまう。
      *
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     public function prune(string $accountId): void {
         $links = ServiceAccountModel::query()

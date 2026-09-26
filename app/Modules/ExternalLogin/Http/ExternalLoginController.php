@@ -232,7 +232,6 @@ class ExternalLoginController extends Controller {
      *
      * @param string $claimToken
      * @param string $accountId 連携で解決したアカウントID
-     * @return void
      */
     private function finalizeClaim(string $claimToken, string $accountId): void {
         $link = $this->tickets->find($claimToken);

@@ -20,7 +20,6 @@ class PasskeyStore {
      * @param string $accountId アカウントID (ULID)
      * @param CredentialRecord $source 検証を通った資格情報
      * @param string|null $label 利用者が付ける端末名
-     * @return void
      */
     public function save(string $accountId, CredentialRecord $source, ?string $label = null): void {
         CredentialModel::query()->updateOrCreate(
@@ -56,7 +55,6 @@ class PasskeyStore {
      * 巻き戻ったら複製された端末の可能性がある。
      *
      * @param CredentialRecord $source 認証を通った資格情報
-     * @return void
      */
     public function updateCounter(CredentialRecord $source): void {
         CredentialModel::query()

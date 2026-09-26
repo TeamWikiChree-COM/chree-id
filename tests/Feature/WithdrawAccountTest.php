@@ -40,7 +40,6 @@ class WithdrawAccountTest extends TestCase {
 
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     private function withdraw(string $accountId): void {
         $this->post('/settings/withdraw', ['understood' => true])->assertRedirect('/login');

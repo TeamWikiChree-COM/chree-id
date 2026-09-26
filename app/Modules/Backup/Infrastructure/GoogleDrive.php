@@ -83,7 +83,6 @@ class GoogleDrive {
 
     /**
      * @param string $id 消すファイルのID
-     * @return void
      * @throws RuntimeException 消せなかった
      */
     public function delete(string $id): void {

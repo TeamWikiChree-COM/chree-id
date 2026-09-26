@@ -14,7 +14,6 @@ use App\Support\Registry\Registry;
 class ScopeRegistry extends Registry {
     /**
      * @param ClaimsResolver $resolver
-     * @return void
      */
     public function register(ClaimsResolver $resolver): void {
         $this->add($resolver->scope(), $resolver);

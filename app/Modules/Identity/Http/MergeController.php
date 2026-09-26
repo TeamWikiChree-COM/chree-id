@@ -122,7 +122,6 @@ class MergeController extends Controller {
      *
      * @param string $candidate 寄せ元のアカウントID (ULID)
      * @param Request $request
-     * @return void
      * @throws ValidationException 通らなかった場合
      */
     private function assertProven(string $candidate, Request $request): void {

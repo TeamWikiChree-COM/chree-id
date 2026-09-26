@@ -39,7 +39,6 @@ class AdminMaintenanceTest extends TestCase {
      * 使われないまま期限が切れたトークンを1本置く。
      *
      * @param string $accountId アカウントID (ULID)
-     * @return void
      */
     private function addExpiredToken(string $accountId): void {
         OneTimeTokenModel::create([

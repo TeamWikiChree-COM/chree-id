@@ -46,7 +46,6 @@ class AccountIcons {
      *
      * @param AuthIdentity $account 対象のアカウント
      * @param UploadedFile $file 受け取った画像
-     * @return void
      */
     public function upload(AuthIdentity $account, UploadedFile $file): void {
         $path = $file->store(self::DIRECTORY, ['disk' => 'local']);
@@ -60,7 +59,6 @@ class AccountIcons {
      * Gravatar に切り替える。アップロード済みの画像は残さない。
      *
      * @param AuthIdentity $account 対象のアカウント
-     * @return void
      */
     public function useGravatar(AuthIdentity $account): void {
         $this->deleteFile($account);
@@ -71,7 +69,6 @@ class AccountIcons {
      * アイコンを未設定に戻す。
      *
      * @param AuthIdentity $account 対象のアカウント
-     * @return void
      */
     public function clear(AuthIdentity $account): void {
         $this->deleteFile($account);
@@ -126,7 +123,6 @@ class AccountIcons {
 
     /**
      * @param AuthIdentity $account 対象のアカウント
-     * @return void
      */
     private function deleteFile(AuthIdentity $account): void {
         if ($account->iconPath === null) return;

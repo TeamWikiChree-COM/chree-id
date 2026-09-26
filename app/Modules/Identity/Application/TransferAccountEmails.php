@@ -23,7 +23,6 @@ class TransferAccountEmails {
      *
      * @param string $sourceId 消える側のアカウントID (ULID)
      * @param string $targetId 生き残る側のアカウントID (ULID)
-     * @return void
      */
     public function execute(string $sourceId, string $targetId): void {
         $source = $this->accounts->findById($sourceId);
@@ -42,7 +41,6 @@ class TransferAccountEmails {
      * @param string $targetId 生き残る側のアカウントID (ULID)
      * @param string $email アドレス
      * @param \Carbon\CarbonInterface|null $verifiedAt 確認済み日時
-     * @return void
      */
     private function keep(string $targetId, string $email, ?\Carbon\CarbonInterface $verifiedAt): void {
         $primary = $this->accounts->findById($targetId)?->email;

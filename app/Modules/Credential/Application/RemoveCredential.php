@@ -17,7 +17,6 @@ class RemoveCredential {
      *
      * @param string $accountId アカウントID (ULID)
      * @param CredentialType $type 削除する認証方式
-     * @return void
      * @throws RuntimeException 最後の1件を消そうとした場合
      */
     public function execute(string $accountId, CredentialType $type): void {
@@ -40,7 +39,6 @@ class RemoveCredential {
      *
      * @param string $accountId アカウントID (ULID)
      * @param string $credentialId 削除する認証手段のID (ULID)
-     * @return void
      * @throws RuntimeException 見つからない、または最後の1件だった場合
      */
     public function executeById(string $accountId, string $credentialId): void {
@@ -66,7 +64,6 @@ class RemoveCredential {
      *
      * @param list<string> $removing これから消す認証手段のID
      * @param string $accountId アカウントID (ULID)
-     * @return void
      * @throws RuntimeException 残らない場合
      */
     private function assertNotLast(array $removing, string $accountId): void {

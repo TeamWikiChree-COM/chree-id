@@ -71,7 +71,6 @@ final class LangCompiler {
      * @param array<string, mixed> $tree 書き込み先
      * @param non-empty-list<string> $segments 残りのセグメント
      * @param string $text 文言
-     * @return void
      */
     private function nest(array &$tree, array $segments, string $text): void {
         $last = array_pop($segments);
@@ -91,7 +90,6 @@ final class LangCompiler {
      * @param string $path 出力先
      * @param string $locale 正のファイル名
      * @param array<string, mixed> $tree 書き出す配列
-     * @return void
      * @throws LangBuildException
      */
     private function write(string $path, string $locale, array $tree): void {
@@ -105,7 +103,6 @@ final class LangCompiler {
 
     /**
      * @param string $dir 出力先ディレクトリ
-     * @return void
      * @throws LangBuildException
      */
     private function prepare(string $dir): void {

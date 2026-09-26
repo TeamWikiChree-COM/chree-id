@@ -31,7 +31,6 @@ class MergeServiceAccount {
      * @param ServiceAccountModel $link 寄せるサービスアカウントの紐付け
      * @param string $targetId 寄せ先 (本人が既に持っている) アカウントID (ULID)
      * @param list<string> $credentialIds 持っていく認証手段のID
-     * @return void
      * @throws ClaimException
      * @throws \App\Modules\Identity\Application\MergeException
      */

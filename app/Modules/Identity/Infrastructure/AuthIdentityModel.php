@@ -75,7 +75,6 @@ class AuthIdentityModel extends Model {
      * 行だけ消すと、誰のものでもない画像がストレージに残り続ける。
      * **まとめて delete すると走らない。** 物理削除は1件ずつ消すこと。
      *
-     * @return void
      */
     #[\Override]
     protected static function booted(): void {

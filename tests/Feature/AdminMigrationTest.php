@@ -24,7 +24,6 @@ class AdminMigrationTest extends TestCase {
      * 管理者としてログインした状態にする。
      *
      * @param string $email 名乗るアドレス
-     * @return void
      */
     private function loginAs(string $email): void {
         Config::set('chreeid.admin_emails', [self::ADMIN_EMAIL]);
@@ -42,7 +41,6 @@ class AdminMigrationTest extends TestCase {
      * データベースの準備が済んだあとに置き場を足すので、
      * ここで足したぶんだけが未適用として残る。
      *
-     * @return void
      */
     private function addPending(): void {
         app(Migrator::class)->path(base_path('tests/Fixtures/migrations'));

@@ -47,7 +47,6 @@ class ExchangeAuthCode {
     /**
      * @param AuthCodeModel $row 認可コード
      * @param string $verifier 送られてきた code_verifier
-     * @return void
      * @throws TokenException 検証できない場合
      */
     private function verifyPkce(AuthCodeModel $row, string $verifier): void {
@@ -60,7 +59,6 @@ class ExchangeAuthCode {
 
     /**
      * @param AuthCodeModel $row 再利用された認可コード
-     * @return void
      */
     private function revokeIssuedFrom(AuthCodeModel $row): void {
         AccessTokenModel::query()

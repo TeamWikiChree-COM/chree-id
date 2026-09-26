@@ -51,7 +51,6 @@ class ClaimServiceAccountTest extends TestCase {
      *
      * @param OAuthClientModel $client 呼び出すサービス
      * @param array<string, mixed> $payload 追加の入力
-     * @return void
      */
     private function issueAccount(OAuthClientModel $client, array $payload = []): void {
         $this->putJson('/api/v1/service-accounts/42', array_merge([
