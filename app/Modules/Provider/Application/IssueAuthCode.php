@@ -1,7 +1,6 @@
 <?php
 namespace App\Modules\Provider\Application;
 
-use App\Modules\Provider\Domain\AuthorizeRequest;
 use App\Modules\Provider\Infrastructure\AuthCodeModel;
 use Illuminate\Support\Str;
 

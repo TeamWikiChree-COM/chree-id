@@ -1,5 +1,5 @@
 <?php
-namespace App\Modules\Provider\Domain;
+namespace App\Modules\Provider\Application;
 
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 

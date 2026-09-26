@@ -9,7 +9,7 @@ use App\Modules\Provider\Application\UnclaimedServiceAccountGuard;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
 use App\Modules\Provider\Infrastructure\LoginHint;
 use App\Modules\Provider\Domain\AuthorizeError;
-use App\Modules\Provider\Domain\AuthorizeRequest;
+use App\Modules\Provider\Application\AuthorizeRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
