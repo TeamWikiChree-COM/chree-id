@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Override;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 // 連携している各サービスからウィキを集めて1画面に出す
@@ -63,10 +64,12 @@ class WikiHubTest extends TestCase {
         ServiceAccountModel::create(['client_id' => $client->id, 'auth_identity_id' => $accountId, 'sub' => "sub-{$key}"]);
     }
 
+    #[TestDox('ログインしていなければログイン画面へ送る')]
     public function test_requiresLogin(): void {
         $this->get('/plugins/wiki-hub')->assertRedirect('/login');
     }
 
+    #[TestDox('連携しているサービスからウィキを取得し、サービスの sub と共有トークンで問い合わせる')]
     public function test_listsWikisFromConnectedService(): void {
         $id = $this->login();
         $this->source('dokufarm', $id);
@@ -84,6 +87,7 @@ class WikiHubTest extends TestCase {
     }
 
     // 1つが落ちても、他のサービスの分は出す
+    #[TestDox('1つのサービスが失敗しても、ほかのサービスのウィキは出す')]
     public function test_oneFailingSourceDoesNotHideOthers(): void {
         $id = $this->login();
         $this->source('dokufarm', $id);
@@ -98,6 +102,7 @@ class WikiHubTest extends TestCase {
             ->where('groups.1.failed', false)));
     }
 
+    #[TestDox('連携していないサービスには問い合わせず、一覧にも出さない')]
     public function test_skipsServicesNotConnected(): void {
         $this->login();
         $this->source('dokufarm', null);
@@ -108,6 +113,7 @@ class WikiHubTest extends TestCase {
     }
 
     // 入口が無い (HTML の 404) のを「0件」と見せると、置き忘れに気付けない
+    #[TestDox('問い合わせ先が 404 の HTML を返したら、0件ではなく失敗として出す')]
     public function test_missingEndpointIsAFailure(): void {
         $id = $this->login();
         $this->source('wikichree', $id);
@@ -117,6 +123,7 @@ class WikiHubTest extends TestCase {
             ->where('groups.0.failed', true)));
     }
 
+    #[TestDox('サービス側に利用者がいなければ、失敗ではなく0件として出す')]
     public function test_unknownUserIsEmptyNotFailure(): void {
         $id = $this->login();
         $this->source('wikichree', $id);
