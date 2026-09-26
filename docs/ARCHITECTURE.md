@@ -20,9 +20,11 @@ app/Modules/<モジュール>/
 
 | モジュール | 担当 |
 | --- | --- |
+| `Admin` | 管理画面と運用 (アカウントの管理、問題の検出、マイグレーション、ログ、掃除) |
 | `ApiDocs` | API の OpenAPI ドキュメント |
 | `Audit` | 監査ログ (ログイン履歴、管理操作の記録) |
 | `Backup` | データベースの暗号化バックアップ (サーバ内、Google Drive) |
+| `Client` | 接続するサービス (クライアント) の登録、認証、信頼状態、サーバ間 API の入口 |
 | `Credential` | 認証手段 (パスワード、マジックリンク、TOTP、パスキー、復旧コード) と認証の成立判定 |
 | `Device` | ログイン中のセッションと、信頼した端末 |
 | `ExternalLogin` | 外部IdP (Google、GitHub) でのログインと連携 |
@@ -30,7 +32,6 @@ app/Modules/<モジュール>/
 | `Linking` | サービスアカウントの発行、引き取り、統合 |
 | `Plugin` | プラグインの読み込みとメニュー |
 | `Provider` | OIDC プロバイダ (認可、トークン発行、ID Token、claims) |
-| `Registry` | 接続するサービス (クライアント) の登録と管理画面 |
 
 ## 依存の向き
 
@@ -48,7 +49,7 @@ Repository を挟まずにクエリを書いてよい。
 
 ### 2. Http は「入力の検証・Application の呼び出し・レスポンスの組み立て」だけ
 
-クエリや業務判断をコントローラに書かない。画面に渡す形への整形が大きくなったら Presenter に分ける (例: [ClientPresenter](../app/Modules/Registry/Http/ClientPresenter.php))。
+クエリや業務判断をコントローラに書かない。画面に渡す形への整形が大きくなったら Presenter に分ける (例: [ClientPresenter](../app/Modules/Client/Http/ClientPresenter.php))。
 
 ### 3. Domain は DB に依存しない
 
@@ -59,7 +60,7 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 作るのは次のどちらかのときに限る。
 
 - 同じクエリが2か所以上に出てくる
-- 「数える条件」と「消す条件」のように、食い違うと困る条件を1か所で共有させたい (例: [PruneTokens](../app/Modules/Registry/Application/PruneTokens.php) / [PurgeDeletedAccounts](../app/Modules/Identity/Application/PurgeDeletedAccounts.php))
+- 「数える条件」と「消す条件」のように、食い違うと困る条件を1か所で共有させたい (例: [PruneTokens](../app/Modules/Admin/Application/PruneTokens.php) / [PurgeDeletedAccounts](../app/Modules/Identity/Application/PurgeDeletedAccounts.php))
 
 ### 5. モジュールをまたぐときは相手の Application を通す
 
