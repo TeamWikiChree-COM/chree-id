@@ -182,6 +182,8 @@ npm run typecheck # TypeScriptの型検査
 php vendor/bin/pint # PHPの整形 (設定は pint.json。この規約に合わせてある)
 ```
 
+Todofile を入れていれば、`todo check` でまとめて確認できる (詳しくは [開発環境構築](SETUP.md))。
+
 PHPStanのエラーは、理由がない限り、`@phpstan-ignore` やキャストで黙らせず、原因の型を直す。
 
 ビルド済みのフロントエンドのアセットはコミットしない (CIがビルドするため)

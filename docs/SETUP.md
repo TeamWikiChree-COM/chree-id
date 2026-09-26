@@ -62,6 +62,20 @@ php artisan lang:build               # 翻訳辞書を変えたあと
 php artisan chreeid:prune-tokens     # 期限切れトークンと、猶予を過ぎた退会アカウントを消す
 ```
 
+### todo (任意)
+
+よく使うコマンドは `todofile.json5` にまとめてあり、[Todofile](https://github.com/Pitan76/Todofile) があれば短く呼べる。無くても上のコマンドを直接打てば同じ。
+
+```bash
+composer global require pitan76/todofile   # 入れる (初回だけ)
+
+todo setup      # 初回のセットアップ一式
+todo check      # コミット前の確認をまとめて (書き換えはしない)
+todo lang       # php artisan lang:build
+```
+
+ほかのタスクは `todofile.json5` を参照。
+
 ## うまく動かないとき
 
 | 症状 | 原因と対処 |

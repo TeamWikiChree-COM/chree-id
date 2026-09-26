@@ -1,8 +1,38 @@
 {
-    "test": "php artisan test",
+    // ---- セットアップ ----
+    // 初回だけ。.env が既にあれば上書きしない
+    "setup": [
+        "composer install",
+        "npm install",
+        "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+        "php artisan key:generate",
+        "php artisan chreeid:generate-key",
+        "php artisan migrate",
+        "php artisan lang:build"
+    ],
+    "migrate": "php artisan migrate",
+    "lang": "php artisan lang:build",
+
+    // ---- 確認 ----
+    "test": "php artisan test --parallel",
     "phpstan": "vendor/bin/phpstan analyse",
     "pint": "vendor/bin/pint",
+    "pint:test": "vendor/bin/pint --test",
+    // コミット前にまとめて通す。書き換えはしない
+    "check": [
+        "todo lang",
+        "todo pint:test",
+        "todo phpstan",
+        "todo front:tsc",
+        "todo test"
+    ],
+
+    // ---- フロントエンド ----
     "front:dev": "npm run dev",
     "front:build": "npm run build",
-    "front:tsc": "npm run tsc"
+    "front:tsc": "npm run typecheck",
+
+    // ---- 運用 ----
+    // 期限切れのトークンと、猶予を過ぎた退会アカウントを消す
+    "prune": "php artisan chreeid:prune-tokens"
 }
