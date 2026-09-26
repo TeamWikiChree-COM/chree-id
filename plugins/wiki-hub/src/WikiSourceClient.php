@@ -53,15 +53,33 @@ class WikiSourceClient {
      * @return array{name: string, url: string, iconUrl: string|null, settingsUrl: string|null, views: int|null, updatedAt: string|null}|null 使えない行は null
      */
     private function normalize(mixed $row): ?array {
-        if (!is_array($row) || !is_string($row['name'] ?? null) || !is_string($row['url'] ?? null)) return null;
+        if (!is_array($row) || !is_string($row['name'] ?? null)) return null;
+
+        $url = $this->webUrl($row['url'] ?? null);
+        if ($url === null) return null;
 
         return [
             'name' => $row['name'],
-            'url' => $row['url'],
-            'iconUrl' => is_string($row['icon_url'] ?? null) ? $row['icon_url'] : null,
-            'settingsUrl' => is_string($row['settings_url'] ?? null) ? $row['settings_url'] : null,
+            'url' => $url,
+            'iconUrl' => $this->webUrl($row['icon_url'] ?? null),
+            'settingsUrl' => $this->webUrl($row['settings_url'] ?? null),
             'views' => is_int($row['views'] ?? null) ? $row['views'] : null,
             'updatedAt' => is_string($row['updated_at'] ?? null) ? $row['updated_at'] : null,
         ];
+    }
+
+    /**
+     * 画面でそのまま開くので http(s) 以外は捨てる。
+     * 相手のサービスが乗っ取られても javascript: などを開かされないように
+     *
+     * @param mixed $value 応答に入っていた値
+     * @return string|null 開いてよい URL。使えなければ null
+     */
+    private function webUrl(mixed $value): ?string {
+        if (!is_string($value)) return null;
+
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true) ? $value : null;
     }
 }

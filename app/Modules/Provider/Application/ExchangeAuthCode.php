@@ -39,7 +39,13 @@ class ExchangeAuthCode {
 
         $this->verifyPkce($row, $verifier);
 
-        $row->forceFill(['used_at' => now()])->save();
+        // 読んでから書くと、同時に来た2つの要求がどちらも未使用と見て通る。
+        // 未使用のときだけ書く1回の UPDATE にして、成功するのを片方だけにする
+        $claimed = AuthCodeModel::query()
+            ->whereKey($row->code_hash)
+            ->whereNull('used_at')
+            ->update(['used_at' => now()]);
+        if ($claimed === 0) throw TokenException::invalidGrant('auth_code_reused');
 
         return $this->issue->execute($client, $row);
     }

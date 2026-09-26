@@ -33,6 +33,9 @@ class RateLimitServiceProvider extends ServiceProvider {
         // IP で数えるとそのサービスの利用者全員が巻き添えになる。アドレスとの組で数える
         RateLimiter::for('service-auth', fn (Request $request): Limit => Limit::perMinute(5)->by($this->clientEmailKey($request)));
 
+        // トークン交換。正規のサービスは認可コード1つにつき1回しか送らないので緩めでよい
+        RateLimiter::for('token', fn (Request $request): Limit => Limit::perMinute(60)->by($this->clientId($request)));
+
         // 確認リンクは総当たりされうるが、正規の利用者が何度も開くことはない
         RateLimiter::for('verify', fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip() ?? 'unknown'));
     }
@@ -44,11 +47,19 @@ class RateLimitServiceProvider extends ServiceProvider {
     private function clientEmailKey(Request $request): string {
         $email = mb_strtolower($request->string('email')->trim()->toString());
 
-        // AuthenticateClient と同じく Basic 認証とフォーム値の両方を受け付ける
-        $user = $request->getUser();
-        $clientId = is_string($user) && $user !== '' ? $user : $request->string('client_id')->toString();
+        return $email . '|' . $this->clientId($request);
+    }
 
-        return $email . '|' . $clientId;
+    /**
+     * AuthenticateClient と同じく Basic 認証とフォーム値の両方を受け付ける。
+     *
+     * @param Request $request
+     * @return string 呼び出し元のクライアントID
+     */
+    private function clientId(Request $request): string {
+        $user = $request->getUser();
+
+        return is_string($user) && $user !== '' ? $user : $request->string('client_id')->toString();
     }
 
     /**

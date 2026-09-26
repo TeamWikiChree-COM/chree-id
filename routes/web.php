@@ -236,7 +236,7 @@ Route::get('/oauth/authorize', AuthorizeController::class);
 Route::post('/oauth/authorize/approve', [AuthorizeController::class, 'approve']);
 
 // RP からのサーバ間通信。CSRF の除外は bootstrap/app.php 側で指定している
-Route::post('/oauth/token', TokenController::class);
+Route::post('/oauth/token', TokenController::class)->middleware('throttle:token');
 
 Route::get('/oauth/userinfo', UserinfoController::class);
 

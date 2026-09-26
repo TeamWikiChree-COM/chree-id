@@ -69,6 +69,22 @@ class WikiHubTest extends TestCase {
         $this->get('/plugins/wiki-hub')->assertRedirect('/login');
     }
 
+    #[TestDox('http(s) 以外の URL は捨て、開けない行は一覧に出さない')]
+    public function test_dropsNonWebUrls(): void {
+        $id = $this->login();
+        $this->source('dokufarm', $id);
+
+        Http::fake(['dokufarm.example.com/*' => Http::response(['wikis' => [
+            ['name' => '危険', 'url' => 'javascript:alert(1)'],
+            ['name' => '正常', 'url' => 'https://a.example.com', 'settings_url' => 'JavaScript:alert(1)'],
+        ]])]);
+
+        $this->get('/plugins/wiki-hub')->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page->loadDeferredProps(fn (AssertableInertia $reload): AssertableInertia => $reload
+            ->count('groups.0.wikis', 1)
+            ->where('groups.0.wikis.0.name', '正常')
+            ->where('groups.0.wikis.0.settingsUrl', null)));
+    }
+
     #[TestDox('連携しているサービスからウィキを取得し、サービスの sub と共有トークンで問い合わせる')]
     public function test_listsWikisFromConnectedService(): void {
         $id = $this->login();

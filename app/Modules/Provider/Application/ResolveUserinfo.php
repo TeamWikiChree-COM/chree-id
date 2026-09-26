@@ -34,6 +34,8 @@ class ResolveUserinfo {
         $account = $this->accounts->findById($token->auth_identity_id);
         $client = OAuthClientModel::query()->find($token->client_id);
         if ($account === null || $client === null) return null;
+        // 発行済みのトークンは期限まで生きるので、停止・無効化はここで効かせる
+        if ($account->isSuspended() || !$client->trust->isUsable()) return null;
 
         // sub は発行時と同じ値でなければ RP 側で突き合わせできない。
         // トークンに控えたサービスアカウントを使う

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\DetectSessionLoss;
+use App\Http\Middleware\EnsureActiveAccount;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackLoginSession;
@@ -26,10 +28,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // ログイン中の選択 (認証主体の行) を読むためのセッションがまだ無い
             SetLocale::class,
 
+            // 共有 props を組む前に切る。後だと停止済みの利用者の情報を画面へ渡してしまう
+            EnsureActiveAccount::class,
+
             HandleInertiaRequests::class,
             TrackLoginSession::class,
             DetectSessionLoss::class,
         ]);
+
+        $middleware->append(SecurityHeaders::class);
 
         // エラーの説明文を呼び出し元の Accept-Language に合わせる。セッションが無くても動く
         $middleware->api(append: [SetLocale::class]);

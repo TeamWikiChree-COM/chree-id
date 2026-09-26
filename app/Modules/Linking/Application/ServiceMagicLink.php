@@ -6,6 +6,7 @@ use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Application\ResolveByEmail;
+use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 
@@ -28,6 +29,7 @@ class ServiceMagicLink {
     public function __construct(
         private readonly ResolveByEmail $byEmail,
         private readonly IssueOneTimeToken $tokens,
+        private readonly AuthIdentityRepository $accounts,
     ) {}
 
     /**
@@ -70,6 +72,10 @@ class ServiceMagicLink {
 
         if ($row === null || $row->used_at !== null) return null;
         if ($row->expires_at->isPast()) return null;
+
+        // 発行後に停止・退会したアカウントで使わせない
+        $account = $this->accounts->findById($row->auth_identity_id);
+        if ($account === null || $account->isSuspended()) return null;
 
         // 出した相手のサービスでしか使えない
         $serviceAccount = ServiceAccountModel::query()
