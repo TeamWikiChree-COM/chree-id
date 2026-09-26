@@ -12,26 +12,7 @@ import ListSkeleton from '@/Components/Skeletons/ListSkeleton';
 import { formatDateTime } from '@/lib/datetime';
 import { t as core } from '@/lib/i18n';
 import { t } from '../lib/i18n';
-
-interface Wiki {
-    name: string;
-    url: string;
-    /** ウィキのロゴ。無ければ null (頭文字で代わりを出す) */
-    iconUrl: string | null;
-    /** サービス側の設定画面。無ければ null */
-    settingsUrl: string | null;
-    /** サービスが数えていなければ null */
-    views: number | null;
-    updatedAt: string | null;
-}
-
-interface WikiGroup {
-    key: string;
-    label: string;
-    /** このサービスから取れなかった */
-    failed: boolean;
-    wikis: Wiki[];
-}
+import type { Wiki, WikiGroup } from '../types';
 
 interface IndexProps {
     /** 各サービスへ問い合わせるので後から届く */

@@ -13,6 +13,7 @@ plugins/<name>/
   routes/web.php              ルート (任意)。あれば本体が web ミドルウェアと /plugins/<name> の接頭辞を付けて読む
   resources/lang/*.json       画面の文言 (ja_jp.json、en_us.json)。本体の resources/lang/ には混ぜない
   resources/js/Pages/*.tsx    画面。Inertia::render('<name>::<Page>') で出す
+  resources/js/types.ts       サーバから渡る値の型 (任意)。props の型は使う画面・部品のファイルに書く
   tests/*Test.php             php artisan test で一緒に流れる
 ```
 
