@@ -1,10 +1,10 @@
 <?php
 namespace App\Modules\Linking\Application;
 
+use App\Modules\Credential\Application\OAuthCredentials;
 use App\Modules\Credential\Application\AdoptPasswordHash;
 use App\Modules\Credential\Application\EnableMagicLink;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Identity\Domain\AccountOrigin;
 use App\Modules\Identity\Domain\AuthIdentityRepository;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
@@ -26,12 +26,25 @@ use Illuminate\Support\Facades\DB;
  * 統合するかどうかは本人が決める (ARCHITECTURE.md 8.7)。
  */
 class IssueServiceAccount {
+    private readonly AuthIdentityRepository $accounts;
+    private readonly ResolveSubject $subjects;
+    private readonly AdoptPasswordHash $passwords;
+    private readonly EnableMagicLink $magicLinks;
+    private readonly OAuthCredentials $oauth;
+
     public function __construct(
-        private readonly AuthIdentityRepository $accounts,
-        private readonly ResolveSubject $subjects,
-        private readonly AdoptPasswordHash $passwords,
-        private readonly EnableMagicLink $magicLinks,
-    ) {}
+        AuthIdentityRepository $accounts,
+        ResolveSubject $subjects,
+        AdoptPasswordHash $passwords,
+        EnableMagicLink $magicLinks,
+        OAuthCredentials $oauth,
+    ) {
+        $this->accounts = $accounts;
+        $this->subjects = $subjects;
+        $this->passwords = $passwords;
+        $this->magicLinks = $magicLinks;
+        $this->oauth = $oauth;
+    }
 
     /**
      * @param OAuthClientModel $client 呼び出したサービス
@@ -127,20 +140,9 @@ class IssueServiceAccount {
         [$provider] = explode(':', $identity, 2);
         if ($provider === '') return;
 
-        $already = CredentialModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('type', CredentialType::OAUTH)
-            ->where('identifier', $identity)
-            ->exists();
+        if ($this->oauth->has($accountId, $identity)) return;
 
-        if ($already) return;
-
-        CredentialModel::create([
-            'auth_identity_id' => $accountId,
-            'type' => CredentialType::OAUTH,
-            'identifier' => $identity,
-            'data' => ['provider' => $provider],
-        ]);
+        $this->oauth->add($accountId, $identity, ['provider' => $provider]);
     }
 
     /**

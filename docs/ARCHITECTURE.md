@@ -43,6 +43,8 @@ Http ──→ Application ──→ Domain
 
 ## ルール
 
+ここに書くのは原則。守るために詰め替え用のクラスやファイルが大きく増えるなら、その場合は無理に守らなくてよい。迷ったら、周りのコードに合わせるか、ファイルが少なく済むほうを選ぶ。
+
 ### 1. Application から Eloquent を直接使ってよい
 
 Repository を挟まずにクエリを書いてよい。
@@ -53,18 +55,25 @@ Repository を挟まずにクエリを書いてよい。
 
 ### 3. Domain は DB に依存しない
 
-Domain に置くのは列挙型・値オブジェクト・ルール・差し替え口のインターフェースだけ。Eloquent モデルや Infrastructure のクラスを参照しない。
+Domain に置くのは列挙型・値オブジェクト・ルール・差し替え口のインターフェース。Eloquent モデルや Infrastructure のクラスを参照しない。モデルを扱う処理で置き場所に迷ったら Application に置いてよい。
 
 ### 4. Repository は必要になったときだけ作る
 
-作るのは次のどちらかのときに限る。
+作るのは、たとえば次のようなとき。
 
 - 同じクエリが2か所以上に出てくる
 - 「数える条件」と「消す条件」のように、食い違うと困る条件を1か所で共有させたい (例: [PruneTokens](../app/Modules/Admin/Application/PruneTokens.php) / [PurgeDeletedAccounts](../app/Modules/Identity/Application/PurgeDeletedAccounts.php))
 
-### 5. モジュールをまたぐときは相手の Application を通す
+### 5. 他のモジュールのテーブルへの書き込みは、相手の Application を通す
 
-他のモジュールの Eloquent モデルやテーブルを直接触らない。触ると変更の影響範囲が追えなくなる。
+テーブルの持ち主はそのモジュール。作成、更新、削除を持ち主の外に散らすと、変更の影響範囲が追えなくなる。
+
+一方で、他のモジュールのモデルを引数で受け取ったり、読んだりするのはよい。禁止すると、モデルごとに詰め替え用のクラスが要り、ファイル数が大きく増える。
+
+次のように、モジュールを横断すること自体が仕事の処理は例外とする。
+
+- 運用 (`Admin`): 期限切れトークンの掃除や検索など、全体を1か所で見る・消す処理
+- 統合、分離、移行: 認証手段やサービスアカウントを、別のアカウントへ丸ごと移す処理
 
 ### 6. インターフェースは差し替え口にだけ置く
 
@@ -110,13 +119,3 @@ $this->app->singleton(ExternalIdpRegistry::class, function (): ExternalIdpRegist
 
 - OIDC のプロトコル部分: 仕様が RFC で決まっているので、変える余地が無い
 - 認証成立の判定 ([AuthenticationPolicy](../app/Modules/Credential/Domain/AuthenticationPolicy.php)): すべての認証経路がここを通る。拡張できるようにすると、抜け道を作れてしまう
-
-## 現状とのずれ (2026-09-26 時点)
-
-| ルール | 状態 |
-| --- | --- |
-| 2. Http でクエリを書いている | 0 ファイル |
-| 3. Domain から Infrastructure を参照している | 0 ファイル |
-| 5. 他のモジュールの Infrastructure を直接参照している | 54 ファイル、76 か所 |
-
-新しく書くコードはルールに従い、既存のずれはリファクタリングで順に解消する。

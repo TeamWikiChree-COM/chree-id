@@ -1,8 +1,8 @@
 <?php
 namespace App\Modules\ExternalLogin\Application;
 
+use App\Modules\Credential\Application\OAuthCredentials;
 use App\Modules\Credential\Domain\CredentialType;
-use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdentityConflict;
 use App\Modules\Identity\Application\ResolveByEmail;
@@ -20,11 +20,17 @@ use RuntimeException;
  *   3. どちらも無ければ新規発行
  */
 class LinkExternalIdentity {
-    public function __construct(
-        private readonly AuthIdentityRepository $accounts,
-        private readonly UserAccounts $userAccounts,
-        private readonly ResolveByEmail $byEmail,
-    ) {}
+    private readonly AuthIdentityRepository $accounts;
+    private readonly UserAccounts $userAccounts;
+    private readonly ResolveByEmail $byEmail;
+    private readonly OAuthCredentials $oauth;
+
+    public function __construct(AuthIdentityRepository $accounts, UserAccounts $userAccounts, ResolveByEmail $byEmail, OAuthCredentials $oauth) {
+        $this->accounts = $accounts;
+        $this->userAccounts = $userAccounts;
+        $this->byEmail = $byEmail;
+        $this->oauth = $oauth;
+    }
 
     /**
      * 同じ外部アカウントに紐付いている認証主体をすべて返す。
@@ -127,11 +133,7 @@ class LinkExternalIdentity {
      * @throws ExternalIdentityConflict 既に同じアカウントへ連携済みの場合
      */
     public function linkTo(string $accountId, ExternalIdentity $identity): void {
-        $exists = CredentialModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('type', CredentialType::OAUTH)
-            ->where('identifier', $identity->credentialIdentifier())
-            ->exists();
+        $exists = $this->oauth->has($accountId, $identity->credentialIdentifier());
 
         if ($exists) throw new ExternalIdentityConflict(__('settings.connections.already_linked'));
 
@@ -144,14 +146,9 @@ class LinkExternalIdentity {
      * @return void
      */
     private function link(string $accountId, ExternalIdentity $identity): void {
-        CredentialModel::create([
-            'auth_identity_id' => $accountId,
-            'type' => CredentialType::OAUTH,
-            'identifier' => $identity->credentialIdentifier(),
-            'data' => [
-                'provider' => $identity->provider,
-                'email' => $identity->email,
-            ],
+        $this->oauth->add($accountId, $identity->credentialIdentifier(), [
+            'provider' => $identity->provider,
+            'email' => $identity->email,
         ]);
     }
 }

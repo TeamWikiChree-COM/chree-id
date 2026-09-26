@@ -1,7 +1,7 @@
 <?php
 namespace App\Modules\Linking\Application;
 
-use App\Modules\Provider\Infrastructure\AccessTokenModel;
+use App\Modules\Provider\Application\RevokeAccessTokens;
 
 /**
  * サービスへの連携を解除する。
@@ -11,16 +11,18 @@ use App\Modules\Provider\Infrastructure\AccessTokenModel;
  * 向こうから見ると別人になり、繋ぎ直しても元のアカウントに戻れなくなる。
  */
 class RevokeServiceAccess {
+    private readonly RevokeAccessTokens $tokens;
+
+    public function __construct(RevokeAccessTokens $tokens) {
+        $this->tokens = $tokens;
+    }
+
     /**
      * @param string $accountId アカウントID (ULID)
      * @param string $clientId サービスの client_id
      * @return int 失効させたトークンの数
      */
     public function execute(string $accountId, string $clientId): int {
-        return AccessTokenModel::query()
-            ->where('auth_identity_id', $accountId)
-            ->where('client_id', $clientId)
-            ->whereNull('revoked_at')
-            ->update(['revoked_at' => now()]);
+        return $this->tokens->forClient($accountId, $clientId);
     }
 }

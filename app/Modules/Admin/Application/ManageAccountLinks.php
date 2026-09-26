@@ -5,7 +5,7 @@ use App\Modules\Credential\Application\RemoveCredential;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
-use App\Modules\Provider\Infrastructure\AccessTokenModel;
+use App\Modules\Provider\Application\RevokeAccessTokens;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -18,11 +18,13 @@ class ManageAccountLinks {
     private readonly AdminTarget $target;
     private readonly RemoveCredential $credentials;
     private readonly SplitServiceAccount $split;
+    private readonly RevokeAccessTokens $tokens;
 
-    public function __construct(AdminTarget $target, RemoveCredential $credentials, SplitServiceAccount $split) {
+    public function __construct(AdminTarget $target, RemoveCredential $credentials, SplitServiceAccount $split, RevokeAccessTokens $tokens) {
         $this->target = $target;
         $this->credentials = $credentials;
         $this->split = $split;
+        $this->tokens = $tokens;
     }
 
     /**
@@ -77,10 +79,7 @@ class ManageAccountLinks {
         $link = $this->link($accountId, $linkId);
 
         DB::transaction(function () use ($link): void {
-            AccessTokenModel::query()
-                ->where('service_account_id', $link->id)
-                ->whereNull('revoked_at')
-                ->update(['revoked_at' => now()]);
+            $this->tokens->forServiceAccount($link->id);
 
             $link->delete();
         });
