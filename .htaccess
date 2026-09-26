@@ -14,10 +14,10 @@
 
     # DocumentRoot が public/ ではなくプロジェクト直下なので、
     # 本来公開しないディレクトリが素通しになる。ここで塞ぐ
-    RewriteRule ^(vendor|storage|bootstrap|config|database|app|routes|tests|resources|node_modules)/ - [F,L]
+    RewriteRule ^(vendor|storage|bootstrap|config|database|app|routes|tests|resources|node_modules|plugins|docs|lang|tools)/ - [F,L]
 
     # 設定・依存関係の定義ファイル
-    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|phpstan\.neon|vite\.config\.js|artisan)$ - [F,L]
+    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|phpstan\.neon|vite\.config\.js|artisan|pint\.json|tsconfig\.json|todofile\.json5|_ide_helper\.php|doctum\.php|LICENSE|[^/]+\.md)$ - [F,L]
 
     # Vite のビルド成果物 (JS/CSS) および public 静的アセットへのリライト
     RewriteRule ^build/(.*)$ public/build/$1 [L]
