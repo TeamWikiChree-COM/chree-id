@@ -37,6 +37,8 @@ php artisan migrate
 npm run dev
 ```
 
+[Todofile](https://github.com/Pitan76/Todofile) を入れていれば、`todo setup` と `todo front:dev` の2つで同じことができる。
+
 データベースの作り方や、動かないときの対処は [セットアップ](docs/SETUP.md)。
 
 ## コードの場所
