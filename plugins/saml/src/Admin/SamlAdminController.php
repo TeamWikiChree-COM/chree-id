@@ -125,7 +125,7 @@ class SamlAdminController {
     }
 
     /**
-     * SAML の設定だけを外す。サービスそのもの (oauth_clients) とサービスアカウントは残す。
+     * SAML の設定だけを解除する。サービスそのもの (oauth_clients) とサービスアカウントは残す。
      *
      * @param ServiceProviderModel $provider
      * @return RedirectResponse

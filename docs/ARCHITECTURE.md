@@ -119,7 +119,7 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 登録は本体からもプラグインからも Facade で、ServiceProvider の boot() に `〜Registry::register(...)` と書く。中身はコンテナにある1つを指すので、本物の static と違ってテストごとに作り直される。
 一覧そのものは register() で空の singleton として用意するだけにする。boot() はすべての register() が済んでから呼ばれるので、一覧はそのときには使える。
 
-たとえば外部IdP を足すときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
+たとえば外部IdP を追加するときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
 
 ```php
 use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
@@ -129,7 +129,7 @@ public function boot(): void {
 }
 ```
 
-詳しくは [プラグイン](PLUGIN.md) の「外部 IdP を足す」。
+詳しくは [プラグイン](PLUGIN.md) の「外部 IdP を追加する」。
 
 次の2つは差し替え口にしない。
 

@@ -5,7 +5,7 @@ use App\Modules\Plugin\Domain\PluginManifest;
 use RuntimeException;
 
 /**
- * プラグインを有効・無効にする。plugin.json の enabled を書き換える。
+ * プラグインを有効または無効にする。plugin.json の enabled を書き換える。
  *
  * 本番はコマンドもファイルの編集もしにくいので、管理画面から切り替えられるようにするためのもの。
  * 読み込みは起動のたびに plugin.json を見るので、次のリクエストから効く。
@@ -22,7 +22,7 @@ class PluginSwitch {
      *
      * @param PluginManifest $plugin
      * @param bool $enabled
-     * @throws RuntimeException 読めない・書けない場合
+     * @throws RuntimeException 読めない、または書けない場合
      */
     public function set(PluginManifest $plugin, bool $enabled): void {
         $file = $this->plugins->path($plugin, 'plugin.json');

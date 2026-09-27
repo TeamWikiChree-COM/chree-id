@@ -24,7 +24,7 @@ interface IndexProps {
 }
 
 /**
- * プラグインの有効・無効。plugin.json の enabled を書き換える。
+ * プラグインの有効と無効。plugin.json の enabled を書き換える。
  *
  * 止めるときだけ確かめる。止めるとそのプラグインの画面やログイン手段が、使っている人の前から消えるため。
  */

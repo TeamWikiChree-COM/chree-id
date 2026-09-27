@@ -98,7 +98,7 @@ class SamlIdpTest extends TestCase {
         return $page->viewData('page')['props'];
     }
 
-    #[TestDox('IdP のメタデータに entityID・SSO の受け口・署名の証明書を載せる')]
+    #[TestDox('IdP のメタデータに entityID、SSO の受け口、署名の証明書を載せる')]
     public function test_servesMetadata(): void {
         $body = str_replace(["\n", "\r", '-----BEGIN CERTIFICATE-----', '-----END CERTIFICATE-----'], '', (string) file_get_contents(__DIR__ . '/fixtures/idp.crt'));
 

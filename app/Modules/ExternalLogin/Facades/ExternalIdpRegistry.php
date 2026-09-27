@@ -6,7 +6,7 @@ use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry as Registry;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * 外部 IdP の一覧を static の形で触るための窓口。プラグインはこれで IdP を足す。
+ * 外部 IdP の一覧を static の形で触るための窓口。プラグインはこれで IdP を追加する。
  *
  * 一覧そのものは Domain\ExternalIdpRegistry で、コンテナに1つだけある。
  * 本物の static にしないのは、テストのたびにアプリを作り直しても一覧が残り、同じ IdP の二重登録になるため。

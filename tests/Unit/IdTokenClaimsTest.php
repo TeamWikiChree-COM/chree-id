@@ -60,7 +60,7 @@ class IdTokenClaimsTest extends TestCase {
     /**
      * @param array<string, mixed> $overrides
      */
-    #[TestDox('発行者・宛先・nonce・期限・sub のどれかが合わなければ受けない')]
+    #[TestDox('発行者、宛先、nonce、期限、sub のどれかが合わなければ受けない')]
     #[\PHPUnit\Framework\Attributes\DataProvider('invalidClaims')]
     public function test_rejectsInvalidClaims(array $overrides): void {
         $this->expectException(RuntimeException::class);

@@ -14,7 +14,7 @@ use RuntimeException;
 /**
  * ChreeID が SAML IdP として SP にログインさせる受け口。
  *
- * ログイン・同意・サービスアカウントの選択は本体 (PluginApi::authorizeService) に任せ、
+ * ログイン、同意、サービスアカウントの選択は本体 (PluginApi::authorizeService) に任せ、
  * ここは AuthnRequest の確認と、署名した Response を返すところだけを受け持つ。
  */
 class IdpController {

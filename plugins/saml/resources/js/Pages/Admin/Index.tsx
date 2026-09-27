@@ -27,7 +27,7 @@ interface ServiceProvider {
 interface IndexProps {
     /** 署名の鍵。まだ無ければ null */
     signingKey: SigningKey | null;
-    /** 鍵を作った・取り込んだ直後だけ true */
+    /** 鍵を作ったか取り込んだ直後だけ true */
     keyUpdated: boolean;
     metadataUrl: string;
     providers: ServiceProvider[];

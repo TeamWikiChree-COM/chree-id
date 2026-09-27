@@ -67,7 +67,7 @@ class ExternalLoginLanding {
         $identity = $this->verify($provider, $verify, $nonce);
         if (is_string($identity)) return $this->fail($identity, $linkAccountId);
 
-        // 設定画面から始めた連携は、ログインではなく本人のアカウントへ足すだけ
+        // 設定画面から始めた連携は、ログインではなく本人のアカウントへ追加するだけ
         if ($linkAccountId !== null) return $this->addToAccount($linkAccountId, $identity);
 
         return $this->loginWith($identity, $claimToken);
@@ -143,7 +143,7 @@ class ExternalLoginLanding {
      * 設定画面から始めた連携の着地。
      *
      * **セッションの本人と、連携を始めた本人が一致することを確かめる。**
-     * 途中で別のアカウントに入り直していた場合、そちらに足すと本人の意図とずれる。
+     * 途中で別のアカウントに入り直していた場合、そちらに追加すると本人の意図とずれる。
      *
      * @param string $linkAccountId 連携を始めたときのアカウントID
      * @param ExternalIdentity $identity IdP が主張してきた内容

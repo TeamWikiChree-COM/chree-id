@@ -4,7 +4,7 @@ namespace App\Modules\ExternalLogin\Domain;
 /**
  * 外部 IdP を画面に出すときの名前とアイコン。
  *
- * フロントに固定の一覧を持たせると、プラグインで足した IdP が識別子のまま出てしまう。
+ * フロントに固定の一覧を持たせると、プラグインで追加した IdP が識別子のまま出てしまう。
  * IdP 自身に持たせ、共有 props で配る。
  */
 readonly class ExternalIdpDisplay {

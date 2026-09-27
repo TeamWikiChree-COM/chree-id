@@ -63,7 +63,7 @@ class SamlSettings {
     }
 
     /**
-     * @return array<string, mixed> php-saml の Auth・Settings に渡す形
+     * @return array<string, mixed> php-saml の Auth、Settings に渡す形
      */
     public function toArray(): array {
         $cert = (string) config('saml.sp.x509cert', '');
@@ -71,7 +71,7 @@ class SamlSettings {
         $signs = $cert !== '' && $key !== '';
 
         return [
-            // 署名・宛先・有効期限の確認を省かせない
+            // 署名、宛先、有効期限の確認を省かせない
             'strict' => true,
             'sp' => [
                 'entityId' => $this->spEntityId(),

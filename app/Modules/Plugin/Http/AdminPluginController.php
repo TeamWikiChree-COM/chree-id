@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * プラグインの一覧と、有効・無効の切り替え (運営向け)。
+ * プラグインの一覧と、有効と無効の切り替え (運営向け)。
  */
 class AdminPluginController extends Controller {
     private readonly PluginRegistry $plugins;

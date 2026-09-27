@@ -107,7 +107,7 @@ class YahooJapanIdp implements CodeExchangeIdp {
         $claims = $this->idTokens->read($idToken, [self::ISSUER], $this->clientId(), $nonce);
         $subject = (string) $claims['sub'];
 
-        // メールが無いので、同じメールの既存アカウントへは寄せられない。既存の人は設定の「連携」から足す
+        // メールが無いので、同じメールの既存アカウントへは寄せられない。既存の人は設定の「連携」から追加する
         if (!$this->usesUserinfo()) return new ExternalIdentity(self::NAME, $subject, null, false, null);
 
         return $this->identity($subject, $accessToken);

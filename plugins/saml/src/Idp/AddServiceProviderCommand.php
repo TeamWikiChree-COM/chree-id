@@ -4,9 +4,9 @@ namespace Plugins\Saml\Idp;
 use Illuminate\Console\Command;
 
 /**
- * 登録済みのサービス (oauth_clients) に、SAML でつなぐ設定を足す。
+ * 登録済みのサービス (oauth_clients) に、SAML でつなぐ設定を追加する。
  *
- * サービスそのもの (名前・信頼状態・同意の省略) は本体の管理画面か chreeid:register-client で作っておく。
+ * サービスそのもの (名前、信頼状態、同意の省略) は本体の管理画面か chreeid:register-client で作っておく。
  * 本番でコマンドを叩けないときは、管理画面 (/plugins/saml/admin) から同じことができる。
  */
 class AddServiceProviderCommand extends Command {

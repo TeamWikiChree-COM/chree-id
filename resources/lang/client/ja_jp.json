@@ -182,7 +182,7 @@
     "admin.index.nav.migrations.title": "データベース構造",
     "admin.index.nav.migrations.up_to_date": "構造は最新です",
     "admin.index.nav.plugins.title": "プラグイン",
-    "admin.index.nav.plugins.description": "プラグインを有効・無効にする",
+    "admin.index.nav.plugins.description": "プラグインを有効または無効にする",
     "admin.index.stats.accounts": "アカウント",
     "admin.index.stats.clients": "接続サービス",
     "admin.index.stats.suspended": "停止中",

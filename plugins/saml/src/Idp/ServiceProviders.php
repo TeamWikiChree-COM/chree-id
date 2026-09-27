@@ -4,7 +4,7 @@ namespace Plugins\Saml\Idp;
 use App\Modules\Client\Infrastructure\OAuthClientModel;
 
 /**
- * SAML でつなぐサービス (SP) の登録・変更。
+ * SAML でつなぐサービス (SP) の登録、変更。
  *
  * artisan コマンドと管理画面の両方から使う。
  * 入力の誤りは文言ではなくコードで返す。プラグインにはサーバ側の辞書が無いので、画面側でプラグインの辞書から文言にする。

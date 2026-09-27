@@ -110,7 +110,7 @@ class HandleInertiaRequests extends Middleware {
             // 設定が揃っている外部 IdP だけ。押しても何も起きないボタンを出さないため
             'externalIdps' => app(ExternalIdpRegistry::class)->usableNames(),
 
-            // 名前とアイコンは IdP 自身が持つ。プラグインで足した IdP も同じように出すため
+            // 名前とアイコンは IdP 自身が持つ。プラグインで追加した IdP も同じように出すため
             'idpDisplays' => app(ExternalIdpRegistry::class)->displays(app()->getLocale()),
 
             // ヘッダーの中身を切り替えるためだけの値。認可には使わない

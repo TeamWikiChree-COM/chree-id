@@ -17,7 +17,7 @@ ChreeID を SAML に対応させる。向きが2つあり、それぞれ別に�
    - ACS (Assertion Consumer Service) の URL は `/plugins/saml/acs`、バインディングは HTTP-POST
    - Assertion に署名させる。署名の無い Assertion は受けない
    - NameID は persistent か emailAddress にする。transient は受けない (ログインのたびに変わり、同じ人を同じアカウントへ結べないため)
-2. IdP から entityID・SSO の URL・署名用の証明書を受け取り、ChreeID の .env に書く
+2. IdP から entityID、SSO の URL、署名用の証明書を受け取り、ChreeID の .env に書く
 
 ```
 SAML_IDP_LABEL=              ボタンに出す名前 (社名など)。空なら SAML
@@ -38,9 +38,9 @@ IdP の3つが揃うまでボタンは出ない。
 ### メールの扱い
 
 `SAML_IDP_TRUST_EMAIL` が false のあいだは、同じメールの既存アカウントがあってもそこへは紐付けず、ログインを断る。
-既存アカウントの人は、先にそのアカウントでログインし、設定の「連携」から SAML を足してもらう。
+既存アカウントの人は、先にそのアカウントでログインし、設定の「連携」から SAML を追加してもらう。
 
-true にすると自動で紐付く。社内の IdP のように、メールを IdP 側が発行・管理しているときだけにする。
+true にすると自動で紐付く。社内の IdP のように、メールを IdP 側が発行、管理しているときだけにする。
 確かめていない IdP で true にすると、他人のメールを名乗ったアカウントからその人のアカウントに入れてしまう。
 
 ### 受け取りの流れ
@@ -58,7 +58,7 @@ IdP から勝手に送られてくる応答 (IdP-initiated) は受けない。Ch
 ## ChreeID で SAML のサービスにログインする
 
 サービスは OIDC のサービスと同じく `oauth_clients` に登録し、SAML の設定だけをこのプラグインのテーブル (`saml_service_providers`) に持つ。
-信頼状態・同意の省略・サービスアカウントは OIDC と共通なので、同じサービスに OIDC と SAML の両方で入っても同じサービスアカウントになる。
+信頼状態、同意の省略、サービスアカウントは OIDC と共通なので、同じサービスに OIDC と SAML の両方で入っても同じサービスアカウントになる。
 
 ### 設定の手順
 
@@ -68,12 +68,12 @@ IdP から勝手に送られてくる応答 (IdP-initiated) は受けない。Ch
 2. 署名の鍵を作る。OIDC の鍵とは別の鍵で、証明書は SP 側に登録される
    - 画面の「鍵を作る」か、`php artisan saml:idp-key`
    - サーバで openssl が使えず作れないときは、手元で作った鍵と証明書 (PEM) を画面から取り込む
-   - 置き場所は `storage/saml/idp.key` と `idp.crt`。変えるなら `SAML_SIGNING_KEY_PATH`・`SAML_SIGNING_CERT_PATH` を書く
+   - 置き場所は `storage/saml/idp.key` と `idp.crt`。変えるなら `SAML_SIGNING_KEY_PATH`、`SAML_SIGNING_CERT_PATH` を書く
    - 作り直すと、登録済みのすべての SP でメタデータの読み直しが要る
 3. サービスを本体に登録する (管理画面の「接続サービス」)。OIDC を使わないなら redirect_uri は空でよい
-4. 画面の「サービスを足す」で SAML の設定を足す (`php artisan saml:sp-add <client_id> <entityID> <ACS の URL>` でもよい)
+4. 画面の「サービスを追加する」で SAML の設定を追加する (`php artisan saml:sp-add <client_id> <entityID> <ACS の URL>` でもよい)
    - SP の証明書を入れると、その SP からの AuthnRequest は署名を必ず確かめる
-   - 外しても、サービスそのものとサービスアカウントは残る
+   - 解除しても、サービスそのものとサービスアカウントは残る
 5. SP に ChreeID の IdP メタデータを登録してもらう。`/plugins/saml/idp/metadata` で出している
 
 手元で鍵を作るときの例:
@@ -94,8 +94,8 @@ openssl req -x509 -newkey rsa:3072 -nodes -keyout idp.key -out idp.crt -days 365
 
 ```
 SP ──AuthnRequest──▶ /plugins/saml/idp/sso      HTTP-Redirect はそのまま、HTTP-POST は預けて GET に回す
-                     SP の特定・ACS の照合・署名の確認
-                  ──▶ 本体 /authorize/pending/…  ログイン・同意・サービスアカウントの選択
+                     SP の特定、ACS の照合、署名の確認
+                  ──▶ 本体 /authorize/pending/…  ログイン、同意、サービスアカウントの選択
                   ──▶ /plugins/saml/idp/resume   署名した Response を SP の ACS へ自動で POST する
 ```
 

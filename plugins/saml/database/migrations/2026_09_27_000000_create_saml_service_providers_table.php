@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('saml_service_providers', function (Blueprint $table) {
             $table->id();
 
-            // サービスアカウント・信頼状態・同意の省略は oauth_clients の側を使う
+            // サービスアカウント、信頼状態、同意の省略は oauth_clients の側を使う
             $table->string('client_id', 64)->unique();
             $table->foreign('client_id')->references('id')->on('oauth_clients')->cascadeOnDelete();
 

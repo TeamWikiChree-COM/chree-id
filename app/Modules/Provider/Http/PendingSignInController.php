@@ -44,7 +44,7 @@ class PendingSignInController extends Controller {
     }
 
     /**
-     * 同意画面・アカウント選択画面からの送信。
+     * 同意画面、アカウント選択画面からの送信。
      *
      * @param Request $request
      * @param string $id 預かりの識別子

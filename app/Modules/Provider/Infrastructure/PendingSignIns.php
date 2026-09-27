@@ -41,7 +41,7 @@ class PendingSignIns {
 
     /**
      * @param string $id
-     * @return PendingSignIn|null 無い・壊れていれば null
+     * @return PendingSignIn|null 無いか壊れていれば null
      */
     public function find(string $id): ?PendingSignIn {
         $stored = $this->request->session()->get(self::PENDING . $id);

@@ -20,7 +20,7 @@ use Tests\TestCase;
 class RegistryFacadeTest extends TestCase {
     use RefreshDatabase;
 
-    #[TestDox('Facade で足した scope が、本体の一覧から引ける')]
+    #[TestDox('Facade で追加した scope が、本体の一覧から引ける')]
     public function test_scopeRegistry(): void {
         ScopeRegistry::register(new class implements ClaimsResolver {
             public function scope(): string {

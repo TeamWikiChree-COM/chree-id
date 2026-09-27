@@ -4,7 +4,7 @@ namespace App\Modules\Provider\Application;
 /**
  * プラグインへ渡す、サインインの結果。
  *
- * sub と属性は OIDC の id_token・userinfo と同じ値。同じサービスアカウントなら、
+ * sub と属性は OIDC の id_token、userinfo と同じ値。同じサービスアカウントなら、
  * どの方式で入っても同じ人として突き合わせられる。
  */
 readonly class SignedInService {

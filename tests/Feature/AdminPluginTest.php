@@ -12,7 +12,7 @@ use Override;
 use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
-// 管理画面からのプラグインの有効・無効
+// 管理画面からのプラグインの有効と無効
 class AdminPluginTest extends TestCase {
     use RefreshDatabase;
 

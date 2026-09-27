@@ -35,6 +35,6 @@ Client ID が入るまでボタンは出ない。
 | 同じメールの既存アカウントへの自動の紐付け | しない | UserInfo の email_verified が true のときだけ |
 
 UserInfo を使わないとき、Yahoo! JAPAN で初めて入った人はメールの無いアカウントになる。
-既存のアカウントを持っている人は、先にそのアカウントでログインし、設定の「連携」から Yahoo! JAPAN を足してもらう。
+既存のアカウントを持っている人は、先にそのアカウントでログインし、設定の「連携」から Yahoo! JAPAN を追加してもらう。
 
 UserInfo を使うとき、UserInfo の sub が id_token と違えば受けない。

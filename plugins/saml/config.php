@@ -1,7 +1,7 @@
 <?php
 
 // ChreeID が SP として、外部の SAML IdP (Entra ID、Google Workspace など) でログインを受ける設定。
-// idp の entity_id・sso_url・x509cert が揃ったときだけログイン画面にボタンが出る。
+// idp の entity_id、sso_url、x509cert が揃ったときだけログイン画面にボタンが出る。
 return [
     'sp' => [
         // 空なら /plugins/saml/metadata の URL を使う

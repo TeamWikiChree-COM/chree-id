@@ -5,7 +5,7 @@ use OpenSSLCertificateSigningRequest;
 use RuntimeException;
 
 /**
- * ChreeID が SAML の Response に署名する鍵と証明書を作る・取り込む・調べる。
+ * ChreeID が SAML の Response に署名する鍵と証明書を作る、取り込む、調べる。
  *
  * artisan コマンドと管理画面の両方から使う。本番はコマンドを叩けないので、画面から同じことができる必要がある。
  */

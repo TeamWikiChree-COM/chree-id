@@ -124,12 +124,12 @@ public function boot(): void {
 | 使うもの | 扱い |
 | --- | --- |
 | `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
-| `App\Modules\*\Facades\*Registry` (`ExternalIdpRegistry`、`ScopeRegistry`、`CredentialRegistry`) | 同上。起動時に本体の一覧へ自分を足すためのもの |
+| `App\Modules\*\Facades\*Registry` (`ExternalIdpRegistry`、`ScopeRegistry`、`CredentialRegistry`) | 同上。起動時に本体の一覧へ自分を追加するためのもの |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
 プラグインが同じものを何度も必要とするようになったら、`PluginApi` に足す。
-本体の一覧へ足す口が足りないときは、その一覧の Facade を作る。
+本体の一覧へ追加する口が足りないときは、その一覧の Facade を作る。
 
 主な用途は次のとおり。
 
@@ -137,10 +137,10 @@ public function boot(): void {
 | --- | --- |
 | ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
-| ログイン画面に外部 IdP を足す | `ExternalIdpRegistry::register()` (Facade) と `PluginApi` の `finishExternalLogin()` |
+| ログイン画面に外部 IdP を追加する | `ExternalIdpRegistry::register()` (Facade) と `PluginApi` の `finishExternalLogin()` |
 | OIDC 以外の方式でサービスにログインさせる | `PluginApi` の `authorizeService()` と `takeServiceSignIn()` |
-| OIDC の scope とクレームを足す | `ScopeRegistry::register()` (Facade)。サービスに scope を許しておく |
-| 認証方式の検証のしかたを足す | `CredentialRegistry::register()` (Facade)。方式の種類 (`CredentialType`) は本体の列挙型なので、新しい種類には本体の変更も要る。認証が成り立ったかの判断 (`AuthenticationPolicy`) は変えられない |
+| OIDC の scope とクレームを追加する | `ScopeRegistry::register()` (Facade)。サービスに scope を許しておく |
+| 認証方式の検証のしかたを追加する | `CredentialRegistry::register()` (Facade)。方式の種類 (`CredentialType`) は本体の列挙型なので、新しい種類には本体の変更も要る。認証が成り立ったかの判断 (`AuthenticationPolicy`) は変えられない |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 
@@ -162,9 +162,16 @@ public function boot(PluginMenu $menu): void {
 $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/wiki-hub/settings', ['ja' => '設定'], [], []));
 ```
 
-### 外部 IdP を足す
+### 外部 IdP を追加する
 
-SAML のように、本体に無い方式でログインを受けたいときに使う。例は `plugins/saml/`。
+ログイン画面に外部 IdP を追加する。例は `plugins/google/` (OAuth / OIDC) と `plugins/saml/` (SAML)。
+
+本体は IdP の名前を知らず、共通の型だけを持つ。IdP ごとの中身はプラグインが持つ。
+
+| 置き場所 | 持っているもの |
+| --- | --- |
+| 本体 | 送り出しと認可コードの受け口 (`/auth/<name>/redirect`、`/auth/<name>/callback`)、戻ってきたあとの共通の処理 (state の照合、アカウントの紐付け、停止の確認、セッション、戻り先への移動) |
+| プラグイン | 送り先の URL、コードの交換、返ってきた情報の確かめ方、ボタンの名前とアイコン |
 
 ```php
 use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
@@ -174,11 +181,13 @@ public function boot(): void {
 }
 ```
 
-`MyIdp` は `App\Modules\ExternalLogin\Domain\ExternalIdp` を実装する。足すと、ログイン画面と連携の設定画面にボタンが出る。
-ボタンの名前とアイコンは `display()` で返す (`ExternalIdpDisplay`)。フロントの一覧に足す必要は無い。
+`MyIdp` は `App\Modules\ExternalLogin\Domain\ExternalIdp` を実装する。追加すると、ログイン画面と連携の設定画面にボタンが出る。
+ボタンの名前とアイコンは `display()` で返す (`ExternalIdpDisplay`)。フロントの一覧に追加する必要は無い。
 送り出しは本体の `/auth/<name>/redirect` が受け持ち、`authorizationUrl($state, $nonce)` の URL へ利用者を送る。
 
-IdP から戻ってきたら、プラグインのルートで受けて `PluginApi::finishExternalLogin()` に渡す。
+認可コードで戻る IdP (OAuth / OIDC) は、`CodeExchangeIdp` を実装する。戻り先は本体の `/auth/<name>/callback` がそのまま受け、`exchange($code, $nonce)` を呼ぶ。プラグインにルートは要らない。
+
+それ以外の形で戻る IdP (SAML など) は、プラグインのルートで受けて `PluginApi::finishExternalLogin()` に渡す。
 
 ```php
 return $api->finishExternalLogin('my-idp', $state, fn (string $nonce): ExternalIdentity => $this->verify($response, $nonce));
@@ -187,8 +196,6 @@ return $api->finishExternalLogin('my-idp', $state, fn (string $nonce): ExternalI
 state の照合、アカウントの紐付け、停止の確認、セッションは本体が受け持つ。プラグインが書くのは、応答を確かめて `ExternalIdentity` を返すところだけ。確かめられなければ `RuntimeException` を投げる。
 
 `ExternalIdentity` の `emailVerified` を true にすると、同じメールの既存アカウントへ自動で紐付く。IdP がメールの持ち主を確かめていないときは false にする。
-
-認可コードで戻る IdP (OAuth / OIDC) なら、`CodeExchangeIdp` を実装すれば本体の `/auth/<name>/callback` でそのまま受けられる。
 
 ### OIDC 以外の方式でサービスにログインさせる
 
@@ -208,7 +215,7 @@ $signIn = $api->takeServiceSignIn($request->string('grant')->toString());
 
 戻り先は `/plugins/` の下に限る。引換券 (grant) は一度しか使えず、始めたのと同じブラウザでしか使えない。
 
-認証まわりのそれ以外 (`AuthenticationPolicy`・OIDC Provider のプロトコル部分) には手を出さないこと。
+認証まわりのそれ以外 (`AuthenticationPolicy`、OIDC Provider のプロトコル部分) には手を出さないこと。
 
 ## デプロイ
 

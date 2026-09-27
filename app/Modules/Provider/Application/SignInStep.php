@@ -29,7 +29,7 @@ readonly class SignInStep {
     }
 
     /**
-     * @param SignInStepKind $kind LOGIN・UNCLAIMED・CONSENT のどれか
+     * @param SignInStepKind $kind LOGIN、UNCLAIMED、CONSENT のどれか
      * @return self
      */
     public static function of(SignInStepKind $kind): self {

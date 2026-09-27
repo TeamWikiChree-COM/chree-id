@@ -35,7 +35,7 @@ class AdminController extends Controller {
             // デプロイ直後は構造が置き去りになる。トップで気付けるようにしておく
             'pendingMigrations' => count($this->migrations->pending()),
 
-            // プラグインが足した運営向けの画面
+            // プラグインが追加した運営向けの画面
             'plugins' => $this->plugins->itemsFor(PluginMenu::AREA_ADMIN, app()->getLocale()),
         ]);
     }

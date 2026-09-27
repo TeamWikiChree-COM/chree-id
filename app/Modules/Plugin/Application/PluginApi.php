@@ -22,7 +22,7 @@ use InvalidArgumentException;
  *
  * ここに置いたメソッドは、本体を変えても互換性を保つ。プラグインが本体の内部を
  * 直接触ることは止められないが、ここを使えば本体の変更に巻き込まれない。
- * 本体の一覧 (外部 IdP、scope、認証方式) へ足すのは、ここではなく各モジュールの Facades\〜Registry。
+ * 本体の一覧 (外部 IdP、scope、認証方式) へ追加するのは、ここではなく各モジュールの Facades\〜Registry。
  * 認証が成り立ったかの判断 (AuthenticationPolicy) のように本体として開きたくないものは、どちらにも置かない。
  *
  * @api
@@ -102,7 +102,7 @@ class PluginApi {
     }
 
     /**
-     * Facades\ExternalIdpRegistry::register() で足した IdP から戻ってきた応答を受け、ログインか連携を済ませる。
+     * Facades\ExternalIdpRegistry::register() で追加した IdP から戻ってきた応答を受け、ログインか連携を済ませる。
      *
      * state の照合、アカウントの紐付け、停止の確認、セッションは本体が受け持つ。
      * プラグインは応答の検証だけを $verify に書く。

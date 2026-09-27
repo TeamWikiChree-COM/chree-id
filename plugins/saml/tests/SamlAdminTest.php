@@ -132,7 +132,7 @@ class SamlAdminTest extends TestCase {
         $this->assertSame(trim($this->fixture('other.crt')), trim((string) file_get_contents($this->keyDir . '/idp.crt')));
     }
 
-    #[TestDox('SAML でつなぐサービスを登録・変更・削除できる')]
+    #[TestDox('SAML でつなぐサービスを登録、変更、削除できる')]
     public function test_managesServiceProviders(): void {
         $this->loginAs(self::ADMIN_EMAIL);
 

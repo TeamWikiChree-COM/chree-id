@@ -28,7 +28,7 @@ class SamlServiceProvider extends ServiceProvider {
         ExternalIdpRegistry::register($this->app->make(SamlIdp::class));
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
-        // 入口は /plugins/saml ではなく管理画面なので、plugin.json の名前と説明で自分で足す
+        // 入口は /plugins/saml ではなく管理画面なので、plugin.json の名前と説明で自分で追加する
         $manifest = $plugins->find('saml');
         if ($manifest !== null) $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/saml/admin', $manifest->title, $manifest->description));
 

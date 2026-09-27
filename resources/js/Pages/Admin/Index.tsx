@@ -16,7 +16,7 @@ interface AdminIndexProps {
     };
     /** まだ適用されていないマイグレーションの数 */
     pendingMigrations: number;
-    /** プラグインが足した運営向けの画面 */
+    /** プラグインが追加した運営向けの画面 */
     plugins: AvailablePlugin[];
 }
 

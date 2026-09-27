@@ -48,7 +48,7 @@ class ExternalIdpRegistry extends Registry {
     /**
      * 登録されているすべての IdP の表示。
      *
-     * 使えるものだけにしないのは、設定を外した IdP でも連携済みの一覧や履歴には名前を出すため。
+     * 使えるものだけにしないのは、設定を解除した IdP でも連携済みの一覧や履歴には名前を出すため。
      *
      * @param string $locale
      * @return array<string, array{label: string, icon: string, family: string}>
