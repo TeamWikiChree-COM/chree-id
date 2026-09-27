@@ -9,8 +9,8 @@ use App\Modules\Plugin\Domain\PluginManifest;
  * 探して読むのは毎リクエストかかり、プラグインが増えるほど重くなる (手元の計測で1フォルダあたり 0.15ms ほど)。
  * 控えは PHP の配列として書くので、OPcache に載って読み込みがほぼ無くなる。
  *
- * 古くなったかは、plugins/ と各 plugin.json の更新時刻で見る。中身は読まない。
- * デプロイでフォルダが増減すれば plugins/ の時刻が、plugin.json を書き換えればその時刻が変わる。
+ * 古くなったかは、plugins/ の中のフォルダ名の一覧と、各 plugin.json の更新時刻で見る。plugin.json の中身は読まない。
+ * フォルダの増減を plugins/ 自身の更新時刻で見ないのは、ファイルシステムによって (exFAT など) 変わらないため。
  * 時刻は秒単位なので、同じ秒のうちの書き換えは見逃しうる。本体が書き換えるとき (PluginSwitch) は明示的に消す。
  */
 class PluginManifestCache {
@@ -54,7 +54,7 @@ class PluginManifestCache {
 
         $data = [
             'root' => $root,
-            'rootMtime' => (int) filemtime($root),
+            'dirs' => $this->dirs($root),
             'files' => $mtimes,
             'manifests' => array_map(static fn (PluginManifest $m): array => [
                 'name' => $m->name,
@@ -84,11 +84,22 @@ class PluginManifestCache {
     }
 
     /**
+     * @param string $root
+     * @return list<string> plugins/ の中の名前。並びは scandir の既定 (名前順)
+     */
+    private function dirs(string $root): array {
+        $names = @scandir($root);
+        if ($names === false) return [];
+
+        return array_values(array_diff($names, ['.', '..']));
+    }
+
+    /**
      * @param array<string, mixed> $cached
      * @return bool
      */
     private function isFresh(array $cached): bool {
-        if (@filemtime($cached['root']) !== $cached['rootMtime']) return false;
+        if ($this->dirs($cached['root']) !== ($cached['dirs'] ?? null)) return false;
 
         foreach ($cached['files'] as $file => $mtime) {
             if (@filemtime($file) !== $mtime) return false;

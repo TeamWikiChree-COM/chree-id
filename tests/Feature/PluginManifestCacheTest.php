@@ -76,8 +76,8 @@ class PluginManifestCacheTest extends TestCase {
     public function test_rereadsWhenPluginIsAdded(): void {
         $this->registry();
 
+        // plugins/ 自身の更新時刻には頼らない。変わらないファイルシステムがある
         File::copyDirectory($this->root . '/example', $this->root . '/second');
-        touch($this->root, time() + 10);
 
         $this->assertNotNull($this->registry()->find('second'));
     }
