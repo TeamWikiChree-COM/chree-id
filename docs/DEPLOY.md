@@ -5,6 +5,7 @@ push すると GitHub Actions (`.github/workflows/deploy.yml`) から `tools/dep
 ## 何が送られるか
 
 送るのは git で追跡しているファイルと、`.deploy-include` に挙げたパスだけ。`.gitignore` に入れたものはサーバに届かない。
+サブモジュール (`plugins/wiki-hub` など) の中のファイルも、追跡しているファイルとして送る。
 
 | 送られないもの | 対処 |
 | --- | --- |

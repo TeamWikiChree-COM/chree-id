@@ -231,3 +231,24 @@ plugins/ を探して plugin.json を読んだ結果は、`bootstrap/cache/plugi
 ## デプロイ
 `plugins/` はリポジトリに入れる。デプロイは差分を送るので、特別な手順は要らない。
 クラスの読み込みは `PluginServiceProvider` が自前で行うので、composer の dump-autoload も要らない。
+
+### 別のリポジトリにあるプラグイン
+
+プラグインは git のサブモジュールとして `plugins/<name>/` に置いてもよい。読み込み方は同じ。
+
+| プラグイン | リポジトリ |
+| --- | --- |
+| wiki-hub | [TeamWikiChree-COM/chreeid-wiki-hub](https://github.com/TeamWikiChree-COM/chreeid-wiki-hub) |
+
+```bash
+# すでに clone してある場合は、サブモジュールの中身を取ってくる
+git submodule update --init
+
+# プラグインの新しいコミットを取り込む
+git -C plugins/wiki-hub pull
+git add plugins/wiki-hub
+git commit
+```
+
+chree-id が記録しているのは、サブモジュールのどのコミットを使うかだけ。プラグインのリポジトリに push しても、chree-id で上のように取り込んでコミットするまで本番には出ない。
+デプロイ (`tools/deploy.py`) は、サブモジュールの中の差分も送る。

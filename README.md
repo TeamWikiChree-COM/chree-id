@@ -25,7 +25,7 @@ ChreeIDは2つの側面がある
 
 ## セットアップ
 ```bash
-git clone git@github.com:teamwikichree-com/chree-id.git
+git clone --recurse-submodules git@github.com:teamwikichree-com/chree-id.git
 cd chree-id
 composer install && npm install
 cp .env.example .env
