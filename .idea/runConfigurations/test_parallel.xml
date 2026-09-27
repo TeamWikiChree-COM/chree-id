@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="テスト (並列)" type="PhpLocalRunConfigurationType" factoryName="PHP Console" folderName="品質" path="$PROJECT_DIR$/artisan" scriptParameters="test --parallel">
+    <CommandLine workingDirectory="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>

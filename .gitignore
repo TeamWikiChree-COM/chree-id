@@ -8,7 +8,12 @@ _diag.php
 .phpunit.result.cache
 /.codex
 /.cursor/
-/.idea
+# PhpStorm: 実行構成、インスペクション、辞書、Laravel Idea 設定だけ共有する
+/.idea/*
+!/.idea/runConfigurations/
+!/.idea/inspectionProfiles/
+!/.idea/dictionaries/
+!/.idea/laravel-idea.xml
 /.nova
 /.phpunit.cache
 /.vscode

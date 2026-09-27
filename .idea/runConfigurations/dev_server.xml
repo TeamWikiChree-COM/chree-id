@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="開発サーバー" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/tools/dev-open.php">
+    <CommandLine workingDirectory="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>
