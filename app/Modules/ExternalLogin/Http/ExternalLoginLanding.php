@@ -34,7 +34,7 @@ class ExternalLoginLanding {
     private readonly AuthIdentityRepository $accounts;
     private readonly ExternalLoginFlow $flow;
     private readonly AuditLog $audit;
-    
+
     public function __construct(LinkExternalIdentity $link, ChreeSession $session, ClaimTickets $tickets, ClaimServiceAccount $claim, AuthIdentityRepository $accounts, ExternalLoginFlow $flow, AuditLog $audit) {
         $this->link = $link;
         $this->session = $session;
