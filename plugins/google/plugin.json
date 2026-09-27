@@ -1,0 +1,13 @@
+{
+    "version": "0.1.0",
+    "provider": "Plugins\\Google\\GoogleServiceProvider",
+    "enabled": true,
+    "title": {
+        "ja": "Google ログイン",
+        "en": "Google login"
+    },
+    "description": {
+        "ja": "Google アカウントでログインできるようにします",
+        "en": "Sign in with a Google account"
+    }
+}

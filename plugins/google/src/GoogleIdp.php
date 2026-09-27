@@ -1,7 +1,8 @@
 <?php
-namespace App\Modules\ExternalLogin\Infrastructure;
+namespace Plugins\Google;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
+use App\Modules\ExternalLogin\Infrastructure\IdTokenClaims;
 use App\Modules\ExternalLogin\Domain\CodeExchangeIdp;
 use App\Modules\ExternalLogin\Domain\ExternalIdpDisplay;
 use Illuminate\Support\Facades\Http;
@@ -114,14 +115,14 @@ class GoogleIdp implements CodeExchangeIdp {
 
     /** @return string */
     private function clientId(): string {
-        $value = config('services.google.client_id');
+        $value = config('google.client_id');
 
         return is_string($value) ? $value : '';
     }
 
     /** @return string */
     private function clientSecret(): string {
-        $value = config('services.google.client_secret');
+        $value = config('google.client_secret');
 
         return is_string($value) ? $value : '';
     }

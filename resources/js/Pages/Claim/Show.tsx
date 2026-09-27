@@ -15,6 +15,7 @@ import type { PickableCredential } from "../../Components/CredentialPicker";
 import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
 import { t } from "../../lib/i18n";
+import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
 import PasskeyRegistration from "./PasskeyRegistration";
 
 interface ClaimShowProps {
@@ -44,14 +45,14 @@ const CREDENTIAL_LABELS: Record<string, string> = {
 };
 
 /** ログイン方法が1つも無いときだけ、ここから決めてもらう */
-type Method = "password" | "passkey" | "google";
+type Method = "password" | "passkey" | "external";
 
 /**
  * 移行 (claim) の画面。
  *
  * **移行元の認証手段は発行時に引き継いでいる**ので、たいていは何も決めさせない。
  * 決めてもらうのは、引き継ぐものが1つも無かった場合だけ
- * (Google だけで使っていた等)。ここを取り違えると、既に入れる人に
+ * (外部アカウントだけで使っていた等)。ここを取り違えると、既に入れる人に
  * わざわざパスワードを作り直させることになる。
  */
 export default function ClaimShow({
@@ -64,10 +65,10 @@ export default function ClaimShow({
     carried,
 }: ClaimShowProps) {
     const { externalIdps } = usePage().props;
-    const googleAvailable = externalIdps.includes("google");
+    const externalAvailable = externalIdps.length > 0;
 
     const initialMethod: Method =
-        hasPassword || !googleAvailable ? "password" : "google";
+        hasPassword || !externalAvailable ? "password" : "external";
     const [method, setMethod] = useState<Method>(initialMethod);
     const [passkeyRegistered, setPasskeyRegistered] = useState(false);
 
@@ -198,23 +199,27 @@ export default function ClaimShow({
             >
                 <Tab value="password" label={t('claim.credential.password')} />
                 <Tab value="passkey" label={t('claim.credential.passkey')} />
-                {googleAvailable && <Tab value="google" label="Google" />}
+                {externalAvailable && <Tab value="external" label={t('claim.credential.oauth')} />}
             </Tabs>
 
-            {method === "google" ? (
+            {method === "external" ? (
                 <Stack spacing={2}>
                     {emailField}
                     <Typography variant="body2" color="text.secondary">
-                        {t('claim.show.google.description')}
+                        {t('claim.show.external.description')}
                     </Typography>
-                    <Button
-                        component="a"
-                        href={`/auth/google/redirect?claim_token=${encodeURIComponent(token)}`}
-                        variant="contained"
-                        startIcon={<Icon name="google" family="brands" />}
-                    >
-                        {t('claim.show.google.continue')}
-                    </Button>
+                    {externalIdps.map((name) => (
+                        <Button
+                            key={name}
+                            component="a"
+                            href={`/auth/${name}/redirect?claim_token=${encodeURIComponent(token)}`}
+                            variant="outlined"
+                            color="inherit"
+                            startIcon={<Icon name={idpIcon(name)} family={idpIconFamily(name)} />}
+                        >
+                            {t('claim.show.external.continue', { name: idpLabel(name) })}
+                        </Button>
+                    ))}
                 </Stack>
             ) : (
                 <Box component="form" onSubmit={submit} noValidate>

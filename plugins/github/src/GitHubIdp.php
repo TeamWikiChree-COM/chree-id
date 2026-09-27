@@ -1,5 +1,5 @@
 <?php
-namespace App\Modules\ExternalLogin\Infrastructure;
+namespace Plugins\Github;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\CodeExchangeIdp;
@@ -196,14 +196,14 @@ class GitHubIdp implements CodeExchangeIdp {
 
     /** @return string */
     private function clientId(): string {
-        $value = config('services.github.client_id');
+        $value = config('github.client_id');
 
         return is_string($value) ? $value : '';
     }
 
     /** @return string */
     private function clientSecret(): string {
-        $value = config('services.github.client_secret');
+        $value = config('github.client_secret');
 
         return is_string($value) ? $value : '';
     }

@@ -1,8 +1,8 @@
 <?php
-namespace Tests\Feature;
+namespace Plugins\Github\Tests;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdpRegistry;
-use App\Modules\ExternalLogin\Infrastructure\GitHubIdp;
+use Plugins\Github\GitHubIdp;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -19,8 +19,8 @@ class GitHubLoginTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
 
-        Config::set('services.github.client_id', 'gh-client');
-        Config::set('services.github.client_secret', 'gh-secret');
+        Config::set('github.client_id', 'gh-client');
+        Config::set('github.client_secret', 'gh-secret');
         Config::set('chreeid.issuer', 'https://id.example.com');
     }
 
@@ -55,15 +55,15 @@ class GitHubLoginTest extends TestCase {
 
     // 設定が無い IdP のボタンは出さない。押しても何も起きないため
     public function test_isNotUsableWithoutCredentials(): void {
-        Config::set('services.github.client_id', null);
-        Config::set('services.github.client_secret', null);
+        Config::set('github.client_id', null);
+        Config::set('github.client_secret', null);
 
         $this->assertNotContains('github', app(ExternalIdpRegistry::class)->usableNames());
     }
 
     // 設定を外しても、連携済みの一覧や履歴には名前を出す必要がある
     public function test_sharesDisplayEvenWithoutCredentials(): void {
-        Config::set('services.github.client_id', null);
+        Config::set('github.client_id', null);
 
         $this->get('/login')->assertInertia(fn (Assert $page) => $page
             ->where('idpDisplays.github', ['label' => 'GitHub', 'icon' => 'github', 'family' => 'brands']));

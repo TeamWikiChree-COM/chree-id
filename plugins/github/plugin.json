@@ -1,0 +1,13 @@
+{
+    "version": "0.1.0",
+    "provider": "Plugins\\Github\\GithubServiceProvider",
+    "enabled": true,
+    "title": {
+        "ja": "GitHub ログイン",
+        "en": "GitHub login"
+    },
+    "description": {
+        "ja": "GitHub アカウントでログインできるようにします",
+        "en": "Sign in with a GitHub account"
+    }
+}

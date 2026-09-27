@@ -93,7 +93,7 @@ class ExternalLoginTest extends TestCase {
     }
 
     public function test_redirectsToProvider(): void {
-        config(['services.google.client_id' => 'test-client-id']);
+        config(['google.client_id' => 'test-client-id']);
 
         $response = $this->get('/auth/google/redirect');
 
