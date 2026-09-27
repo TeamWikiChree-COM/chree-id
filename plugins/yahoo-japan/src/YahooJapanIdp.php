@@ -6,12 +6,14 @@ use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\ExternalIdpDisplay;
 use App\Modules\ExternalLogin\Infrastructure\IdTokenClaims;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
  * Yahoo! JAPAN ID でのログイン (YConnect v2、ChreeID が RP 側)。
  *
- * id_token にはメールが載らないので、UserInfo API から取る。
+ * id_token にはメールが載らない。メールと名前は属性取得 API (UserInfo) から取るが、審査に通ったアプリでしか使えず、
+ * 個人の登録では使えない。そのため既定では使わず、id_token の sub だけで入れる (config の userinfo で切り替える)。
  */
 class YahooJapanIdp implements CodeExchangeIdp {
     public const NAME = 'yahoo-japan';
@@ -20,6 +22,9 @@ class YahooJapanIdp implements CodeExchangeIdp {
     private const TOKEN_URL = 'https://auth.login.yahoo.co.jp/yconnect/v2/token';
     private const USERINFO_URL = 'https://userinfo.yahooapis.jp/yconnect/v2/attribute';
     private const ISSUER = 'https://auth.login.yahoo.co.jp/yconnect/v2';
+
+    /** 送り出したときの PKCE の code_verifier。戻ってきたら交換に使う */
+    private const CODE_VERIFIER = 'yahoo-japan.code_verifier';
 
     private readonly IdTokenClaims $idTokens;
 
@@ -38,7 +43,8 @@ class YahooJapanIdp implements CodeExchangeIdp {
      * @return bool
      */
     public function isConfigured(): bool {
-        return $this->clientId() !== '' && $this->clientSecret() !== '';
+        // シークレットは任意。クライアントサイドで登録したアプリには発行されず、PKCE だけで交換する
+        return $this->clientId() !== '';
     }
 
     /**
@@ -54,13 +60,20 @@ class YahooJapanIdp implements CodeExchangeIdp {
      * @return string
      */
     public function authorizationUrl(string $state, string $nonce): string {
+        // PKCE は常に付ける。シークレットの無いアプリでは、これが認可コードを横取りされないための唯一の守り
+        $verifier = Str::random(64);
+        session()->put(self::CODE_VERIFIER, $verifier);
+
         return self::AUTHORIZE_URL . '?' . http_build_query([
             'response_type' => 'code',
             'client_id' => $this->clientId(),
             'redirect_uri' => $this->redirectUri(),
-            'scope' => 'openid profile email',
+            // 審査を通っていないアプリに profile や email を求めると断られる。UserInfo を使わないなら openid だけ
+            'scope' => $this->usesUserinfo() ? 'openid profile email' : 'openid',
             'state' => $state,
             'nonce' => $nonce,
+            'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
+            'code_challenge_method' => 'S256',
         ]);
     }
 
@@ -71,11 +84,19 @@ class YahooJapanIdp implements CodeExchangeIdp {
      * @throws RuntimeException 交換や検証に失敗した場合
      */
     public function exchange(string $code, string $nonce): ExternalIdentity {
-        // クライアント認証は Basic を使う。YConnect v2 が推奨している方式
-        $response = Http::asForm()->withBasicAuth($this->clientId(), $this->clientSecret())->post(self::TOKEN_URL, [
+        $verifier = session()->pull(self::CODE_VERIFIER);
+        if (!is_string($verifier)) throw new RuntimeException('code_verifier がありません');
+
+        $request = Http::asForm();
+        // シークレットがあるアプリは Basic でクライアント認証する。無いアプリは client_id と PKCE だけ
+        if ($this->clientSecret() !== '') $request = $request->withBasicAuth($this->clientId(), $this->clientSecret());
+
+        $response = $request->post(self::TOKEN_URL, [
             'grant_type' => 'authorization_code',
+            'client_id' => $this->clientId(),
             'code' => $code,
             'redirect_uri' => $this->redirectUri(),
+            'code_verifier' => $verifier,
         ]);
         if (!$response->successful()) throw new RuntimeException('Yahoo! JAPAN とのトークン交換に失敗しました: ' . $response->status());
 
@@ -84,8 +105,12 @@ class YahooJapanIdp implements CodeExchangeIdp {
         if (!is_string($idToken) || !is_string($accessToken)) throw new RuntimeException('id_token か access_token が返りませんでした');
 
         $claims = $this->idTokens->read($idToken, [self::ISSUER], $this->clientId(), $nonce);
+        $subject = (string) $claims['sub'];
 
-        return $this->identity((string) $claims['sub'], $accessToken);
+        // メールが無いので、同じメールの既存アカウントへは寄せられない。既存の人は設定の「連携」から足す
+        if (!$this->usesUserinfo()) return new ExternalIdentity(self::NAME, $subject, null, false, null);
+
+        return $this->identity($subject, $accessToken);
     }
 
     /**
@@ -119,6 +144,13 @@ class YahooJapanIdp implements CodeExchangeIdp {
      */
     private function clientId(): string {
         return (string) config('yahoo-japan.client_id', '');
+    }
+
+    /**
+     * @return bool 属性取得 API (UserInfo) でメールと名前を取るか。審査に通ったアプリだけ
+     */
+    private function usesUserinfo(): bool {
+        return (bool) config('yahoo-japan.userinfo', false);
     }
 
     /**

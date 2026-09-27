@@ -29,7 +29,8 @@ class YahooJapanLoginTest extends TestCase {
         $this->assertInstanceOf(PluginServiceProvider::class, $loader);
         $loader->load($plugins, $manifest);
 
-        config(['yahoo-japan.client_id' => self::CLIENT_ID, 'yahoo-japan.client_secret' => 'secret']);
+        // 審査を通ったアプリの形を基本にする。UserInfo を使わない既定の形は、個別のテストで確かめる
+        config(['yahoo-japan.client_id' => self::CLIENT_ID, 'yahoo-japan.client_secret' => 'secret', 'yahoo-japan.userinfo' => true]);
     }
 
     /**
@@ -84,8 +85,33 @@ class YahooJapanLoginTest extends TestCase {
         $this->assertContains('yahoo-japan', $registry->usableNames());
         $this->assertSame(['label' => 'Yahoo! JAPAN', 'icon' => 'yahoo', 'family' => 'brands'], $registry->displays('ja')['yahoo-japan']);
 
+        // シークレットはクライアントサイドのアプリには無いので、無くても使える
         config(['yahoo-japan.client_secret' => '']);
+        $this->assertContains('yahoo-japan', $registry->usableNames());
+
+        config(['yahoo-japan.client_id' => '']);
         $this->assertNotContains('yahoo-japan', $registry->usableNames());
+    }
+
+    #[TestDox('シークレットが無ければ、Basic 認証を付けず PKCE だけで交換する')]
+    public function test_usesPkceWithoutSecret(): void {
+        config(['yahoo-japan.client_secret' => '']);
+        $location = (string) $this->get('/auth/yahoo-japan/redirect')->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+        $this->assertSame('S256', $query['code_challenge_method'] ?? null);
+        $this->assertIsString($query['state'] ?? null);
+        $this->assertIsString($query['nonce'] ?? null);
+        $this->fakeYahoo($query['nonce'], ['sub' => 'YJ123', 'email' => 'taro@example.jp', 'email_verified' => true]);
+
+        $this->get("/auth/yahoo-japan/callback?code=c&state={$query['state']}")->assertRedirect('/');
+
+        Http::assertSent(static function ($request) use ($query): bool {
+            if (!str_contains($request->url(), '/token')) return false;
+
+            $challenge = rtrim(strtr(base64_encode(hash('sha256', (string) $request['code_verifier'], true)), '+/', '-_'), '=');
+
+            return !$request->hasHeader('Authorization') && $request['client_id'] === self::CLIENT_ID && $challenge === $query['code_challenge'];
+        });
     }
 
     #[TestDox('id_token と UserInfo から外部アカウントを作ってログインさせる')]
@@ -103,6 +129,24 @@ class YahooJapanLoginTest extends TestCase {
         $this->assertSame('ヤフー太郎', $account->displayName);
 
         Http::assertSent(static fn ($request): bool => str_contains($request->url(), '/token') && $request->hasHeader('Authorization'));
+    }
+
+    #[TestDox('UserInfo を使わない設定なら、openid だけを求め、id_token の sub だけでメールの無いアカウントを作る')]
+    public function test_logsInWithoutUserinfo(): void {
+        config(['yahoo-japan.userinfo' => false]);
+        $location = (string) $this->get('/auth/yahoo-japan/redirect')->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+        $this->assertSame('openid', $query['scope'] ?? null);
+        $this->assertIsString($query['state'] ?? null);
+        $this->assertIsString($query['nonce'] ?? null);
+        $this->fakeYahoo($query['nonce'], []);
+
+        $this->get("/auth/yahoo-japan/callback?code=c&state={$query['state']}")->assertRedirect('/');
+
+        $accountId = session('chreeid.account_id');
+        $this->assertIsString($accountId);
+        $this->assertNull(app(AuthIdentityRepository::class)->findById($accountId)?->email);
+        Http::assertNotSent(static fn ($request): bool => str_contains($request->url(), 'userinfo.yahooapis.jp'));
     }
 
     #[TestDox('UserInfo の sub が id_token と違えば受けない')]
