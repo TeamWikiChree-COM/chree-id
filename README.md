@@ -54,6 +54,7 @@ npm run dev
 | コードドキュメント (PHPDoc) | [teamwikichree-com.github.io/chree-id](https://teamwikichree-com.github.io/chree-id/) |
 | API仕様 (OpenAPI) | [id.wikichree.com/api-docs/v1](https://id.wikichree.com/api-docs/v1) |
 | 開発環境構築 | [docs/SETUP.md](docs/SETUP.md) |
+| 起動構成 | [docs/DEV_LAUNCH.md](docs/DEV_LAUNCH.md) |
 | アーキテクチャ設計 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | コーディング規約 | [docs/CODING.md](docs/CODING.md) |
 | アカウントモデル | [docs/ACCOUNTS.md](docs/ACCOUNTS.md) |

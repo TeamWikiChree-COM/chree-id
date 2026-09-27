@@ -1,0 +1,63 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "開発サーバー",
+            "type": "shell",
+            "command": "php tools/dev-open.php",
+            "isBackground": true,
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
+            "label": "artisan dev (serve + queue + Vite)",
+            "type": "shell",
+            "command": "php artisan dev --inline",
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "テスト (並列)",
+            "type": "shell",
+            "command": "php artisan test --parallel",
+            "problemMatcher": [],
+            "group": { "kind": "test", "isDefault": true }
+        },
+        {
+            "label": "PHPStan",
+            "type": "shell",
+            "command": "php vendor/bin/phpstan analyse --memory-limit=1G",
+            "problemMatcher": []
+        },
+        {
+            "label": "Pint (整形)",
+            "type": "shell",
+            "command": "php vendor/bin/pint",
+            "problemMatcher": []
+        },
+        {
+            "label": "Vite ビルド",
+            "type": "npm",
+            "script": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "型チェック (tsc)",
+            "type": "npm",
+            "script": "typecheck",
+            "problemMatcher": ["$tsc"]
+        },
+        {
+            "label": "lang:build",
+            "type": "shell",
+            "command": "php artisan lang:build",
+            "problemMatcher": []
+        },
+        {
+            "label": "migrate",
+            "type": "shell",
+            "command": "php artisan migrate",
+            "problemMatcher": []
+        }
+    ]
+}

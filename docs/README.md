@@ -3,6 +3,7 @@
 
 ## 目次
 - [開発環境構築](SETUP.md)
+- [起動構成](DEV_LAUNCH.md)
 - [アーキテクチャ設計](ARCHITECTURE.md)
 - [コーディング規約](CODING.md)
 - [アカウントモデル](ACCOUNTS.md)

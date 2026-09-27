@@ -1,9 +1,17 @@
 # SAML
 
-外部の SAML IdP (Entra ID、Google Workspace、Okta など) で ChreeID にログインできるようにする。
-ChreeID は SP になる。ログイン画面と連携の設定画面に、ほかの外部 IdP と同じようにボタンが出る。
+ChreeID を SAML に対応させる。向きが2つあり、それぞれ別に使える。
 
-## 設定の手順
+| 向き | 中身 | コード |
+| --- | --- | --- |
+| 外部の SAML IdP で ChreeID にログインする | ChreeID が SP。Entra ID、Google Workspace、Okta などのアカウントで入れる | `src/Sp/` |
+| ChreeID で SAML のサービスにログインする | ChreeID が IdP。SAML しか話せないサービス (SP) に ChreeID のアカウントで入れる | `src/Idp/` |
+
+## 外部の SAML IdP で ChreeID にログインする
+
+ログイン画面と連携の設定画面に、ほかの外部 IdP と同じようにボタンが出る。
+
+### 設定の手順
 
 1. IdP に SP を登録する。SP のメタデータは `/plugins/saml/metadata` で出している
    - ACS (Assertion Consumer Service) の URL は `/plugins/saml/acs`、バインディングは HTTP-POST
@@ -27,7 +35,7 @@ SAML_SP_PRIVATE_KEY=
 
 IdP の3つが揃うまでボタンは出ない。
 
-## メールの扱い
+### メールの扱い
 
 `SAML_IDP_TRUST_EMAIL` が false のあいだは、同じメールの既存アカウントがあってもそこへは紐付けず、ログインを断る。
 既存アカウントの人は、先にそのアカウントでログインし、設定の「連携」から SAML を足してもらう。
@@ -35,7 +43,7 @@ IdP の3つが揃うまでボタンは出ない。
 true にすると自動で紐付く。社内の IdP のように、メールを IdP 側が発行・管理しているときだけにする。
 確かめていない IdP で true にすると、他人のメールを名乗ったアカウントからその人のアカウントに入れてしまう。
 
-## 受け取りの流れ
+### 受け取りの流れ
 
 ```
 IdP ──POST──▶ /plugins/saml/acs        セッションを持たないルート。応答を5分だけ預け、GET へ回す
@@ -46,3 +54,56 @@ POST を直接受けないのは、IdP からの POST がクロスサイトに�
 web ミドルウェアで受けると空のセッションが作られ、その Cookie で利用者のセッションを上書きしてしまう。
 
 IdP から勝手に送られてくる応答 (IdP-initiated) は受けない。ChreeID が出した AuthnRequest への応答だけを受ける。
+
+## ChreeID で SAML のサービスにログインする
+
+サービスは OIDC のサービスと同じく `oauth_clients` に登録し、SAML の設定だけをこのプラグインのテーブル (`saml_service_providers`) に持つ。
+信頼状態・同意の省略・サービスアカウントは OIDC と共通なので、同じサービスに OIDC と SAML の両方で入っても同じサービスアカウントになる。
+
+### 設定の手順
+
+1. 署名の鍵を作る。OIDC の鍵とは別の鍵で、証明書は SP 側に登録される
+
+```
+php artisan saml:idp-key
+```
+
+   置き場所は `storage/saml/idp.key` と `idp.crt`。変えるなら `SAML_SIGNING_KEY_PATH`・`SAML_SIGNING_CERT_PATH` を書く。
+   作り直す (`--force`) と、登録済みのすべての SP でメタデータの読み直しが要る。
+   Windows の PHP では openssl の設定ファイルが見つからずに失敗することがある。`OPENSSL_CONF` に openssl.cnf の場所を入れて実行する。
+
+2. サービスを本体に登録する (`chreeid:register-client` か管理画面)。OIDC を使わないなら redirect_uri は空でよい
+3. SAML の設定を足す
+
+```
+php artisan saml:sp-add <client_id> <SP の entityID> <SP の ACS の URL> [--certificate=sp.crt] [--scopes="openid email profile"]
+```
+
+   `--certificate` を付けると、その SP からの AuthnRequest は署名を必ず確かめる。
+4. SP に ChreeID の IdP メタデータを登録してもらう。`/plugins/saml/idp/metadata` で出している
+
+### SP に渡すもの
+
+| 項目 | 値 |
+| --- | --- |
+| NameID | persistent 形式で、OIDC の sub と同じ値 |
+| 属性 | スコープの範囲の OIDC のクレームを、同じ名前で渡す (email、email_verified、name など) |
+| 署名 | Assertion に署名する (RSA-SHA256) |
+
+### 受け取りの流れ
+
+```
+SP ──AuthnRequest──▶ /plugins/saml/idp/sso      HTTP-Redirect はそのまま、HTTP-POST は預けて GET に回す
+                     SP の特定・ACS の照合・署名の確認
+                  ──▶ 本体 /authorize/pending/…  ログイン・同意・サービスアカウントの選択
+                  ──▶ /plugins/saml/idp/resume   署名した Response を SP の ACS へ自動で POST する
+```
+
+ACS は登録したものだけに送る。要求に別の ACS が書いてあれば断る。署名の無い要求で Response を別の場所へ送らせないため。
+受けられない要求には、SP へエラーの Response を返さず画面で伝える。
+
+### まだ無いもの
+
+- シングルログアウト
+- IdP から始めるログイン (IdP-initiated)
+- SP を登録・編集する画面 (いまは artisan コマンドだけ)

@@ -16,7 +16,8 @@ _diag.php
 !/.idea/laravel-idea.xml
 /.nova
 /.phpunit.cache
-/.vscode
+/.vscode/*
+!/.vscode/tasks.json
 /.zed
 /auth.json
 /node_modules

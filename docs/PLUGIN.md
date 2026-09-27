@@ -135,6 +135,7 @@ public function boot(): void {
 | ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
 | ログイン画面に外部 IdP を足す | `PluginHooks` の `addExternalIdp()` と `PluginApi` の `finishExternalLogin()` |
+| OIDC 以外の方式でサービスにログインさせる | `PluginApi` の `authorizeService()` と `takeServiceSignIn()` |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 
@@ -181,6 +182,24 @@ state の照合、アカウントの紐付け、停止の確認、セッショ�
 `ExternalIdentity` の `emailVerified` を true にすると、同じメールの既存アカウントへ自動で紐付く。IdP がメールの持ち主を確かめていないときは false にする。
 
 認可コードで戻る IdP (OAuth / OIDC) なら、`CodeExchangeIdp` を実装すれば本体の `/auth/<name>/callback` でそのまま受けられる。
+
+### OIDC 以外の方式でサービスにログインさせる
+
+ChreeID が IdP として、SAML などの方式でサービスにログインさせたいときに使う。例は `plugins/saml/` の `Idp/`。
+サービスは本体の `oauth_clients` に登録したものを使い、方式ごとの設定だけをプラグインが持つ。
+
+```php
+// サービスからの要求を確かめたあと
+return $api->authorizeService($clientId, ['openid', 'email'], url('/plugins/my-plugin/resume'));
+
+// 戻り先 (/plugins/my-plugin/resume?grant=…)
+$signIn = $api->takeServiceSignIn($request->string('grant')->toString());
+```
+
+ログイン、引き取り前の確認、同意、サービスアカウントの選択は、OIDC の /oauth/authorize と同じ手順で本体が進める。
+`takeServiceSignIn()` は sub と、スコープの範囲の属性を返す。どちらも OIDC で渡す値と同じなので、同じサービスアカウントなら方式が違っても同じ人として扱える。
+
+戻り先は `/plugins/` の下に限る。引換券 (grant) は一度しか使えず、始めたのと同じブラウザでしか使えない。
 
 認証まわりのそれ以外 (`AuthenticationPolicy`・OIDC Provider のプロトコル部分) には手を出さないこと。
 
