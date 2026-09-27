@@ -40,7 +40,8 @@ class SamlAdminController {
         $names = $this->clientNames();
 
         return Inertia::render('saml::Admin/Index', [
-            'key' => $this->keys->describe(),
+            // key は React が予約している名前で、画面に渡らない
+            'signingKey' => $this->keys->describe(),
             // 共有の flash は本体が決めた鍵しか渡さないので、ここで自分で渡す
             'keyUpdated' => (bool) session('samlKeyUpdated', false),
             'metadataUrl' => $this->settings->entityId(),
