@@ -83,7 +83,7 @@ class MagicLinkController extends Controller {
     /**
      * @param Request $request
      * @param string $token メールに載せた平文トークン
-     * @return Response|RedirectResponse
+     * @return Response|SymfonyResponse
      */
     public function consume(Request $request, string $token): Response|SymfonyResponse {
         $factors = new VerifiedFactors();

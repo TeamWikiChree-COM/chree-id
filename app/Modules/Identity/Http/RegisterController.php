@@ -103,7 +103,7 @@ class RegisterController extends Controller {
      * パスワードを受け取ってアカウントを作り、そのままログインさせる。
      *
      * @param Request $request
-     * @return RedirectResponse|Response
+     * @return SymfonyResponse|Response
      * @throws ValidationException
      */
     public function complete(Request $request): SymfonyResponse|Response {

@@ -59,7 +59,7 @@ class ChallengeController extends Controller {
 
     /**
      * @param Request $request
-     * @return RedirectResponse
+     * @return SymfonyResponse
      * @throws ValidationException コードが違う場合
      */
     public function store(Request $request): SymfonyResponse {
