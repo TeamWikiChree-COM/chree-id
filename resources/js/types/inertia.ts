@@ -1,3 +1,5 @@
+import type { IdpDisplay } from '../lib/idps';
+
 /**
  * HandleInertiaRequests::share が全ページに配る値。
  *
@@ -74,6 +76,8 @@ declare module '@inertiajs/core' {
             isAdmin: boolean;
             /** 設定が揃っている外部 IdP の識別子 (例: ["google"]) */
             externalIdps: string[];
+            /** 登録されている外部 IdP の名前とアイコン。識別子がキー。設定の揃っていないものも入る */
+            idpDisplays: Record<string, IdpDisplay>;
             /** ヘッダーの中身を切り替えるためだけの値 */
             isLoggedIn: boolean;
             /** ログイン中の本人のアイコン。未設定なら null */

@@ -131,6 +131,14 @@ class SamlLoginTest extends TestCase {
         $this->assertNotContains('saml', app(ExternalIdpRegistry::class)->usableNames());
     }
 
+    #[TestDox('ボタンの名前は設定から取り、無ければ SAML と出す')]
+    public function test_sharesDisplayName(): void {
+        $this->assertSame('SAML', app(ExternalIdpRegistry::class)->displays('ja')['saml']['label']);
+
+        config(['saml.idp.label' => '株式会社サンプル']);
+        $this->assertSame('株式会社サンプル', app(ExternalIdpRegistry::class)->displays('en')['saml']['label']);
+    }
+
     #[TestDox('SP のメタデータを出す')]
     public function test_servesMetadata(): void {
         $this->get('/plugins/saml/metadata')

@@ -26,6 +26,11 @@ interface ExternalIdp {
     public function isConfigured(): bool;
 
     /**
+     * @return ExternalIdpDisplay ログイン画面や設定画面に出す名前とアイコン
+     */
+    public function display(): ExternalIdpDisplay;
+
+    /**
      * @param string $state CSRF 対策の値
      * @param string $nonce id_token に載せる値
      * @return string 利用者を飛ばす先

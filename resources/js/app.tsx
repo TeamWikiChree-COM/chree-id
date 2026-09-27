@@ -1,4 +1,4 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import type { ComponentType, ReactNode } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
@@ -7,6 +7,7 @@ import { useMemo } from 'react';
 import { buildTheme } from './theme';
 import { ThemeModeContext, useThemeMode } from './lib/theme-mode';
 import { t } from './lib/i18n';
+import { setIdpDisplays } from './lib/idps';
 
 /**
  * テーマの供給。
@@ -49,6 +50,10 @@ createInertiaApp({
     },
 
     setup({ el, App, props }) {
+        // 外部 IdP の名前とアイコンは、コンポーネントの外からも引くので props とは別に持つ
+        setIdpDisplays(props.initialPage.props.idpDisplays);
+        router.on('navigate', (event) => setIdpDisplays(event.detail.page.props.idpDisplays));
+
         createRoot(el).render(
             <Root>
                 <App {...props} />

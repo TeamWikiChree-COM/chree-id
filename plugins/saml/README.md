@@ -12,6 +12,7 @@ ChreeID は SP になる。ログイン画面と連携の設定画面に、ほ�
 2. IdP から entityID・SSO の URL・署名用の証明書を受け取り、ChreeID の .env に書く
 
 ```
+SAML_IDP_LABEL=              ボタンに出す名前 (社名など)。空なら SAML
 SAML_IDP_ENTITY_ID=          IdP の entityID
 SAML_IDP_SSO_URL=            IdP の SSO の URL (HTTP-Redirect)
 SAML_IDP_CERT=               IdP の署名用の証明書 (PEM)

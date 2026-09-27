@@ -44,4 +44,21 @@ class ExternalIdpRegistry extends Registry {
 
         return $names;
     }
+
+    /**
+     * 登録されているすべての IdP の表示。
+     *
+     * 使えるものだけにしないのは、設定を外した IdP でも連携済みの一覧や履歴には名前を出すため。
+     *
+     * @param string $locale
+     * @return array<string, array{label: string, icon: string, family: string}>
+     */
+    public function displays(string $locale): array {
+        $displays = [];
+        foreach ($this->items() as $name => $provider) {
+            $displays[$name] = $provider->display()->toArray($locale);
+        }
+
+        return $displays;
+    }
 }

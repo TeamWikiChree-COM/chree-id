@@ -11,6 +11,8 @@ return [
         'private_key' => env('SAML_SP_PRIVATE_KEY', ''),
     ],
     'idp' => [
+        // ログイン画面のボタンに出す名前 (社名など)。空なら SAML
+        'label' => env('SAML_IDP_LABEL', ''),
         'entity_id' => env('SAML_IDP_ENTITY_ID', ''),
         'sso_url' => env('SAML_IDP_SSO_URL', ''),
         'x509cert' => env('SAML_IDP_CERT', ''),

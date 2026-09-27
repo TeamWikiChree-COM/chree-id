@@ -2,6 +2,7 @@
 namespace Plugins\Saml;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdp;
+use App\Modules\ExternalLogin\Domain\ExternalIdpDisplay;
 use OneLogin\Saml2\Auth;
 
 /**
@@ -34,6 +35,15 @@ class SamlIdp implements ExternalIdp {
      */
     public function isConfigured(): bool {
         return $this->settings->isConfigured();
+    }
+
+    /**
+     * 名前は IdP ごとに違う (社名など) ので設定から取る。
+     *
+     * @return ExternalIdpDisplay
+     */
+    public function display(): ExternalIdpDisplay {
+        return new ExternalIdpDisplay($this->settings->label(), 'building');
     }
 
     /**

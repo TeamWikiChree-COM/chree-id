@@ -3,6 +3,7 @@ namespace App\Modules\ExternalLogin\Infrastructure;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Domain\CodeExchangeIdp;
+use App\Modules\ExternalLogin\Domain\ExternalIdpDisplay;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -40,6 +41,13 @@ class GitHubIdp implements CodeExchangeIdp {
      */
     public function isConfigured(): bool {
         return $this->clientId() !== '' && $this->clientSecret() !== '';
+    }
+
+    /**
+     * @return ExternalIdpDisplay
+     */
+    public function display(): ExternalIdpDisplay {
+        return ExternalIdpDisplay::brand('GitHub', 'github');
     }
 
     /**

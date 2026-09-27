@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use PHPUnit\Framework\Attributes\TestDox;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 // GitHub ログイン (ChreeID が RP 側)。GitHub は OIDC ではないので API を叩いて本人を知る
@@ -58,6 +59,14 @@ class GitHubLoginTest extends TestCase {
         Config::set('services.github.client_secret', null);
 
         $this->assertNotContains('github', app(ExternalIdpRegistry::class)->usableNames());
+    }
+
+    // 設定を外しても、連携済みの一覧や履歴には名前を出す必要がある
+    public function test_sharesDisplayEvenWithoutCredentials(): void {
+        Config::set('services.github.client_id', null);
+
+        $this->get('/login')->assertInertia(fn (Assert $page) => $page
+            ->where('idpDisplays.github', ['label' => 'GitHub', 'icon' => 'github', 'family' => 'brands']));
     }
 
     // ログインに要る分だけ求める。repo のような強い権限は取らない

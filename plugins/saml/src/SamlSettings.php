@@ -44,6 +44,18 @@ class SamlSettings {
     }
 
     /**
+     * 社名などの固有名なので、言語ごとには分けない。
+     *
+     * @return array<string, string> ロケール => 名前
+     */
+    public function label(): array {
+        $label = $this->idp('label');
+        if ($label === '') $label = 'SAML';
+
+        return ['ja' => $label, 'en' => $label];
+    }
+
+    /**
      * @return bool IdP のメールを確かめ済みとして扱うか
      */
     public function trustsEmail(): bool {
