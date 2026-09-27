@@ -1,0 +1,13 @@
+{
+    "version": "0.1.0",
+    "provider": "Plugins\\Saml\\SamlServiceProvider",
+    "enabled": true,
+    "title": {
+        "ja": "SAML",
+        "en": "SAML"
+    },
+    "description": {
+        "ja": "SAML の IdP でログインできるようにします",
+        "en": "Sign in with a SAML identity provider"
+    }
+}

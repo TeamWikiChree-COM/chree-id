@@ -121,10 +121,12 @@ public function boot(): void {
 | 使うもの | 扱い |
 | --- | --- |
 | `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
+| `App\Modules\Plugin\Application\PluginHooks` | 同上。起動時に本体の一覧へ自分を足すためのもの |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
 プラグインが同じものを何度も必要とするようになったら、`PluginApi` に足す。
+本体の処理へ差し込む口が足りないときは、`PluginHooks` に足す。
 
 主な用途は次のとおり。
 
@@ -132,6 +134,7 @@ public function boot(): void {
 | --- | --- |
 | ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
+| ログイン画面に外部 IdP を足す | `PluginHooks` の `addExternalIdp()` と `PluginApi` の `finishExternalLogin()` |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 
@@ -153,7 +156,32 @@ public function boot(PluginMenu $menu): void {
 $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/wiki-hub/settings', ['ja' => '設定'], [], []));
 ```
 
-認証まわり (`AuthenticationPolicy`・OIDC のプロトコル部分) には手を出さないこと。
+### 外部 IdP を足す
+
+SAML のように、本体に無い方式でログインを受けたいときに使う。例は `plugins/saml/`。
+
+```php
+public function boot(PluginHooks $hooks): void {
+    $hooks->addExternalIdp($this->app->make(MyIdp::class));
+}
+```
+
+`MyIdp` は `App\Modules\ExternalLogin\Domain\ExternalIdp` を実装する。足すと、ログイン画面と連携の設定画面にボタンが出る。
+送り出しは本体の `/auth/<name>/redirect` が受け持ち、`authorizationUrl($state, $nonce)` の URL へ利用者を送る。
+
+IdP から戻ってきたら、プラグインのルートで受けて `PluginApi::finishExternalLogin()` に渡す。
+
+```php
+return $api->finishExternalLogin('my-idp', $state, fn (string $nonce): ExternalIdentity => $this->verify($response, $nonce));
+```
+
+state の照合、アカウントの紐付け、停止の確認、セッションは本体が受け持つ。プラグインが書くのは、応答を確かめて `ExternalIdentity` を返すところだけ。確かめられなければ `RuntimeException` を投げる。
+
+`ExternalIdentity` の `emailVerified` を true にすると、同じメールの既存アカウントへ自動で紐付く。IdP がメールの持ち主を確かめていないときは false にする。
+
+認可コードで戻る IdP (OAuth / OIDC) なら、`CodeExchangeIdp` を実装すれば本体の `/auth/<name>/callback` でそのまま受けられる。
+
+認証まわりのそれ以外 (`AuthenticationPolicy`・OIDC Provider のプロトコル部分) には手を出さないこと。
 
 ## デプロイ
 
