@@ -2,7 +2,7 @@
 namespace App\Modules\ExternalLogin\Infrastructure;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
-use App\Modules\ExternalLogin\Domain\ExternalIdp;
+use App\Modules\ExternalLogin\Domain\CodeExchangeIdp;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -16,7 +16,7 @@ use RuntimeException;
  *
  * scope はログインに必要な最小限に留める。`repo` のような強い権限は求めない。
  */
-class GitHubIdp implements ExternalIdp {
+class GitHubIdp implements CodeExchangeIdp {
     private const AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
     private const TOKEN_URL = 'https://github.com/login/oauth/access_token';
     private const USER_URL = 'https://api.github.com/user';

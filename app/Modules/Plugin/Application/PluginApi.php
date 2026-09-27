@@ -6,6 +6,10 @@ use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Admin\Domain\AdminAccess;
+use App\Modules\ExternalLogin\Domain\ExternalIdentity;
+use App\Modules\ExternalLogin\Http\ExternalLoginLanding;
+use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 
 /**
@@ -21,11 +25,13 @@ class PluginApi {
     private readonly ChreeSession $session;
     private readonly AuthIdentityRepository $accounts;
     private readonly AdminAccess $admin;
+    private readonly ExternalLoginLanding $landing;
 
-    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AdminAccess $admin) {
+    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AdminAccess $admin, ExternalLoginLanding $landing) {
         $this->session = $session;
         $this->accounts = $accounts;
         $this->admin = $admin;
+        $this->landing = $landing;
     }
 
     /**
@@ -76,5 +82,31 @@ class PluginApi {
         $ids = ServiceAccountModel::query()->where('auth_identity_id', $accountId)->distinct()->pluck('client_id');
 
         return array_values($ids->all());
+    }
+
+    /**
+     * PluginHooks::addExternalIdp() で足した IdP から戻ってきた応答を受け、ログインか連携を済ませる。
+     *
+     * state の照合、アカウントの紐付け、停止の確認、セッションは本体が受け持つ。
+     * プラグインは応答の検証だけを $verify に書く。
+     *
+     * @param string $provider ExternalIdp::name() の値
+     * @param string $state 戻ってきた state (SAML なら RelayState)
+     * @param Closure(string): ExternalIdentity $verify 発行時の nonce を受け取り、応答を確かめて外部アカウントを返す。
+     *   確かめられなければ RuntimeException を投げる
+     * @return RedirectResponse
+     */
+    public function finishExternalLogin(string $provider, string $state, Closure $verify): RedirectResponse {
+        return $this->landing->finish($provider, $state, $verify);
+    }
+
+    /**
+     * 利用者が IdP で取りやめたなど、検証するまでもなく失敗した応答を受けたとき。
+     *
+     * @param string $message 画面に出す文言
+     * @return RedirectResponse
+     */
+    public function abortExternalLogin(string $message): RedirectResponse {
+        return $this->landing->abort($message);
     }
 }

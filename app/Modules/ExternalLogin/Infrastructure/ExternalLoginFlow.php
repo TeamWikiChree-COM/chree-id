@@ -114,6 +114,13 @@ class ExternalLoginFlow {
         return array_values(array_filter($candidates, is_string(...)));
     }
 
+    /**
+     * 開始時に預けた値を捨てる。途中でやめた応答を受けたときに使う。
+     */
+    public function forget(): void {
+        $this->request->session()->forget([self::STATE, self::NONCE, self::CLAIM_TOKEN, self::LINK_ACCOUNT]);
+    }
+
     public function forgetCandidates(): void {
         $this->request->session()->forget(self::CANDIDATES);
     }

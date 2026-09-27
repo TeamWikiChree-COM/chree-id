@@ -2,7 +2,7 @@
 namespace App\Modules\ExternalLogin\Infrastructure;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
-use App\Modules\ExternalLogin\Domain\ExternalIdp;
+use App\Modules\ExternalLogin\Domain\CodeExchangeIdp;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -11,7 +11,7 @@ use RuntimeException;
  *
  * Google は OIDC プロバイダなので、id_token を読めばユーザー情報が取れる。
  */
-class GoogleIdp implements ExternalIdp {
+class GoogleIdp implements CodeExchangeIdp {
     private const AUTHORIZE_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
     private const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
