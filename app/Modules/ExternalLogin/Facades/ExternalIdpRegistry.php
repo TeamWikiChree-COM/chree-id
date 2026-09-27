@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static ExternalIdp|null get(string $name)
  * @method static list<string> names()
  * @method static list<string> usableNames()
+ * @method static array<string, array{label: string, icon: string, family: string}> displays(string $locale)
  *
  * @see Registry
  * @api

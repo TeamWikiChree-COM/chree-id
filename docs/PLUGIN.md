@@ -124,7 +124,7 @@ public function boot(): void {
 | 使うもの | 扱い |
 | --- | --- |
 | `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
-| `App\Modules\*\Facades\*Registry` (例: `ExternalIdpRegistry`) | 同上。起動時に本体の一覧へ自分を足すためのもの |
+| `App\Modules\*\Facades\*Registry` (`ExternalIdpRegistry`、`ScopeRegistry`、`CredentialRegistry`) | 同上。起動時に本体の一覧へ自分を足すためのもの |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
@@ -139,6 +139,8 @@ public function boot(): void {
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
 | ログイン画面に外部 IdP を足す | `ExternalIdpRegistry::register()` (Facade) と `PluginApi` の `finishExternalLogin()` |
 | OIDC 以外の方式でサービスにログインさせる | `PluginApi` の `authorizeService()` と `takeServiceSignIn()` |
+| OIDC の scope とクレームを足す | `ScopeRegistry::register()` (Facade)。サービスに scope を許しておく |
+| 認証方式の検証のしかたを足す | `CredentialRegistry::register()` (Facade)。方式の種類 (`CredentialType`) は本体の列挙型なので、新しい種類には本体の変更も要る。認証が成り立ったかの判断 (`AuthenticationPolicy`) は変えられない |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 

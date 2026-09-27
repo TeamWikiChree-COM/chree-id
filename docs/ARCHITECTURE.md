@@ -115,6 +115,10 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 | OIDC の scope | [ClaimsResolver](../app/Modules/Provider/Domain/Claims/ClaimsResolver.php) | [ScopeRegistry](../app/Modules/Provider/Domain/Claims/ScopeRegistry.php) | [OidcServiceProvider](../app/Providers/OidcServiceProvider.php) |
 | プラグイン | `plugins/<名前>/plugin.json` | [PluginRegistry](../app/Modules/Plugin/Infrastructure/PluginRegistry.php) | 登録しない。`plugins/` に置けば見つけて読み込む ([プラグイン](PLUGIN.md)) |
 
+レジストリにはそれぞれ、同じ名前の Facade をモジュールの `Facades/` に置いている (`CredentialRegistry`、`ExternalIdpRegistry`、`ScopeRegistry`)。
+プラグインや本体の外から足すときは Facade を使い、`〜Registry::register(...)` と書く。中身はコンテナにある1つを指すので、本物の static と違ってテストごとに作り直される。
+本体の ServiceProvider は、一覧を作る処理の中で登録するので Facade を使わない (作っている最中に Facade を呼ぶと循環する)。
+
 たとえば外部IdP を足すときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
 
 ```php
