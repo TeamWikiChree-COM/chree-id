@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive # plugins/wiki-hub などプラグインのサブモジュールもテストする
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2

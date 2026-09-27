@@ -51,6 +51,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0 # 差分計算・コミット履歴確認のため全履歴を取得
+          submodules: recursive # plugins/wiki-hub などプラグインのサブモジュールも送る
 
       # Ubuntuランナー内蔵のPython3を使用（セットアップ時間を削減）
       # FTPSはPython標準のftplibで動くためインストール不要。SFTP時のみインストール
