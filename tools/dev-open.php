@@ -2,9 +2,10 @@
 /**
  * ローカル開発環境を立ち上げてブラウザで開く。PhpStorm の実行構成「開発サーバー」から呼ばれる。
  *
- * - APP_URL が応答しなければ、Windows では Laragon を起動して待つ (他 OS はサーバーを自前で起動してもらう)
+ * - APP_URL が応答しなければ Laragon を起動して待つ
+ * - Laragon が無い環境 (Linux 等) では php artisan dev (serve + queue + Vite) に切り替える
  * - Vite が止まっていれば npm run dev を子プロセスで動かし、ログを実行ウィンドウに流す
- * - 準備ができたら APP_URL を既定のブラウザで開く
+ * - 準備ができたら既定のブラウザで開く
  *
  * すでに Vite が動いている場合はブラウザを開くだけで終わる。
  */
@@ -12,6 +13,7 @@
 declare(strict_types=1);
 
 const VITE_PORT = 5173;
+const SERVE_URL = 'http://127.0.0.1:8000';
 const TIMEOUT_SEC = 60;
 
 $root = dirname(__DIR__);
@@ -62,15 +64,21 @@ function waitUntil(callable $cond, string $what): void {
 }
 
 /**
- * Web サーバーが止まっていれば起動して応答を待つ。自動起動できるのは Windows の Laragon だけ。
+ * Laragon の実行ファイル。Laragon 配下 (laragon/www/<project>) に置かれていなければ null。
  */
-function ensureWebServer(string $root, string $url): void {
+function laragonExe(string $root): ?string {
+    $exe = dirname($root, 2) . DIRECTORY_SEPARATOR . 'laragon.exe';
+    return PHP_OS_FAMILY === 'Windows' && is_file($exe) ? $exe : null;
+}
+
+/**
+ * Laragon が止まっていれば起動して APP_URL の応答を待つ。
+ */
+function ensureLaragon(string $laragon, string $url): void {
     if (urlResponds($url)) {
         echo "[ok] {$url} は起動済み\n";
         return;
     }
-    $laragon = dirname($root, 2) . DIRECTORY_SEPARATOR . 'laragon.exe';
-    if (PHP_OS_FAMILY !== 'Windows' || !is_file($laragon)) throw new RuntimeException("{$url} が応答しません。Web サーバーを起動してください");
     echo "[..] Laragon を起動します (自動で始まらない場合は Laragon の「全て開始」を押してください)\n";
     pclose(popen('start "" ' . escapeshellarg($laragon), 'r'));
     waitUntil(fn(): bool => urlResponds($url), 'Laragon');
@@ -105,8 +113,25 @@ function openBrowser(string $url): void {
     pclose(popen($cmd, 'r'));
 }
 
+/**
+ * php artisan dev (serve + queue + Vite) を子プロセスで動かし、serve の応答を待ってブラウザで開く。
+ */
+function runArtisanDev(string $root, string $appUrl): int {
+    // issuer やリダイレクト先は APP_URL から作られるので、ずれていると OIDC のフローが通らない
+    if (rtrim($appUrl, '/') !== SERVE_URL) echo "[!!] APP_URL ({$appUrl}) が " . SERVE_URL . " と違います。.env の APP_URL を合わせてください\n";
+    echo "[..] Laragon が無いので php artisan dev を起動します\n";
+    $proc = proc_open([PHP_BINARY, 'artisan', 'dev', '--inline'], [STDIN, STDOUT, STDERR], $pipes, $root);
+    if ($proc === false) throw new RuntimeException('php artisan dev を起動できませんでした');
+    waitUntil(fn(): bool => urlResponds(SERVE_URL), 'artisan serve');
+    openBrowser(SERVE_URL);
+    echo '[ok] ' . SERVE_URL . " を開きました。停止ボタンでまとめて止めます\n";
+    return proc_close($proc);
+}
+
 $url = appUrl($root);
-ensureWebServer($root, $url);
+$laragon = laragonExe($root);
+if ($laragon === null && !urlResponds($url)) exit(runArtisanDev($root, $url));
+if ($laragon !== null) ensureLaragon($laragon, $url);
 
 if (portOpen(VITE_PORT)) {
     echo '[ok] Vite は起動済み (:' . VITE_PORT . ")\n";
