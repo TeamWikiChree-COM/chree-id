@@ -32,6 +32,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import deploy_submodules
+
 # パイプ経由など出力先が日本語を扱えない場合に落ちないようにする。
 for stream in (sys.stdout, sys.stderr):
     try:
@@ -376,8 +378,13 @@ def collect_forced(includes: tuple[str, ...]) -> list[str]:
 def collect_changes(full: bool, excludes: tuple[str, ...]) -> tuple[list[tuple[str, str]], list[str], str]:
     """(アップロード対象 [(状態, パス)], 削除候補, 基準の説明) を返す。"""
     head = git("rev-parse", "HEAD").strip()
+    subs = deploy_submodules.submodules(REPO_ROOT, head)
+
+    # サブモジュールそのもの (指しているコミットの 1 行) は送れないので外し、代わりに中のファイルを入れる
     tracked = {p for p in git("ls-files").splitlines()
-               if p and not is_excluded(p, excludes)}
+               if p and p not in subs and not is_excluded(p, excludes)}
+    for sub, sha in subs.items():
+        tracked |= {p for p in deploy_submodules.files(REPO_ROOT, sub, sha) if not is_excluded(p, excludes)}
 
     previous = None if full else read_state()
     if previous and not commit_exists(previous):
@@ -404,6 +411,12 @@ def collect_changes(full: bool, excludes: tuple[str, ...]) -> tuple[list[tuple[s
         else:
             # A=追加 / M=変更 の区別を一覧に出すため保持する
             upload[path] = status.strip()[:1]
+
+    previous_subs = deploy_submodules.submodules(REPO_ROOT, previous)
+    for sub in set(subs) | set(previous_subs):
+        sub_upload, sub_delete = deploy_submodules.changes(REPO_ROOT, sub, previous_subs.get(sub), subs.get(sub))
+        upload.update(sub_upload)
+        delete |= sub_delete
 
     # 追跡対象外・除外対象は送らない。削除候補も追跡中なら取り消す。
     upload = {p: s for p, s in upload.items() if p in tracked}
@@ -496,6 +509,7 @@ def main() -> int:
     print(f"\n接続中: {config['FTP_PROTOCOL']}://{config['FTP_HOST']} → {remote_root}/")
     transport = open_transport(config)
 
+    subs = deploy_submodules.submodules(REPO_ROOT, "HEAD")
     uploaded = 0
     deleted = 0
     try:
@@ -505,7 +519,9 @@ def main() -> int:
                 data = (REPO_ROOT / path).read_bytes()
             else:
                 # 作業ツリーではなく HEAD の内容を送る (改行コードを持ち込まないため)
-                data = git_blob("HEAD", path)
+                data = deploy_submodules.blob(REPO_ROOT, subs, path)
+                if data is None:
+                    data = git_blob("HEAD", path)
             remote = f"{remote_root}/{path}"
             transport.ensure_dir(posixpath.dirname(remote))
             transport.upload(data, remote)
