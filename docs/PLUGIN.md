@@ -167,6 +167,7 @@ public function boot(PluginHooks $hooks): void {
 ```
 
 `MyIdp` は `App\Modules\ExternalLogin\Domain\ExternalIdp` を実装する。足すと、ログイン画面と連携の設定画面にボタンが出る。
+ボタンの名前とアイコンは `display()` で返す (`ExternalIdpDisplay`)。フロントの一覧に足す必要は無い。
 送り出しは本体の `/auth/<name>/redirect` が受け持ち、`authorizationUrl($state, $nonce)` の URL へ利用者を送る。
 
 IdP から戻ってきたら、プラグインのルートで受けて `PluginApi::finishExternalLogin()` に渡す。
