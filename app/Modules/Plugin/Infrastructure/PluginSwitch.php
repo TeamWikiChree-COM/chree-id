@@ -33,5 +33,8 @@ class PluginSwitch {
         $encoded = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         if (file_put_contents($file, $encoded . "\n", LOCK_EX) === false) throw new RuntimeException("plugin.json に書き込めません: {$file}");
+
+        // 控えは更新時刻で古さを見るが、秒単位なので同じ秒の書き換えを見逃しうる。ここで確実に消す
+        $this->plugins->forgetCache();
     }
 }

@@ -3,6 +3,7 @@ namespace App\Providers;
 
 use App\Modules\Plugin\Domain\PluginManifest;
 use App\Modules\Plugin\Domain\PluginMenu;
+use App\Modules\Plugin\Infrastructure\PluginManifestCache;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -24,7 +25,7 @@ class PluginServiceProvider extends ServiceProvider {
 
     #[Override]
     public function register(): void {
-        $plugins = new PluginRegistry(base_path('plugins'));
+        $plugins = new PluginRegistry(base_path('plugins'), new PluginManifestCache($this->app->bootstrapPath('cache/plugins.php')));
         $this->app->instance(PluginRegistry::class, $plugins);
         $this->app->singleton(PluginMenu::class);
 

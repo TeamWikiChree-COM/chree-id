@@ -13,14 +13,24 @@ use Override;
  */
 class PluginRegistry extends DynamicRegistry {
     private readonly string $root;
+    private readonly ?PluginManifestCache $cache;
 
     /**
      * @param string $root plugins/ のパス
+     * @param PluginManifestCache|null $cache 探した結果の控え。テストで別の置き場を読むときは渡さない
      * @throws RuntimeException plugin.json が読めない、壊れている場合
      */
-    public function __construct(string $root) {
+    public function __construct(string $root, ?PluginManifestCache $cache = null) {
         $this->root = $root;
+        $this->cache = $cache;
         $this->load();
+    }
+
+    /**
+     * 控えを消す。plugin.json を書き換えたあとに呼ぶ。
+     */
+    public function forgetCache(): void {
+        $this->cache?->clear();
     }
 
     /**
@@ -67,10 +77,16 @@ class PluginRegistry extends DynamicRegistry {
      */
     #[Override]
     protected function discover(): iterable {
+        $cached = $this->cache?->read($this->root);
+        if ($cached !== null) return $cached;
+
         $files = glob($this->root . '/*/plugin.json') ?: [];
         sort($files);
 
-        return array_map(fn (string $file): PluginManifest => $this->read($file), $files);
+        $manifests = array_map(fn (string $file): PluginManifest => $this->read($file), $files);
+        $this->cache?->write($this->root, $manifests, $files);
+
+        return $manifests;
     }
 
     /**
