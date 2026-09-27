@@ -13,22 +13,20 @@ ChreeIDは2つの側面がある
 
 各サービスのアカウント/認証を一元化し、ChreeIDをOpenID Providerとし、サービス側はRelying Partyになる。<br/>
 既存サービスの利用体験は可能な限り維持する。
-特徴としては存在を認識しなくても内部的にはChreeIDを利用するという点である。いわゆるサービスアカウントに関してはFirebase Authenticationに近いだろう。
+特徴としては存在を認識しなくても内部的にはChreeIDを利用するという点である。いわゆるサービスアカウントに関してはFirebase Authenticationに近いだろう。(詳しくは [アカウントモデル](docs/ACCOUNTS.md))
 
-詳しくは [アカウントモデル](docs/ACCOUNTS.md)。
-
-## 技術構成
-
+## 技術スタック
 | 項目 | 内容 |
 | --- | --- |
 | バックエンド | PHP 8.5 / Laravel 13 |
 | フロントエンド | Inertia + React + TypeScript + MUI |
-| DB | PostgreSQL 18 |
-| 認証 | OIDC (OpenID Provider)、パスワード、パスキー、TOTP、マジックリンク、Google / GitHub ログイン |
+| データベース | PostgreSQL 18 |
+| 認証 | OIDC、パスワード、パスキー、TOTP、マジックリンク、ソーシャルログイン |
 
-## すぐ動かす
-
+## セットアップ
 ```bash
+git clone git@github.com:teamwikichree-com/chree-id.git
+cd chree-id
 composer install && npm install
 cp .env.example .env
 php artisan key:generate
@@ -37,18 +35,20 @@ php artisan migrate
 npm run dev
 ```
 
-[Todofile](https://github.com/Pitan76/Todofile) を入れていれば、`todo setup` と `todo front:dev` の2つで同じことができる。
+[Todofile](https://github.com/Pitan76/Todofile)を導入している場合は、クローン後、`todo setup` と `todo front:dev` で同様のセットアップが可能。
 
-データベースの作り方や、動かないときの対処は [セットアップ](docs/SETUP.md)。
+詳しくは [セットアップ](docs/SETUP.md)
 
 ## コードの場所
-機能ごとに `app/Modules/<モジュール>/` に分かれている。各モジュールの中は `Domain` / `Application` / `Infrastructure` / `Http`。
-画面は `resources/js/Pages/`、翻訳は `resources/lang/`。
-
-どこに何を書くかは [アーキテクチャ](docs/ARCHITECTURE.md)、書き方は [コーディング規約](docs/CODING.md)。
+- ルーティング: `routes/`
+- バックエンド: `app/`
+  - 機能ごとに `app/Modules/<モジュール名>/` に分かれている。各モジュールの中は `Domain`/`Application`/`Infrastructure`/`Http`
+  - テスト: `tests/`
+- フロントエンド: `resources/` 
+  - 言語ファイル: `resources/lang/` (バックエンドも利用する)
+- プラグイン: `plugins/<プラグイン名>/`
 
 ## ドキュメント
-
 | ドキュメント名 | リンク先 |
 | --- | --- |
 | コードドキュメント (PHPDoc) | [teamwikichree-com.github.io/chree-id](https://teamwikichree-com.github.io/chree-id/) |
