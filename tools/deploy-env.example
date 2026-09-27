@@ -1,7 +1,7 @@
 # ftps / ftp / sftp
 FTP_PROTOCOL=ftps
 
-FTP_HOST=m5.coreserver.jp
+FTP_HOST=example.com
 FTP_USER=your-account
 FTP_PASS=your-password
 
