@@ -83,7 +83,9 @@ class YahooJapanLoginTest extends TestCase {
     public function test_isUsableWhenConfigured(): void {
         $registry = app(ExternalIdpRegistry::class);
         $this->assertContains('yahoo-japan', $registry->usableNames());
-        $this->assertSame(['label' => 'Yahoo! JAPAN', 'icon' => 'yahoo', 'family' => 'brands'], $registry->displays('ja')['yahoo-japan']);
+        $display = $registry->displays('ja')['yahoo-japan'];
+        $this->assertSame('Yahoo! JAPAN ID', $display['label']);
+        $this->assertStringStartsWith('data:image/svg+xml;base64,', (string) $display['svg']);
 
         // シークレットはクライアントサイドのアプリには無いので、無くても使える
         config(['yahoo-japan.client_secret' => '']);

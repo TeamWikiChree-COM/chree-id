@@ -16,15 +16,20 @@ readonly class ExternalIdpDisplay {
     public string $icon;
     public string $family;
 
+    /** アイコンの形に使う SVG (data URI)。あれば Font Awesome より優先する */
+    public ?string $svg;
+
     /**
      * @param array<string, string> $label ロケール => 名前 (例: ['ja' => 'Google', 'en' => 'Google'])。plugin.json の title と同じ形
-     * @param string $icon Font Awesome のアイコン名
+     * @param string $icon Font Awesome のアイコン名。svg があるときは使えない画面向けの代わり
      * @param string $family アイコンの字形の系統。ブランドのマークなら brands
+     * @param string|null $svg アイコンの形に使う SVG (data URI)
      */
-    public function __construct(array $label, string $icon, string $family = self::FAMILY_SOLID) {
+    public function __construct(array $label, string $icon, string $family = self::FAMILY_SOLID, ?string $svg = null) {
         $this->label = $label;
         $this->icon = $icon;
         $this->family = $family;
+        $this->svg = $svg;
     }
 
     /**
@@ -40,14 +45,27 @@ readonly class ExternalIdpDisplay {
     }
 
     /**
+     * SVG のファイルをアイコンの形にする。画面では形だけを使い、周りの文字色で塗る。
+     *
+     * @param string $path SVG のファイル
+     * @return self
+     */
+    public function withSvgFile(string $path): self {
+        $svg = (string) file_get_contents($path);
+
+        return new self($this->label, $this->icon, $this->family, 'data:image/svg+xml;base64,' . base64_encode($svg));
+    }
+
+    /**
      * @param string $locale
-     * @return array{label: string, icon: string, family: string}
+     * @return array{label: string, icon: string, family: string, svg: string|null}
      */
     public function toArray(string $locale): array {
         return [
             'label' => $this->label[$locale] ?? array_values($this->label)[0] ?? '',
             'icon' => $this->icon,
             'family' => $this->family,
+            'svg' => $this->svg,
         ];
     }
 }

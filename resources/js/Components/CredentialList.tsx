@@ -7,6 +7,7 @@ import ListRow from './ListRow';
 import type { RowActionItem } from './ActionDialog';
 import { useActions } from '../lib/actions';
 import { formatDateTime, formatRelative } from '../lib/datetime';
+import IdpIcon from './IdpIcon';
 import { credentialIcon, credentialIconFamily, credentialLabel } from '../lib/credentials';
 import { t } from '../lib/i18n';
 import type { CredentialSummary } from '../types';
@@ -80,11 +81,15 @@ export default function CredentialList({ credentials, onRemove, onRename }: Cred
                     <ListRow key={credential.id} onClick={select(credential)}>
                         <Box>
                             <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
-                                <Icon
-                                    name={credentialIcon(credential)}
-                                    family={credentialIconFamily(credential)}
-                                    sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
-                                />
+                                {credential.provider !== null ? (
+                                    <IdpIcon provider={credential.provider} sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }} />
+                                ) : (
+                                    <Icon
+                                        name={credentialIcon(credential)}
+                                        family={credentialIconFamily(credential)}
+                                        sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
+                                    />
+                                )}
                                 {credentialLabel(credential)}
                             </Typography>
                             <Typography sx={{ fontSize: '0.8125rem', color: 'text.disabled' }}>

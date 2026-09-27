@@ -66,7 +66,7 @@ class GitHubLoginTest extends TestCase {
         Config::set('github.client_id', null);
 
         $this->get('/login')->assertInertia(fn (Assert $page) => $page
-            ->where('idpDisplays.github', ['label' => 'GitHub', 'icon' => 'github', 'family' => 'brands']));
+            ->where('idpDisplays.github', ['label' => 'GitHub', 'icon' => 'github', 'family' => 'brands', 'svg' => null]));
     }
 
     // ログインに要る分だけ求める。repo のような強い権限は取らない

@@ -8,6 +8,8 @@ export interface IdpDisplay {
     /** Font Awesome のアイコン名 */
     icon: string;
     family: 'brands' | 'solid';
+    /** アイコンの形に使う SVG (data URI)。あれば icon より優先する */
+    svg: string | null;
 }
 
 let displays: Record<string, IdpDisplay> = {};
@@ -49,4 +51,12 @@ export function idpIcon(provider: string): string {
  */
 export function idpIconFamily(provider: string): 'brands' | 'solid' {
     return displays[provider]?.family ?? 'solid';
+}
+
+/**
+ * @param provider 'google' などの識別子
+ * @returns アイコンの形に使う SVG (data URI)。無ければ null
+ */
+export function idpSvg(provider: string): string | null {
+    return displays[provider]?.svg ?? null;
 }

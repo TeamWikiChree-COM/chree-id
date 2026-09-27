@@ -12,7 +12,8 @@ import SectionTitle from '../../Components/SectionTitle';
 import SettingsTabs from '../../Components/SettingsTabs';
 import { useConfirm } from '../../lib/confirm';
 import { formatDateTime } from '../../lib/datetime';
-import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
+import IdpIcon from '../../Components/IdpIcon';
+import { idpLabel } from '../../lib/idps';
 import { t } from '../../lib/i18n';
 import type { ExternalConnection } from '../../types';
 import RowDivider from '../../Components/RowDivider';
@@ -66,9 +67,8 @@ export default function Connections({ connections, providers }: ConnectionsProps
                         >
                             <Box>
                                 <Typography sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.9375rem' }}>
-                                    <Icon
-                                        name={idpIcon(connection.provider)}
-                                        family={idpIconFamily(connection.provider)}
+                                    <IdpIcon
+                                        provider={connection.provider}
                                         sx={{ width: 18, textAlign: 'center', color: 'text.disabled' }}
                                     />
                                     {idpLabel(connection.provider)}
@@ -116,7 +116,7 @@ export default function Connections({ connections, providers }: ConnectionsProps
                                     key={provider}
                                     variant="outlined"
                                     color="inherit"
-                                    startIcon={<Icon name={idpIcon(provider)} family={idpIconFamily(provider)} />}
+                                    startIcon={<IdpIcon provider={provider} />}
                                     onClick={() => router.post(`/settings/connections/${provider}`)}
                                 >
                                     {t('settings.connections.available.connect', { provider: idpLabel(provider) })}

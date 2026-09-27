@@ -15,7 +15,8 @@ import type { PickableCredential } from "../../Components/CredentialPicker";
 import Icon from "../../Components/Icon";
 import PasswordField from "../../Components/PasswordField";
 import { t } from "../../lib/i18n";
-import { idpIcon, idpIconFamily, idpLabel } from '../../lib/idps';
+import IdpIcon from '../../Components/IdpIcon';
+import { idpLabel } from '../../lib/idps';
 import PasskeyRegistration from "./PasskeyRegistration";
 
 interface ClaimShowProps {
@@ -215,7 +216,7 @@ export default function ClaimShow({
                             href={`/auth/${name}/redirect?claim_token=${encodeURIComponent(token)}`}
                             variant="outlined"
                             color="inherit"
-                            startIcon={<Icon name={idpIcon(name)} family={idpIconFamily(name)} />}
+                            startIcon={<IdpIcon provider={name} />}
                         >
                             {t('claim.show.external.continue', { name: idpLabel(name) })}
                         </Button>
