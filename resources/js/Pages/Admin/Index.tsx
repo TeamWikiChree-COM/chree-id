@@ -1,6 +1,7 @@
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import AppLayout from '../../Components/AppLayout';
+import PluginList, { type AvailablePlugin } from '../../Components/Dashboard/PluginList';
 import NavRow from '../../Components/NavRow';
 import SectionTitle from '../../Components/SectionTitle';
 import StatCard from '../../Components/StatCard';
@@ -15,9 +16,11 @@ interface AdminIndexProps {
     };
     /** まだ適用されていないマイグレーションの数 */
     pendingMigrations: number;
+    /** プラグインが足した運営向けの画面 */
+    plugins: AvailablePlugin[];
 }
 
-export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps) {
+export default function AdminIndex({ stats, pendingMigrations, plugins }: AdminIndexProps) {
     return (
         <AppLayout
             title={t('admin.index.title')}
@@ -81,6 +84,13 @@ export default function AdminIndex({ stats, pendingMigrations }: AdminIndexProps
                     />
                 </Stack>
             </Paper>
+
+            {plugins.length > 0 && (
+                <>
+                    <SectionTitle note={t('common.count', { count: plugins.length })}>{t('admin.index.plugins')}</SectionTitle>
+                    <PluginList plugins={plugins} />
+                </>
+            )}
         </AppLayout>
     );
 }

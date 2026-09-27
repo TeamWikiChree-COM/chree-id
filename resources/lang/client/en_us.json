@@ -165,6 +165,7 @@
     "admin.crumb": "Admin",
     "admin.index.lead": "Operator actions. Your own account settings are under \"Settings\"",
     "admin.index.manage": "Manage",
+    "admin.index.plugins": "Plugins",
     "admin.index.nav.accounts.description": "View registered accounts and their status",
     "admin.index.nav.accounts.title": "Accounts",
     "admin.index.nav.audit.description": "What happened to whom",

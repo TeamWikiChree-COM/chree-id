@@ -2,6 +2,9 @@
 namespace Plugins\Saml;
 
 use App\Modules\Plugin\Application\PluginHooks;
+use App\Modules\Plugin\Domain\PluginMenu;
+use App\Modules\Plugin\Domain\PluginMenuItem;
+use App\Modules\Plugin\Infrastructure\PluginRegistry;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Plugins\Saml\Idp\AddServiceProviderCommand;
@@ -13,15 +16,22 @@ use Plugins\Saml\Sp\SamlIdp;
 /**
  * SAML プラグインの入口。
  *
- * Sp/ は外部の SAML IdP で ChreeID にログインする側、Idp/ は ChreeID が IdP として SAML のサービスへログインさせる側。
+ * Sp/ は外部の SAML IdP で ChreeID にログインする側、Idp/ は ChreeID が IdP として SAML のサービスへログインさせる側、
+ * Admin/ は運営の管理画面。
  */
 class SamlServiceProvider extends ServiceProvider {
     /**
      * @param PluginHooks $hooks
+     * @param PluginMenu $menu
+     * @param PluginRegistry $plugins
      */
-    public function boot(PluginHooks $hooks): void {
+    public function boot(PluginHooks $hooks, PluginMenu $menu, PluginRegistry $plugins): void {
         $hooks->addExternalIdp($this->app->make(SamlIdp::class));
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        // 入口は /plugins/saml ではなく管理画面なので、plugin.json の名前と説明で自分で足す
+        $manifest = $plugins->find('saml');
+        if ($manifest !== null) $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/saml/admin', $manifest->title, $manifest->description));
 
         if ($this->app->runningInConsole()) $this->commands([GenerateIdpKeyCommand::class, AddServiceProviderCommand::class]);
 

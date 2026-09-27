@@ -165,6 +165,7 @@
     "admin.crumb": "システム管理",
     "admin.index.lead": "運営としての操作です。自分のアカウントの設定は「設定」にあります",
     "admin.index.manage": "管理する",
+    "admin.index.plugins": "プラグイン",
     "admin.index.nav.accounts.description": "登録済みアカウントの一覧・状態の確認",
     "admin.index.nav.accounts.title": "アカウント",
     "admin.index.nav.audit.description": "誰に何が起きたかの記録",
