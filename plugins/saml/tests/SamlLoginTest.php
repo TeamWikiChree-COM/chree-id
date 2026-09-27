@@ -90,11 +90,16 @@ class SamlLoginTest extends TestCase {
      */
     private function land(string $location): TestResponse {
         $query = (string) parse_url($location, PHP_URL_QUERY);
+        $https = parse_url(url('/'), PHP_URL_SCHEME) === 'https';
+        // APP_URL にポートが付く環境 (CI は localhost:8000) でも同じ URL になるように、ポートも APP_URL から取る
+        $port = parse_url(url('/'), PHP_URL_PORT) ?? ($https ? 443 : 80);
+
         $_SERVER['HTTP_HOST'] = (string) parse_url(url('/'), PHP_URL_HOST);
         $_SERVER['REQUEST_URI'] = '/plugins/saml/acs?' . $query;
         $_SERVER['QUERY_STRING'] = $query;
-        $_SERVER['SERVER_PORT'] = '80';
-        unset($_SERVER['HTTPS']);
+        $_SERVER['SERVER_PORT'] = (string) $port;
+        if ($https) $_SERVER['HTTPS'] = 'on';
+        else unset($_SERVER['HTTPS']);
 
         return $this->get($location);
     }
