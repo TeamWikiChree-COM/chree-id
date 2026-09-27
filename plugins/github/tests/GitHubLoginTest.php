@@ -61,7 +61,7 @@ class GitHubLoginTest extends TestCase {
         $this->assertNotContains('github', app(ExternalIdpRegistry::class)->usableNames());
     }
 
-    // 設定を解除しても、連携済みの一覧や履歴には名前を出す必要がある
+    // 設定を削除しても、連携済みの一覧や履歴には名前を出す必要がある
     public function test_sharesDisplayEvenWithoutCredentials(): void {
         Config::set('github.client_id', null);
 
