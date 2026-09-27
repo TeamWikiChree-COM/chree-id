@@ -9,6 +9,7 @@
         "php": "^8.5",
         "inertiajs/inertia-laravel": "^3.3",
         "laravel/framework": "^13.17",
+        "onelogin/php-saml": "^4.3",
         "web-auth/webauthn-lib": "^5.3"
     },
     "require-dev": {
