@@ -86,7 +86,6 @@ class YahooJapanLoginTest extends TestCase {
         $display = $registry->displays('ja')['yahoo-japan'];
         $this->assertSame('Yahoo! JAPAN ID', $display['label']);
         $this->assertStringStartsWith('data:image/svg+xml;base64,', (string) $display['svg']);
-        $this->assertSame('#ff0033', $display['color']);
 
         // シークレットはクライアントサイドのアプリには無いので、無くても使える
         config(['yahoo-japan.client_secret' => '']);

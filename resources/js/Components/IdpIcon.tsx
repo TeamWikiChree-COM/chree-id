@@ -25,7 +25,7 @@ export default function IdpIcon({ provider, sx }: IdpIconProps) {
             component="span"
             aria-hidden
             sx={[
-                { display: 'inline-block', width: '1em', height: '1em', verticalAlign: '-0.125em', backgroundColor: idpColor(provider) ?? 'currentColor', mask, WebkitMask: mask },
+                { display: 'inline-block', width: '1.6em', height: '1em', verticalAlign: '-0.125em', backgroundColor: idpColor(provider) ?? 'currentColor', mask, WebkitMask: mask },
                 ...(Array.isArray(sx) ? sx : [sx]),
             ]}
         />
