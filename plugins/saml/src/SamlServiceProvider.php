@@ -1,7 +1,7 @@
 <?php
 namespace Plugins\Saml;
 
-use App\Modules\Plugin\Application\PluginHooks;
+use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
 use App\Modules\Plugin\Domain\PluginMenu;
 use App\Modules\Plugin\Domain\PluginMenuItem;
 use App\Modules\Plugin\Infrastructure\PluginRegistry;
@@ -21,12 +21,11 @@ use Plugins\Saml\Sp\SamlIdp;
  */
 class SamlServiceProvider extends ServiceProvider {
     /**
-     * @param PluginHooks $hooks
      * @param PluginMenu $menu
      * @param PluginRegistry $plugins
      */
-    public function boot(PluginHooks $hooks, PluginMenu $menu, PluginRegistry $plugins): void {
-        $hooks->addExternalIdp($this->app->make(SamlIdp::class));
+    public function boot(PluginMenu $menu, PluginRegistry $plugins): void {
+        ExternalIdpRegistry::register($this->app->make(SamlIdp::class));
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // 入口は /plugins/saml ではなく管理画面なので、plugin.json の名前と説明で自分で足す

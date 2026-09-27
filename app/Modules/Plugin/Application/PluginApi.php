@@ -101,7 +101,7 @@ class PluginApi {
     }
 
     /**
-     * PluginHooks::addExternalIdp() で足した IdP から戻ってきた応答を受け、ログインか連携を済ませる。
+     * Facades\ExternalIdpRegistry::register() で足した IdP から戻ってきた応答を受け、ログインか連携を済ませる。
      *
      * state の照合、アカウントの紐付け、停止の確認、セッションは本体が受け持つ。
      * プラグインは応答の検証だけを $verify に書く。

@@ -1,7 +1,7 @@
 <?php
 namespace Plugins\Google;
 
-use App\Modules\Plugin\Application\PluginHooks;
+use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -10,10 +10,7 @@ use Illuminate\Support\ServiceProvider;
  * 認可コードで戻る IdP なので、戻り先は本体の /auth/google/callback がそのまま受ける。ルートは持たない。
  */
 class GoogleServiceProvider extends ServiceProvider {
-    /**
-     * @param PluginHooks $hooks
-     */
-    public function boot(PluginHooks $hooks): void {
-        $hooks->addExternalIdp($this->app->make(GoogleIdp::class));
+    public function boot(): void {
+        ExternalIdpRegistry::register($this->app->make(GoogleIdp::class));
     }
 }

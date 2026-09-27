@@ -124,12 +124,12 @@ public function boot(): void {
 | 使うもの | 扱い |
 | --- | --- |
 | `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
-| `App\Modules\Plugin\Application\PluginHooks` | 同上。起動時に本体の一覧へ自分を足すためのもの |
+| `App\Modules\*\Facades\*Registry` (例: `ExternalIdpRegistry`) | 同上。起動時に本体の一覧へ自分を足すためのもの |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
 プラグインが同じものを何度も必要とするようになったら、`PluginApi` に足す。
-本体の処理へ差し込む口が足りないときは、`PluginHooks` に足す。
+本体の一覧へ足す口が足りないときは、その一覧の Facade を作る。
 
 主な用途は次のとおり。
 
@@ -137,7 +137,7 @@ public function boot(): void {
 | --- | --- |
 | ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
 | ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
-| ログイン画面に外部 IdP を足す | `PluginHooks` の `addExternalIdp()` と `PluginApi` の `finishExternalLogin()` |
+| ログイン画面に外部 IdP を足す | `ExternalIdpRegistry::register()` (Facade) と `PluginApi` の `finishExternalLogin()` |
 | OIDC 以外の方式でサービスにログインさせる | `PluginApi` の `authorizeService()` と `takeServiceSignIn()` |
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
@@ -165,8 +165,10 @@ $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/wiki-hub/setting
 SAML のように、本体に無い方式でログインを受けたいときに使う。例は `plugins/saml/`。
 
 ```php
-public function boot(PluginHooks $hooks): void {
-    $hooks->addExternalIdp($this->app->make(MyIdp::class));
+use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
+
+public function boot(): void {
+    ExternalIdpRegistry::register($this->app->make(MyIdp::class));
 }
 ```
 

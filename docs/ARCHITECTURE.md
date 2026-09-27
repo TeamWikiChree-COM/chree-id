@@ -111,15 +111,17 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 | 差し替え口 | インターフェース | レジストリ | 登録する場所 |
 | --- | --- | --- | --- |
 | 認証方式 (パスワード、TOTP、パスキーなど) | [CredentialVerifier](../app/Modules/Credential/Domain/Verifier/CredentialVerifier.php) | [CredentialRegistry](../app/Modules/Credential/Domain/CredentialRegistry.php) | [CredentialServiceProvider](../app/Providers/CredentialServiceProvider.php) |
-| 外部IdP (Google、GitHub など) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | プラグインの boot() で `PluginHooks::addExternalIdp()` (`plugins/google` など) |
+| 外部IdP (Google、GitHub など) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | プラグインの boot() で `ExternalIdpRegistry::register()` (Facade。`plugins/google` など) |
 | OIDC の scope | [ClaimsResolver](../app/Modules/Provider/Domain/Claims/ClaimsResolver.php) | [ScopeRegistry](../app/Modules/Provider/Domain/Claims/ScopeRegistry.php) | [OidcServiceProvider](../app/Providers/OidcServiceProvider.php) |
 | プラグイン | `plugins/<名前>/plugin.json` | [PluginRegistry](../app/Modules/Plugin/Infrastructure/PluginRegistry.php) | 登録しない。`plugins/` に置けば見つけて読み込む ([プラグイン](PLUGIN.md)) |
 
 たとえば外部IdP を足すときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
 
 ```php
-public function boot(PluginHooks $hooks): void {
-    $hooks->addExternalIdp($this->app->make(DiscordIdp::class));
+use App\Modules\ExternalLogin\Facades\ExternalIdpRegistry;
+
+public function boot(): void {
+    ExternalIdpRegistry::register($this->app->make(DiscordIdp::class));
 }
 ```
 
