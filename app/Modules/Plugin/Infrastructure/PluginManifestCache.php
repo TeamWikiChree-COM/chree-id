@@ -33,14 +33,14 @@ class PluginManifestCache {
         $cached = require $this->file;
         if (!is_array($cached) || ($cached['root'] ?? null) !== $root || !$this->isFresh($cached)) return null;
 
-        return array_map(static fn (array $m): PluginManifest => new PluginManifest(
+        return array_values(array_map(static fn (array $m): PluginManifest => new PluginManifest(
             $m['name'],
             $m['version'],
             $m['provider'],
             $m['enabled'],
             $m['title'],
             $m['description'],
-        ), $cached['manifests']);
+        ), $cached['manifests']));
     }
 
     /**

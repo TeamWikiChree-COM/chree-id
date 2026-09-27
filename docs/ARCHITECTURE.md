@@ -111,23 +111,19 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 | 差し替え口 | インターフェース | レジストリ | 登録する場所 |
 | --- | --- | --- | --- |
 | 認証方式 (パスワード、TOTP、パスキーなど) | [CredentialVerifier](../app/Modules/Credential/Domain/Verifier/CredentialVerifier.php) | [CredentialRegistry](../app/Modules/Credential/Domain/CredentialRegistry.php) | [CredentialServiceProvider](../app/Providers/CredentialServiceProvider.php) |
-| 外部IdP (Google、GitHub) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | [ExternalLoginServiceProvider](../app/Providers/ExternalLoginServiceProvider.php) |
+| 外部IdP (Google、GitHub など) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | プラグインの boot() で `PluginHooks::addExternalIdp()` (`plugins/google` など) |
 | OIDC の scope | [ClaimsResolver](../app/Modules/Provider/Domain/Claims/ClaimsResolver.php) | [ScopeRegistry](../app/Modules/Provider/Domain/Claims/ScopeRegistry.php) | [OidcServiceProvider](../app/Providers/OidcServiceProvider.php) |
 | プラグイン | `plugins/<名前>/plugin.json` | [PluginRegistry](../app/Modules/Plugin/Infrastructure/PluginRegistry.php) | 登録しない。`plugins/` に置けば見つけて読み込む ([プラグイン](PLUGIN.md)) |
 
-たとえば外部IdP を足すときは、`ExternalIdp` を実装したクラスを書き、`ExternalLoginServiceProvider` に1行足す。
+たとえば外部IdP を足すときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
 
 ```php
-$this->app->singleton(ExternalIdpRegistry::class, function (): ExternalIdpRegistry {
-    $registry = new ExternalIdpRegistry();
-
-    $registry->register($this->app->make(GoogleIdp::class));
-    $registry->register($this->app->make(GitHubIdp::class));
-    $registry->register($this->app->make(DiscordIdp::class)); // 足すのはこの1行
-
-    return $registry;
-});
+public function boot(PluginHooks $hooks): void {
+    $hooks->addExternalIdp($this->app->make(DiscordIdp::class));
+}
 ```
+
+詳しくは [プラグイン](PLUGIN.md) の「外部 IdP を足す」。
 
 次の2つは差し替え口にしない。
 
