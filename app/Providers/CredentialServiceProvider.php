@@ -1,8 +1,9 @@
 <?php
 namespace App\Providers;
 
-use App\Modules\Credential\Domain\CredentialRegistry;
+use App\Modules\Credential\Domain\CredentialRegistry as Registry;
 use App\Modules\Credential\Domain\CredentialRepository;
+use App\Modules\Credential\Facades\CredentialRegistry;
 use App\Modules\Credential\Infrastructure\EloquentCredentialRepository;
 use App\Modules\Credential\Infrastructure\Verifiers\MagicLinkVerifier;
 use App\Modules\Credential\Infrastructure\Verifiers\PasskeyVerifier;
@@ -16,29 +17,21 @@ use Illuminate\Support\ServiceProvider;
  */
 class CredentialServiceProvider extends ServiceProvider {
     /**
-     * 認証タイプの登録
+     * 一覧は空で用意するだけ。中身は boot() で、プラグインと同じ Facade から入れる。
      */
     public function register(): void {
         $this->app->bind(CredentialRepository::class, EloquentCredentialRepository::class);
-
-        $this->app->singleton(CredentialRegistry::class, function (): CredentialRegistry {
-            $registry = new CredentialRegistry();
-
-            // 認証方式の一覧 (増やすときはここに1行)
-            $registry->register($this->app->make(PasswordVerifier::class));
-            $registry->register($this->app->make(MagicLinkVerifier::class));
-            $registry->register($this->app->make(TotpVerifier::class));
-            $registry->register($this->app->make(RecoveryCodeVerifier::class));
-            $registry->register($this->app->make(PasskeyVerifier::class));
-
-            return $registry;
-        });
+        $this->app->singleton(Registry::class);
     }
 
     /**
-     * Bootstrap services.
+     * 認証方式の一覧 (増やすときはここに1行)
      */
     public function boot(): void {
-        //
+        CredentialRegistry::register($this->app->make(PasswordVerifier::class));
+        CredentialRegistry::register($this->app->make(MagicLinkVerifier::class));
+        CredentialRegistry::register($this->app->make(TotpVerifier::class));
+        CredentialRegistry::register($this->app->make(RecoveryCodeVerifier::class));
+        CredentialRegistry::register($this->app->make(PasskeyVerifier::class));
     }
 }

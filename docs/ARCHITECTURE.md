@@ -116,8 +116,8 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 | プラグイン | `plugins/<名前>/plugin.json` | [PluginRegistry](../app/Modules/Plugin/Infrastructure/PluginRegistry.php) | 登録しない。`plugins/` に置けば見つけて読み込む ([プラグイン](PLUGIN.md)) |
 
 レジストリにはそれぞれ、同じ名前の Facade をモジュールの `Facades/` に置いている (`CredentialRegistry`、`ExternalIdpRegistry`、`ScopeRegistry`)。
-プラグインや本体の外から足すときは Facade を使い、`〜Registry::register(...)` と書く。中身はコンテナにある1つを指すので、本物の static と違ってテストごとに作り直される。
-本体の ServiceProvider は、一覧を作る処理の中で登録するので Facade を使わない (作っている最中に Facade を呼ぶと循環する)。
+登録は本体からもプラグインからも Facade で、ServiceProvider の boot() に `〜Registry::register(...)` と書く。中身はコンテナにある1つを指すので、本物の static と違ってテストごとに作り直される。
+一覧そのものは register() で空の singleton として用意するだけにする。boot() はすべての register() が済んでから呼ばれるので、一覧はそのときには使える。
 
 たとえば外部IdP を足すときは、プラグインを作り、`ExternalIdp` を実装したクラスを書いて、プラグインの ServiceProvider で登録する。
 
