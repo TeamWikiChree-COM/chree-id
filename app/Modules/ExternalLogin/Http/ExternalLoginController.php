@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * 外部 IdP へのログイン (ChreeID が RP 側)
@@ -68,16 +69,17 @@ class ExternalLoginController extends Controller {
      * **画面から戻ってきたIDは信用しない。** セッションに置いた候補に無ければ通さない。
      *
      * @param Request $request
-     * @return RedirectResponse
+     * @return SymfonyResponse
      */
-    public function choose(Request $request): RedirectResponse {
+    public function choose(Request $request): SymfonyResponse {
         $candidates = $this->flow->candidates();
         $chosen = $request->string('account_id')->toString();
         if (!\in_array($chosen, $candidates, true)) return $this->landing->fail(__('auth.external_login.link_failed'));
 
         $this->flow->forgetCandidates();
 
-        return $this->landing->completeLogin($chosen, LoginMethod::OAUTH->value, $this->flow->pullClaimToken());
+        // 選択画面は Inertia の POST で来る。戻り先が RP へ送り出す場所だと XHR ではたどれないので、ブラウザごと移す
+        return Inertia::location($this->landing->completeLogin($chosen, LoginMethod::OAUTH->value, $this->flow->pullClaimToken()));
     }
 
     /**

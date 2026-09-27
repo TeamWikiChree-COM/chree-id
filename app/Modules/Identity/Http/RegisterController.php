@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Support\Http\LoginRedirect;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * ユーザーアカウントの登録。
@@ -104,7 +106,7 @@ class RegisterController extends Controller {
      * @return RedirectResponse|Response
      * @throws ValidationException
      */
-    public function complete(Request $request): RedirectResponse|Response {
+    public function complete(Request $request): SymfonyResponse|Response {
         $request->validate([
             'token' => ['required', 'string'],
             'password' => ['required', 'string', 'min:' . SetPassword::MIN_LENGTH],
@@ -127,6 +129,7 @@ class RegisterController extends Controller {
 
         $this->session->login($account->id, LoginMethod::REGISTRATION->value);
 
-        return redirect('/');
+        // 認可の途中で登録した人を、サービスへ戻す
+        return LoginRedirect::afterLogin();
     }
 }

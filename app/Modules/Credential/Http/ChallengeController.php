@@ -18,6 +18,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * 二要素目の入力。
@@ -61,7 +62,7 @@ class ChallengeController extends Controller {
      * @return RedirectResponse
      * @throws ValidationException コードが違う場合
      */
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request): SymfonyResponse {
         $accountId = $this->pending->accountId();
         if ($accountId === null) return redirect('/login');
 
@@ -85,12 +86,14 @@ class ChallengeController extends Controller {
         $this->pending->forget();
         $this->session->login($accountId, $type->value);
 
-        $response = redirect(LoginRedirect::intended());
+        $response = LoginRedirect::afterLogin();
 
         // 2段階目を通した直後だけ信頼できる。ここ以外で配ってはいけない
         if (!$request->boolean('trustDevice')) return $response;
 
-        return $response->withCookie($this->trustCookie($request, $accountId));
+        $response->headers->setCookie($this->trustCookie($request, $accountId));
+
+        return $response;
     }
 
     /**

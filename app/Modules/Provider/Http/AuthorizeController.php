@@ -11,6 +11,7 @@ use App\Modules\Provider\Application\SignInStep;
 use App\Modules\Provider\Application\ValidateAuthorizeRequest;
 use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Domain\SignInStepKind;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -95,7 +96,7 @@ class AuthorizeController extends Controller {
     private function toLogin(): RedirectResponse {
         $this->loginHint->remember();
 
-        return redirect()->guest('/login');
+        return LoginRedirect::guest();
     }
 
     /**

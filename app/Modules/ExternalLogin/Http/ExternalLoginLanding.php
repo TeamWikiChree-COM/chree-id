@@ -15,6 +15,7 @@ use App\Modules\Linking\Application\ClaimTickets;
 use Closure;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\RedirectResponse;
+use App\Support\Http\LoginRedirect;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
@@ -183,7 +184,8 @@ class ExternalLoginLanding {
 
         $this->session->login($accountId, $method);
 
-        return redirect('/');
+        // 認可の途中でログインしに来た人を、サービスへ戻す
+        return redirect(LoginRedirect::intended());
     }
 
     /**

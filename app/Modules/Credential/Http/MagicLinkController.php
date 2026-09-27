@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * メールだけでログインする経路。
@@ -84,7 +85,7 @@ class MagicLinkController extends Controller {
      * @param string $token メールに載せた平文トークン
      * @return Response|RedirectResponse
      */
-    public function consume(Request $request, string $token): Response|RedirectResponse {
+    public function consume(Request $request, string $token): Response|SymfonyResponse {
         $factors = new VerifiedFactors();
         $accountId = $this->consume->execute($token, $factors);
 
@@ -102,6 +103,6 @@ class MagicLinkController extends Controller {
 
         $this->session->login($accountId, LoginMethod::MAGIC_LINK->value);
 
-        return redirect(LoginRedirect::intended());
+        return LoginRedirect::afterLogin();
     }
 }

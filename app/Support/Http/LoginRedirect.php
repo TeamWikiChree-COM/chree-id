@@ -2,6 +2,8 @@
 namespace App\Support\Http;
 
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * ログインを挟んだときの戻り先。
@@ -37,6 +39,23 @@ final class LoginRedirect {
         }
 
         return redirect('/login');
+    }
+
+    /**
+     * ログインが済んだあとの応答。覚えている戻り先へ、ブラウザごと移す。
+     *
+     * ログインのフォームは Inertia の XHR で送られる。302 で返すと XHR が戻り先をたどり、
+     * その先が /oauth/authorize のように別オリジン (RP) へ送り出す場所だと、CORS でたどれずに止まる。
+     * 戻り先があるときは Inertia::location で返し、ブラウザ自身に移らせる。
+     *
+     * @param string $fallback 覚えていないときの行き先
+     * @return SymfonyResponse
+     */
+    public static function afterLogin(string $fallback = '/'): SymfonyResponse {
+        $target = self::intended($fallback);
+
+        // 覚えていないときは画面の中の移動なので、今までどおり Inertia に任せる
+        return $target === $fallback ? redirect($target) : Inertia::location($target);
     }
 
     /**

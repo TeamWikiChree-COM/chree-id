@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * パスワードによるログイン
@@ -50,19 +51,26 @@ class LoginController extends Controller {
     }
 
     /**
-     * @return Response
+     * ログイン済みの人には画面を出さず、先へ進める。
+     *
+     * セッションが持つアカウントは1つだけで、ここから別のアカウントを足す使い方は無い。
+     * 出すと、もう一度ログインが要るように見えてしまう。
+     *
+     * @return Response|SymfonyResponse
      */
-    public function show(): Response {
+    public function show(): Response|SymfonyResponse {
+        if ($this->session->isLoggedIn()) return LoginRedirect::afterLogin();
+
         return Inertia::render('Auth/Login', ['email' => $this->loginHint->pull()]);
     }
 
     /**
      * @param Request $request
      * @param TurnstileGuard $turnstile
-     * @return RedirectResponse
+     * @return SymfonyResponse
      * @throws ValidationException 認証できなかった場合
      */
-    public function store(Request $request, TurnstileGuard $turnstile): RedirectResponse {
+    public function store(Request $request, TurnstileGuard $turnstile): SymfonyResponse {
         $turnstile->check($request);
 
         $request->validate([
@@ -96,7 +104,7 @@ class LoginController extends Controller {
 
         $this->session->login($account->id, LoginMethod::PASSWORD->value);
 
-        return redirect(LoginRedirect::intended());
+        return LoginRedirect::afterLogin();
     }
 
     /**
