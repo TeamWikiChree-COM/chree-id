@@ -49,18 +49,18 @@ npm run dev
 
 ## ドキュメント
 
-| 読みたいこと | 場所 |
+| ドキュメント名 | リンク先 |
 | --- | --- |
-| 開発環境の作り方 | [docs/SETUP.md](docs/SETUP.md) |
-| 設計の方針 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| 書き方の決まり | [docs/CODING.md](docs/CODING.md) |
-| アカウントの仕組み | [docs/ACCOUNTS.md](docs/ACCOUNTS.md) |
-| 用語リスト | [docs/term/README.md](docs/term/README.md) |
-| 知らずに触ると事故になる決定 | [docs/DECISIONS.md](docs/DECISIONS.md) |
-| データベースの構造 | [docs/DATABASE.md](docs/DATABASE.md) |
-| 翻訳の仕組み | [docs/LANG.md](docs/LANG.md) |
 | コードドキュメント (PHPDoc) | [teamwikichree-com.github.io/chree-id](https://teamwikichree-com.github.io/chree-id/) |
 | API仕様 (OpenAPI) | [id.wikichree.com/api-docs/v1](https://id.wikichree.com/api-docs/v1) |
+| 開発環境構築 | [docs/SETUP.md](docs/SETUP.md) |
+| アーキテクチャ設計 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| コーディング規約 | [docs/CODING.md](docs/CODING.md) |
+| アカウントモデル | [docs/ACCOUNTS.md](docs/ACCOUNTS.md) |
+| 用語リスト | [docs/term/README.md](docs/term/README.md) |
+| 決定事項 | [docs/DECISIONS.md](docs/DECISIONS.md) |
+| データベース | [docs/DATABASE.md](docs/DATABASE.md) |
+| 翻訳 | [docs/LANG.md](docs/LANG.md) |
 | サービス接続 | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | デプロイ | [docs/DEPLOY.md](docs/DEPLOY.md) |
 | CI (GitHub Actions) | [docs/CI.md](docs/CI.md) |

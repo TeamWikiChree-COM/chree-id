@@ -21,7 +21,7 @@
 
 自動生成で公開しているドキュメントについて
 
-| 名前 | 場所 | 備考 |
+| ドキュメント名 | リンク先 | 備考 |
 | --- | --- | --- |
 | コードドキュメント (PHPDoc) | [GitHub Pages](https://teamwikichree-com.github.io/chree-id/) | 作られる流れは [CI](CI.md) |
 | API仕様 (OpenAPI) | [id.wikichree.com/api-docs/v1](https://id.wikichree.com/api-docs/v1) | 詳しくは [API](API.md) |
