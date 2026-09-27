@@ -6,11 +6,16 @@ use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\LinkedServiceAccounts;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
 use App\Modules\Admin\Domain\AdminAccess;
+use App\Modules\Client\Infrastructure\OAuthClientModel;
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\ExternalLogin\Http\ExternalLoginLanding;
+use App\Modules\Provider\Application\ResolveSignInGrant;
+use App\Modules\Provider\Application\SignedInService;
+use App\Modules\Provider\Infrastructure\PendingSignIns;
 use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 /**
  * プラグインに向けた、本体の窓口。
@@ -26,12 +31,23 @@ class PluginApi {
     private readonly AuthIdentityRepository $accounts;
     private readonly AdminAccess $admin;
     private readonly ExternalLoginLanding $landing;
+    private readonly PendingSignIns $signIns;
+    private readonly ResolveSignInGrant $grants;
 
-    public function __construct(ChreeSession $session, AuthIdentityRepository $accounts, AdminAccess $admin, ExternalLoginLanding $landing) {
+    public function __construct(
+        ChreeSession $session,
+        AuthIdentityRepository $accounts,
+        AdminAccess $admin,
+        ExternalLoginLanding $landing,
+        PendingSignIns $signIns,
+        ResolveSignInGrant $grants,
+    ) {
         $this->session = $session;
         $this->accounts = $accounts;
         $this->admin = $admin;
         $this->landing = $landing;
+        $this->signIns = $signIns;
+        $this->grants = $grants;
     }
 
     /**
@@ -108,5 +124,44 @@ class PluginApi {
      */
     public function abortExternalLogin(string $message): RedirectResponse {
         return $this->landing->abort($message);
+    }
+
+    /**
+     * サービスへのサインインを本体に頼む。ChreeID が IdP として別の方式 (SAML など) で答えるとき用。
+     *
+     * ログイン、引き取り前の確認、同意、サービスアカウントの選択は OIDC と同じ手順で本体が進める。
+     * 済んだら `$returnUrl?grant=…` へ戻すので、takeServiceSignIn() で結果を受け取る。
+     *
+     * @param string $clientId 接続先サービスの client_id
+     * @param list<string> $scopes 渡す属性の範囲 (openid、email、profile など)。サービスに許した範囲の中だけ
+     * @param string $returnUrl 済んだら戻る先。プラグインのルート (/plugins/…) に限る
+     * @return RedirectResponse
+     * @throws InvalidArgumentException サービスが無い、範囲を許していない、戻り先がプラグインの外の場合
+     */
+    public function authorizeService(string $clientId, array $scopes, string $returnUrl): RedirectResponse {
+        $client = OAuthClientModel::query()->find($clientId);
+        if ($client === null) throw new InvalidArgumentException("unknown client: {$clientId}");
+        if (!$client->allowsScopes($scopes)) throw new InvalidArgumentException("scopes not allowed for {$clientId}");
+
+        // 戻り先を自由にすると、引換券を外へ持ち出させるオープンリダイレクタになる
+        if (!str_starts_with($returnUrl, url('/plugins/'))) throw new InvalidArgumentException("return url outside plugins: {$returnUrl}");
+
+        $pending = $this->signIns->start($clientId, $scopes, $returnUrl);
+
+        return redirect("/authorize/pending/{$pending->id}");
+    }
+
+    /**
+     * authorizeService() の戻りで受け取った引換券を、サービスに渡す sub と属性にする。
+     *
+     * 引換券は一度しか使えず、始めたのと同じブラウザでしか使えない。
+     *
+     * @param string $grant 戻り先に付いてきた grant の値
+     * @return SignedInService|null 使えない引換券、または済んだ後に停止された場合は null
+     */
+    public function takeServiceSignIn(string $grant): ?SignedInService {
+        $taken = $this->signIns->takeGrant($grant);
+
+        return $taken === null ? null : $this->grants->execute($taken);
     }
 }

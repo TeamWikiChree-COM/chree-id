@@ -3,69 +3,51 @@ namespace App\Modules\Provider\Http;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Identity\Application\ChreeSession;
-use App\Modules\Provider\Application\AmbiguousServiceAccountException;
-use App\Modules\Provider\Application\IssueAuthCode;
-use App\Modules\Provider\Application\SelectServiceAccount;
-use App\Modules\Provider\Application\UnclaimedServiceAccountGuard;
-use App\Modules\Provider\Application\ValidateAuthorizeRequest;
-use App\Modules\Provider\Application\LoginHint;
-use App\Modules\Provider\Domain\AuthorizeError;
 use App\Modules\Provider\Application\AuthorizeRequest;
+use App\Modules\Provider\Application\DecideSignIn;
+use App\Modules\Provider\Application\IssueAuthCode;
+use App\Modules\Provider\Application\LoginHint;
+use App\Modules\Provider\Application\SignInStep;
+use App\Modules\Provider\Application\ValidateAuthorizeRequest;
+use App\Modules\Provider\Domain\AuthorizeError;
+use App\Modules\Provider\Domain\SignInStepKind;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use LogicException;
 
 /**
  * OIDC の認可エンドポイント。
  *
  * ここは画面ではなくプロトコルなので、Inertia を通さず直接リダイレクトを返す。
+ * 次に何をするかの判断は DecideSignIn。プラグインから頼まれたサインインと共通。
  */
 class AuthorizeController extends Controller {
-    public function __construct(
-        private readonly ValidateAuthorizeRequest $validate,
-        private readonly IssueAuthCode $issue,
-        private readonly ChreeSession $session,
-        private readonly SelectServiceAccount $select,
-        private readonly LoginHint $loginHint,
-        private readonly UnclaimedServiceAccountGuard $unclaimed,
-    ) {}
+    private const APPROVE_ACTION = '/oauth/authorize/approve';
+
+    private readonly ValidateAuthorizeRequest $validate;
+    private readonly IssueAuthCode $issue;
+    private readonly ChreeSession $session;
+    private readonly DecideSignIn $decide;
+    private readonly SignInPages $pages;
+    private readonly LoginHint $loginHint;
+
+    public function __construct(ValidateAuthorizeRequest $validate, IssueAuthCode $issue, ChreeSession $session, DecideSignIn $decide, SignInPages $pages, LoginHint $loginHint) {
+        $this->validate = $validate;
+        $this->issue = $issue;
+        $this->session = $session;
+        $this->decide = $decide;
+        $this->pages = $pages;
+        $this->loginHint = $loginHint;
+    }
 
     /**
      * @param Request $request
      * @return RedirectResponse|InertiaResponse
      */
     public function __invoke(Request $request): RedirectResponse|InertiaResponse {
-        try {
-            $authorize = $this->validate->execute($request);
-        } catch (AuthorizeError $error) {
-            return $this->handleError($request, $error);
-        }
-
-        // 未ログインならログインさせ、戻ってきたら同じURLで続きから。
-        // サービスが添えてきたアドレスは、二度打たせないようログイン画面まで運ぶ
-        if (!$this->session->isLoggedIn()) {
-            $this->loginHint->remember();
-
-            return redirect()->guest('/login');
-        }
-
-        $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect()->guest('/login');
-        if ($this->unclaimed->blocks($authorize->client, $accountId)) return $this->rejectUnclaimed($request);
-
-        // 公式サービスは ChreeID の一部とみなせるので、毎回の同意を求めない
-        // 同意の省略は信頼状態とは別の設定。承認済みでも省略したいサービスがある
-        if (!$authorize->client->skips_consent) {
-            return Inertia::render('Oauth/Consent', [
-                'clientName' => $authorize->client->displayName(),
-                'clientIconUrl' => $authorize->client->icon_url,
-                'scopes' => $authorize->scopes,
-                'query' => $request->query(),
-            ]);
-        }
-
-        return $this->redirectWithCode($authorize, $accountId, $request);
+        return $this->handle($request, false);
     }
 
     /**
@@ -77,66 +59,60 @@ class AuthorizeController extends Controller {
      * @return RedirectResponse|InertiaResponse
      */
     public function approve(Request $request): RedirectResponse|InertiaResponse {
+        return $this->handle($request, true);
+    }
+
+    /**
+     * @param Request $request
+     * @param bool $consented 同意画面で許可された後か
+     * @return RedirectResponse|InertiaResponse
+     */
+    private function handle(Request $request, bool $consented): RedirectResponse|InertiaResponse {
         try {
             $authorize = $this->validate->execute($request);
         } catch (AuthorizeError $error) {
             return $this->handleError($request, $error);
         }
 
-        $accountId = $this->session->accountId();
-        if ($accountId === null) return redirect()->guest('/login');
-        if ($this->unclaimed->blocks($authorize->client, $accountId)) return $this->rejectUnclaimed($request);
+        $chosen = $request->string('service_account_id')->toString();
+        $step = $this->decide->execute($authorize->client, $this->session->accountId(), $consented, $chosen === '' ? null : $chosen);
 
-        return $this->redirectWithCode($authorize, $accountId, $request);
+        return match ($step->kind) {
+            SignInStepKind::LOGIN => $this->toLogin(),
+            SignInStepKind::UNCLAIMED => $this->rejectUnclaimed($request),
+            SignInStepKind::CONSENT => $this->pages->consent($authorize->client, $authorize->scopes, self::APPROVE_ACTION, $request->query()),
+            SignInStepKind::CHOOSE_ACCOUNT => $this->pages->chooseAccount($authorize->client, $step->candidates, self::APPROVE_ACTION, $request->query()),
+            SignInStepKind::GRANTED => $this->redirectWithCode($authorize, $step),
+        };
+    }
+
+    /**
+     * ログインから戻ってきたら同じURLで続きから。
+     * サービスが添えてきたアドレスは、二度打たせないようログイン画面まで運ぶ。
+     *
+     * @return RedirectResponse
+     */
+    private function toLogin(): RedirectResponse {
+        $this->loginHint->remember();
+
+        return redirect()->guest('/login');
     }
 
     /**
      * @param AuthorizeRequest $authorize
-     * @param string $accountId
-     * @param Request $request
-     * @return RedirectResponse|InertiaResponse
+     * @param SignInStep $step GRANTED の結果
+     * @return RedirectResponse
      */
-    private function redirectWithCode(AuthorizeRequest $authorize, string $accountId, Request $request): RedirectResponse|InertiaResponse {
-        $chosen = $request->string('service_account_id')->toString();
+    private function redirectWithCode(AuthorizeRequest $authorize, SignInStep $step): RedirectResponse {
+        $serviceAccount = $step->serviceAccount;
+        if ($serviceAccount === null) throw new LogicException('granted step without a service account');
 
-        try {
-            $serviceAccount = $this->select->execute($authorize->client, $accountId, $chosen === '' ? null : $chosen);
-        } catch (AmbiguousServiceAccountException) {
-            // 統合で同じサービスに複数持っている人。黙ってどれかを選ぶと別人として入れてしまう
-            return $this->chooseAccount($authorize, $accountId, $request);
-        }
-
-        $code = $this->issue->execute($authorize, $accountId, $serviceAccount->id);
+        $code = $this->issue->execute($authorize, $serviceAccount->auth_identity_id, $serviceAccount->id);
 
         $params = ['code' => $code];
         if ($authorize->state !== null) $params['state'] = $authorize->state;
 
         return redirect()->away($this->withQuery($authorize->redirectUri, $params));
-    }
-
-    /**
-     * どのサービスアカウントとして入るか選ばせる。
-     *
-     * @param AuthorizeRequest $authorize
-     * @param string $accountId
-     * @param Request $request
-     * @return InertiaResponse
-     */
-    private function chooseAccount(AuthorizeRequest $authorize, string $accountId, Request $request): InertiaResponse {
-        $accounts = $this->select->candidates($authorize->client, $accountId)
-            ->map(fn ($account): array => [
-                'id' => $account->id,
-                'serviceUserId' => $account->service_user_id,
-                'connectedAt' => $account->created_at?->toDateTimeString(),
-            ])
-            ->all();
-
-        return Inertia::render('Oauth/ChooseAccount', [
-            'clientName' => $authorize->client->displayName(),
-            'clientIconUrl' => $authorize->client->icon_url,
-            'accounts' => $accounts,
-            'query' => $request->query(),
-        ]);
     }
 
     /**

@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\Saml;
+namespace Plugins\Saml\Sp;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use App\Modules\Plugin\Application\PluginApi;

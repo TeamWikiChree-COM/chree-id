@@ -3,8 +3,7 @@ namespace Plugins\Saml\Tests;
 
 use DOMDocument;
 use DOMElement;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
+use Plugins\Saml\XmlSigner;
 
 /**
  * テスト用の IdP。鍵を作り、署名した SAML Response を組み立てる。
@@ -85,17 +84,7 @@ class SamlResponseBuilder {
         $root = $doc->documentElement;
         assert($root instanceof DOMElement);
 
-        $dsig = new XMLSecurityDSig();
-        $dsig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
-        $dsig->addReference($root, XMLSecurityDSig::SHA256, ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', XMLSecurityDSig::EXC_C14N], ['id_name' => 'ID', 'overwrite' => false]);
-
-        $key = new XMLSecurityKey(XMLSecurityKey::RSA_SHA256, ['type' => 'private']);
-        $key->loadKey($this->privateKey);
-        $dsig->sign($key);
-        $dsig->add509Cert($this->certificate);
-
-        // スキーマ上、Signature は Assertion の Issuer の直後に置く
-        $dsig->insertSignature($root, $root->getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:assertion', 'Subject')->item(0));
+        (new XmlSigner())->sign($root, $this->privateKey, $this->certificate);
 
         return (string) $doc->saveXML($root);
     }

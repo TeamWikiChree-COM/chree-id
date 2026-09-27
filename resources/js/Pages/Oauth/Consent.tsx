@@ -25,6 +25,8 @@ interface ConsentProps {
     clientIconUrl: string | null;
     /** 要求されたスコープ */
     scopes: string[];
+    /** 許可したときの送り先。OIDC とプラグインからのサインインで違う */
+    action: string;
     /** 承認 POST にそのまま引き継ぐ認可リクエストのパラメータ */
     query: Record<string, string>;
 }
@@ -33,6 +35,7 @@ export default function Consent({
     clientName,
     clientIconUrl,
     scopes,
+    action,
     query,
 }: ConsentProps) {
     return (
@@ -74,7 +77,7 @@ export default function Consent({
                     <Box
                         component="form"
                         method="post"
-                        action="/oauth/authorize/approve"
+                        action={action}
                     >
                         {Object.entries(query).map(([key, value]) => (
                             <input

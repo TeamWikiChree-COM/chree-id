@@ -26,6 +26,8 @@ interface ChooseAccountProps {
     clientIconUrl: string | null;
     /** 選べるサービスアカウント */
     accounts: ChoosableAccount[];
+    /** 選んだときの送り先。OIDC とプラグインからのサインインで違う */
+    action: string;
     /** 認可リクエストのパラメータ。そのまま送り返す */
     query: Record<string, string>;
 }
@@ -40,6 +42,7 @@ export default function ChooseAccount({
     clientName,
     clientIconUrl,
     accounts,
+    action,
     query,
 }: ChooseAccountProps) {
     const [sending, setSending] = useState(false);
@@ -47,7 +50,7 @@ export default function ChooseAccount({
     // 認可のパラメータはそのまま送り返す。サーバ側で改めて検証される
     const choose = (id: string): void => {
         setSending(true);
-        router.post("/oauth/authorize/approve", {
+        router.post(action, {
             ...query,
             service_account_id: id,
         });

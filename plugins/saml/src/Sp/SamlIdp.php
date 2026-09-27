@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\Saml;
+namespace Plugins\Saml\Sp;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdp;
 use App\Modules\ExternalLogin\Domain\ExternalIdpDisplay;

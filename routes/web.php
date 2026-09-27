@@ -28,6 +28,7 @@ use App\Modules\ApiDocs\Http\ApiDocsController;
 use App\Modules\Identity\Http\RegisterController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Modules\Provider\Http\AuthorizeController;
+use App\Modules\Provider\Http\PendingSignInController;
 use App\Modules\Admin\Http\AdminAccountController;
 use App\Modules\Admin\Http\AdminAccountDetailController;
 use App\Modules\Admin\Http\AdminAccountIssuesController;
@@ -234,6 +235,10 @@ Route::get('/.well-known/openid-configuration', DiscoveryController::class);
 Route::get('/oauth/jwks', JwksController::class);
 Route::get('/oauth/authorize', AuthorizeController::class);
 Route::post('/oauth/authorize/approve', [AuthorizeController::class, 'approve']);
+
+// プラグイン (SAML など) から頼まれたサインイン。始め方は PluginApi::authorizeService()
+Route::get('/authorize/pending/{id}', [PendingSignInController::class, 'show']);
+Route::post('/authorize/pending/{id}/approve', [PendingSignInController::class, 'approve']);
 
 // RP からのサーバ間通信。CSRF の除外は bootstrap/app.php 側で指定している
 Route::post('/oauth/token', TokenController::class)->middleware('throttle:token');

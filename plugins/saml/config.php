@@ -24,4 +24,11 @@ return [
         // true にすると、他人のメールを名乗ったアカウントから乗っ取れてしまう
         'trust_email' => (bool) env('SAML_IDP_TRUST_EMAIL', false),
     ],
+
+    // ここから下は、ChreeID が IdP として SAML のサービス (SP) にログインさせる側。
+    // 鍵は php artisan saml:idp-key で作る
+    'signing' => [
+        'key_path' => env('SAML_SIGNING_KEY_PATH', storage_path('saml/idp.key')),
+        'certificate_path' => env('SAML_SIGNING_CERT_PATH', storage_path('saml/idp.crt')),
+    ],
 ];

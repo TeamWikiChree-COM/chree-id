@@ -245,5 +245,6 @@
     "backup.errors.local_write_failed": "Could not write the backup: :dir",
     "backup.errors.local_prune_failed": "Could not delete an old backup: :name",
     "turnstile.unavailable": "Verification failed. Please wait a moment and try again",
-    "turnstile.failed": "We could not confirm that you are human. Please try again"
+    "turnstile.failed": "We could not confirm that you are human. Please try again",
+    "oauth.error.sign_in_expired": "The sign-in request was not found. Please start again from the service."
 }

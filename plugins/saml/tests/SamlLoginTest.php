@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Override;
 use PHPUnit\Framework\Attributes\TestDox;
-use Plugins\Saml\SamlIdp;
+use Plugins\Saml\Sp\SamlIdp;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 

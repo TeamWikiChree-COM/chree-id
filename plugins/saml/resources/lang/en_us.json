@@ -1,0 +1,11 @@
+{
+    "error.acs_mismatch": "The return address requested by the service does not match the registered one. Please contact the service administrator.",
+    "error.bad_signature": "The signature of the request from the service could not be verified. Please contact the service administrator.",
+    "error.expired": "The sign-in request was not found. Please start again from the service.",
+    "error.invalid_request": "The request from the service could not be read. Please start again from the service.",
+    "error.title": "Could not sign in",
+    "error.unknown_sp": "This service is not registered with ChreeID.",
+    "post.continue": "Continue to the service",
+    "post.lead": "Taking you to the service. If nothing happens, press the button.",
+    "post.title": "Taking you to the service"
+}

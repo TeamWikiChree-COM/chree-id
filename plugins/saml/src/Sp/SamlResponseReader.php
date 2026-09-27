@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\Saml;
+namespace Plugins\Saml\Sp;
 
 use App\Modules\ExternalLogin\Domain\ExternalIdentity;
 use OneLogin\Saml2\Constants;

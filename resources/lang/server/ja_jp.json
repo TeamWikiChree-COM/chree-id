@@ -245,5 +245,6 @@
     "backup.errors.local_write_failed": "バックアップを書き込めませんでした: :dir",
     "backup.errors.local_prune_failed": "古いバックアップを消せませんでした: :name",
     "turnstile.unavailable": "確認に失敗しました。時間をおいてもう一度お試しください",
-    "turnstile.failed": "人間による操作であることを確認できませんでした。もう一度お試しください"
+    "turnstile.failed": "人間による操作であることを確認できませんでした。もう一度お試しください",
+    "oauth.error.sign_in_expired": "サインインの手続きが見つかりません。接続先のサービスからやり直してください"
 }

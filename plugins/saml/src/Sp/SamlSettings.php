@@ -1,5 +1,5 @@
 <?php
-namespace Plugins\Saml;
+namespace Plugins\Saml\Sp;
 
 use OneLogin\Saml2\Constants;
 use OneLogin\Saml2\Settings;
