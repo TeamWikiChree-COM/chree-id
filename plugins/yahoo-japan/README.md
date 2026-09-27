@@ -40,7 +40,7 @@ UserInfo を使わないとき、Yahoo! JAPAN で初めて入った人はメー�
 UserInfo を使うとき、UserInfo の sub が id_token と違えば受けない。
 
 ## アイコンと表示名
-ボタンのアイコンは `resources/icon.svg` (SVG Repo のパブリックドメインの素材)。形だけを使い、周りの文字色で塗る。
+ボタンのアイコンは `resources/icon.svg` (SVG Repo のパブリックドメインの素材)。形だけを使い、Yahoo! JAPAN の基本色の赤 (#ff0033) で塗る。海外の Yahoo! (紫) と見分けるため。
 
 公式のボタン画像は色を変更してはならないため、Yahoo! JAPAN が配布している公式のログインボタンの素材は使っていない。<br />
 また、表示名は「Yahoo! JAPAN ID」。ガイドラインで「Yahoo! JAPAN でログイン」のような書き方が認められていないため、ボタンの文言が「Yahoo! JAPAN ID で続ける」になるようにしている。

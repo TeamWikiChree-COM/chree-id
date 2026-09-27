@@ -10,6 +10,8 @@ export interface IdpDisplay {
     family: 'brands' | 'solid';
     /** アイコンの形に使う SVG (data URI)。あれば icon より優先する */
     svg: string | null;
+    /** SVG を塗る色。無ければ周りの文字色 */
+    color: string | null;
 }
 
 let displays: Record<string, IdpDisplay> = {};
@@ -59,4 +61,12 @@ export function idpIconFamily(provider: string): 'brands' | 'solid' {
  */
 export function idpSvg(provider: string): string | null {
     return displays[provider]?.svg ?? null;
+}
+
+/**
+ * @param provider 'google' などの識別子
+ * @returns SVG を塗る色。無ければ null (周りの文字色)
+ */
+export function idpColor(provider: string): string | null {
+    return displays[provider]?.color ?? null;
 }

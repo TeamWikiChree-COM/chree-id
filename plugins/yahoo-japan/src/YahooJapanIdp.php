@@ -52,7 +52,8 @@ class YahooJapanIdp implements CodeExchangeIdp {
      */
     public function display(): ExternalIdpDisplay {
         return ExternalIdpDisplay::brand('Yahoo! JAPAN ID', 'yahoo', ExternalIdpDisplay::FAMILY_SOLID)
-            ->withSvgFile(__DIR__ . '/../resources/icon.svg');
+            // 海外の Yahoo! (紫) と見分けられるよう、Yahoo! JAPAN の基本色で塗る
+            ->withSvgFile(__DIR__ . '/../resources/icon.svg', '#ff0033');
     }
 
     /**

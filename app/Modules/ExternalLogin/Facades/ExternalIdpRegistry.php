@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static ExternalIdp|null get(string $name)
  * @method static list<string> names()
  * @method static list<string> usableNames()
- * @method static array<string, array{label: string, icon: string, family: string, svg: string|null}> displays(string $locale)
+ * @method static array<string, array{label: string, icon: string, family: string, svg: string|null, color: string|null}> displays(string $locale)
  *
  * @see Registry
  * @api

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import Icon from './Icon';
-import { idpIcon, idpIconFamily, idpSvg } from '../lib/idps';
+import { idpColor, idpIcon, idpIconFamily, idpSvg } from '../lib/idps';
 
 interface IdpIconProps {
     /** 'google' などの識別子 */
@@ -12,7 +12,7 @@ interface IdpIconProps {
 /**
  * 外部 IdP のアイコン。
  *
- * SVG があれば形だけを使い、周りの文字色で塗る (mask)。HTML として埋め込まないので、SVG の中身で画面を書き換えられない。
+ * SVG があれば形だけを使い、IdP の色か周りの文字色で塗る (mask)。HTML として埋め込まないので、SVG の中身で画面を書き換えられない。
  */
 export default function IdpIcon({ provider, sx }: IdpIconProps) {
     const svg = idpSvg(provider);
@@ -25,7 +25,7 @@ export default function IdpIcon({ provider, sx }: IdpIconProps) {
             component="span"
             aria-hidden
             sx={[
-                { display: 'inline-block', width: '1em', height: '1em', verticalAlign: '-0.125em', backgroundColor: 'currentColor', mask, WebkitMask: mask },
+                { display: 'inline-block', width: '1em', height: '1em', verticalAlign: '-0.125em', backgroundColor: idpColor(provider) ?? 'currentColor', mask, WebkitMask: mask },
                 ...(Array.isArray(sx) ? sx : [sx]),
             ]}
         />

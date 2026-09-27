@@ -51,7 +51,7 @@ class ExternalIdpRegistry extends Registry {
      * 使えるものだけにしないのは、設定を削除した IdP でも連携済みの一覧や履歴には名前を出すため。
      *
      * @param string $locale
-     * @return array<string, array{label: string, icon: string, family: string, svg: string|null}>
+     * @return array<string, array{label: string, icon: string, family: string, svg: string|null, color: string|null}>
      */
     public function displays(string $locale): array {
         $displays = [];
