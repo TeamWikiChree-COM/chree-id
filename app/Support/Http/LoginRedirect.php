@@ -44,9 +44,7 @@ final class LoginRedirect {
     /**
      * ログインが済んだあとの応答。覚えている戻り先へ、ブラウザごと移す。
      *
-     * ログインのフォームは Inertia の XHR で送られる。302 で返すと XHR が戻り先をたどり、
-     * その先が /oauth/authorize のように別オリジン (RP) へ送り出す場所だと、CORS でたどれずに止まる。
-     * 戻り先があるときは Inertia::location で返し、ブラウザ自身に移らせる。
+     * 302 だと XHR が戻り先をたどり、その先の RP (別オリジン) へのリダイレクトで CORS に止められる。
      *
      * @param string $fallback 覚えていないときの行き先
      * @return SymfonyResponse

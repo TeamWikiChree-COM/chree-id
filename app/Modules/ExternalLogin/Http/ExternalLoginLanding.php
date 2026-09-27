@@ -23,9 +23,7 @@ use Throwable;
 /**
  * 外部 IdP から戻ってきたあとの着地 (ChreeID が RP 側)。
  *
- * 認可コードで戻る IdP は ExternalLoginController が、SAML のように別の形で戻る IdP は
- * プラグインが受けてここへ渡す。state の照合から先を1か所にまとめないと、
- * 入口ごとに照合やアカウント停止の確認を取りこぼす。
+ * 入口ごとに書くと、state の照合や停止の確認を取りこぼすので、ここにまとめる。
  */
 class ExternalLoginLanding {
     private readonly LinkExternalIdentity $link;

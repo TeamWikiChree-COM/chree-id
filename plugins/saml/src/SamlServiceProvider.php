@@ -34,9 +34,7 @@ class SamlServiceProvider extends ServiceProvider {
 
         if ($this->app->runningInConsole()) $this->commands([GenerateIdpKeyCommand::class, AddServiceProviderCommand::class]);
 
-        // 相手からの POST はクロスサイトなので、SameSite=Lax のセッション Cookie が付かない。
-        // web グループに載せると空のセッションが作られ、その Cookie で利用者のセッションを上書きしてしまう。
-        // セッションも CSRF も通さずに受け、GET に回してからセッションのある側で続ける
+        // 相手からの POST はセッションを通さずに受ける。web グループだと利用者のセッションを上書きする (README)
         if ($this->app->routesAreCached()) return;
         Route::post('/plugins/saml/acs', [SamlController::class, 'receive']);
         Route::post('/plugins/saml/idp/sso', [IdpController::class, 'receive']);

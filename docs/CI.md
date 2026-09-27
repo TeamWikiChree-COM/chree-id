@@ -4,7 +4,7 @@
 
 ## ワークフロー
 
-| ワークフロー | いつ動くか | やること |
+| ワークフロー | 実行タイミング | 処理内容 |
 | --- | --- | --- |
 | [Test](../.github/workflows/test.yml) | `main` / `dev` への push と pull request | 翻訳の生成、PHPStan、テスト |
 | [Deploy to server](../.github/workflows/deploy.yml) | Test が成功したあと (`main` なら本番、`dev` ならテスト環境)。手動でも動かせる | フロントエンドと翻訳をビルドして、サーバへ転送する |
@@ -23,7 +23,7 @@ push ─→ Test ─(成功)─→ Deploy to server
 
 ## ブランチ
 
-| ブランチ | push すると | 使いどころ |
+| ブランチ | push 時の動作 | 利用場面 |
 | --- | --- | --- |
 | `main` | 本番にデプロイされる | 普段の作業。開発者が少ないうちは `main` に直接 push してよい |
 | `dev` | テスト環境にデプロイされる | 本番に出す前に動きを確かめたいとき |

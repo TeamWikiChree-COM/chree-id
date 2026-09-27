@@ -7,12 +7,7 @@ use App\Modules\Provider\Domain\Claims\ScopeRegistry as Registry;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * OIDC の scope とクレームの対応を static の形で触るための窓口。プラグインはこれで scope を追加する。
- *
- * 一覧そのものは Domain\Claims\ScopeRegistry で、コンテナに1つだけある。
- * 本物の static にしないのは、テストのたびにアプリを作り直しても一覧が残り、二重登録になるため。
- *
- * 追加した scope をサービスが求められるようにするには、そのサービス (oauth_clients) に scope を許しておく。
+ * OIDC の scope とクレームの対応 (Domain\Claims\ScopeRegistry) の Facade。
  *
  * @method static void register(ClaimsResolver $resolver)
  * @method static array<string, mixed> claimsFor(AuthIdentity $account, list<string> $scopes, ?string $serviceAccountId = null)

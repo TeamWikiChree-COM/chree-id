@@ -6,7 +6,7 @@
 
 辞書は JSON で、サーバ用と画面用に分かれている。
 
-| 辞書 | 使う場所 | 呼び出し |
+| 辞書 | 利用箇所 | 呼び出し |
 | --- | --- | --- |
 | `resources/lang/server/<ロケール>.json` | PHP (バリデーションのメッセージ、メール、API のエラーなど) | `__('admin.backups.title')` |
 | `resources/lang/client/<ロケール>.json` | React の画面 | `t('...')` (`resources/js/lib/i18n.ts`) |
@@ -39,7 +39,7 @@ PHP に変換しているのは、OPcache に載せて毎回の JSON の読み�
 
 ### いつ実行するか
 
-| 変えた辞書 | ローカル | CI |
+| 変更した辞書 | ローカル | CI |
 | --- | --- | --- |
 | `resources/lang/client/` (画面) | 不要。Vite が JSON を直接読むので、`npm run dev` 中ならすぐ反映される | テストの前に検証される |
 | `resources/lang/server/` (PHP) | 必要。実行するまで PHP 側は古い文言のまま | テストとデプロイの前に自動で実行される |

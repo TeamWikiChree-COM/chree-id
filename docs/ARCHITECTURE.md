@@ -103,12 +103,12 @@ Domain に置くのは列挙型・値オブジェクト・ルール・差し替�
 
 中身の入れ方は2通りある。
 
-| 種類 | 中身の入れ方 | 例 |
+| 種類 | 登録方法 | 例 |
 | --- | --- | --- |
 | [Registry](../app/Support/Registry/Registry.php) | ServiceProvider が1件ずつ登録する | 認証方式、外部IdP、scope |
 | [DynamicRegistry](../app/Support/Registry/DynamicRegistry.php) | 決まった場所を自分で探して集める。置くだけで読み込まれる | プラグイン |
 
-| 差し替え口 | インターフェース | レジストリ | 登録する場所 |
+| 差し替え口 | インターフェース | レジストリ | 登録箇所 |
 | --- | --- | --- | --- |
 | 認証方式 (パスワード、TOTP、パスキーなど) | [CredentialVerifier](../app/Modules/Credential/Domain/Verifier/CredentialVerifier.php) | [CredentialRegistry](../app/Modules/Credential/Domain/CredentialRegistry.php) | [CredentialServiceProvider](../app/Providers/CredentialServiceProvider.php) |
 | 外部IdP (Google、GitHub など) | [ExternalIdp](../app/Modules/ExternalLogin/Domain/ExternalIdp.php) | [ExternalIdpRegistry](../app/Modules/ExternalLogin/Domain/ExternalIdpRegistry.php) | プラグインの boot() で `ExternalIdpRegistry::register()` (Facade。`plugins/google` など) |

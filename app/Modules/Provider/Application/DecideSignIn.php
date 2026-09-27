@@ -7,9 +7,7 @@ use App\Modules\Provider\Domain\SignInStepKind;
 /**
  * サービスへのサインインで、次に何をするかを決める。
  *
- * OIDC の /oauth/authorize も、プラグイン (SAML など) から頼まれたサインインもここを通る。
- * 方式ごとに書くと、停止や引き取り前の確認を片方だけ直す取りこぼしが起きる。
- * 画面やリダイレクトは呼び出し側が組む。ここは判断だけ。
+ * OIDC とプラグイン (SAML など) の両方がここを通る。方式ごとに書くと、確認を片方だけ直す取りこぼしが起きる。
  */
 class DecideSignIn {
     private readonly UnclaimedServiceAccountGuard $unclaimed;

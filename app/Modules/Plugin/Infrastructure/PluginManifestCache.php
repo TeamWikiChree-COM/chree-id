@@ -4,14 +4,7 @@ namespace App\Modules\Plugin\Infrastructure;
 use App\Modules\Plugin\Domain\PluginManifest;
 
 /**
- * plugins/ を探して plugin.json を読んだ結果の控え。
- *
- * 探して読むのは毎リクエストかかり、プラグインが増えるほど重くなる (手元の計測で1フォルダあたり 0.15ms ほど)。
- * 控えは PHP の配列として書くので、OPcache に載って読み込みがほぼ無くなる。
- *
- * 古くなったかは、plugins/ の中のフォルダ名の一覧と、各 plugin.json の更新時刻で見る。plugin.json の中身は読まない。
- * フォルダの増減を plugins/ 自身の更新時刻で見ないのは、ファイルシステムによって (exFAT など) 変わらないため。
- * 時刻は秒単位なので、同じ秒のうちの書き換えは見逃しうる。本体が書き換えるとき (PluginSwitch) は明示的に消す。
+ * plugins/ を探して plugin.json を読んだ結果の控え。仕組みは docs/PLUGIN.md の「plugins/ の控え」。
  */
 class PluginManifestCache {
     private readonly string $file;

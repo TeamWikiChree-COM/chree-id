@@ -2,10 +2,10 @@
 
 ChreeID が外に出している口は2種類ある。
 
-| 種類 | 使う人 | 場所 |
+| 種類 | 用途 | パス |
 | --- | --- | --- |
-| OIDC (OpenID Connect) | ブラウザで「ChreeID でログイン」させたいサービス | `/oauth/*`、`/.well-known/openid-configuration` |
-| サーバ間 API | サービスのサーバから ChreeID を直接呼ぶ場合 | `/api/v1/*` |
+| OIDC (OpenID Connect) | ブラウザで利用者を ChreeID にログインさせる | `/oauth/*`、`/.well-known/openid-configuration` |
+| サーバ間 API | サービスのサーバから ChreeID を直接呼び出す | `/api/v1/*` |
 
 サービスをつなぐときの全体の流れは [INTEGRATION.md](INTEGRATION.md) を参照。
 

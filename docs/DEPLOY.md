@@ -6,7 +6,7 @@ push すると GitHub Actions (`.github/workflows/deploy.yml`) から `tools/dep
 
 送るのは git で追跡しているファイルと、`.deploy-include` に挙げたパスだけ。`.gitignore` に入れたものはサーバに届かない。
 
-| 届かないもの | 対処 |
+| 送られないもの | 対処 |
 | --- | --- |
 | `.env` | サーバに手で置く。中身はローカルと別にする |
 | `vendor/` | サーバ側で `composer install --no-dev` |

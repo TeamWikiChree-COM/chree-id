@@ -2,7 +2,7 @@
 
 ChreeID を SAML に対応させる。向きが2つあり、それぞれ別に使える。
 
-| 向き | 中身 | コード |
+| 方向 | 内容 | コード |
 | --- | --- | --- |
 | 外部の SAML IdP で ChreeID にログインする | ChreeID が SP。Entra ID、Google Workspace、Okta などのアカウントで入れる | `src/Sp/` |
 | ChreeID で SAML のサービスにログインする | ChreeID が IdP。SAML しか話せないサービス (SP) に ChreeID のアカウントで入れる | `src/Idp/` |

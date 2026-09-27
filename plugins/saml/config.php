@@ -19,9 +19,7 @@ return [
         // 空なら NameID をメールとして使う (NameID の形式が emailAddress のときだけ)
         'email_attribute' => env('SAML_IDP_EMAIL_ATTRIBUTE', ''),
         'name_attribute' => env('SAML_IDP_NAME_ATTRIBUTE', ''),
-        // IdP がメールの持ち主を確かめている (社内の IdP など) ときだけ true にする。
-        // true だと、同じメールの既存アカウントへ自動で紐付ける。確かめていない IdP で
-        // true にすると、他人のメールを名乗ったアカウントから乗っ取れてしまう
+        // IdP がメールの持ち主を確かめているときだけ true。そうでない IdP で true にすると乗っ取られる (README)
         'trust_email' => (bool) env('SAML_IDP_TRUST_EMAIL', false),
     ],
 

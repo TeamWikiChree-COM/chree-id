@@ -6,9 +6,7 @@ use RuntimeException;
 /**
  * 外部 IdP (OIDC) の id_token を読み、中身を確かめる。
  *
- * 署名の検証は省く。トークンエンドポイントから TLS で直接受け取っており、
- * クライアント認証も済んでいるため (OIDC Core 3.1.3.7)。
- * ただし iss / aud / exp / nonce は必ず確かめる。
+ * 署名は確かめない。トークンエンドポイントから TLS で直接受け取っているため (OIDC Core 3.1.3.7)。
  */
 class IdTokenClaims {
     /**

@@ -1,19 +1,19 @@
 # プラグイン
 
-ChreeID 本体に組み込まずに機能を足すための仕組み。`plugins/<name>/` に置くと自動で読み込まれる。
+ChreeID 本体に組み込まずに機能を追加するための仕組み。`plugins/<name>/` に置くと自動で読み込まれる。
 
 ## 置き方
 
 ```
 plugins/<name>/
-  plugin.json                 名前・説明・ServiceProvider (必須)
+  plugin.json                 名前、説明、ServiceProvider (必須)
   config.php                  設定 (任意)。あれば本体が config('<name>.…') に登録する
   src/                        名前空間 Plugins\<StudlyName>\  (例: wiki-hub → Plugins\WikiHub\)
     <StudlyName>ServiceProvider.php
   routes/web.php              ルート (任意)。あれば本体が web ミドルウェアと /plugins/<name> の接頭辞を付けて読む
   resources/lang/*.json       画面の文言 (ja_jp.json、en_us.json)。本体の resources/lang/ には混ぜない
   resources/js/Pages/*.tsx    画面。Inertia::render('<name>::<Page>') で出す
-  resources/js/types.ts       サーバから渡る値の型 (任意)。props の型は使う画面・部品のファイルに書く
+  resources/js/types.ts       サーバから渡る値の型 (任意)。props の型は使う画面、部品のファイルに書く
   tests/*Test.php             php artisan test で一緒に流れる
 ```
 
@@ -37,8 +37,7 @@ plugins/<name>/
 本番の plugin.json を画面で切り替えたあと、リポジトリ側の plugin.json を変えてデプロイすると、画面での切り替えは上書きされる。リポジトリの `enabled` も合わせておく。
 
 ### 新しく作るとき
-
-`plugins/template/` がひな形になっている。仕組みの説明をコメントに書いてあるので、読みながら書き換える。
+ひな形として `plugins/template/` を用意している。仕組みの説明をコメントに書いてあるので、読みながら書き換える。
 
 1. `plugins/template/` をコピーし、フォルダ名をプラグイン名 (kebab-case) にする
 2. plugin.json の `provider`、`title`、`description` を書き換え、`enabled` を `true` にする
@@ -68,7 +67,7 @@ bootstrap/providers.php                 Laravel が起動時に読むプロバ�
 
 ### register() と boot()
 
-| メソッド | 呼ばれる時点 | 書くもの |
+| メソッド | 呼び出される時点 | 記述する内容 |
 | --- | --- | --- |
 | `register()` | 登録された直後。ほかのプロバイダはまだそろっていない | コンテナへの登録 (`bind`、`singleton`) だけ。ほかのサービスは使わない |
 | `boot()` | 全プロバイダの `register()` が済んだあと | メニューへの追加など、ほかのサービスを使う処理 |
@@ -83,8 +82,8 @@ bootstrap/providers.php                 Laravel が起動時に読むプロバ�
 
 Laravel は `boot()` をコンテナ経由 (`$app->call([$provider, 'boot'])`) で呼ぶ。呼ぶ前にリフレクションで引数の型を読み、その型名でコンテナから取り出して渡す。
 
-- `PluginMenu`: `singleton` の登録に従い、最初に求められたときに作られる。全プラグインに同じものが渡るので、足した入口が1か所に集まる
-- `PluginRegistry`: `PluginServiceProvider` が作って `instance` で入れたものがそのまま渡る。plugin.json の中身を見たいときに引数に足す
+- `PluginMenu`: `singleton` の登録に従い、最初に求められたときに作られる。全プラグインに同じものが渡るので、追加した入口が1か所に集まる
+- `PluginRegistry`: `PluginServiceProvider` が作って `instance` で入れたものがそのまま渡る。plugin.json の中身を見たいときに引数に追加する
 
 コンテナに登録していないクラスでも、コンストラクタの引数を同じ方法でたどって組み立てる。コントローラのコンストラクタに `PluginApi $api` と書くだけで入るのも同じ仕組み。
 
@@ -92,7 +91,7 @@ Laravel は `boot()` をコンテナ経由 (`$app->call([$provider, 'boot'])`) �
 
 `config.php` と `routes/web.php` は、置いておけば本体 (`PluginServiceProvider`) が読む。プラグイン側に読み込みの処理は要らない。
 
-| ファイル | 本体がすること |
+| ファイル | 本体の処理 |
 | --- | --- |
 | `config.php` | `mergeConfigFrom` で `config('<name>.…')` に登録する。プラグインの `register()` より先に済ませるので、`register()` の中でも設定を読める |
 | `routes/web.php` | `web` ミドルウェアと `/plugins/<name>` の接頭辞を付けて読む。URL をそろえるのは、本体の URL とぶつけないため |
@@ -121,22 +120,22 @@ public function boot(): void {
 プラグインは本体と同じプロセスで動くので、本体のクラスも Laravel の機能も使える。
 ただし本体の内部は変わることがある。
 
-| 使うもの | 扱い |
+| 対象 | 互換性 |
 | --- | --- |
 | `App\Modules\Plugin\Application\PluginApi` | 本体を変えても互換性を保つ範囲。できるだけこれを使う |
 | `App\Modules\*\Facades\*Registry` (`ExternalIdpRegistry`、`ScopeRegistry`、`CredentialRegistry`) | 同上。起動時に本体の一覧へ自分を追加するためのもの |
 | Laravel の機能 (ルート、ビュー、キャッシュ、HTTP クライアントなど) | 自由に使ってよい |
 | 本体のそれ以外のクラス (モデル、Application など) | 使ってよいが、本体の変更で壊れることがある。壊れたらプラグイン側で直す |
 
-プラグインが同じものを何度も必要とするようになったら、`PluginApi` に足す。
+プラグインが同じものを何度も必要とするようになったら、`PluginApi` に追加する。
 本体の一覧へ追加する口が足りないときは、その一覧の Facade を作る。
 
 主な用途は次のとおり。
 
-| 用途 | 使うもの |
+| 用途 | 対象 |
 | --- | --- |
-| ログイン中のアカウント・運営かどうか・連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
-| ダッシュボードや管理画面へ入口を足す | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
+| ログイン中のアカウント、運営かどうか、連携しているサービスアカウント | `App\Modules\Plugin\Application\PluginApi` |
+| ダッシュボードや管理画面へ入口を追加する | `App\Modules\Plugin\Domain\PluginMenu` の `addPlugin()` |
 | ログイン画面に外部 IdP を追加する | `ExternalIdpRegistry::register()` (Facade) と `PluginApi` の `finishExternalLogin()` |
 | OIDC 以外の方式でサービスにログインさせる | `PluginApi` の `authorizeService()` と `takeServiceSignIn()` |
 | OIDC の scope とクレームを追加する | `ScopeRegistry::register()` (Facade)。サービスに scope を許しておく |
@@ -144,7 +143,7 @@ public function boot(): void {
 | 画面の部品 | `@/Components/…`、`@/lib/actions` など本体の部品をそのまま使ってよい |
 | 画面の文言 | `createTranslator({ ja, en })` (`@/lib/i18n`) に自分の resources/lang/*.json を渡す |
 
-### 入口を足す
+### 入口を追加する
 
 ```php
 public function boot(PluginMenu $menu): void {
@@ -168,7 +167,7 @@ $menu->add(new PluginMenuItem(PluginMenu::AREA_ADMIN, '/plugins/wiki-hub/setting
 
 本体は IdP の名前を知らず、共通の型だけを持つ。IdP ごとの中身はプラグインが持つ。
 
-| 置き場所 | 持っているもの |
+| 場所 | 責務 |
 | --- | --- |
 | 本体 | 送り出しと認可コードの受け口 (`/auth/<name>/redirect`、`/auth/<name>/callback`)、戻ってきたあとの共通の処理 (state の照合、アカウントの紐付け、停止の確認、セッション、戻り先への移動) |
 | プラグイン | 送り先の URL、コードの交換、返ってきた情報の確かめ方、ボタンの名前とアイコン |
@@ -217,7 +216,18 @@ $signIn = $api->takeServiceSignIn($request->string('grant')->toString());
 
 認証まわりのそれ以外 (`AuthenticationPolicy`、OIDC Provider のプロトコル部分) には手を出さないこと。
 
-## デプロイ
+## プラグインのインデックスとキャッシュ
+plugins/ を探して plugin.json を読んだ結果は、`bootstrap/cache/plugins.php` に控えておき、次のリクエストからはそれを読む。探して読む処理は毎リクエストかかり、プラグインが増えるほど重くなるため。
 
+| 再生成タイミング | 判定方法 |
+| --- | --- |
+| プラグインのフォルダが増えた、または減った | plugins/ の中のフォルダ名の一覧を控えと比べる |
+| plugin.json を書き換えた | plugin.json の更新時刻を控えと比べる |
+| 管理画面で有効、無効を切り替えた | 切り替えたときに控えを消す |
+
+フォルダの増減を plugins/ 自身の更新時刻で見ないのは、ファイルシステムによっては (exFAT など) 変わらないため。
+更新時刻は秒単位なので、同じ秒のうちの書き換えは見逃すことがある。本体が書き換えるときは控えを消すので、問題になるのは手で書き換えたときだけ。控えは消してもよく、次のリクエストで作り直される。
+
+## デプロイ
 `plugins/` はリポジトリに入れる。デプロイは差分を送るので、特別な手順は要らない。
 クラスの読み込みは `PluginServiceProvider` が自前で行うので、composer の dump-autoload も要らない。
