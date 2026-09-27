@@ -19,6 +19,12 @@ class GoogleIdp implements CodeExchangeIdp {
     /** id_token の iss はこのどちらか */
     private const ISSUERS = ['https://accounts.google.com', 'accounts.google.com'];
 
+    private readonly IdTokenClaims $idTokens;
+
+    public function __construct(IdTokenClaims $idTokens) {
+        $this->idTokens = $idTokens;
+    }
+
     /**
      * @return string
      */
@@ -84,11 +90,7 @@ class GoogleIdp implements CodeExchangeIdp {
     }
 
     /**
-     * id_token の中身を読む。
-     *
-     * 署名の検証は省く。トークンエンドポイントから TLS で直接受け取っており、
-     * クライアント認証も済んでいるため (OIDC Core 3.1.3.7)。
-     * ただし aud / iss / exp / nonce は必ず確かめる。
+     * id_token の中身を読む。検証は IdTokenClaims。
      *
      * @param string $idToken
      * @param string $nonce 発行時の nonce
@@ -96,50 +98,18 @@ class GoogleIdp implements CodeExchangeIdp {
      * @throws RuntimeException 検証に失敗した場合
      */
     private function readIdToken(string $idToken, string $nonce): ExternalIdentity {
-        $parts = explode('.', $idToken);
-        if (count($parts) !== 3) throw new RuntimeException('id_token の形式が不正です');
-
-        $decoded = base64_decode(strtr($parts[1], '-_', '+/'), true);
-        if ($decoded === false) throw new RuntimeException('id_token を読めません');
-
-        $claims = json_decode($decoded, true);
-        if (!is_array($claims)) throw new RuntimeException('id_token を読めません');
-
-        $this->assertClaims($claims, $nonce);
-
-        $subject = $claims['sub'] ?? null;
-        if (!is_string($subject) || $subject === '') throw new RuntimeException('sub がありません');
+        $claims = $this->idTokens->read($idToken, self::ISSUERS, $this->clientId(), $nonce);
 
         $email = $claims['email'] ?? null;
         $name = $claims['name'] ?? null;
 
         return new ExternalIdentity(
             $this->name(),
-            $subject,
+            (string) $claims['sub'],
             is_string($email) ? $email : null,
             ($claims['email_verified'] ?? false) === true,
             is_string($name) ? $name : null,
         );
-    }
-
-    /**
-     * @param array<mixed> $claims
-     * @param string $nonce
-     * @throws RuntimeException
-     */
-    private function assertClaims(array $claims, string $nonce): void {
-        if (!in_array($claims['iss'] ?? null, self::ISSUERS, true)) {
-            throw new RuntimeException('id_token の発行者が Google ではありません');
-        }
-        if (($claims['aud'] ?? null) !== $this->clientId()) {
-            throw new RuntimeException('id_token の宛先が一致しません');
-        }
-        if (($claims['nonce'] ?? null) !== $nonce) {
-            throw new RuntimeException('nonce が一致しません');
-        }
-
-        $exp = $claims['exp'] ?? null;
-        if (!is_int($exp) || $exp < time()) throw new RuntimeException('id_token の期限が切れています');
     }
 
     /** @return string */

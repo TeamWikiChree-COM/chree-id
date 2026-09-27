@@ -28,7 +28,7 @@ class ServiceProviders {
         // http の ACS へ送ると、署名していても Assertion を盗み見られる
         if (!$this->isHttpsUrl($input['acs_url'])) $errors['acs_url'] = 'acs_url_invalid';
 
-        if ($input['certificate'] !== '' && openssl_x509_read($input['certificate']) === false) $errors['certificate'] = 'certificate_invalid';
+        if ($input['certificate'] !== '' && @openssl_x509_read($input['certificate']) === false) $errors['certificate'] = 'certificate_invalid';
 
         // 本体はサービスに許した範囲の外を頼まれると断る。ログインのたびに落ちる前に、ここで止める
         if ($client !== null && !$client->allowsScopes($this->scopes($input['scopes']))) $errors['scopes'] = 'scopes_not_allowed';

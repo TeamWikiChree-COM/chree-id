@@ -1,0 +1,13 @@
+{
+    "version": "0.1.0",
+    "provider": "Plugins\\YahooJapan\\YahooJapanServiceProvider",
+    "enabled": false,
+    "title": {
+        "ja": "Yahoo! JAPAN ログイン",
+        "en": "Yahoo! JAPAN login"
+    },
+    "description": {
+        "ja": "Yahoo! JAPAN ID でログインできるようにします",
+        "en": "Sign in with a Yahoo! JAPAN ID"
+    }
+}

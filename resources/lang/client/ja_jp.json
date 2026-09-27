@@ -181,6 +181,8 @@
     "admin.index.nav.migrations.pending": "未適用が :count 件あります",
     "admin.index.nav.migrations.title": "データベース構造",
     "admin.index.nav.migrations.up_to_date": "構造は最新です",
+    "admin.index.nav.plugins.title": "プラグイン",
+    "admin.index.nav.plugins.description": "プラグインを有効・無効にする",
     "admin.index.stats.accounts": "アカウント",
     "admin.index.stats.clients": "接続サービス",
     "admin.index.stats.suspended": "停止中",
@@ -702,5 +704,14 @@
     "settings.withdraw.services.heading": "一緒に使えなくなるサービス",
     "settings.withdraw.submit": "退会する",
     "settings.withdraw.understood": ":days 日を過ぎると元に戻せないことを理解しました",
-    "settings.withdraw.warning": "退会すると、すぐにログインできなくなります。:days 日以内であれば元に戻せますが、それを過ぎるとアカウントと認証情報は完全に削除され、元に戻せません"
+    "settings.withdraw.warning": "退会すると、すぐにログインできなくなります。:days 日以内であれば元に戻せますが、それを過ぎるとアカウントと認証情報は完全に削除され、元に戻せません",
+    "admin.plugins.crumb": "プラグイン",
+    "admin.plugins.title": "プラグイン",
+    "admin.plugins.lead": "切り替えは次の画面表示から効きます。有効にしたプラグインに新しい表があるときは、マイグレーションも流してください",
+    "admin.plugins.heading": "入っているプラグイン",
+    "admin.plugins.empty": "プラグインは入っていません",
+    "admin.plugins.toggle": ":name を有効にする",
+    "admin.plugins.disable.title": ":name を無効にしますか",
+    "admin.plugins.disable.description": "このプラグインの画面やログイン手段が、使っている人の前から消えます。データは消えません",
+    "admin.plugins.disable.confirm": "無効にする"
 }

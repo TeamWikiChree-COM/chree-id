@@ -62,25 +62,25 @@ IdP から勝手に送られてくる応答 (IdP-initiated) は受けない。Ch
 
 ### 設定の手順
 
-1. 署名の鍵を作る。OIDC の鍵とは別の鍵で、証明書は SP 側に登録される
+設定は管理画面の「SAML」(`/plugins/saml/admin`) で行う。同じことを artisan コマンドでもできる。
+
+1. 管理画面の「マイグレーション」で、`saml_service_providers` の表を作る
+2. 署名の鍵を作る。OIDC の鍵とは別の鍵で、証明書は SP 側に登録される
+   - 画面の「鍵を作る」か、`php artisan saml:idp-key`
+   - サーバで openssl が使えず作れないときは、手元で作った鍵と証明書 (PEM) を画面から取り込む
+   - 置き場所は `storage/saml/idp.key` と `idp.crt`。変えるなら `SAML_SIGNING_KEY_PATH`・`SAML_SIGNING_CERT_PATH` を書く
+   - 作り直すと、登録済みのすべての SP でメタデータの読み直しが要る
+3. サービスを本体に登録する (管理画面の「接続サービス」)。OIDC を使わないなら redirect_uri は空でよい
+4. 画面の「サービスを足す」で SAML の設定を足す (`php artisan saml:sp-add <client_id> <entityID> <ACS の URL>` でもよい)
+   - SP の証明書を入れると、その SP からの AuthnRequest は署名を必ず確かめる
+   - 外しても、サービスそのものとサービスアカウントは残る
+5. SP に ChreeID の IdP メタデータを登録してもらう。`/plugins/saml/idp/metadata` で出している
+
+手元で鍵を作るときの例:
 
 ```
-php artisan saml:idp-key
+openssl req -x509 -newkey rsa:3072 -nodes -keyout idp.key -out idp.crt -days 3650 -subj "/CN=id.example.com"
 ```
-
-   置き場所は `storage/saml/idp.key` と `idp.crt`。変えるなら `SAML_SIGNING_KEY_PATH`・`SAML_SIGNING_CERT_PATH` を書く。
-   作り直す (`--force`) と、登録済みのすべての SP でメタデータの読み直しが要る。
-   Windows の PHP では openssl の設定ファイルが見つからずに失敗することがある。`OPENSSL_CONF` に openssl.cnf の場所を入れて実行する。
-
-2. サービスを本体に登録する (`chreeid:register-client` か管理画面)。OIDC を使わないなら redirect_uri は空でよい
-3. SAML の設定を足す
-
-```
-php artisan saml:sp-add <client_id> <SP の entityID> <SP の ACS の URL> [--certificate=sp.crt] [--scopes="openid email profile"]
-```
-
-   `--certificate` を付けると、その SP からの AuthnRequest は署名を必ず確かめる。
-4. SP に ChreeID の IdP メタデータを登録してもらう。`/plugins/saml/idp/metadata` で出している
 
 ### SP に渡すもの
 
@@ -106,4 +106,3 @@ ACS は登録したものだけに送る。要求に別の ACS が書いてあ�
 
 - シングルログアウト
 - IdP から始めるログイン (IdP-initiated)
-- SP を登録・編集する画面 (いまは artisan コマンドだけ)

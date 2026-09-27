@@ -37,6 +37,7 @@ use App\Modules\Admin\Http\AdminController;
 use App\Modules\Admin\Http\AdminLogController;
 use App\Modules\Admin\Http\AdminMaintenanceController;
 use App\Modules\Admin\Http\AdminMigrationController;
+use App\Modules\Plugin\Http\AdminPluginController;
 use App\Modules\Client\Http\ServiceConsoleController;
 use App\Modules\Provider\Http\DiscoveryController;
 use App\Modules\Provider\Http\JwksController;
@@ -204,6 +205,8 @@ Route::middleware(EnsureAdmin::class)->prefix('/admin')->group(function (): void
     // 本番のデプロイは artisan を走らせないので、構造の適用はここから
     Route::get('/migrations', [AdminMigrationController::class, 'index']);
     Route::post('/migrations/run', [AdminMigrationController::class, 'run']);
+    Route::get('/plugins', [AdminPluginController::class, 'index']);
+    Route::post('/plugins/{name}', [AdminPluginController::class, 'update']);
 
     // cron を組めていない間も手で流せるようにしておく
     // 全アカウントの記録が並ぶ。EnsureAdmin の内側から出さないこと

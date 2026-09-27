@@ -33,6 +33,9 @@ plugins/<name>/
 
 `enabled` を `false` にすると読み込まない。
 
+管理画面の「プラグイン」(`/admin/plugins`) からも切り替えられる。画面は plugin.json の `enabled` だけを書き換える。
+本番の plugin.json を画面で切り替えたあと、リポジトリ側の plugin.json を変えてデプロイすると、画面での切り替えは上書きされる。リポジトリの `enabled` も合わせておく。
+
 ### 新しく作るとき
 
 `plugins/template/` がひな形になっている。仕組みの説明をコメントに書いてあるので、読みながら書き換える。

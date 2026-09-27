@@ -64,8 +64,8 @@ class SigningKeys {
      * @return bool 対になっていて取り込めたか
      */
     public function import(string $privateKey, string $certificate): bool {
-        $key = openssl_pkey_get_private($privateKey);
-        if ($key === false || openssl_x509_read($certificate) === false) return false;
+        $key = @openssl_pkey_get_private($privateKey);
+        if ($key === false || @openssl_x509_read($certificate) === false) return false;
 
         // 別々の鍵を組み合わせると、署名しても SP で確かめられない
         if (!openssl_x509_check_private_key($certificate, $key)) return false;

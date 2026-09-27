@@ -181,6 +181,8 @@
     "admin.index.nav.migrations.pending": ":count pending migration(s)",
     "admin.index.nav.migrations.title": "Database schema",
     "admin.index.nav.migrations.up_to_date": "Schema is up to date",
+    "admin.index.nav.plugins.title": "Plugins",
+    "admin.index.nav.plugins.description": "Turn plugins on or off",
     "admin.index.stats.accounts": "Accounts",
     "admin.index.stats.clients": "Connected services",
     "admin.index.stats.suspended": "Suspended",
@@ -702,5 +704,14 @@
     "settings.withdraw.services.heading": "Services that will also stop working",
     "settings.withdraw.submit": "Delete account",
     "settings.withdraw.understood": "I understand this can't be undone after :days days",
-    "settings.withdraw.warning": "You'll be logged out immediately upon deletion. You can restore it within :days days, but after that your account and credentials are permanently deleted and cannot be recovered"
+    "settings.withdraw.warning": "You'll be logged out immediately upon deletion. You can restore it within :days days, but after that your account and credentials are permanently deleted and cannot be recovered",
+    "admin.plugins.crumb": "Plugins",
+    "admin.plugins.title": "Plugins",
+    "admin.plugins.lead": "Changes take effect from the next page load. If a plugin you turn on has new tables, run the migrations too.",
+    "admin.plugins.heading": "Installed plugins",
+    "admin.plugins.empty": "No plugins are installed",
+    "admin.plugins.toggle": "Turn on :name",
+    "admin.plugins.disable.title": "Turn off :name?",
+    "admin.plugins.disable.description": "Its pages and sign-in options disappear for everyone using them. No data is deleted.",
+    "admin.plugins.disable.confirm": "Turn off"
 }

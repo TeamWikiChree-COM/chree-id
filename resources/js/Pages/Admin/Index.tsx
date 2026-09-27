@@ -59,6 +59,12 @@ export default function AdminIndex({ stats, pendingMigrations, plugins }: AdminI
                         href="/admin/migrations"
                     />
                     <NavRow
+                        icon="puzzle-piece"
+                        title={t('admin.index.nav.plugins.title')}
+                        description={t('admin.index.nav.plugins.description')}
+                        href="/admin/plugins"
+                    />
+                    <NavRow
                         icon="clipboard-list"
                         title={t('admin.index.nav.audit.title')}
                         description={t('admin.index.nav.audit.description')}
