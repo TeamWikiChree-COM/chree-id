@@ -13,20 +13,14 @@ use App\Modules\Credential\Infrastructure\Verifiers\TotpVerifier;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * モジュール起動時の初期設定、認証系の登録
+ * 認証方式の初期設定と登録
  */
 class CredentialServiceProvider extends ServiceProvider {
-    /**
-     * 一覧は空で用意するだけ。中身は boot() で、プラグインと同じ Facade から入れる。
-     */
     public function register(): void {
         $this->app->bind(CredentialRepository::class, EloquentCredentialRepository::class);
         $this->app->singleton(Registry::class);
     }
 
-    /**
-     * 認証方式の一覧 (増やすときはここに1行)
-     */
     public function boot(): void {
         CredentialRegistry::register($this->app->make(PasswordVerifier::class));
         CredentialRegistry::register($this->app->make(MagicLinkVerifier::class));
