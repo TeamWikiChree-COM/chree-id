@@ -15,7 +15,9 @@ class OidcTokenCorsTest extends TestCase {
 
         $response->assertNoContent();
         $this->assertSame('*', $response->headers->get('Access-Control-Allow-Origin'));
-        $this->assertStringContainsString('POST', $response->headers->get('Access-Control-Allow-Methods'));
+        $allowMethods = $response->headers->get('Access-Control-Allow-Methods');
+        $this->assertNotNull($allowMethods);
+        $this->assertStringContainsString('POST', $allowMethods);
         $this->assertNull($response->headers->get('Access-Control-Allow-Credentials'));
     }
 
@@ -28,7 +30,9 @@ class OidcTokenCorsTest extends TestCase {
 
         $response->assertNoContent();
         $this->assertSame('*', $response->headers->get('Access-Control-Allow-Origin'));
-        $this->assertStringContainsString('GET', $response->headers->get('Access-Control-Allow-Methods'));
+        $allowMethods = $response->headers->get('Access-Control-Allow-Methods');
+        $this->assertNotNull($allowMethods);
+        $this->assertStringContainsString('GET', $allowMethods);
         $this->assertNull($response->headers->get('Access-Control-Allow-Credentials'));
     }
 
