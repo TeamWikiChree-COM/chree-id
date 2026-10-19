@@ -65,8 +65,8 @@ export default function Consent({
                                     viewBox="0 0 24 24"
                                     sx={{ width: 20, height: 20, fill: "none", stroke: "currentColor", strokeWidth: 2 }}
                                 >
-                                    <circle cx="12" cy="12" r="9" />
-                                    <path d="M12 11v5m0-8h.01" />
+                                    <circle cx="12" cy="8" r="3" />
+                                    <path d="M5 20v-1a7 7 0 0 1 14 0v1" />
                                 </Box>
                             </ListItemIcon>
                             <ListItemText primary={SCOPE_LABELS[scope] ?? scope} />
