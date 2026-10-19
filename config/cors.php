@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'paths' => ['oauth/token'],
-    'allowed_methods' => ['POST'],
+    'paths' => ['oauth/token', 'oauth/jwks'],
+    'allowed_methods' => ['GET', 'POST'],
     'allowed_origins' => ['*'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['Accept', 'Content-Type', 'Origin'],
