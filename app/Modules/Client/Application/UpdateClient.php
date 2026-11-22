@@ -22,6 +22,7 @@ class UpdateClient {
      * @param bool $canProvision サービスアカウントを扱えるか。信頼状態とは別の設定
      * @param string|null $iconUrl アイコンの URL
      * @param string|null $settingsUrl 利用者に案内する設定画面の場所
+     * @param string|null $deletionRequestUri 退会時の削除依頼の送り先
      */
     public function execute(
         OAuthClientModel $client,
@@ -34,6 +35,7 @@ class UpdateClient {
         bool $canProvision = false,
         ?string $iconUrl = null,
         ?string $settingsUrl = null,
+        ?string $deletionRequestUri = null,
     ): void {
         $client->forceFill([
             'name' => $name,
@@ -45,6 +47,7 @@ class UpdateClient {
             'can_provision' => $canProvision,
             'icon_url' => $iconUrl,
             'settings_url' => $settingsUrl,
+            'deletion_request_uri' => $deletionRequestUri,
         ])->save();
     }
 }

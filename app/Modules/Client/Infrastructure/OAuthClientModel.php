@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $homepage_url
  * @property string|null $icon_url
  * @property string|null $settings_url 利用者に案内する「このサービスの設定」の場所
+ * @property string|null $deletion_request_uri 退会時の削除依頼の送り先。null なら未対応
  * @property string|null $owner_id 登録した本人。運営が登録したものは null
  * @property \Illuminate\Support\Carbon|null $review_requested_at 承認を申請した日時
  * @property list<string> $redirect_uris
@@ -39,6 +40,7 @@ class OAuthClientModel extends Model {
         'homepage_url',
         'icon_url',
         'settings_url',
+        'deletion_request_uri',
         'owner_id',
         'review_requested_at',
         'redirect_uris',

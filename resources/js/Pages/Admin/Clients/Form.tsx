@@ -39,6 +39,7 @@ export default function Form({ client, trustOptions }: FormProps) {
         trust: string;
         icon_url: string;
         settings_url: string;
+        deletion_request_uri: string;
         skips_consent: boolean;
         can_provision: boolean;
         is_confidential: boolean;
@@ -50,6 +51,7 @@ export default function Form({ client, trustOptions }: FormProps) {
         trust: client?.trust ?? "unapproved",
         icon_url: client?.iconUrl ?? "",
         settings_url: client?.settingsUrl ?? "",
+        deletion_request_uri: client?.deletionRequestUri ?? "",
         skips_consent: client?.skipsConsent ?? false,
         can_provision: client?.canProvision ?? false,
         is_confidential: client?.isConfidential ?? true,

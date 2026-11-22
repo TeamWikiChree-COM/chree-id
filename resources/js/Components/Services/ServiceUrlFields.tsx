@@ -14,7 +14,7 @@ interface ServiceUrlFieldsProps {
 }
 
 /**
- * サービスの URL 群 (戻り先・設定画面・アイコン) の入力欄。
+ * サービスの URL 群 (戻り先・設定画面・削除依頼・アイコン) の入力欄。
  *
  * 利用者の登録画面と管理画面で同じものを使い、入力の仕方を揃える。
  */
@@ -62,6 +62,14 @@ const ServiceUrlFields = ({ data, errors, onChange }: ServiceUrlFieldsProps) => 
                 onChange={(e) => onChange({ settings_url: e.target.value })}
                 error={Boolean(errors.settings_url)}
                 helperText={errors.settings_url ?? t('services.form.settings_url_hint')}
+            />
+
+            <TextField
+                label={t('services.form.deletion_request_uri')}
+                value={data.deletion_request_uri}
+                onChange={(e) => onChange({ deletion_request_uri: e.target.value })}
+                error={Boolean(errors.deletion_request_uri)}
+                helperText={errors.deletion_request_uri ?? t('services.form.deletion_request_uri_hint')}
             />
 
             <TextField

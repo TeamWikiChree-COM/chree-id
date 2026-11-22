@@ -81,6 +81,7 @@ class AdminClientController extends Controller {
             $input['can_provision'],
             $input['icon_url'],
             $input['settings_url'],
+            deletionRequestUri: $input['deletion_request_uri'],
         );
 
         return redirect('/admin/clients')->with('issuedSecret', [
@@ -123,6 +124,7 @@ class AdminClientController extends Controller {
             $input['can_provision'],
             $input['icon_url'],
             $input['settings_url'],
+            $input['deletion_request_uri'],
         );
 
         return redirect('/admin/clients');
@@ -167,7 +169,7 @@ class AdminClientController extends Controller {
 
     /**
      * @param Request $request
-     * @return array{name: string, names: array<string, string>, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null, settings_url: string|null}
+     * @return array{name: string, names: array<string, string>, redirect_uris: list<string>, scopes: string, trust: ServiceTrust, skips_consent: bool, can_provision: bool, icon_url: string|null, settings_url: string|null, deletion_request_uri: string|null}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
@@ -184,6 +186,7 @@ class AdminClientController extends Controller {
             'can_provision' => $request->boolean('can_provision'),
             'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
             'settings_url' => $this->trimmedOrNull($request->string('settings_url')->toString()),
+            'deletion_request_uri' => $this->trimmedOrNull($request->string('deletion_request_uri')->toString()),
         ];
     }
 
@@ -207,6 +210,7 @@ class AdminClientController extends Controller {
             'icon_url' => ['nullable', 'string', 'url', 'max:500'],
             // 利用者を案内する先。サービス側が持つ画面なので、こちらは場所を預かるだけ
             'settings_url' => ['nullable', 'string', 'url', 'max:500'],
+            'deletion_request_uri' => ['nullable', 'string', 'url', 'max:500'],
         ];
     }
 

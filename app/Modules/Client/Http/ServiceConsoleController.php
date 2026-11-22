@@ -109,6 +109,7 @@ class ServiceConsoleController extends Controller {
             iconUrl: $input['icon_url'],
             settingsUrl: $input['settings_url'],
             ownerId: $accountId,
+            deletionRequestUri: $input['deletion_request_uri'],
         );
 
         $this->audit->record(AuditAction::SERVICE_REGISTERED, $accountId, ['client' => $registered->client->id]);
@@ -150,6 +151,7 @@ class ServiceConsoleController extends Controller {
             $model->can_provision,
             $input['icon_url'],
             $input['settings_url'],
+            $input['deletion_request_uri'],
         );
 
         return redirect('/services')->with('serviceSaved', true);
@@ -181,7 +183,7 @@ class ServiceConsoleController extends Controller {
 
     /**
      * @param string $accountId アカウントID (ULID)
-     * @return list<array{id: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, redirectUris: list<string>, scopes: string, reviewRequestedAt: string|null}>
+     * @return list<array{id: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, deletionRequestUri: string|null, redirectUris: list<string>, scopes: string, reviewRequestedAt: string|null}>
      */
     private function ownedBy(string $accountId): array {
         $result = [];
@@ -194,7 +196,7 @@ class ServiceConsoleController extends Controller {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, redirectUris: list<string>, scopes: string, reviewRequestedAt: string|null}
+     * @return array{id: string, name: string, trust: string, iconUrl: string|null, settingsUrl: string|null, deletionRequestUri: string|null, redirectUris: list<string>, scopes: string, reviewRequestedAt: string|null}
      */
     private function describe(OAuthClientModel $client): array {
         return [
@@ -203,6 +205,7 @@ class ServiceConsoleController extends Controller {
             'trust' => $client->trust->value,
             'iconUrl' => $client->icon_url,
             'settingsUrl' => $client->settings_url,
+            'deletionRequestUri' => $client->deletion_request_uri,
             'redirectUris' => $client->redirect_uris,
             'scopes' => $client->scopes,
             'reviewRequestedAt' => $client->review_requested_at?->format('Y/m/d H:i'),
@@ -211,7 +214,7 @@ class ServiceConsoleController extends Controller {
 
     /**
      * @param Request $request
-     * @return array{name: string, redirect_uris: list<string>, icon_url: string|null, settings_url: string|null}
+     * @return array{name: string, redirect_uris: list<string>, icon_url: string|null, settings_url: string|null, deletion_request_uri: string|null}
      * @throws ValidationException
      */
     private function validated(Request $request): array {
@@ -222,6 +225,7 @@ class ServiceConsoleController extends Controller {
             'redirect_uris.*' => ['required', 'string', 'url', 'max:500'],
             'icon_url' => ['nullable', 'string', 'url', 'max:500'],
             'settings_url' => ['nullable', 'string', 'url', 'max:500'],
+            'deletion_request_uri' => ['nullable', 'string', 'url', 'max:500'],
         ]);
 
         $uris = [];
@@ -238,6 +242,7 @@ class ServiceConsoleController extends Controller {
             'redirect_uris' => $uris,
             'icon_url' => $this->trimmedOrNull($request->string('icon_url')->toString()),
             'settings_url' => $this->trimmedOrNull($request->string('settings_url')->toString()),
+            'deletion_request_uri' => $this->trimmedOrNull($request->string('deletion_request_uri')->toString()),
         ];
     }
 

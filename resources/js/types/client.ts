@@ -20,6 +20,8 @@ export interface OAuthClient {
     iconUrl: string | null;
     /** 利用者を案内する設定画面。未設定なら null */
     settingsUrl: string | null;
+    /** 退会時の削除依頼の送り先。未設定なら null */
+    deletionRequestUri: string | null;
     /** 第三者が登録したものか */
     hasOwner: boolean;
     /** 審査を申し込んだ日時。未申請なら null */
@@ -40,6 +42,7 @@ export interface ServiceUrls {
     redirect_uris: string[];
     icon_url: string;
     settings_url: string;
+    deletion_request_uri: string;
 }
 
 /** 第三者が自分で登録したサービス */
@@ -51,6 +54,8 @@ export interface OwnedService {
     iconUrl: string | null;
     /** 利用者を案内する設定画面。未設定なら null */
     settingsUrl: string | null;
+    /** 退会時の削除依頼の送り先。未設定なら null */
+    deletionRequestUri: string | null;
     redirectUris: string[];
     scopes: string;
     /** 審査を申し込んだ日時。未申請なら null */

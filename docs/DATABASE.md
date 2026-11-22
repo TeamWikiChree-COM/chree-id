@@ -111,6 +111,7 @@ erDiagram
 | `oauth_clients` | 登録したサービス。リダイレクト先、scope、信頼状態 (`trust`)、発行の許可 (`can_provision`) など |
 | `oauth_auth_codes` | 認可コード。トークンに交換したら `used_at` が入る |
 | `oauth_access_tokens` | アクセストークン |
+| `service_deletion_requests` | 退会時にサービスへ送る削除依頼。物理削除で消えないよう `auth_identities` は参照せず、`sub` を写して持つ |
 
 ### 記録
 
@@ -146,6 +147,8 @@ DB が漏れても、そのままでは使えないようにするため。
 
 1. 退会すると `deleted_at` と `suspended_at` を立てる。行は残るので、猶予の間は取り消せる
 2. 猶予 (`CHREEID_ACCOUNT_PURGE_DAYS`) を過ぎたら、`chreeid:prune-tokens` が物理削除する
+
+サービスへの削除依頼は猶予を待たず、退会したときに送る。サービス側の猶予と物理削除はサービスが管理する。届かなかった依頼は `chreeid:send-service-deletions` が再送する。
 
 ログインできるかは `suspended_at` だけで判定する。理由は [決定事項](DECISIONS.md) を参照。
 

@@ -2,7 +2,6 @@
 namespace App\Modules\Linking\Http;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Identity\Application\ChreeSession;
 use App\Modules\Linking\Application\SplitException;
 use App\Modules\Linking\Application\SplitServiceAccount;
@@ -37,11 +36,13 @@ class SplitServiceController extends Controller {
     private readonly ChreeSession $session;
     private readonly SplitServiceAccount $split;
     private readonly ClientNames $clientNames;
+    private readonly SplitCredentialOptions $credentialOptions;
 
-    public function __construct(ChreeSession $session, SplitServiceAccount $split, ClientNames $clientNames) {
+    public function __construct(ChreeSession $session, SplitServiceAccount $split, ClientNames $clientNames, SplitCredentialOptions $credentialOptions) {
         $this->session = $session;
         $this->split = $split;
         $this->clientNames = $clientNames;
+        $this->credentialOptions = $credentialOptions;
     }
 
     /**
@@ -55,26 +56,11 @@ class SplitServiceController extends Controller {
         $target = $this->split->target($serviceAccount, $identityId);
         if ($target === null) return redirect('/')->withErrors(['split' => $this->failureMessages()[SplitException::NOT_FOUND]]);
 
-        $options = [];
-        foreach ($this->split->options($identityId) as $credential) {
-            $data = is_array($credential->data) ? $credential->data : [];
-            // 同じ種別が並んだとき (Google を2つ連携しているなど) に見分けが付くように
-            $detail = $data['email'] ?? null;
-            // 外部ログインはどこの連携かを識別子の頭 (google:… など) で持っている
-            $provider = $credential->type === CredentialType::OAUTH ? explode(':', (string) $credential->identifier)[0] : null;
-            $options[] = [
-                'id' => $credential->id,
-                'type' => $credential->type->value,
-                'provider' => $provider,
-                'detail' => is_string($detail) ? $detail : null,
-            ];
-        }
-
         return Inertia::render('Settings/SplitService', [
             'serviceAccountId' => $target->id,
             'serviceName' => $this->clientNames->of($target->client_id),
             'serviceUserId' => $target->service_user_id,
-            'options' => $options,
+            'options' => $this->credentialOptions->of($identityId),
         ]);
     }
 

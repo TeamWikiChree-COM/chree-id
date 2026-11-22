@@ -11,3 +11,6 @@ Artisan::command('inspire', function () {
 // 期限切れの登録申し込みとトークンを毎日片付ける。
 // pending_registrations にはパスワードハッシュが入るので、放置しない
 Schedule::command('chreeid:prune-tokens')->dailyAt('04:00');
+
+// 退会時にサービスへ届かなかった削除依頼を再送する
+Schedule::command('chreeid:send-service-deletions')->everyFifteenMinutes();

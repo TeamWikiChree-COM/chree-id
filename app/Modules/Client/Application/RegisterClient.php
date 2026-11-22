@@ -23,6 +23,7 @@ class RegisterClient {
      * @param string|null $iconUrl アイコンの URL
      * @param string|null $settingsUrl 利用者に案内する設定画面の場所
      * @param string|null $ownerId 登録した本人。運営が登録するときは null
+     * @param string|null $deletionRequestUri 退会時の削除依頼の送り先
      * @param bool $isConfidential secret を持てるクライアントか
      * @return RegisteredClient 平文 secret はここでしか取れない
      */
@@ -38,6 +39,7 @@ class RegisterClient {
         ?string $iconUrl = null,
         ?string $settingsUrl = null,
         ?string $ownerId = null,
+        ?string $deletionRequestUri = null,
     ): RegisteredClient {
         $secret = $isConfidential ? Str::random(64) : null;
 
@@ -55,6 +57,7 @@ class RegisterClient {
             'icon_url' => $iconUrl,
             'settings_url' => $settingsUrl,
             'owner_id' => $ownerId,
+            'deletion_request_uri' => $deletionRequestUri,
         ]);
 
         return new RegisteredClient($client, $secret);

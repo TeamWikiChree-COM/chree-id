@@ -8,25 +8,7 @@ import type { FormEvent } from "react";
 import AuthLayout from "../../Components/AuthLayout";
 import CredentialPicker from "../../Components/CredentialPicker";
 import { t } from "../../lib/i18n";
-import { idpLabel } from "../../lib/idps";
-
-/** 分離先へ複製できる認証方法 */
-interface SplitOption {
-    id: string;
-    type: string;
-    /** 同じ種別が並んだときの見分け (連携先のメールアドレスなど) */
-    detail: string | null;
-    /** 外部ログインの連携先 (google など)。それ以外は null */
-    provider: string | null;
-}
-
-/** 画面に出す名前。移せないものはサーバ側で候補から外れている */
-const CREDENTIAL_LABELS: Record<string, string> = {
-    password: t("settings.split.credential.password"),
-    totp: t("settings.split.credential.totp"),
-    magic_link: t("settings.split.credential.magic_link"),
-    oauth: t("settings.split.credential.oauth"),
-};
+import { SPLIT_CREDENTIAL_LABELS, splitCredentialName, type SplitOption } from "../../lib/splitCredentials";
 
 interface SplitServiceProps {
     /** 外すサービスアカウントのID */
@@ -83,13 +65,13 @@ export default function SplitService({
                     <CredentialPicker
                         options={options.map((option) => ({
                             ...option,
-                            name: option.provider === null ? undefined : t("settings.split.credential.oauth_named", { name: idpLabel(option.provider) }),
+                            name: splitCredentialName(option),
                         }))}
                         selected={data.credentials}
                         onChange={(selected) => setData("credentials", selected)}
                         instruction={t("settings.split.credentials.instruction")}
                         note={t("settings.split.credentials.note")}
-                        labels={CREDENTIAL_LABELS}
+                        labels={SPLIT_CREDENTIAL_LABELS}
                         error={errors.credentials}
                     />
 

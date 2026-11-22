@@ -33,6 +33,7 @@ export default function Form({ service, scopes }: FormProps) {
         redirect_uris: service?.redirectUris ?? [''],
         icon_url: service?.iconUrl ?? '',
         settings_url: service?.settingsUrl ?? '',
+        deletion_request_uri: service?.deletionRequestUri ?? '',
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {

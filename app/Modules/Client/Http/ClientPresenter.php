@@ -32,7 +32,7 @@ class ClientPresenter {
 
     /**
      * @param OAuthClientModel $client
-     * @return array{id: string, name: string, names: array<string, string>, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, settingsUrl: string|null, reviewRequestedAt: string|null, hasOwner: bool, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
+     * @return array{id: string, name: string, names: array<string, string>, redirectUris: list<string>, scopes: string, isConfidential: bool, trust: string, skipsConsent: bool, canProvision: bool, iconUrl: string|null, settingsUrl: string|null, deletionRequestUri: string|null, reviewRequestedAt: string|null, hasOwner: bool, serviceAccounts: int, migratedAccounts: int, createdAt: string|null}
      */
     public function toArray(OAuthClientModel $client): array {
         return [
@@ -47,6 +47,7 @@ class ClientPresenter {
             'canProvision' => $client->can_provision,
             'iconUrl' => $client->icon_url,
             'settingsUrl' => $client->settings_url,
+            'deletionRequestUri' => $client->deletion_request_uri,
             'reviewRequestedAt' => $client->review_requested_at?->format('Y/m/d H:i'),
             'hasOwner' => $client->owner_id !== null,
             // 移行元へ落とす経路をいつ消せるかの目安になる
