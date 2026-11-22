@@ -22,7 +22,25 @@ class ServiceAccountPaths implements SpecPaths {
             ],
             self::RESOURCE . '/password' => ['put' => $this->rest('password_change')],
             self::RESOURCE . '/claim-tickets' => ['post' => $this->rest('claim_ticket')],
+            '/api/v1/subjects/{sub}' => ['delete' => $this->deactivateBySubject()],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function deactivateBySubject(): array {
+        $operation = $this->base('deactivate_by_subject');
+        $operation['parameters'] = [[
+            'name' => 'sub',
+            'in' => 'path',
+            'required' => true,
+            'description' => P::t('apidocs.param.sub'),
+            'schema' => ['type' => 'string'],
+        ]];
+        $operation['responses'] = [204 => P::noContent(), 404 => P::error('apidocs.error.unknown_service_user')] + P::clientErrors();
+
+        return $operation;
     }
 
     /**

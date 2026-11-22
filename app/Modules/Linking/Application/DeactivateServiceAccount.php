@@ -38,6 +38,36 @@ class DeactivateServiceAccount {
 
         if ($link === null) return false;
 
+        $this->deactivate($client, $link);
+
+        return true;
+    }
+
+    /**
+     * OIDC でだけ結び付いた利用者は service_user_id を持たないので、サービスに渡した sub で引く。
+     *
+     * @param OAuthClientModel $client 呼び出したサービス
+     * @param string $sub そのサービスに渡した sub
+     * @return bool 対象が見つかり畳めたか
+     */
+    public function bySubject(OAuthClientModel $client, string $sub): bool {
+        $link = ServiceAccountModel::query()
+            ->where('client_id', $client->id)
+            ->where('sub', $sub)
+            ->first();
+
+        if ($link === null) return false;
+
+        $this->deactivate($client, $link);
+
+        return true;
+    }
+
+    /**
+     * @param OAuthClientModel $client 呼び出したサービス
+     * @param ServiceAccountModel $link 畳むサービスアカウント
+     */
+    private function deactivate(OAuthClientModel $client, ServiceAccountModel $link): void {
         DB::transaction(function () use ($client, $link): void {
             // service_account_id は nullOnDelete なので、先に畳まないと
             // 発行済みのトークンが認証主体だけを指したまま生き残る
@@ -50,8 +80,6 @@ class DeactivateServiceAccount {
 
             $this->accounts->delete($identityId);
         });
-
-        return true;
     }
 
     /**

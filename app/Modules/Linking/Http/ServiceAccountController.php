@@ -126,6 +126,22 @@ class ServiceAccountController extends Controller {
     }
 
     /**
+     * サービス側で退会した利用者を、サービスに渡した sub で畳む。
+     *
+     * OIDC でだけ結び付いた利用者は service_user_id を持たないので、こちらで指してもらう。
+     *
+     * @param Request $request
+     * @param string $sub そのサービスに渡した sub
+     * @return Response
+     */
+    public function destroyBySubject(Request $request, string $sub): Response {
+        $found = $this->deactivate->bySubject(EnsureProvisioningClient::client($request), $sub);
+        if (!$found) return ApiError::make('unknown_service_user', __('api.service_user.not_found'), 404);
+
+        return response()->noContent();
+    }
+
+    /**
      * 移行元でパスワードが変えられたときに呼んでもらう。
      *
      * **パスワードの正解を持っているのは ChreeID だけ**にしたいので、

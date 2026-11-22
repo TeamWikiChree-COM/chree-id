@@ -26,6 +26,10 @@ Route::prefix('v1')->group(function (): void {
                 Route::post('/claim-tickets', 'storeClaimTicket');
             });
 
+        // サービス側で退会した利用者を sub で畳む。OIDC でだけ結び付いた利用者は service_user_id を持たない
+        Route::delete('/subjects/{sub}', [ServiceAccountController::class, 'destroyBySubject'])
+            ->where(['sub' => '[^/]+']);
+
         // サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
         Route::post('/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])
             ->middleware('throttle:service-auth');
