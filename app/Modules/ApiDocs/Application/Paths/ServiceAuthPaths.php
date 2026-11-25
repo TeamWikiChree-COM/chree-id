@@ -16,6 +16,7 @@ class ServiceAuthPaths implements SpecPaths {
     public function paths(): array {
         return [
             '/api/v1/service-auth/password' => ['post' => $this->verifyPassword()],
+            '/api/v1/service-auth/second-factor' => ['post' => $this->verifySecondFactor()],
             '/api/v1/service-auth/magic-link' => ['post' => $this->issueMagicLink()],
             '/api/v1/service-auth/magic-link/consume' => ['post' => $this->consumeMagicLink()],
         ];
@@ -39,8 +40,29 @@ class ServiceAuthPaths implements SpecPaths {
                 ], 'description' => P::t('apidocs.verify_password.status')],
                 'sub' => ['type' => 'string'],
                 'service_user_id' => ['type' => 'string'],
+                'challenge' => ['type' => 'string', 'description' => P::t('apidocs.verify_password.challenge')],
+                'expires_in' => ['type' => 'integer'],
             ], ['status'])),
             '401' => P::error('apidocs.verify_password.invalid'),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function verifySecondFactor(): array {
+        $body = P::object([
+            'challenge' => P::field('apidocs.field.challenge', ['maxLength' => 128]),
+            'code' => P::field('apidocs.field.second_factor_code', ['maxLength' => 64]),
+        ], ['challenge', 'code']);
+
+        return $this->operation('second_factor', $body, [
+            '200' => P::json('apidocs.verify_password.result', P::object([
+                'status' => ['type' => 'string', 'enum' => [ServiceAuthOutcome::OK->value]],
+                'sub' => ['type' => 'string'],
+                'service_user_id' => ['type' => 'string'],
+            ], ['status', 'sub'])),
+            '401' => P::error('apidocs.second_factor.invalid'),
         ]);
     }
 

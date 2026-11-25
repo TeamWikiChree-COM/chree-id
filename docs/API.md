@@ -62,7 +62,11 @@ confidential クライアントの `client_id` と `client_secret` で認証す�
 | 停止する | `DELETE /api/v1/service-accounts/{serviceUserId}` |
 | パスワードを反映する | `PUT /api/v1/service-accounts/{serviceUserId}/password` |
 | 移行用の URL を発行する | `POST /api/v1/service-accounts/{serviceUserId}/claim-tickets` |
+| 2段階認証 (TOTP) の秘密鍵を発行する | `POST /api/v1/service-accounts/{serviceUserId}/totp/secret` |
+| 2段階認証を有効にする / やめる | `PUT` / `DELETE /api/v1/service-accounts/{serviceUserId}/totp` |
+| 復旧コードを作り直す | `POST /api/v1/service-accounts/{serviceUserId}/recovery-codes` |
 | パスワードを照合する | `POST /api/v1/service-auth/password` |
+| 2要素目を照合する | `POST /api/v1/service-auth/second-factor` |
 | メールログインのリンクを送る / 使う | `POST /api/v1/service-auth/magic-link`、`.../consume` |
 
 ### エラーの形

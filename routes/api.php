@@ -23,6 +23,11 @@ Route::prefix('v1')->group(function (): void {
                 Route::put('/', 'update');
                 Route::delete('/', 'destroy');
                 Route::put('/password', 'updatePassword');
+                // サービスが自分の画面で 2FA を設定する。データはこちらに置く。コードを照合する口は回数を絞る
+                Route::post('/totp/secret', 'startTotp');
+                Route::put('/totp', 'enableTotp')->middleware('throttle:service-account-code');
+                Route::delete('/totp', 'disableTotp')->middleware('throttle:service-account-code');
+                Route::post('/recovery-codes', 'regenerateRecoveryCodes')->middleware('throttle:service-account-code');
                 Route::post('/claim-tickets', 'storeClaimTicket');
             });
 
@@ -33,6 +38,9 @@ Route::prefix('v1')->group(function (): void {
         // サービスが自前のログインフォームのまま照合だけ任せに来る。平文が流れるので特に絞る
         Route::post('/service-auth/password', [ServiceAuthController::class, 'verifyPassword'])
             ->middleware('throttle:service-auth');
+        // パスワードの後の2要素目。合図が一度きりなので、総当たりの歯止めはパスワード側の回数制限が担う
+        Route::post('/service-auth/second-factor', [ServiceAuthController::class, 'verifySecondFactor'])
+            ->middleware('throttle:service-second-factor');
 
         // サービスが自前で出すメールリンクの裏付け。画面もメールも向こうのまま
         Route::post('/service-auth/magic-link', [ServiceAuthController::class, 'issueMagicLink'])

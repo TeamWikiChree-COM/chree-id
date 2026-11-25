@@ -21,6 +21,12 @@ class ServiceAccountPaths implements SpecPaths {
                 'delete' => $this->rest('deactivate'),
             ],
             self::RESOURCE . '/password' => ['put' => $this->rest('password_change')],
+            self::RESOURCE . '/totp/secret' => ['post' => $this->rest('totp_start')],
+            self::RESOURCE . '/totp' => [
+                'put' => $this->rest('totp_enable'),
+                'delete' => $this->rest('totp_disable'),
+            ],
+            self::RESOURCE . '/recovery-codes' => ['post' => $this->rest('recovery_codes')],
             self::RESOURCE . '/claim-tickets' => ['post' => $this->rest('claim_ticket')],
             '/api/v1/subjects/{sub}' => ['delete' => $this->deactivateBySubject()],
         ];
@@ -87,6 +93,8 @@ class ServiceAccountPaths implements SpecPaths {
      */
     private function definition(string $name): array {
         $unknown = [404 => P::error('apidocs.error.unknown_service_user')];
+        $managed = [409 => P::error('apidocs.totp_start.managed')];
+        $codeBody = ['code' => P::field('apidocs.field.second_factor_code', ['maxLength' => 64])];
 
         return match ($name) {
             'status' => ['body' => null, 'required' => [], 'status' => 200, 'success' => $this->statusResponse(), 'errors' => $unknown],
@@ -102,6 +110,30 @@ class ServiceAccountPaths implements SpecPaths {
                     409 => P::error('apidocs.password_change.managed'),
                     422 => P::error('apidocs.password_change.unsupported_hash'),
                 ],
+            ],
+            'totp_start' => ['body' => null, 'required' => [], 'status' => 200, 'errors' => $unknown + $managed,
+                'success' => P::json('apidocs.totp_start.issued', P::object([
+                    'secret' => ['type' => 'string'],
+                    'otpauth_uri' => ['type' => 'string'],
+                ], ['secret', 'otpauth_uri']))],
+            'totp_enable' => [
+                'body' => [
+                    'secret' => P::field('apidocs.field.totp_secret', ['pattern' => '^[A-Z2-7]{32}$']),
+                    'code' => P::field('apidocs.field.second_factor_code', ['maxLength' => 16]),
+                ],
+                'required' => ['secret', 'code'], 'status' => 200,
+                'success' => $this->recoveryCodesResponse('apidocs.totp_enable.enabled'),
+                // 操作に固有の応答を優先する (422 の意味が他と違う)
+                'errors' => $unknown + $managed + [422 => P::error('apidocs.totp_enable.invalid_code')],
+            ],
+            'totp_disable' => [
+                'body' => $codeBody, 'required' => ['code'], 'status' => 204, 'success' => null,
+                'errors' => $unknown + [409 => P::error('apidocs.totp_disable.not_enabled'), 422 => P::error('apidocs.totp_enable.invalid_code')],
+            ],
+            'recovery_codes' => [
+                'body' => $codeBody, 'required' => ['code'], 'status' => 200,
+                'success' => $this->recoveryCodesResponse('apidocs.recovery_codes.issued'),
+                'errors' => $unknown + [409 => P::error('apidocs.totp_disable.not_enabled'), 422 => P::error('apidocs.totp_enable.invalid_code')],
             ],
             default => ['body' => null, 'required' => [], 'status' => 201, 'success' => $this->claimTicketResponse(),
                 'errors' => $unknown + [409 => P::error('apidocs.claim_ticket.already_claimed')]],
@@ -141,6 +173,16 @@ class ServiceAccountPaths implements SpecPaths {
                 'items' => ['type' => 'string', 'example' => 'password'],
             ],
         ], ['sub', 'migrated', 'migrated_at', 'credential_types']));
+    }
+
+    /**
+     * @param string $description 応答の説明の翻訳キー
+     * @return array<string, mixed>
+     */
+    private function recoveryCodesResponse(string $description): array {
+        return P::json($description, P::object([
+            'recovery_codes' => ['type' => 'array', 'items' => ['type' => 'string']],
+        ], ['recovery_codes']));
     }
 
     /**

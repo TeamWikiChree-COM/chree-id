@@ -2,6 +2,7 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Credential\Application\IssueOneTimeToken;
+use App\Modules\Credential\Domain\CredentialRepository;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Infrastructure\CredentialModel;
 use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
@@ -18,6 +19,9 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
  *
  * 発行した合図は**この口でしか使えない**。ChreeID のセッションは作れないので、
  * サービスに渡しても向こうが ChreeID として振る舞えるようにはならない。
+ *
+ * **2FA を有効にしている相手には使わせない。** メールリンクで示せるのはメールを受け取れることだけで、
+ * 2要素目を挟めない。通すと、メールを乗っ取られたときに 2FA を素通りされる。
  */
 class ServiceMagicLink {
     /** 合図の寿命。メールが届いて開くまでの猶予 */
@@ -30,6 +34,7 @@ class ServiceMagicLink {
         private readonly ResolveByEmail $byEmail,
         private readonly IssueOneTimeToken $tokens,
         private readonly AuthIdentityRepository $accounts,
+        private readonly CredentialRepository $credentials,
     ) {}
 
     /**
@@ -49,6 +54,7 @@ class ServiceMagicLink {
         // 有効化していない相手には出さない。移行元がメールリンクを
         // 使っていない利用者に、こちら発の経路を勝手に生やさないため
         if (!$this->hasMagicLink($serviceAccount->auth_identity_id)) return null;
+        if ($this->credentials->requiresSecondFactor($serviceAccount->auth_identity_id)) return null;
 
         return $this->tokens->execute(
             $serviceAccount->auth_identity_id,
@@ -76,6 +82,8 @@ class ServiceMagicLink {
         // 発行後に停止・退会したアカウントで使わせない
         $account = $this->accounts->findById($row->auth_identity_id);
         if ($account === null || $account->isSuspended()) return null;
+        // 発行の後で 2FA を有効にした人も、ここで止める
+        if ($this->credentials->requiresSecondFactor($row->auth_identity_id)) return null;
 
         // 出した相手のサービスでしか使えない
         $serviceAccount = ServiceAccountModel::query()

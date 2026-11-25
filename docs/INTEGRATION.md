@@ -39,7 +39,9 @@ php artisan chreeid:register-client "サービス名" https://example.com/callba
 2. ログインフォームに入力されたメールとパスワードを `POST /api/v1/service-auth/password` で照合する
 3. 返ってきた `sub` でログインさせる
 
-2段階認証を有効にしている利用者は、この口ではログインを完了できない (`second_factor_required`)。その場合は A の OIDC へ誘導する。
+2段階認証を有効にしている利用者は、パスワードだけではログインを完了できない (`second_factor_required`)。そのときは一度きりの `challenge` が返るので、サービスの画面でコード (認証アプリの6桁か復旧コード) を入力させ、`POST /api/v1/service-auth/second-factor` に `challenge` と一緒に送る。`challenge` は5分で切れ、コードを間違えると使えなくなるので、そのときはパスワードの入力からやり直してもらう。A の OIDC へ誘導してもよい。
+
+ServiceAccount の2段階認証は、サービスの画面で設定させる (データは ChreeID に置く)。`POST .../totp/secret` で秘密鍵と `otpauth_uri` を受け取って QR を出し、利用者が認証アプリに登録したら `PUT .../totp` に秘密鍵とコードを送る。返ってくる復旧コードは、その場で利用者に見せる (二度と取り出せない)。UserAccount へ移行した利用者は ChreeID で管理するので、これらの口は `409 managed` を返す。
 
 ## 3. 移行の入り口を用意する (任意)
 

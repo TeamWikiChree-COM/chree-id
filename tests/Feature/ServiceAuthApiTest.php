@@ -28,6 +28,7 @@ class ServiceAuthApiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         RateLimiter::clear('service-auth');
+        RateLimiter::clear('service-second-factor');
     }
 
     /**
@@ -168,18 +169,101 @@ class ServiceAuthApiTest extends TestCase {
             ->assertJson(['error' => 'invalid_grant']);
     }
 
-    // パスワードは正しくても認証は成立していない。2要素目はこの口では受け取れない
+    // パスワードは正しくても認証は成立していない。2要素目は合図と一緒に別の口で受け取る
     public function test_reportsThatASecondFactorIsRequired(): void {
         $client = $this->client();
         $accountId = $this->account($client);
+        $this->enableTotp($accountId);
 
-        $secret = app(EnableTotp::class)->generateSecret();
-        app(EnableTotp::class)->execute($accountId, $secret, app(Totp::class)->at($secret, intdiv(time(), 30)));
-
-        $this->verify($client)
+        $response = $this->verify($client)
             ->assertOk()
             ->assertJson(['status' => 'second_factor_required'])
             ->assertJsonMissing(['sub' => $accountId]);
+
+        $this->assertIsString($response->json('challenge'));
+    }
+
+    /**
+     * @param string $accountId アカウントID (ULID)
+     * @return array{secret: string, recovery_codes: list<string>}
+     */
+    private function enableTotp(string $accountId): array {
+        $secret = app(EnableTotp::class)->generateSecret();
+        $codes = app(EnableTotp::class)->execute($accountId, $secret, $this->totpCode($secret));
+
+        return ['secret' => $secret, 'recovery_codes' => $codes];
+    }
+
+    /**
+     * @param string $secret base32 の秘密鍵
+     * @return string 今のコード
+     */
+    private function totpCode(string $secret): string {
+        return app(Totp::class)->at($secret, intdiv(time(), 30));
+    }
+
+    /**
+     * @param OAuthClientModel $client 呼び出すサービス
+     * @param string $challenge パスワードの照合で受け取った合図
+     * @param string $code 2要素目
+     * @return \Illuminate\Testing\TestResponse<\Illuminate\Http\Response>
+     */
+    private function verifySecondFactor(OAuthClientModel $client, string $challenge, string $code): \Illuminate\Testing\TestResponse {
+        return $this->postJson('/api/v1/service-auth/second-factor', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'challenge' => $challenge,
+            'code' => $code,
+        ]);
+    }
+
+    public function test_completesTheLoginWithTheSecondFactor(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        $totp = $this->enableTotp($accountId);
+
+        $challenge = (string) $this->verify($client)->json('challenge');
+
+        $this->verifySecondFactor($client, $challenge, $this->totpCode($totp['secret']))
+            ->assertOk()
+            ->assertJson([
+                'status' => 'ok',
+                'sub' => app(ResolveSubject::class)->execute($client, $accountId),
+                'service_user_id' => '42',
+            ]);
+    }
+
+    public function test_acceptsARecoveryCodeAsTheSecondFactor(): void {
+        $client = $this->client();
+        $totp = $this->enableTotp($this->account($client));
+
+        $challenge = (string) $this->verify($client)->json('challenge');
+
+        $this->verifySecondFactor($client, $challenge, $totp['recovery_codes'][0])->assertOk();
+    }
+
+    // 6桁は総当たりできる桁数なので、合図は間違えても使い切る
+    public function test_burnsTheChallengeOnAWrongCode(): void {
+        $client = $this->client();
+        $totp = $this->enableTotp($this->account($client));
+
+        $challenge = (string) $this->verify($client)->json('challenge');
+
+        $this->verifySecondFactor($client, $challenge, '000000')->assertStatus(401);
+        $this->verifySecondFactor($client, $challenge, $this->totpCode($totp['secret']))->assertStatus(401);
+    }
+
+    #[TestDox('別のサービスに渡した合図は使えない')]
+    public function test_refusesAChallengeIssuedToAnotherService(): void {
+        $client = $this->client();
+        $totp = $this->enableTotp($this->account($client));
+        $other = $this->client();
+
+        $challenge = (string) $this->verify($client)->json('challenge');
+
+        $this->verifySecondFactor($other, $challenge, $this->totpCode($totp['secret']))->assertStatus(401);
+        // 横取りを試されても、本来のサービスはまだ使える
+        $this->verifySecondFactor($client, $challenge, $this->totpCode($totp['secret']))->assertOk();
     }
 
     #[TestDox('停止したアカウントはサービス経由でも認証できない')]
@@ -288,6 +372,32 @@ class ServiceAuthApiTest extends TestCase {
         $this->account($client);
 
         $this->askMagicLink($client)->assertStatus(404);
+    }
+
+    // メールリンクでは2要素目を挟めない。通すとメールを乗っ取られたときに 2FA を素通りされる
+    public function test_refusesAMagicLinkForASecondFactorAccount(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        app(\App\Modules\Credential\Application\EnableMagicLink::class)->execute($accountId);
+        $this->enableTotp($accountId);
+
+        $this->askMagicLink($client)->assertStatus(404);
+    }
+
+    public function test_refusesATokenIssuedBeforeEnablingTotp(): void {
+        $client = $this->client();
+        $accountId = $this->account($client);
+        app(\App\Modules\Credential\Application\EnableMagicLink::class)->execute($accountId);
+
+        $token = $this->askMagicLink($client)->json('token');
+        $this->assertIsString($token);
+        $this->enableTotp($accountId);
+
+        $this->postJson('/api/v1/service-auth/magic-link/consume', [
+            'client_id' => $client->id,
+            'client_secret' => self::SECRET,
+            'token' => $token,
+        ])->assertStatus(401);
     }
 
     // 他所のサービスが出した合図は使えない

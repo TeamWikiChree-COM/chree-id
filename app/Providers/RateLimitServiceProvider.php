@@ -33,6 +33,16 @@ class RateLimitServiceProvider extends ServiceProvider {
         // IP で数えるとそのサービスの利用者全員が巻き添えになる。アドレスとの組で数える
         RateLimiter::for('service-auth', fn (Request $request): Limit => Limit::perMinute(5)->by($this->clientEmailKey($request)));
 
+        // 2要素目は合図が一度きりなので、ここは呼び出し元のサービス単位の歯止めだけ置く
+        RateLimiter::for('service-second-factor', fn (Request $request): Limit => Limit::perMinute(60)->by($this->clientId($request)));
+
+        // サービス経由の 2FA の設定。コードを照合するので、利用者ごとに絞る
+        RateLimiter::for('service-account-code', function (Request $request): Limit {
+            $serviceUserId = $request->route('serviceUserId');
+
+            return Limit::perMinute(5)->by($this->clientId($request) . '|' . (is_string($serviceUserId) ? $serviceUserId : ''));
+        });
+
         // トークン交換。正規のサービスは認可コード1つにつき1回しか送らないので緩めでよい
         RateLimiter::for('token', fn (Request $request): Limit => Limit::perMinute(60)->by($this->clientId($request)));
 

@@ -22,6 +22,8 @@ class OneTimeTokenModel extends Model {
     public const PURPOSE_LOGIN = 'login';
     public const PURPOSE_VERIFY_EMAIL = 'verify_email';
     public const PURPOSE_PASSWORD_RESET = 'password_reset';
+    /** サービス経由のログインで、パスワードが通った後に2要素目を待つ合図 */
+    public const PURPOSE_SERVICE_SECOND_FACTOR = 'service_second_factor';
 
     #[\Override]
     protected $table = 'one_time_tokens';

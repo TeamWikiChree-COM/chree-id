@@ -9,11 +9,13 @@ final class ServiceAuthResult {
      * @param ServiceAuthOutcome $outcome 結果
      * @param string|null $sub 成立時にサービスへ渡す sub
      * @param string|null $serviceUserId サービス側での利用者の識別子
+     * @param string|null $challenge 2要素目を受け取る一度きりの合図 (SECOND_FACTOR_REQUIRED のときだけ)
      */
     private function __construct(
         public readonly ServiceAuthOutcome $outcome,
         public readonly ?string $sub = null,
         public readonly ?string $serviceUserId = null,
+        public readonly ?string $challenge = null,
     ) {}
 
     /**
@@ -34,9 +36,10 @@ final class ServiceAuthResult {
     }
 
     /**
+     * @param string $challenge 2要素目と一緒に送り返してもらう合図
      * @return self
      */
-    public static function secondFactorRequired(): self {
-        return new self(ServiceAuthOutcome::SECOND_FACTOR_REQUIRED);
+    public static function secondFactorRequired(string $challenge): self {
+        return new self(ServiceAuthOutcome::SECOND_FACTOR_REQUIRED, challenge: $challenge);
     }
 }

@@ -2,9 +2,11 @@
 namespace App\Modules\Linking\Application;
 
 use App\Modules\Credential\Application\CompleteAuthentication;
+use App\Modules\Credential\Application\IssueOneTimeToken;
 use App\Modules\Credential\Application\VerifyCredential;
 use App\Modules\Credential\Domain\CredentialType;
 use App\Modules\Credential\Domain\VerifiedFactors;
+use App\Modules\Credential\Infrastructure\OneTimeTokenModel;
 use App\Modules\Identity\Application\ResolveByEmail;
 use App\Modules\Linking\Domain\ServiceAuthResult;
 use App\Modules\Linking\Infrastructure\ServiceAccountModel;
@@ -21,11 +23,15 @@ use App\Modules\Client\Infrastructure\OAuthClientModel;
  * 認証成立の判定は AuthenticationPolicy を通る (CompleteAuthentication 経由)。
  */
 class VerifyServiceUserPassword {
+    /** 2要素目を待つ時間。認証アプリを開いてコードを打つまでの猶予 */
+    public const CHALLENGE_MINUTES = 5;
+
     public function __construct(
         private readonly ResolveByEmail $byEmail,
         private readonly VerifyCredential $verify,
         private readonly CompleteAuthentication $complete,
         private readonly ResolveSubject $subjects,
+        private readonly IssueOneTimeToken $tokens,
     ) {}
 
     /**
@@ -50,8 +56,13 @@ class VerifyServiceUserPassword {
         if (!$verified->isSuccess()) return ServiceAuthResult::invalid();
 
         // 2FA を有効にしているアカウントはパスワードだけでは成立しない。
-        // 2要素目をこの口では受け取れないので、ブラウザを介す OIDC へ寄せてもらう
-        if (!$this->complete->execute($accountId, $factors)) return ServiceAuthResult::secondFactorRequired();
+        // パスワードが通った証として合図を渡し、2要素目と一緒に送り返してもらう (VerifyServiceUserSecondFactor)。
+        // パスワードをもう一度流させずに済むので、サービスが平文を持ち回らなくてよい
+        if (!$this->complete->execute($accountId, $factors)) {
+            return ServiceAuthResult::secondFactorRequired(
+                $this->tokens->execute($accountId, OneTimeTokenModel::PURPOSE_SERVICE_SECOND_FACTOR, self::CHALLENGE_MINUTES),
+            );
+        }
 
         return ServiceAuthResult::ok($this->subjects->forServiceAccount($link), $link->service_user_id);
     }

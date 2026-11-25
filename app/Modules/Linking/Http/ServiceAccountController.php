@@ -7,6 +7,7 @@ use App\Modules\Linking\Application\ClaimTickets;
 use App\Modules\Linking\Application\DeactivateServiceAccount;
 use App\Modules\Linking\Application\DescribeServiceAccount;
 use App\Modules\Linking\Application\IssueServiceAccount;
+use App\Modules\Linking\Application\ServiceAccountTotp;
 use App\Modules\Client\Http\EnsureProvisioningClient;
 use App\Support\Api\ApiError;
 use Illuminate\Http\JsonResponse;
@@ -31,13 +32,15 @@ class ServiceAccountController extends Controller {
     private readonly DeactivateServiceAccount $deactivate;
     private readonly DescribeServiceAccount $describe;
     private readonly ChangeServiceAccountPassword $changePassword;
+    private readonly ServiceAccountTotp $totp;
 
-    public function __construct(IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe, ChangeServiceAccountPassword $changePassword) {
+    public function __construct(IssueServiceAccount $issue, ClaimTickets $tickets, DeactivateServiceAccount $deactivate, DescribeServiceAccount $describe, ChangeServiceAccountPassword $changePassword, ServiceAccountTotp $totp) {
         $this->issue = $issue;
         $this->tickets = $tickets;
         $this->deactivate = $deactivate;
         $this->describe = $describe;
         $this->changePassword = $changePassword;
+        $this->totp = $totp;
     }
 
     /**
@@ -169,6 +172,110 @@ class ServiceAccountController extends Controller {
             ChangeServiceAccountPassword::MANAGED => ApiError::make('managed', __('api.password.managed'), 409),
             ChangeServiceAccountPassword::NOT_FOUND => ApiError::make('not_found', __('api.password.not_found'), 404),
             default => ApiError::make('unsupported_hash', __('api.password.unsupported_hash'), 422),
+        };
+    }
+
+    /**
+     * TOTP の秘密鍵を発行する。まだ有効化はしない。
+     *
+     * サービスは QR を出して、利用者が認証アプリに登録したら enableTotp に秘密鍵とコードを送り返す。
+     * 発行しただけでは何も変わらないので、こちらは状態を持たない。
+     *
+     * @param Request $request
+     * @param string $serviceUserId サービス側での利用者の識別子
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function startTotp(Request $request, string $serviceUserId): JsonResponse {
+        $this->validateFor($request, $serviceUserId);
+
+        $result = $this->totp->start(EnsureProvisioningClient::client($request), $serviceUserId);
+        if ($result['status'] !== ServiceAccountTotp::OK) return $this->totpError($result['status']);
+
+        return response()->json(['secret' => $result['secret'] ?? null, 'otpauth_uri' => $result['otpauth_uri'] ?? null]);
+    }
+
+    /**
+     * 認証アプリのコードで確認して TOTP を有効にする。復旧コードの平文はこの応答でしか返さない。
+     *
+     * @param Request $request
+     * @param string $serviceUserId サービス側での利用者の識別子
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function enableTotp(Request $request, string $serviceUserId): JsonResponse {
+        $this->validateFor($request, $serviceUserId, [
+            // Totp::generateSecret() の形。違う形を通すと照合のたびに例外になる
+            'secret' => ['required', 'string', 'regex:/^[A-Z2-7]{32}$/'],
+            'code' => ['required', 'string', 'max:16'],
+        ]);
+
+        $result = $this->totp->enable(
+            EnsureProvisioningClient::client($request),
+            $serviceUserId,
+            $request->string('secret')->toString(),
+            $request->string('code')->trim()->toString(),
+        );
+
+        if ($result['status'] !== ServiceAccountTotp::OK) return $this->totpError($result['status']);
+
+        return response()->json(['recovery_codes' => $result['recovery_codes'] ?? []]);
+    }
+
+    /**
+     * TOTP をやめる。サービス側のセッションだけで外されないよう、今のコードか復旧コードを求める。
+     *
+     * @param Request $request
+     * @param string $serviceUserId サービス側での利用者の識別子
+     * @return Response
+     * @throws ValidationException
+     */
+    public function disableTotp(Request $request, string $serviceUserId): Response {
+        $this->validateFor($request, $serviceUserId, ['code' => ['required', 'string', 'max:64']]);
+
+        $status = $this->totp->disable(
+            EnsureProvisioningClient::client($request),
+            $serviceUserId,
+            $request->string('code')->trim()->toString(),
+        );
+
+        return $status === ServiceAccountTotp::OK ? response()->noContent() : $this->totpError($status);
+    }
+
+    /**
+     * 復旧コードを作り直す。今のコードか復旧コードを求める。
+     *
+     * @param Request $request
+     * @param string $serviceUserId サービス側での利用者の識別子
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function regenerateRecoveryCodes(Request $request, string $serviceUserId): JsonResponse {
+        $this->validateFor($request, $serviceUserId, ['code' => ['required', 'string', 'max:64']]);
+
+        $result = $this->totp->regenerateRecoveryCodes(
+            EnsureProvisioningClient::client($request),
+            $serviceUserId,
+            $request->string('code')->trim()->toString(),
+        );
+
+        if ($result['status'] !== ServiceAccountTotp::OK) return $this->totpError($result['status']);
+
+        return response()->json(['recovery_codes' => $result['recovery_codes'] ?? []]);
+    }
+
+    /**
+     * 断る理由ごとに分ける。潰すと移行元が利用者に何を案内すればよいか分からない。
+     *
+     * @param string $status ServiceAccountTotp の定数
+     * @return JsonResponse
+     */
+    private function totpError(string $status): JsonResponse {
+        return match ($status) {
+            ServiceAccountTotp::MANAGED => ApiError::make('managed', __('api.totp.managed'), 409),
+            ServiceAccountTotp::NOT_ENABLED => ApiError::make('not_enabled', __('api.totp.not_enabled'), 409),
+            ServiceAccountTotp::INVALID_CODE => ApiError::make('invalid_code', __('api.totp.invalid_code'), 422),
+            default => ApiError::make('unknown_service_user', __('api.service_user.unknown'), 404),
         };
     }
 

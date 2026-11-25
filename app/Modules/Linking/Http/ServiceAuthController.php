@@ -4,6 +4,7 @@ namespace App\Modules\Linking\Http;
 use App\Http\Controllers\Controller;
 use App\Modules\Linking\Application\ServiceMagicLink;
 use App\Modules\Linking\Application\VerifyServiceUserPassword;
+use App\Modules\Linking\Application\VerifyServiceUserSecondFactor;
 use App\Modules\Linking\Domain\ServiceAuthOutcome;
 use App\Modules\Client\Http\EnsureProvisioningClient;
 use App\Support\Api\ApiError;
@@ -23,10 +24,12 @@ use Illuminate\Validation\ValidationException;
 class ServiceAuthController extends Controller {
     private readonly VerifyServiceUserPassword $verify;
     private readonly ServiceMagicLink $magicLinks;
+    private readonly VerifyServiceUserSecondFactor $secondFactor;
 
-    public function __construct(VerifyServiceUserPassword $verify, ServiceMagicLink $magicLinks) {
+    public function __construct(VerifyServiceUserPassword $verify, ServiceMagicLink $magicLinks, VerifyServiceUserSecondFactor $secondFactor) {
         $this->verify = $verify;
         $this->magicLinks = $magicLinks;
+        $this->secondFactor = $secondFactor;
     }
 
     /**
@@ -54,13 +57,56 @@ class ServiceAuthController extends Controller {
         }
 
         if ($result->outcome === ServiceAuthOutcome::SECOND_FACTOR_REQUIRED) {
-            return response()->json(['status' => ServiceAuthOutcome::SECOND_FACTOR_REQUIRED->value]);
+            return response()->json([
+                'status' => ServiceAuthOutcome::SECOND_FACTOR_REQUIRED->value,
+                'challenge' => $result->challenge,
+                'expires_in' => VerifyServiceUserPassword::CHALLENGE_MINUTES * 60,
+            ]);
         }
 
+        return $this->authenticated($result->sub, $result->serviceUserId);
+    }
+
+    /**
+     * パスワードの照合で返した合図と、2要素目のコードを受け取る。
+     *
+     * 画面はサービスのまま。合図は一度きりなので、コードを間違えたらパスワードからやり直してもらう。
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function verifySecondFactor(Request $request): JsonResponse {
+        $client = EnsureProvisioningClient::client($request);
+
+        $request->validate([
+            'challenge' => ['required', 'string', 'max:128'],
+            'code' => ['required', 'string', 'max:64'],
+        ]);
+
+        $result = $this->secondFactor->execute(
+            $client,
+            $request->string('challenge')->toString(),
+            $request->string('code')->trim()->toString(),
+        );
+
+        if ($result->outcome !== ServiceAuthOutcome::OK) {
+            return ApiError::make('invalid_grant', __('api.second_factor.invalid_grant'), 401);
+        }
+
+        return $this->authenticated($result->sub, $result->serviceUserId);
+    }
+
+    /**
+     * @param string|null $sub サービスへ渡す sub
+     * @param string|null $serviceUserId サービス側での利用者の識別子
+     * @return JsonResponse
+     */
+    private function authenticated(?string $sub, ?string $serviceUserId): JsonResponse {
         return response()->json([
             'status' => ServiceAuthOutcome::OK->value,
-            'sub' => $result->sub,
-            'service_user_id' => $result->serviceUserId,
+            'sub' => $sub,
+            'service_user_id' => $serviceUserId,
         ]);
     }
 
