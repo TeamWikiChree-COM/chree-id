@@ -22,7 +22,23 @@ interface IndexProps {
     file: string;
     /** 新しい順の記録。ファイルが大きいと読むのに時間がかかるので後から届く */
     entries?: LogEntry[];
+    /** ファイルが1つも無いときだけ届く。なぜ無いのかの手がかり */
+    diagnosis: LogDiagnosis | null;
 }
+
+interface LogDiagnosis {
+    /** storage/logs に書き込めるか */
+    writable: boolean;
+    /** ファイルに書くチャンネルを使っているか */
+    toFile: boolean;
+    /** 使っているチャンネル (stack は開いたもの) */
+    channel: string;
+    /** ファイルに書く最低のレベル */
+    level: string;
+}
+
+/** これより上のレベルだと、外部ログインの失敗などの warning が捨てられる */
+const DROPS_WARNING = ['error', 'critical', 'alert', 'emergency'];
 
 /**
  * アプリケーションログ。
@@ -30,7 +46,7 @@ interface IndexProps {
  * 本番は共用サーバでシェルに入れないので、ここから読めないと例外の中身を
  * 確かめる手段が無い。**監査ログとは別物**（あちらは誰に何が起きたかの記録）。
  */
-const Index = ({ files, file, entries }: IndexProps) => {
+const Index = ({ files, file, entries, diagnosis }: IndexProps) => {
     const { logCleared } = usePage().props.flash;
     const { ask, dialog } = useConfirm();
 
@@ -53,6 +69,8 @@ const Index = ({ files, file, entries }: IndexProps) => {
             ]}
         >
             {logCleared && <Alert severity="success" sx={{ mb: 2 }}>{t('admin.logs.cleared')}</Alert>}
+
+            {diagnosis && <NoLogFile diagnosis={diagnosis} />}
 
             {files.length > 1 && (
                 <TextField
@@ -106,6 +124,27 @@ const Index = ({ files, file, entries }: IndexProps) => {
 
             {dialog}
         </AppLayout>
+    );
+};
+
+/**
+ * ログファイルが1つも無いときの手がかり。壊れていないのか、書けていないのかを見分ける。
+ *
+ * @param diagnosis サーバが調べた設定
+ */
+const NoLogFile = ({ diagnosis }: { diagnosis: LogDiagnosis }) => {
+    const reasons: string[] = [];
+    if (!diagnosis.writable) reasons.push(t('admin.logs.not_writable'));
+    if (!diagnosis.toFile) reasons.push(t('admin.logs.not_to_file', { channel: diagnosis.channel }));
+    if (diagnosis.toFile && DROPS_WARNING.includes(diagnosis.level.toLowerCase())) {
+        reasons.push(t('admin.logs.drops_warning', { level: diagnosis.level }));
+    }
+
+    return (
+        <Alert severity={reasons.length === 0 ? 'info' : 'warning'} sx={{ mb: 2 }}>
+            {t('admin.logs.no_file')}
+            {reasons.map((reason) => <div key={reason}>{reason}</div>)}
+        </Alert>
     );
 };
 

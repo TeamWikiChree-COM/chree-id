@@ -37,6 +37,8 @@ class AdminLogController extends Controller {
         return Inertia::render('Admin/Logs/Index', [
             'files' => $files,
             'file' => $chosen,
+            // ファイルが無いときだけ要る。理由が分からないと、壊れていないのか書けていないのか見分けられない
+            'diagnosis' => $files === [] ? $this->logs->diagnosis() : null,
             'entries' => Inertia::defer(fn (): array => $chosen === '' ? [] : $this->logs->tail($chosen)),
         ]);
     }

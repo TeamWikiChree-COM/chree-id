@@ -38,6 +38,54 @@ class LogFile {
     }
 
     /**
+     * ログが見当たらないときに、なぜ無いのかの手がかり。
+     *
+     * 「記録がありません」だけでは、壊れていないのか書けていないのか見分けられない。
+     * 書き込めない・ファイルに出していない・警告を捨てている、のどれかなら画面で分かるようにする。
+     *
+     * @return array{writable: bool, toFile: bool, channel: string, level: string}
+     */
+    public function diagnosis(): array {
+        $default = (string) config('logging.default', '');
+        $channels = $this->resolveChannels($default);
+
+        $toFile = false;
+        $level = '';
+        foreach ($channels as $name) {
+            $driver = (string) config("logging.channels.{$name}.driver", '');
+            if (!in_array($driver, ['single', 'daily'], true)) continue;
+
+            $toFile = true;
+            $level = (string) config("logging.channels.{$name}.level", 'debug');
+            break;
+        }
+
+        $dir = storage_path('logs');
+
+        return [
+            // まだ無いディレクトリは、親に書ければ Monolog が作る
+            'writable' => is_dir($dir) ? is_writable($dir) : is_writable(storage_path()),
+            'toFile' => $toFile,
+            'channel' => implode(',', $channels),
+            'level' => $level,
+        ];
+    }
+
+    /**
+     * stack を開いて、実際に書き込むチャンネル名に直す。
+     *
+     * @param string $name チャンネル名
+     * @return list<string>
+     */
+    private function resolveChannels(string $name): array {
+        if ((string) config("logging.channels.{$name}.driver", '') !== 'stack') return [$name];
+
+        $children = config("logging.channels.{$name}.channels", []);
+
+        return array_values(array_filter(is_array($children) ? $children : [], is_string(...)));
+    }
+
+    /**
      * 末尾から順に読む。
      *
      * @param string $name ファイル名。available() に無いものは読まない

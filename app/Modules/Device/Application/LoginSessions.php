@@ -45,11 +45,11 @@ class LoginSessions {
      * @return list<array{id: string, label: string, ipAddress: string|null, lastActiveAt: string|null, isCurrent: bool}>
      */
     public function listFor(string $accountId, string $currentId): array {
-        $alive = DB::table('sessions')->pluck('id')->all();
-
+        // 実体との突き合わせは DB の中で済ませる。全員ぶんの ID を取り出して渡すと、
+        // セッションが増えるほど遅くなり、PostgreSQL のバインド数の上限 (65535) を超えた時点で落ちる
         $rows = LoginSessionModel::query()
             ->where('auth_identity_id', $accountId)
-            ->whereIn('id', $alive)
+            ->whereIn('id', DB::table('sessions')->select('id'))
             ->orderByDesc('last_active_at')
             ->get();
 
@@ -128,8 +128,8 @@ class LoginSessions {
      * @return int 消した件数
      */
     public function prune(): int {
-        $alive = DB::table('sessions')->pluck('id')->all();
-        $deleted = LoginSessionModel::query()->whereNotIn('id', $alive)->delete();
+        // listFor と同じく、ID を取り出さずにサブクエリで突き合わせる
+        $deleted = LoginSessionModel::query()->whereNotIn('id', DB::table('sessions')->select('id'))->delete();
 
         return is_int($deleted) ? $deleted : 0;
     }
