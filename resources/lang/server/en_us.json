@@ -66,7 +66,7 @@
     "apidocs.magic_consume.summary": "Consume an email link token",
     "apidocs.magic_link.description": "Screens and emails stay with the service. Show the user the same screen even when nothing was issued, so as not to reveal whether the address is registered.",
     "apidocs.magic_link.issued": "The token to put in the email",
-    "apidocs.magic_link.not_applicable": "No link can be issued for this address (not_applicable)",
+    "apidocs.magic_link.not_applicable": "No link can be issued for this address: magic links are not enabled, or two-factor authentication is enabled (not_applicable)",
     "apidocs.magic_link.summary": "Issue an email link token",
     "apidocs.page.description": "Documentation for the API used for server-to-server integration between ChreeID and services",
     "apidocs.page.noscript": "JavaScript is required to view the documentation. The specification is available at /api/v1/openapi.json.",

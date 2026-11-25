@@ -66,7 +66,7 @@
     "apidocs.magic_consume.summary": "メールリンクのトークンを使う",
     "apidocs.magic_link.description": "画面もメールもサービスのままです。発行できなかった場合も、利用者には同じ画面を出してください (アドレスの登録有無を漏らさないため)。",
     "apidocs.magic_link.issued": "メールに載せるトークン",
-    "apidocs.magic_link.not_applicable": "このアドレスには発行できない (not_applicable)",
+    "apidocs.magic_link.not_applicable": "このアドレスには発行できない。メールリンクを有効にしていない、または二要素認証を有効にしている (not_applicable)",
     "apidocs.magic_link.summary": "メールリンク用のトークンを発行",
     "apidocs.page.description": "ChreeID とサービスのサーバ間連携に使う API のドキュメント",
     "apidocs.page.noscript": "ドキュメントの表示には JavaScript が必要です。仕様は /api/v1/openapi.json から取得できます。",
